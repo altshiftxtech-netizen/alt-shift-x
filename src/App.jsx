@@ -22,6 +22,11 @@ import BuilderAnalytics from './pages/BuilderAnalytics';
 import BuilderReviews from './pages/BuilderReviews';
 import BuilderPublish from './pages/BuilderPublish';
 import BuilderProfile from './pages/BuilderProfile';
+import BuilderPublicProfile from './pages/BuilderPublicProfile';
+import ApiKeys from './pages/ApiKeys';
+import AccountSettings from './pages/AccountSettings';
+import ComponentSetup from './pages/ComponentSetup';
+import AdminPanel from './pages/AdminPanel';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +70,11 @@ const AuthenticatedApp = () => {
       <Route path="/builder/reviews" element={<BuilderReviews />} />
       <Route path="/builder/publish" element={<BuilderPublish />} />
       <Route path="/builder/profile" element={<BuilderProfile />} />
+      <Route path="/builders/:id" element={<BuilderPublicProfile />} />
+      <Route path="/dashboard/api-keys" element={<ApiKeys />} />
+      <Route path="/dashboard/settings" element={<AccountSettings />} />
+      <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
+      <Route path="/admin" element={<AdminPanel />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
