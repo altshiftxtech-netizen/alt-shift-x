@@ -40,6 +40,7 @@ import TestingDashboard from './pages/TestingDashboard';
 import SandboxManagement from './pages/SandboxManagement';
 import RolloutProcedures from './pages/RolloutProcedures';
 import VendorPortalPage from './pages/VendorPortalPage';
+import FinancePortal from './pages/FinancePortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -100,6 +101,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
       <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="/vendor-portal" element={<VendorPortalPage />} />
+      <Route path="/finance" element={<FinancePortal />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

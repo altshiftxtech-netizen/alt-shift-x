@@ -1,0 +1,36 @@
+{
+  "name": "EmailTemplate",
+  "type": "object",
+  "properties": {
+    "template_name": {
+      "type": "string",
+      "enum": [
+        "invoice_submitted",
+        "invoice_approved",
+        "invoice_rejected",
+        "payment_scheduled",
+        "payment_processed",
+        "vendor_verified",
+        "budget_alert_warning",
+        "budget_alert_critical",
+        "reconciliation_complete"
+      ]
+    },
+    "subject": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string",
+      "description": "Email body with {{variable}} placeholders"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "template_name",
+    "subject",
+    "body"
+  ]
+}
