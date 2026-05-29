@@ -1,0 +1,44 @@
+{
+  "name": "ContactInfo",
+  "type": "object",
+  "properties": {
+    "phone": {
+      "type": "string",
+      "description": "Primary contact phone number"
+    },
+    "email": {
+      "type": "string",
+      "description": "Primary contact email address"
+    },
+    "address": {
+      "type": "string",
+      "description": "Office address"
+    },
+    "support_hours": {
+      "type": "string",
+      "description": "e.g. Mon\u2013Fri 9am\u20135pm PST"
+    },
+    "faq_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "phone",
+    "email"
+  ]
+}

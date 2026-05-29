@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ import LegalDocumentsTab from "@/components/admin/LegalDocumentsTab";
 import ReconciliationPanel from "@/components/ReconciliationPanel";
 import AuditTrailViewer from "@/components/AuditTrailViewer";
 import InvoiceApprovalPanel from "@/components/InvoiceApprovalPanel";
+import FinancialMetricsTab from "@/components/admin/FinancialMetricsTab";
+import ComponentUploadTab from "@/components/admin/ComponentUploadTab";
 
-const TABS = ["Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail"];
+const TABS = ["Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload"];
 
 const PENDING = [
   { id: "p1", name: "Claim Sentinel 2.0", code: "RP-CLAIMS-2.0", builder: "ClaimAI", type: "X1", submitted: "May 27, 2026", trustScore: 76, category: "Risk & Compliance", issues: [] },
@@ -240,6 +242,8 @@ export default function AdminPanel() {
     "Legal Docs": <LegalDocumentsTab />,
     "Reconciliation": <ReconciliationPanel />,
     "Audit Trail": <AuditTrailViewer />,
+    "Financial Metrics": <FinancialMetricsTab />,
+    "Component Upload": <ComponentUploadTab />,
   };
 
   return (
@@ -268,7 +272,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 w-fit">
+        <div className="flex flex-wrap items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
           {TABS.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === tab ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-700"}`}>

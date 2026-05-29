@@ -61,7 +61,7 @@ export default function CommandPrompt({ enabled, onClose }) {
     }
 
     if (trimmed === "help") {
-      result = "Available commands: help, status, test-mode, sandbox, manuals, tutorials, clear, exit\n\nOr ask any question starting with 'how to...' for automatic tutorial suggestions!";
+      result = "Available commands:\n  help, status, test-mode, sandbox, manuals, tutorials, bob, contact, clear, exit\n\nFinancial Metric Commands:\n  list metrics                    — show all metrics\n  set metric <key> <value>        — update a metric\n\nOr ask any 'how to...' question for tutorial guidance!";
     } else if (trimmed === "status") {
       result = `App Status: Running | User: Admin | Mode: ${localStorage.getItem("dev_mode") ? "DEV" : "PROD"}`;
     } else if (trimmed === "test-mode") {
@@ -82,10 +82,46 @@ export default function CommandPrompt({ enabled, onClose }) {
       result = "Opening tutorials page...";
       setOutput([...output, { cmd, result }]);
       setInput("");
-      setTimeout(() => {
-        navigate("/tutorials");
-        setIsOpen(false);
-      }, 500);
+      setTimeout(() => { navigate("/tutorials"); setIsOpen(false); }, 500);
+      return;
+    } else if (trimmed.startsWith("set metric ")) {
+      // e.g. "set metric revenue_share_pct 75"
+      const parts = trimmed.replace("set metric ", "").split(" ");
+      const key = parts[0];
+      const val = parseFloat(parts[1]);
+      if (!key || isNaN(val)) {
+        result = `Usage: set metric <metric_key> <value>\nExample: set metric revenue_share_pct 75`;
+      } else {
+        try {
+          const metrics = await base44.entities.FinancialMetric.list();
+          const existing = metrics.find(m => m.metric_key === key);
+          if (existing) {
+            await base44.entities.FinancialMetric.update(existing.id, { value: val });
+          } else {
+            await base44.entities.FinancialMetric.create({ metric_key: key, label: key, value: val, unit: "", category: "fee" });
+          }
+          result = `✓ Metric '${key}' updated to ${val}`;
+        } catch (err) {
+          result = `Error updating metric: ${err.message}`;
+        }
+      }
+    } else if (trimmed === "list metrics") {
+      try {
+        const metrics = await base44.entities.FinancialMetric.list();
+        if (metrics.length === 0) { result = "No custom metrics set yet. Use 'set metric <key> <value>'"; }
+        else { result = "Financial Metrics:\n" + metrics.map(m => `  ${m.metric_key}: ${m.value} ${m.unit}`).join('\n'); }
+      } catch (err) { result = `Error: ${err.message}`; }
+    } else if (trimmed === "bob") {
+      result = "Opening BOB Builder...";
+      setOutput([...output, { cmd, result }]);
+      setInput("");
+      setTimeout(() => { navigate("/builder/bob"); setIsOpen(false); }, 500);
+      return;
+    } else if (trimmed === "contact") {
+      result = "Opening Contact page...";
+      setOutput([...output, { cmd, result }]);
+      setInput("");
+      setTimeout(() => { navigate("/contact"); setIsOpen(false); }, 500);
       return;
     } else if (trimmed && !isNaN(trimmed) && manuals) {
       const index = parseInt(trimmed) - 1;

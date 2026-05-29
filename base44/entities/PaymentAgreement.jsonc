@@ -1,0 +1,57 @@
+{
+  "name": "PaymentAgreement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full agreement text (markdown supported)"
+    },
+    "document_url": {
+      "type": "string",
+      "description": "URL to uploaded PDF agreement"
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "applies_to": {
+      "type": "string",
+      "enum": [
+        "all",
+        "builders",
+        "subscribers",
+        "api_partners"
+      ],
+      "default": "all"
+    },
+    "scheduled_replacement_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When next version takes over"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "effective_date"
+  ]
+}

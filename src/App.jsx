@@ -45,6 +45,9 @@ import ApiPartnerDashboard from './pages/ApiPartnerDashboard';
 import SpendIntelligenceDashboard from './pages/SpendIntelligenceDashboard';
 import VendorScorecardDashboard from './pages/VendorScorecardDashboard';
 import Tutorial from './pages/Tutorial';
+import Contact from './pages/Contact';
+import SensitiveIntelligencePolicy from './pages/SensitiveIntelligencePolicy';
+import BobBuilder from './pages/BobBuilder';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -110,6 +113,9 @@ const AuthenticatedApp = () => {
       <Route path="/spend-intelligence" element={<SpendIntelligenceDashboard />} />
       <Route path="/vendor-scores" element={<VendorScorecardDashboard />} />
       <Route path="/tutorials" element={<Tutorial />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
+      <Route path="/builder/bob" element={<BobBuilder />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -42,6 +42,7 @@ export default function Home() {
           <Link to="/marketplace" className="hover:text-slate-900 dark:hover:text-white">Marketplace</Link>
           <Link to="/builder" className="hover:text-slate-900 dark:hover:text-white">Build</Link>
           <Link to="/dashboard" className="hover:text-slate-900 dark:hover:text-white">Dashboard</Link>
+          <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white">Contact</Link>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/login"><Button variant="ghost" className="text-sm h-8">Sign in</Button></Link>
@@ -124,8 +125,16 @@ export default function Home() {
         </Link>
       </section>
 
-      <footer className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 py-8 text-center text-xs text-slate-400 dark:text-slate-500">
-        © 2026 Alt+Shift+X. All rights reserved.
+      <footer className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 py-8 text-center text-xs text-slate-400 dark:text-slate-500 space-y-2">
+        <div className="flex justify-center gap-4 flex-wrap">
+          <Link to="/contact" className="hover:text-slate-600">Contact</Link>
+          <Link to="/tutorials" className="hover:text-slate-600">Tutorials</Link>
+          <Link to="/privacy" className="hover:text-slate-600">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-slate-600">Terms of Service</Link>
+          <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
+          <Link to="/builder/bob" className="hover:text-slate-600">BOB Builder</Link>
+        </div>
+        <p>© 2026 Alt+Shift+X. All rights reserved.</p>
       </footer>
     </div>
   );

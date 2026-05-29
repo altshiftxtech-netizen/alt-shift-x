@@ -1,0 +1,65 @@
+{
+  "name": "FinancialMetric",
+  "type": "object",
+  "properties": {
+    "metric_key": {
+      "type": "string",
+      "description": "Unique key, e.g. 'revenue_share_pct', 'platform_fee_pct'"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label"
+    },
+    "value": {
+      "type": "number",
+      "description": "Current numeric value"
+    },
+    "unit": {
+      "type": "string",
+      "description": "e.g. '%', 'USD', 'days'"
+    },
+    "description": {
+      "type": "string"
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When this metric takes effect"
+    },
+    "scheduled_change": {
+      "type": "object",
+      "properties": {
+        "new_value": {
+          "type": "number"
+        },
+        "change_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "revenue",
+        "payment",
+        "subscription",
+        "fee",
+        "compliance"
+      ],
+      "default": "fee"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "metric_key",
+    "label",
+    "value"
+  ]
+}
