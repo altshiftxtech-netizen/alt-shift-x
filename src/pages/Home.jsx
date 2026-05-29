@@ -24,10 +24,7 @@ export default function Home() {
       {/* Nav */}
       <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
-            <span className="text-white text-xs font-black">A</span>
-          </div>
-          <span className="font-bold text-slate-900 text-sm">Alt+Shift+X</span>
+          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg" alt="Alt+Shift+X" className="h-8 w-auto" />
         </div>
         <div className="hidden md:flex items-center gap-6 text-sm text-slate-500">
           <Link to="/marketplace" className="hover:text-slate-900">Marketplace</Link>

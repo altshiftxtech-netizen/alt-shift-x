@@ -10,7 +10,7 @@ const CHECKLIST = [
   { key: "passStructureFollowed", label: "4-pass structure followed", detail: "My implementation follows the mandatory classification → extraction → validation → audit pipeline." },
   { key: "schemaValidated", label: "Output schema validated", detail: "My output JSON matches the declared schema and passes the platform schema validator." },
   { key: "sandboxTested", label: "Tested in Testing Sandbox", detail: "I have run at least 10 documents through the Testing Sandbox and reviewed the results." },
-  { key: "reviewedGovernance", label: "Marketplace Governance reviewed", detail: "I have read and agree to the Marketplace Governance guidelines (Laws 1–8)." },
+  { key: "reviewedGovernance", label: "Builder Agreement & Data Sovereignty Protocol accepted", detail: "I have read and agree to the Builder Agreement, including the User Data Sovereignty Law (Law 3), X-Protocol standards, and enforcement provisions." },
 ];
 
 export default function StepCompliance({ checks, onChange, onNext, onBack }) {
