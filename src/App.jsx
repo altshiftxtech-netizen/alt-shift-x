@@ -44,6 +44,7 @@ import FinancePortal from './pages/FinancePortal';
 import ApiPartnerDashboard from './pages/ApiPartnerDashboard';
 import SpendIntelligenceDashboard from './pages/SpendIntelligenceDashboard';
 import VendorScorecardDashboard from './pages/VendorScorecardDashboard';
+import Tutorial from './pages/Tutorial';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -108,6 +109,7 @@ const AuthenticatedApp = () => {
       <Route path="/api-partners" element={<ApiPartnerDashboard />} />
       <Route path="/spend-intelligence" element={<SpendIntelligenceDashboard />} />
       <Route path="/vendor-scores" element={<VendorScorecardDashboard />} />
+      <Route path="/tutorials" element={<Tutorial />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

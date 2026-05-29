@@ -3,6 +3,8 @@ import { X, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
+import { detectTutorialRequest, getTutorialSuggestion } from "@/components/TutorialGuide";
 
 export default function CommandPrompt({ enabled, onClose }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +14,7 @@ export default function CommandPrompt({ enabled, onClose }) {
   const [viewingManual, setViewingManual] = useState(null);
   const lastKeyTime = React.useRef(0);
   const keyLog = React.useRef([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!enabled) return;
@@ -43,8 +46,22 @@ export default function CommandPrompt({ enabled, onClose }) {
     const trimmed = cmd.trim().toLowerCase();
     let result = "";
 
+    // Check if user is asking for a tutorial
+    const tutorialId = detectTutorialRequest(trimmed);
+    if (tutorialId) {
+      const suggestion = getTutorialSuggestion(tutorialId);
+      result = suggestion;
+      setOutput([...output, { cmd, result }]);
+      setInput("");
+      setTimeout(() => {
+        navigate(`/tutorials?focus=${tutorialId}`);
+        setIsOpen(false);
+      }, 500);
+      return;
+    }
+
     if (trimmed === "help") {
-      result = "Available commands: help, status, test-mode, sandbox, manuals, clear, exit";
+      result = "Available commands: help, status, test-mode, sandbox, manuals, tutorials, clear, exit\n\nOr ask any question starting with 'how to...' for automatic tutorial suggestions!";
     } else if (trimmed === "status") {
       result = `App Status: Running | User: Admin | Mode: ${localStorage.getItem("dev_mode") ? "DEV" : "PROD"}`;
     } else if (trimmed === "test-mode") {
@@ -61,6 +78,15 @@ export default function CommandPrompt({ enabled, onClose }) {
       } catch (err) {
         result = `Error loading manuals: ${err.message}`;
       }
+    } else if (trimmed === "tutorials") {
+      result = "Opening tutorials page...";
+      setOutput([...output, { cmd, result }]);
+      setInput("");
+      setTimeout(() => {
+        navigate("/tutorials");
+        setIsOpen(false);
+      }, 500);
+      return;
     } else if (trimmed && !isNaN(trimmed) && manuals) {
       const index = parseInt(trimmed) - 1;
       if (index >= 0 && index < manuals.length) {
