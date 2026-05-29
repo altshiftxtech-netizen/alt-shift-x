@@ -3,6 +3,8 @@ import SharedNav from "@/components/SharedNav";
 import FinanceDashboard from "@/components/FinanceDashboard";
 import InvoiceApprovalPanel from "@/components/InvoiceApprovalPanel";
 import VendorOnboarding from "@/components/VendorOnboarding";
+import ReconciliationDashboard from "@/components/ReconciliationDashboard";
+import ComplianceAutomation from "@/components/ComplianceAutomation";
 
 export default function FinancePortal() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -18,10 +20,12 @@ export default function FinancePortal() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm w-fit">
+        <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm w-fit overflow-x-auto">
           {[
             { id: 'dashboard', label: 'Dashboard' },
             { id: 'approvals', label: 'Invoice Approvals' },
+            { id: 'reconciliation', label: 'Reconciliation' },
+            { id: 'automation', label: 'Compliance' },
             { id: 'onboarding', label: 'Onboard Vendor' }
           ].map(tab => (
             <button
@@ -41,6 +45,8 @@ export default function FinancePortal() {
         {/* Content */}
         {activeTab === 'dashboard' && <FinanceDashboard />}
         {activeTab === 'approvals' && <InvoiceApprovalPanel />}
+        {activeTab === 'reconciliation' && <ReconciliationDashboard />}
+        {activeTab === 'automation' && <ComplianceAutomation />}
         {activeTab === 'onboarding' && <VendorOnboarding />}
       </div>
     </div>
