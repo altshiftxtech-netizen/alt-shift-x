@@ -6,6 +6,7 @@ import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, L
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
+import AiSearchConsultant from "@/components/AiSearchConsultant";
 
 const ALL_COMPONENTS = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.", builder: "BuildRight AI", certified: true },
@@ -68,6 +69,10 @@ export default function Marketplace() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-8">
+          <AiSearchConsultant />
+        </div>
+
         {/* Search + Sort */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
