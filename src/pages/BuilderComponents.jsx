@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import ComponentsHeader from "@/components/builder-components/ComponentsHeader.jsx";
-import ComponentCard from "@/components/builder-components/ComponentCard.jsx";
-import VersionHistoryDrawer from "@/components/builder-components/VersionHistoryDrawer.jsx";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive } from "lucide-react";
 
+// ── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_COMPONENTS = [
   {
     id: "rp-construction",
@@ -16,11 +18,10 @@ const MOCK_COMPONENTS = [
     trustScore: 91,
     category: "Risk & Compliance",
     description: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.",
-    publishedAt: "May 12, 2026",
     versions: [
       { version: "v2.4.1", date: "May 12, 2026", notes: "Improved retention clause detection accuracy to 98.1%.", status: "live" },
       { version: "v2.4.0", date: "Apr 28, 2026", notes: "Added support for NZS 3910 contract templates.", status: "archived" },
-      { version: "v2.3.2", date: "Mar 15, 2026", notes: "Hotfix: Fixed false positive on milestone extraction for multi-stage projects.", status: "archived" },
+      { version: "v2.3.2", date: "Mar 15, 2026", notes: "Hotfix: Fixed false positive on milestone extraction.", status: "archived" },
       { version: "v2.3.0", date: "Feb 1, 2026", notes: "Major overhaul of Pass 3 cross-reference engine.", status: "archived" },
     ],
   },
@@ -36,7 +37,6 @@ const MOCK_COMPONENTS = [
     trustScore: 87,
     category: "Project Management",
     description: "Parses construction bid estimates and extracts division-level costs, alternates, contingencies, and validity windows for comparison and audit workflows.",
-    publishedAt: "Apr 5, 2026",
     versions: [
       { version: "v1.9.3", date: "Apr 5, 2026", notes: "Fixed benchmark regression in Pass 1 classification.", status: "live" },
       { version: "v1.9.2", date: "Mar 20, 2026", notes: "Added Alternate item detection for up to 10 alternates.", status: "archived" },
@@ -55,7 +55,6 @@ const MOCK_COMPONENTS = [
     trustScore: 93,
     category: "Site Reporting",
     description: "Transforms daily site reports into structured data: workforce counts, work completed/delayed, RFI tracking, materials received, and programme impact.",
-    publishedAt: "May 1, 2026",
     versions: [
       { version: "v3.1.0", date: "May 1, 2026", notes: "Added programme impact delta extraction and chained RFI resolution tracking.", status: "live" },
       { version: "v3.0.1", date: "Apr 10, 2026", notes: "Hotfix: Weather field parsing for non-standard formats.", status: "archived" },
@@ -74,13 +73,120 @@ const MOCK_COMPONENTS = [
     trustScore: null,
     category: "Risk & Compliance",
     description: "Next-generation risk extraction with support for AS 4000-1997, NEC4, and FIDIC contract families. Includes multi-party agreement parsing.",
-    publishedAt: null,
     versions: [
       { version: "v0.1.0-draft", date: "May 27, 2026", notes: "Initial draft. Schema defined, Pass 1 in development.", status: "draft" },
     ],
   },
 ];
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const statusStyles = {
+  published: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  draft: "bg-slate-100 text-slate-500 border-slate-200",
+};
+const versionStatusConfig = {
+  live: { label: "Live", className: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
+  archived: { label: "Archived", className: "bg-slate-100 text-slate-500", icon: Archive },
+  draft: { label: "Draft", className: "bg-amber-100 text-amber-700", icon: Tag },
+};
+
+function TrustBadge({ score }) {
+  if (score == null) return <span className="text-xs text-slate-400">Not yet scored</span>;
+  const color = score >= 90 ? "text-emerald-600" : score >= 70 ? "text-blue-600" : "text-amber-600";
+  return <span className={`text-sm font-black ${color}`}>{score}<span className="text-xs font-normal text-slate-400">/100</span></span>;
+}
+
+function ComponentCard({ component: c, onViewHistory }) {
+  return (
+    <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="pt-5 pb-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[c.type] || "bg-slate-100 text-slate-600"}`}>{c.type}</span>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusStyles[c.status]}`}>{c.status}</span>
+            <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{c.version}</span>
+          </div>
+        </div>
+        <h3 className="text-base font-bold text-slate-900 mb-0.5">{c.displayName}</h3>
+        <p className="text-[10px] text-slate-400 font-mono mb-2">{c.name}</p>
+        <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-2">{c.description}</p>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <Download className="w-3 h-3 text-slate-400" />
+              <p className="text-sm font-bold text-slate-800">{c.installs.toLocaleString()}</p>
+            </div>
+            <p className="text-[10px] text-slate-400">Installs</p>
+          </div>
+          <div className="text-center border-x border-slate-100">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <DollarSign className="w-3 h-3 text-slate-400" />
+              <p className="text-sm font-bold text-slate-800">${c.revenue.toLocaleString()}</p>
+            </div>
+            <p className="text-[10px] text-slate-400">Revenue</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <ShieldCheck className="w-3 h-3 text-slate-400" />
+              <TrustBadge score={c.trustScore} />
+            </div>
+            <p className="text-[10px] text-slate-400">Trust Score</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/builder/sandbox" className="flex-1">
+            <Button variant="outline" className="w-full text-xs h-8 gap-1.5">
+              <FlaskConical className="w-3.5 h-3.5" /> Test
+            </Button>
+          </Link>
+          <Button variant="outline" className="flex-1 text-xs h-8 gap-1.5" onClick={onViewHistory}>
+            <History className="w-3.5 h-3.5" /> History
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function VersionHistoryDrawer({ component, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/30" onClick={onClose} />
+      <div className="w-full max-w-md bg-white shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Version History</h2>
+            <p className="text-xs text-slate-400">{component.displayName} · {component.versions.length} version{component.versions.length !== 1 ? "s" : ""}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="w-4 h-4" /></Button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          {component.versions.map((v, i) => {
+            const cfg = versionStatusConfig[v.status] || versionStatusConfig.archived;
+            const Icon = cfg.icon;
+            return (
+              <div key={i} className="relative pl-6 pb-4 border-b border-slate-100 last:border-0">
+                <div className="absolute left-0 top-1 w-3 h-3 rounded-full bg-slate-200 border-2 border-white ring-2 ring-slate-100" />
+                {i < component.versions.length - 1 && <div className="absolute left-1.5 top-4 bottom-0 w-px bg-slate-100" />}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-slate-900">{v.version}</span>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${cfg.className}`}>
+                    <Icon className="w-2.5 h-2.5" />{cfg.label}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 mb-1">{v.date}</p>
+                <p className="text-xs text-slate-600">{v.notes}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 export default function BuilderComponents() {
   const [drawerComponent, setDrawerComponent] = useState(null);
   const [filter, setFilter] = useState("all");
@@ -90,22 +196,49 @@ export default function BuilderComponents() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <ComponentsHeader filter={filter} onFilter={setFilter} total={MOCK_COMPONENTS.length} />
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <nav className="flex items-center gap-1.5 text-sm text-slate-400 mb-2">
+              <Link to="/builder" className="hover:text-slate-600">Builder Dashboard</Link>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-slate-700 font-medium">My Components</span>
+            </nav>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-slate-100"><Package className="w-5 h-5 text-slate-600" /></div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">My Components</h1>
+                <p className="text-sm text-slate-500">{MOCK_COMPONENTS.length} components in your portfolio</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
+              {["all", "published", "draft"].map(f => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all ${filter === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+            <Link to="/builder/publish">
+              <Button className="bg-violet-700 hover:bg-violet-800 text-white text-xs h-8 gap-1.5">
+                <Plus className="w-3.5 h-3.5" /> Publish New
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filtered.map(comp => (
-            <ComponentCard
-              key={comp.id}
-              component={comp}
-              onViewHistory={() => setDrawerComponent(comp)}
-            />
+            <ComponentCard key={comp.id} component={comp} onViewHistory={() => setDrawerComponent(comp)} />
           ))}
         </div>
       </div>
+
       {drawerComponent && (
-        <VersionHistoryDrawer
-          component={drawerComponent}
-          onClose={() => setDrawerComponent(null)}
-        />
+        <VersionHistoryDrawer component={drawerComponent} onClose={() => setDrawerComponent(null)} />
       )}
     </div>
   );
