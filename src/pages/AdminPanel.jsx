@@ -8,8 +8,9 @@ import SharedNav from "@/components/SharedNav";
 import LegalDocumentsTab from "@/components/admin/LegalDocumentsTab";
 import ReconciliationPanel from "@/components/ReconciliationPanel";
 import AuditTrailViewer from "@/components/AuditTrailViewer";
+import InvoiceApprovalPanel from "@/components/InvoiceApprovalPanel";
 
-const TABS = ["Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail"];
+const TABS = ["Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail"];
 
 const PENDING = [
   { id: "p1", name: "Claim Sentinel 2.0", code: "RP-CLAIMS-2.0", builder: "ClaimAI", type: "X1", submitted: "May 27, 2026", trustScore: 76, category: "Risk & Compliance", issues: [] },
@@ -230,6 +231,7 @@ export default function AdminPanel() {
   const [search, setSearch] = useState("");
 
   const tabContent = {
+    "Invoices": <InvoiceApprovalPanel />,
     "Pending Review": <PendingTab />,
     "Published": <PublishedTab />,
     "Flagged": <FlaggedTab />,
