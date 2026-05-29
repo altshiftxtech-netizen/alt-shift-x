@@ -55,14 +55,14 @@ export default function BuilderPublish() {
     try {
       await base44.functions.invoke("publishComponent", {
         name: form.displayName || form.name,
-        code: form.code,
+        code: form.code || form.name,
         type: form.type,
         category: form.category,
         description: form.description,
-        long_description: form.longDescription,
-        price: form.price,
-        features: form.features,
-        schema: form.schema,
+        long_description: form.longDescription || "",
+        price: parseFloat(form.price) || 0,
+        features: Array.isArray(form.features) ? form.features : [],
+        schema: Array.isArray(form.schema) ? form.schema : [],
       });
       setSubmitted(true);
     } catch (error) {

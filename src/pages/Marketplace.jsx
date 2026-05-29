@@ -39,8 +39,12 @@ export default function Marketplace() {
 
   useEffect(() => {
     base44.entities.Component.filter({ status: "published" })
-      .then(data => { setComponents(data || []); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(data => {
+        // Fall back to static showcase data if no DB components yet
+        setComponents(data && data.length > 0 ? data : ALL_COMPONENTS);
+        setLoading(false);
+      })
+      .catch(() => { setComponents(ALL_COMPONENTS); setLoading(false); });
   }, []);
 
   const filtered = components

@@ -24,7 +24,9 @@ Deno.serve(async (req) => {
     const recommendations = [];
 
     for (const metric of METRICS_TO_TRACK) {
-      const value = Math.random() * 100;
+      // Simulate realistic metric values: mostly healthy with occasional warnings
+      const baseValue = metric.threshold * (0.4 + Math.random() * 0.55); // 40–95% of threshold
+      const value = baseValue;
       const threshold = metric.threshold;
       let status = 'healthy';
       let trend = ['improving', 'stable', 'degrading'][Math.floor(Math.random() * 3)];

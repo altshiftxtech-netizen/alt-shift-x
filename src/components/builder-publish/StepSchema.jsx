@@ -6,7 +6,7 @@ const TYPES = ["X1 — Risk & Compliance", "X2 — Project Management", "X3 — 
 const CATEGORIES = ["Risk & Compliance", "Project Management", "Site Reporting", "Bid Estimation", "Scheduling", "Financial Analysis", "Document Generation", "Other"];
 
 export default function StepSchema({ form, onChange, onNext }) {
-  const valid = form.name && form.displayName && form.type && form.category && form.description && form.version;
+  const valid = form.name && form.displayName && form.type && form.category && form.description && form.version && form.price;
   return (
     <Card className="border border-slate-200 shadow-sm">
       <CardHeader><CardTitle className="text-base font-semibold text-slate-800">Step 1 — Schema & Metadata</CardTitle></CardHeader>
@@ -43,11 +43,19 @@ export default function StepSchema({ form, onChange, onNext }) {
             </select>
           </div>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1">Version *</label>
-          <input value={form.version} onChange={e => onChange({ version: e.target.value })}
-            placeholder="v1.0.0"
-            className="w-full text-sm font-mono border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Version *</label>
+            <input value={form.version} onChange={e => onChange({ version: e.target.value })}
+              placeholder="v1.0.0"
+              className="w-full text-sm font-mono border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Monthly Price (USD) *</label>
+            <input type="number" min="0" step="0.01" value={form.price || ""} onChange={e => onChange({ price: e.target.value })}
+              placeholder="e.g. 149"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+          </div>
         </div>
         <div>
           <label className="text-xs font-semibold text-slate-600 block mb-1">Description * <span className="text-slate-400 font-normal">(min 80 chars)</span></label>
