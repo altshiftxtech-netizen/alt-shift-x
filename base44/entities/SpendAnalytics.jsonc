@@ -1,0 +1,73 @@
+{
+  "name": "SpendAnalytics",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Tenant this spend data belongs to"
+    },
+    "period": {
+      "type": "string",
+      "description": "Month/quarter for analysis (YYYY-MM)"
+    },
+    "total_spend": {
+      "type": "number",
+      "description": "Total spending this period"
+    },
+    "spend_by_category": {
+      "type": "object",
+      "description": "Breakdown by vendor category"
+    },
+    "spend_by_vendor": {
+      "type": "object",
+      "description": "Top vendors by spend"
+    },
+    "vendor_count": {
+      "type": "number"
+    },
+    "avg_payment_days": {
+      "type": "number",
+      "description": "Average days to pay invoices"
+    },
+    "market_benchmark": {
+      "type": "object",
+      "properties": {
+        "industry_avg_spend": {
+          "type": "number"
+        },
+        "percentile": {
+          "type": "number"
+        },
+        "peers_in_industry": {
+          "type": "number"
+        }
+      }
+    },
+    "cost_reduction_opportunities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "opportunity": {
+            "type": "string"
+          },
+          "estimated_savings": {
+            "type": "number"
+          },
+          "confidence": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "period",
+    "total_spend"
+  ]
+}

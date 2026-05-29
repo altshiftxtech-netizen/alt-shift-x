@@ -1,0 +1,81 @@
+{
+  "name": "Tenant",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "White-label tenant name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe tenant identifier"
+    },
+    "api_key": {
+      "type": "string",
+      "description": "API key for tenant integrations"
+    },
+    "api_secret": {
+      "type": "string",
+      "description": "Hashed API secret"
+    },
+    "branding": {
+      "type": "object",
+      "properties": {
+        "logo_url": {
+          "type": "string"
+        },
+        "primary_color": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        }
+      }
+    },
+    "subscription_tier": {
+      "type": "string",
+      "enum": [
+        "starter",
+        "growth",
+        "enterprise"
+      ],
+      "default": "starter"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "max_users": {
+      "type": "number",
+      "default": 10
+    },
+    "max_vendors": {
+      "type": "number",
+      "default": 100
+    },
+    "features_enabled": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "e.g., ['api_access', 'spend_intelligence', 'vendor_scorecards']"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name",
+    "slug",
+    "api_key"
+  ]
+}

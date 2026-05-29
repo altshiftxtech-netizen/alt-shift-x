@@ -41,6 +41,9 @@ import SandboxManagement from './pages/SandboxManagement';
 import RolloutProcedures from './pages/RolloutProcedures';
 import VendorPortalPage from './pages/VendorPortalPage';
 import FinancePortal from './pages/FinancePortal';
+import ApiPartnerDashboard from './pages/ApiPartnerDashboard';
+import SpendIntelligenceDashboard from './pages/SpendIntelligenceDashboard';
+import VendorScorecardDashboard from './pages/VendorScorecardDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -102,6 +105,9 @@ const AuthenticatedApp = () => {
       <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="/vendor-portal" element={<VendorPortalPage />} />
       <Route path="/finance" element={<FinancePortal />} />
+      <Route path="/api-partners" element={<ApiPartnerDashboard />} />
+      <Route path="/spend-intelligence" element={<SpendIntelligenceDashboard />} />
+      <Route path="/vendor-scores" element={<VendorScorecardDashboard />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

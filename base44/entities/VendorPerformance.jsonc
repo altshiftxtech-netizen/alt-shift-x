@@ -1,0 +1,90 @@
+{
+  "name": "VendorPerformance",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "Vendor being scored"
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Tenant viewing this performance"
+    },
+    "overall_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Composite performance score"
+    },
+    "on_time_delivery": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "% of on-time deliveries"
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Quality based on returns/complaints"
+    },
+    "compliance_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Regulatory/contractual compliance"
+    },
+    "financial_health": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "at_risk",
+        "critical"
+      ],
+      "default": "healthy"
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "flag": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_spend": {
+      "type": "number",
+      "description": "YTD spend with vendor"
+    },
+    "invoice_count": {
+      "type": "number"
+    },
+    "avg_payment_time": {
+      "type": "number",
+      "description": "Days to pay their invoices"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "tenant_id",
+    "overall_score"
+  ]
+}
