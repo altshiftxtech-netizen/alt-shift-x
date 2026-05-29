@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import { X, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { base44 } from "@/api/base44Client";
 
 export default function CommandPrompt({ enabled, onClose }) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState([]);
+  const [manuals, setManuals] = useState(null);
+  const [viewingManual, setViewingManual] = useState(null);
   const lastKeyTime = React.useRef(0);
   const keyLog = React.useRef([]);
 
@@ -36,12 +39,12 @@ export default function CommandPrompt({ enabled, onClose }) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [enabled]);
 
-  const handleCommand = (cmd) => {
+  const handleCommand = async (cmd) => {
     const trimmed = cmd.trim().toLowerCase();
     let result = "";
 
     if (trimmed === "help") {
-      result = "Available commands: help, status, test-mode, sandbox, clear, exit";
+      result = "Available commands: help, status, test-mode, sandbox, manuals, clear, exit";
     } else if (trimmed === "status") {
       result = `App Status: Running | User: Admin | Mode: ${localStorage.getItem("dev_mode") ? "DEV" : "PROD"}`;
     } else if (trimmed === "test-mode") {
@@ -50,6 +53,26 @@ export default function CommandPrompt({ enabled, onClose }) {
     } else if (trimmed === "sandbox") {
       localStorage.setItem("sandbox_mode", "true");
       result = "Sandbox Mode: ACTIVATED ✓";
+    } else if (trimmed === "manuals") {
+      try {
+        const manualsData = await base44.entities.Manual.list('order', 100);
+        setManuals(manualsData);
+        result = `Found ${manualsData.length} manuals:\n${manualsData.map((m, i) => `  ${i + 1}. ${m.title} [${m.category}]`).join('\n')}\n\nEnter number to view (e.g., '1')`;
+      } catch (err) {
+        result = `Error loading manuals: ${err.message}`;
+      }
+    } else if (trimmed && !isNaN(trimmed) && manuals) {
+      const index = parseInt(trimmed) - 1;
+      if (index >= 0 && index < manuals.length) {
+        setViewingManual(manuals[index]);
+        result = `Loading manual: ${manuals[index].title}...`;
+      } else {
+        result = `Invalid selection. Choose 1-${manuals.length}`;
+      }
+    } else if (trimmed === "back") {
+      setViewingManual(null);
+      setManuals(null);
+      result = "Returned to main prompt";
     } else if (trimmed === "clear") {
       setOutput([]);
       setInput("");
@@ -89,9 +112,17 @@ export default function CommandPrompt({ enabled, onClose }) {
           {output.map((line, i) => (
             <div key={i}>
               <div>$ {line.cmd}</div>
-              <div className="text-amber-400">{line.result}</div>
+              <div className="text-amber-400 whitespace-pre-wrap text-xs">{line.result}</div>
             </div>
           ))}
+          
+          {viewingManual && (
+            <div className="mt-4 p-4 bg-slate-800 rounded border border-green-500">
+              <p className="text-green-400 font-bold mb-2">{viewingManual.title}</p>
+              <p className="text-gray-300 text-xs whitespace-pre-wrap max-h-40 overflow-y-auto">{viewingManual.content}</p>
+              <p className="text-slate-500 text-xs mt-2">v{viewingManual.version} | Type 'back' to return to manuals list</p>
+            </div>
+          )}
         </div>
 
         {/* Input */}
@@ -103,12 +134,14 @@ export default function CommandPrompt({ enabled, onClose }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleCommand(input);
+                if (e.key === "Enter") {
+                  handleCommand(input);
+                }
                 if (e.key === "Escape") setIsOpen(false);
               }}
               autoFocus
               className="flex-1 bg-transparent text-green-400 outline-none"
-              placeholder="Enter command..."
+              placeholder={viewingManual ? "Type 'back' to return..." : "Enter command..."}
             />
           </div>
         </div>

@@ -1,0 +1,49 @@
+{
+  "name": "Manual",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Manual title (e.g., 'Deployment Guide', 'API Reference')"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Unique identifier for the manual"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "deployment",
+        "api",
+        "testing",
+        "compliance",
+        "operations",
+        "troubleshooting"
+      ],
+      "description": "Manual category"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full manual content (markdown supported)"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order in list",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "category",
+    "content"
+  ]
+}
