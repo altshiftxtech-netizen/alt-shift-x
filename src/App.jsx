@@ -34,6 +34,8 @@ import MobileApp from './pages/MobileApp';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import BuilderAgreement from './pages/BuilderAgreement';
+import InstallSuccess from './pages/InstallSuccess';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -88,6 +90,8 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
+      <Route path="/success/install" element={<InstallSuccess />} />
+      <Route path="/success/subscription" element={<SubscriptionSuccess />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

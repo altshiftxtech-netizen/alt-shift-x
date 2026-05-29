@@ -8,9 +8,9 @@ const PLAN_LIMITS = {
 };
 
 const PRICE_TO_PLAN = {
-  "price_1TcLVDAuii7slVl8xjcUnYXz": "starter",
-  "price_1TcLVDAuii7slVl8e8AbgOFM": "pro",
-  "price_1TcLVDAuii7slVl8vpF3DTr6": "enterprise",
+  "price_1TcN53Auii7slVl8tRdNcQjN": "starter",
+  "price_1TcN53Auii7slVl8vnIV5uQp": "pro",
+  "price_1TcN53Auii7slVl8s9oWY7F5": "enterprise",
 };
 
 Deno.serve(async (req) => {
