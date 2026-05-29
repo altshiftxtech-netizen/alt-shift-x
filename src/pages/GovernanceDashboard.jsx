@@ -7,6 +7,7 @@ import {
   ShieldCheck, AlertTriangle, CheckCircle2, Clock, Loader2,
   RefreshCw, Lock, Eye, TrendingUp, Award, XCircle
 } from "lucide-react";
+import AutoCertifyPanel from "@/components/governance/AutoCertifyPanel";
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from "recharts";
 
 const CERT_COLORS = {
@@ -83,6 +84,11 @@ export default function GovernanceDashboard() {
   const avgScore = scores.length ? Math.round(scores.reduce((s, g) => s + g.overall_score, 0) / scores.length) : 0;
   const certifiedCount = scores.filter(s => s.certification_status === "certified").length;
 
+  const handleAutoCertifyComplete = (results) => {
+    base44.entities.GovernanceScore.list("-last_audited_at", 100).then(sc => setScores(sc));
+    base44.entities.Component.filter({ status: "published" }).then(comps => setComponents(comps));
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-slate-50">
       <SharedNav mode="builder" />
@@ -121,6 +127,9 @@ export default function GovernanceDashboard() {
             </Card>
           ))}
         </div>
+
+        {/* Auto-certify panel */}
+        <AutoCertifyPanel components={components} scores={scores} onComplete={handleAutoCertifyComplete} />
 
         <div className="grid md:grid-cols-5 gap-6">
           {/* Component list */}

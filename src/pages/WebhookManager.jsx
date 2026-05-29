@@ -7,6 +7,7 @@ import {
   Webhook, Plus, Trash2, PauseCircle, PlayCircle, Copy,
   CheckCircle2, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, EyeOff
 } from "lucide-react";
+import WebhookDebugger from "@/components/webhooks/WebhookDebugger";
 
 const ALL_EVENTS = [
   { key: "component.published", label: "Component Published", group: "Components" },
@@ -251,6 +252,7 @@ export default function WebhookManager() {
                         )}
                       </div>
                       <p className="text-[10px] text-slate-400">Use this secret to verify the <code className="font-mono">X-AltShiftX-Signature</code> header on incoming requests.</p>
+                      <WebhookDebugger subId={sub.id} />
                     </div>
                   )}
                 </CardContent>

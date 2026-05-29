@@ -17,8 +17,9 @@ const BUILDER_NAV = [
   { to: "/builder", label: "Overview", icon: LayoutDashboard },
   { to: "/builder/components", label: "Components", icon: Package },
   { to: "/builder/analytics", label: "Analytics", icon: BarChart2 },
-  { to: "/builder/trust", label: "Trust Engine", icon: ShieldCheck },
+  { to: "/builder/trust", label: "Trust", icon: ShieldCheck },
   { to: "/builder/governance", label: "Governance", icon: ShieldCheck },
+  { to: "/builder/revenue", label: "Revenue", icon: BarChart2 },
 ];
 
 export default function SharedNav({ mode = "user" }) {
@@ -81,10 +82,18 @@ export default function SharedNav({ mode = "user" }) {
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
                   Subscription
                 </Link>
+                <Link to="/tutorials" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Tutorials
+                </Link>
                 <div className="border-t border-slate-100 my-1" />
                 <Link to="/admin" onClick={() => setPortalOpen(false)}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
                   Admin Panel
+                </Link>
+                <Link to="/admin/intelligence" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Platform Intelligence
                 </Link>
               </div>
             )}

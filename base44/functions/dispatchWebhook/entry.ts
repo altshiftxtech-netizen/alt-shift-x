@@ -22,15 +22,21 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { event_type, payload } = await req.json();
+    const { event_type, payload, target_subscription_id } = await req.json();
 
     if (!event_type || !payload) {
       return Response.json({ error: "event_type and payload required" }, { status: 400 });
     }
 
-    // Load all active subscriptions that listen for this event
-    const allSubs = await base44.asServiceRole.entities.WebhookSubscription.filter({ status: "active" });
-    const matching = allSubs.filter(s => s.events && s.events.includes(event_type));
+    // Load active subscriptions — optionally target a single one (for debugger)
+    let matching;
+    if (target_subscription_id) {
+      const subs = await base44.asServiceRole.entities.WebhookSubscription.filter({ id: target_subscription_id });
+      matching = subs.filter(s => s.status === "active");
+    } else {
+      const allSubs = await base44.asServiceRole.entities.WebhookSubscription.filter({ status: "active" });
+      matching = allSubs.filter(s => s.events && s.events.includes(event_type));
+    }
 
     console.log(`Dispatching ${event_type} to ${matching.length} subscribers`);
 
