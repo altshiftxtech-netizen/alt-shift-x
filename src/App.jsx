@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import BuilderRevenue from './pages/BuilderRevenue';
 import TrustEngine from './pages/TrustEngine';
+import TestingSandbox from './pages/TestingSandbox';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -39,6 +40,7 @@ const AuthenticatedApp = () => {
       {/* Add your page Route elements here */}
       <Route path="/builder/revenue" element={<BuilderRevenue />} />
       <Route path="/builder/trust" element={<TrustEngine />} />
+      <Route path="/builder/sandbox" element={<TestingSandbox />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
