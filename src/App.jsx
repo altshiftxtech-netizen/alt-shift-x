@@ -27,6 +27,7 @@ import ApiKeys from './pages/ApiKeys';
 import AccountSettings from './pages/AccountSettings';
 import ComponentSetup from './pages/ComponentSetup';
 import AdminPanel from './pages/AdminPanel';
+import Pricing from './pages/Pricing';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard/api-keys" element={<ApiKeys />} />
       <Route path="/dashboard/settings" element={<AccountSettings />} />
       <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
