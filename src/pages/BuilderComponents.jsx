@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import ComponentsHeader from "@/components/builder-components/ComponentsHeader";
-import ComponentCard from "@/components/builder-components/ComponentCard";
+import ComponentsHeader from "@/components/builder-components/ComponentsHeader.jsx";
+import ComponentCard from "@/components/builder-components/ComponentCard.jsx";
 import VersionHistoryDrawer from "@/components/builder-components/VersionHistoryDrawer.jsx";
 
 const MOCK_COMPONENTS = [
