@@ -70,6 +70,10 @@ export default function SharedNav({ mode = "user" }) {
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
                   Pricing
                 </Link>
+                <Link to="/dashboard/subscription" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Subscription
+                </Link>
                 <div className="border-t border-slate-100 my-1" />
                 <Link to="/admin" onClick={() => setPortalOpen(false)}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">

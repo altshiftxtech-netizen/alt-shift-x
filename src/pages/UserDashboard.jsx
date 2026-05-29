@@ -118,6 +118,15 @@ export default function UserDashboard() {
                 </CardContent>
               </Card>
             </Link>
+            <Link to="/dashboard/subscription">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-3 flex items-center gap-3">
+                  <Zap className="w-4 h-4 text-violet-500" />
+                  <div><p className="text-xs font-semibold text-slate-800">Subscription</p><p className="text-[10px] text-slate-400">Plan, quota & billing</p></div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Recent activity */}

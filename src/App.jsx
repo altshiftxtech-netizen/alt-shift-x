@@ -28,6 +28,7 @@ import AccountSettings from './pages/AccountSettings';
 import ComponentSetup from './pages/ComponentSetup';
 import AdminPanel from './pages/AdminPanel';
 import Pricing from './pages/Pricing';
+import SubscriptionDashboard from './pages/SubscriptionDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard/settings" element={<AccountSettings />} />
       <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
