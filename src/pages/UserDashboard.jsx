@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, Zap, ShieldCheck, ArrowRight, Key, Settings } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import ApiQuotaBar from "@/components/ApiQuotaBar";
 
 const INSTALLED = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", trustScore: 91, callsThisMonth: 1240, lastUsed: "2 hours ago", status: "active" },
@@ -98,6 +99,7 @@ export default function UserDashboard() {
           {/* Quick links */}
           <div className="space-y-3">
             <h2 className="text-sm font-bold text-slate-900">Quick Access</h2>
+            <ApiQuotaBar />
             <Link to="/dashboard/api-keys">
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="py-3 flex items-center gap-3">
