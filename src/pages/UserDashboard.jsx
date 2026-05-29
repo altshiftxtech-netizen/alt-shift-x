@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Package, Zap, ShieldCheck, ArrowRight, Key, Settings } from "lucide-rea
 import SharedNav from "@/components/SharedNav";
 import ApiQuotaBar from "@/components/ApiQuotaBar";
 import AiSearchConsultant from "@/components/AiSearchConsultant";
+import VoiceChat from "@/components/VoiceChat";
 
 const INSTALLED = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", trustScore: 91, callsThisMonth: 1240, lastUsed: "2 hours ago", status: "active" },
@@ -29,12 +30,18 @@ const RECENT_ACTIVITY = [
 ];
 
 export default function UserDashboard() {
+  const [voiceQuery, setVoiceQuery] = useState("");
+
   return (
     <div className="min-h-screen bg-slate-50">
       <SharedNav mode="user" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        <AiSearchConsultant />
+        <AiSearchConsultant
+          voiceQuery={voiceQuery}
+          onVoiceQueryConsumed={() => setVoiceQuery("")}
+        />
+        <VoiceChat onTranscript={(text) => setVoiceQuery(text)} />
         
         {/* Header */}
         <div className="flex items-center justify-between">

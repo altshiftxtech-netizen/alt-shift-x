@@ -1,13 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Send, Loader2 } from "lucide-react";
 
-export default function AiSearchConsultant() {
+export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsumed }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Auto-fire when a voice command is injected
+  React.useEffect(() => {
+    if (voiceQuery && voiceQuery.trim()) {
+      setQuery(voiceQuery);
+      // Small delay so user sees the text before it fires
+      const t = setTimeout(() => {
+        setQuery(voiceQuery);
+        handleVoiceSubmit(voiceQuery);
+        onVoiceQueryConsumed && onVoiceQueryConsumed();
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [voiceQuery]);
+
+  const handleVoiceSubmit = async (text) => {
+    if (!text.trim()) return;
+    setLoading(true);
+    try {
+      const conv = await base44.agents.createConversation({
+        agent_name: "sales_consultant",
+        metadata: { name: "Voice Consultation", description: `Voice query: ${text}` }
+      });
+      await base44.agents.addMessage(conv, { role: "user", content: text });
+      setConversation(conv);
+      setShowChat(true);
+      setQuery("");
+    } catch (err) {
+      alert("Failed to start consultation: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   const [conversation, setConversation] = useState(null);
   const [showChat, setShowChat] = useState(false);
 
