@@ -1,0 +1,102 @@
+{
+  "name": "PricingTier",
+  "type": "object",
+  "properties": {
+    "tier_key": {
+      "type": "string",
+      "enum": [
+        "starter",
+        "growth",
+        "pro",
+        "scale",
+        "enterprise"
+      ],
+      "description": "Internal tier identifier"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "monthly_price_usd": {
+      "type": "number"
+    },
+    "annual_price_usd": {
+      "type": "number"
+    },
+    "api_calls_included": {
+      "type": "number",
+      "description": "-1 for unlimited"
+    },
+    "overage_rate_per_1k": {
+      "type": "number",
+      "description": "USD per 1,000 calls over limit"
+    },
+    "builder_revenue_share_pct": {
+      "type": "number",
+      "description": "% of component revenue going to builders"
+    },
+    "platform_fee_pct": {
+      "type": "number"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "component_types_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "X1",
+          "X2",
+          "X4",
+          "X5"
+        ]
+      }
+    },
+    "max_webhook_subscriptions": {
+      "type": "number",
+      "default": 5
+    },
+    "sla_uptime_pct": {
+      "type": "number",
+      "default": 99.5
+    },
+    "support_tier": {
+      "type": "string",
+      "enum": [
+        "community",
+        "email",
+        "priority",
+        "dedicated"
+      ],
+      "default": "community"
+    },
+    "auto_upgrade_threshold_pct": {
+      "type": "number",
+      "description": "Auto-prompt upgrade when usage hits this % of limit",
+      "default": 85
+    },
+    "stripe_price_id_monthly": {
+      "type": "string"
+    },
+    "stripe_price_id_annual": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "tier_key",
+    "display_name",
+    "monthly_price_usd",
+    "api_calls_included"
+  ]
+}

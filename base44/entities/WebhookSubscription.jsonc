@@ -1,0 +1,84 @@
+{
+  "name": "WebhookSubscription",
+  "type": "object",
+  "properties": {
+    "subscriber_id": {
+      "type": "string",
+      "description": "User or tenant ID"
+    },
+    "subscriber_email": {
+      "type": "string"
+    },
+    "endpoint_url": {
+      "type": "string",
+      "description": "HTTPS endpoint to receive events"
+    },
+    "secret": {
+      "type": "string",
+      "description": "HMAC signing secret for payload verification"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "component.published",
+          "component.updated",
+          "component.deprecated",
+          "component.version.released",
+          "subscription.activated",
+          "subscription.upgraded",
+          "subscription.cancelled",
+          "invoice.paid",
+          "invoice.failed",
+          "extraction.completed",
+          "trust_score.changed",
+          "budget.alert.triggered"
+        ]
+      },
+      "description": "Events this subscription listens for"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "failed",
+        "deleted"
+      ],
+      "default": "active"
+    },
+    "failure_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_failure_reason": {
+      "type": "string"
+    },
+    "total_delivered": {
+      "type": "number",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "description": "Label for this webhook"
+    },
+    "retry_on_failure": {
+      "type": "boolean",
+      "default": true
+    },
+    "max_retries": {
+      "type": "number",
+      "default": 3
+    }
+  },
+  "required": [
+    "subscriber_id",
+    "endpoint_url",
+    "events"
+  ]
+}

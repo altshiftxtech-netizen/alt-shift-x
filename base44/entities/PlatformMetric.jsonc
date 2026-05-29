@@ -1,0 +1,95 @@
+{
+  "name": "PlatformMetric",
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "description": "YYYY-MM-DD snapshot date"
+    },
+    "metric_type": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "daily"
+    },
+    "total_components": {
+      "type": "number"
+    },
+    "total_builders": {
+      "type": "number"
+    },
+    "total_subscribers": {
+      "type": "number"
+    },
+    "total_api_calls": {
+      "type": "number"
+    },
+    "total_revenue_usd": {
+      "type": "number"
+    },
+    "builder_payouts_usd": {
+      "type": "number"
+    },
+    "platform_take_usd": {
+      "type": "number"
+    },
+    "new_installs": {
+      "type": "number"
+    },
+    "churn_count": {
+      "type": "number"
+    },
+    "net_revenue_retention_pct": {
+      "type": "number",
+      "description": "NRR \u2014 key SaaS moat metric"
+    },
+    "avg_trust_score": {
+      "type": "number"
+    },
+    "governance_certified_pct": {
+      "type": "number",
+      "description": "% of published components with governance cert"
+    },
+    "webhook_deliveries": {
+      "type": "number"
+    },
+    "webhook_success_rate_pct": {
+      "type": "number"
+    },
+    "top_components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "api_calls": {
+            "type": "number"
+          },
+          "revenue": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "revenue_by_tier": {
+      "type": "object",
+      "description": "tier_key -> revenue"
+    },
+    "geographic_breakdown": {
+      "type": "object",
+      "description": "country_code -> call_count"
+    }
+  },
+  "required": [
+    "period",
+    "metric_type"
+  ]
+}

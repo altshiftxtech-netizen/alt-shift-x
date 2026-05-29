@@ -12,7 +12,7 @@ import InvoiceApprovalPanel from "@/components/InvoiceApprovalPanel";
 import FinancialMetricsTab from "@/components/admin/FinancialMetricsTab";
 import ComponentUploadTab from "@/components/admin/ComponentUploadTab";
 
-const TABS = ["Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload"];
+const TABS = ["Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Platform Intelligence"];
 
 const PENDING = [
   { id: "p1", name: "Claim Sentinel 2.0", code: "RP-CLAIMS-2.0", builder: "ClaimAI", type: "X1", submitted: "May 27, 2026", trustScore: 76, category: "Risk & Compliance", issues: [] },
@@ -244,6 +244,31 @@ export default function AdminPanel() {
     "Audit Trail": <AuditTrailViewer />,
     "Financial Metrics": <FinancialMetricsTab />,
     "Component Upload": <ComponentUploadTab />,
+    "Platform Intelligence": (
+      <div className="space-y-4">
+        <div className="bg-violet-50 border border-violet-100 rounded-xl p-5">
+          <p className="text-sm font-bold text-violet-900 mb-1">Platform Intelligence Dashboard</p>
+          <p className="text-xs text-violet-700 mb-4">Real-time moat metrics: NRR, trust flywheel, governance coverage, revenue health, webhook reliability, and ARR trajectory.</p>
+          <Link to="/admin/intelligence">
+            <Button className="bg-violet-600 hover:bg-violet-700 text-sm gap-2">Open Platform Intelligence →</Button>
+          </Link>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Link to="/builder/governance">
+            <div className="bg-white border border-slate-200 hover:border-violet-300 rounded-xl p-4 cursor-pointer transition-colors">
+              <p className="text-sm font-bold text-slate-900">AI Governance Center</p>
+              <p className="text-xs text-slate-400 mt-1">Score and certify all published components for SOC2, GDPR, ISO27001 compliance.</p>
+            </div>
+          </Link>
+          <Link to="/dashboard/webhooks">
+            <div className="bg-white border border-slate-200 hover:border-violet-300 rounded-xl p-4 cursor-pointer transition-colors">
+              <p className="text-sm font-bold text-slate-900">Webhook Subscriptions</p>
+              <p className="text-xs text-slate-400 mt-1">View and manage all active platform webhook endpoints and delivery health.</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+    ),
   };
 
   return (

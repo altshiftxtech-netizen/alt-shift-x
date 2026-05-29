@@ -9,6 +9,7 @@ const USER_NAV = [
   { to: "/dashboard/installed", label: "Installed", icon: Package },
   { to: "/dashboard/usage", label: "Usage", icon: BarChart2 },
   { to: "/dashboard/api-keys", label: "API Keys", icon: Key },
+  { to: "/dashboard/webhooks", label: "Webhooks", icon: Key },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -17,6 +18,7 @@ const BUILDER_NAV = [
   { to: "/builder/components", label: "Components", icon: Package },
   { to: "/builder/analytics", label: "Analytics", icon: BarChart2 },
   { to: "/builder/trust", label: "Trust Engine", icon: ShieldCheck },
+  { to: "/builder/governance", label: "Governance", icon: ShieldCheck },
 ];
 
 export default function SharedNav({ mode = "user" }) {

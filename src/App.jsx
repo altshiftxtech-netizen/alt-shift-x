@@ -48,6 +48,10 @@ import Tutorial from './pages/Tutorial';
 import Contact from './pages/Contact';
 import SensitiveIntelligencePolicy from './pages/SensitiveIntelligencePolicy';
 import BobBuilder from './pages/BobBuilder';
+import ComponentVersionHistory from './pages/ComponentVersionHistory';
+import WebhookManager from './pages/WebhookManager';
+import GovernanceDashboard from './pages/GovernanceDashboard';
+import PlatformIntelligence from './pages/PlatformIntelligence';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -116,6 +120,10 @@ const AuthenticatedApp = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
       <Route path="/builder/bob" element={<BobBuilder />} />
+      <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
+      <Route path="/dashboard/webhooks" element={<WebhookManager />} />
+      <Route path="/builder/governance" element={<GovernanceDashboard />} />
+      <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

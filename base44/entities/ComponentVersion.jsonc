@@ -1,0 +1,83 @@
+{
+  "name": "ComponentVersion",
+  "type": "object",
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "Parent component ID"
+    },
+    "component_name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "description": "e.g. 1.0.0, 1.1.0"
+    },
+    "builder_id": {
+      "type": "string"
+    },
+    "changelog": {
+      "type": "string",
+      "description": "Human-readable change summary"
+    },
+    "snapshot": {
+      "type": "object",
+      "description": "Full component data snapshot at publish time"
+    },
+    "diff_summary": {
+      "type": "object",
+      "description": "Fields changed vs previous version",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "modified": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "deprecated",
+        "rollback"
+      ],
+      "default": "draft"
+    },
+    "trust_score_at_publish": {
+      "type": "number"
+    },
+    "breaking_change": {
+      "type": "boolean",
+      "default": false
+    },
+    "auto_upgrade_eligible": {
+      "type": "boolean",
+      "default": true
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "component_id",
+    "component_name",
+    "version",
+    "builder_id"
+  ]
+}

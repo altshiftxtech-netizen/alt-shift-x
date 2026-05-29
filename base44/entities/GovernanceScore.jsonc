@@ -1,0 +1,107 @@
+{
+  "name": "GovernanceScore",
+  "type": "object",
+  "properties": {
+    "component_id": {
+      "type": "string"
+    },
+    "component_name": {
+      "type": "string"
+    },
+    "overall_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "ai_safety_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Hallucination guard, confidence thresholds, bias checks"
+    },
+    "data_compliance_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "GDPR, SOC2, ISO27001 alignment"
+    },
+    "audit_trail_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Logging completeness and tamper-resistance"
+    },
+    "version_stability_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Breaking change frequency, rollback posture"
+    },
+    "pii_handling_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "frameworks_certified": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "e.g. SOC2, ISO27001, GDPR, HIPAA, OWASP"
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "flag": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "remediation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "certification_status": {
+      "type": "string",
+      "enum": [
+        "uncertified",
+        "pending",
+        "certified",
+        "revoked"
+      ],
+      "default": "uncertified"
+    },
+    "last_audited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_audit_due": {
+      "type": "string",
+      "format": "date"
+    },
+    "auditor": {
+      "type": "string",
+      "description": "Who/what ran the audit (AI/human/external)"
+    }
+  },
+  "required": [
+    "component_id",
+    "component_name",
+    "overall_score"
+  ]
+}
