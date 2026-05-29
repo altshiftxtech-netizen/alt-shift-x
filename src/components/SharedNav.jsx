@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const USER_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -29,9 +30,9 @@ export default function SharedNav({ mode = "user" }) {
     <>
       <nav className="bg-white border-b border-slate-100 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg" alt="Alt+Shift+X" className="h-8 w-auto" />
-        </Link>
+        <div className="shrink-0">
+          <Logo className="h-8 w-auto" />
+        </div>
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-1">

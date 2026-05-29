@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, FileText, ShieldCheck, Users, Scale, Clock } from "lucide-react";
+import Logo from "@/components/Logo";
 import LegalDocumentViewer from "@/components/admin/LegalDocumentViewer";
 
 function Section({ icon: Icon, title, children }) {
@@ -57,9 +58,7 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-slate-50">
       {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-2">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg" alt="Alt+Shift+X" className="h-8 w-auto" />
-        </Link>
+        <Logo className="h-8 w-auto" />
         <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
         <span className="text-sm text-slate-500">Terms of Service</span>
       </nav>

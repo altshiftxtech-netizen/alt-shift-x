@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, Zap, Users, Star, Package } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const FEATURED = [
   { name: "Ironclad Protocol", type: "X1", category: "Risk & Compliance", rating: 4.4, installs: 847, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements." },
@@ -23,9 +24,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg" alt="Alt+Shift+X" className="h-8 w-auto" />
-        </div>
+        <Logo className="h-8 w-auto" />
         <div className="hidden md:flex items-center gap-6 text-sm text-slate-500">
           <Link to="/marketplace" className="hover:text-slate-900">Marketplace</Link>
           <Link to="/builder" className="hover:text-slate-900">Build</Link>

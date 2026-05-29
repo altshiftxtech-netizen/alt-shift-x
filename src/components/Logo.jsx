@@ -1,22 +1,28 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
-export default function Logo({ className = "h-10 w-auto" }) {
+const LOGO_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg";
+
+/**
+ * Protected logo — blocks right-click, double-click save, drag, and context menu.
+ * Always links back to the homepage.
+ */
+export default function Logo({ className = "h-8 w-auto" }) {
+  const block = (e) => e.preventDefault();
+
   return (
-    <div
-      className={`select-none ${className}`}
-      onContextMenu={(e) => e.preventDefault()}
-      onDragStart={(e) => e.preventDefault()}
-      style={{ WebkitUserDrag: "none", userSelect: "none" }}
-    >
+    <Link to="/" draggable={false}>
       <img
-        src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b94975acf_AltShiftXLogo.png"
-        alt="Alt+Shift+X Market"
+        src={LOGO_URL}
+        alt="Alt+Shift+X"
+        className={className}
         draggable={false}
-        onContextMenu={(e) => e.preventDefault()}
-        onDragStart={(e) => e.preventDefault()}
-        className="h-full w-auto pointer-events-none"
-        style={{ WebkitUserDrag: "none", userSelect: "none" }}
+        onContextMenu={block}
+        onDoubleClick={block}
+        onDragStart={block}
+        onMouseDown={(e) => { if (e.button === 2) block(e); }}
+        style={{ userSelect: "none", WebkitUserDrag: "none" }}
       />
-    </div>
+    </Link>
   );
 }

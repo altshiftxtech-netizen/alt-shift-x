@@ -6,6 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
     <title>Alt+Shift+X Market</title>
+
+    <!-- SEO: only index the homepage and marketplace -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- Prevent search engines from caching pages -->
+    <meta name="googlebot" content="noindex, nosnippet, noarchive" />
+
+    <!-- Open Graph: minimal, no image preview leak -->
+    <meta property="og:title" content="Alt+Shift+X" />
+    <meta property="og:description" content="Verified AI components for construction intelligence." />
+    <meta property="og:type" content="website" />
+
+    <!-- Prevent right-click save / drag on images globally -->
+    <style>
+      img {
+        -webkit-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+      }
+      /* Re-enable pointer events on interactive images wrapped in links */
+      a img, button img {
+        pointer-events: auto;
+      }
+    </style>
+
+    <script>
+      // Block right-click context menu globally
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+      });
+      // Block common keyboard shortcuts for saving/copying page content
+      document.addEventListener('keydown', function(e) {
+        // Block Ctrl+S, Ctrl+U (view source), Ctrl+Shift+I (devtools), F12
+        if (
+          (e.ctrlKey && (e.key === 's' || e.key === 'u')) ||
+          (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) ||
+          e.key === 'F12'
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+      // Block drag-and-drop of images
+      document.addEventListener('dragstart', function(e) {
+        if (e.target.tagName === 'IMG') {
+          e.preventDefault();
+          return false;
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

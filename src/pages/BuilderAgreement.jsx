@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, ShieldCheck, Code2, FlaskConical, AlertTriangle, Award } from "lucide-react";
-
-const LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/031f54965_altxlogo2.jpg";
+import Logo from "@/components/Logo";
 
 function Section({ icon: Icon, color = "bg-slate-100", iconColor = "text-slate-600", title, badge, children }) {
   return (
@@ -91,9 +90,7 @@ export default function BuilderAgreement() {
     <div className="min-h-screen bg-slate-50">
       {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-3 flex items-center gap-2">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={LOGO} alt="Alt+Shift+X" className="h-8 w-auto" />
-        </Link>
+        <Logo className="h-8 w-auto" />
         <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
         <Link to="/builder" className="text-sm text-slate-500 hover:text-slate-800">Builder Portal</Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300" />

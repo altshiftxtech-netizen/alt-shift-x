@@ -1,0 +1,32 @@
+User-agent: *
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /builder
+Disallow: /builder/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /pricing
+Disallow: /mobile
+Disallow: /builders/
+Disallow: /marketplace/
+Disallow: /privacy
+Disallow: /terms
+
+# Allow only the homepage and public marketplace index
+Allow: /$
+Allow: /marketplace$
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
