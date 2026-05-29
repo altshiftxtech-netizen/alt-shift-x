@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Lock, Bell, CreditCard, CheckCircle2 } from "lucide-react";
+import { User, Lock, Bell, CreditCard, CheckCircle2, Zap } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CommandPromptToggle from "@/components/CommandPromptToggle";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
   { id: "security", label: "Security", icon: Lock },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "billing", label: "Billing", icon: CreditCard },
+  { id: "developer", label: "Developer", icon: Zap },
 ];
 
 function ProfileTab() {
@@ -91,6 +93,18 @@ function NotificationsTab() {
   );
 }
 
+function DeveloperTab() {
+  return (
+    <div className="space-y-5">
+      <Card><CardContent className="pt-5 space-y-4">
+        <p className="text-sm font-bold text-slate-900">Developer Tools</p>
+        <p className="text-xs text-slate-500 mb-4">Enable advanced features for testing and development.</p>
+        <CommandPromptToggle />
+      </CardContent></Card>
+    </div>
+  );
+}
+
 function BillingTab() {
   return (
     <div className="space-y-5">
@@ -138,7 +152,7 @@ function BillingTab() {
 export default function AccountSettings() {
   const [activeTab, setActiveTab] = useState("profile");
 
-  const tabContent = { profile: <ProfileTab />, security: <SecurityTab />, notifications: <NotificationsTab />, billing: <BillingTab /> };
+  const tabContent = { profile: <ProfileTab />, security: <SecurityTab />, notifications: <NotificationsTab />, billing: <BillingTab />, developer: <DeveloperTab /> };
 
   return (
     <div className="min-h-screen bg-slate-50">

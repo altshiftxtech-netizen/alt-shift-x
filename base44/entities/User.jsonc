@@ -1,0 +1,17 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "builder",
+        "staff"
+      ],
+      "default": "user",
+      "description": "User role \u2014 admin (full access), user (standard), builder (marketplace builder), staff (technical staff with testing access)"
+    }
+  }
+}
