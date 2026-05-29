@@ -7,6 +7,12 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
+import Home from './pages/Home';
+import Marketplace from './pages/Marketplace';
+import ComponentDetail from './pages/ComponentDetail';
+import UserDashboard from './pages/UserDashboard';
+import InstalledComponents from './pages/InstalledComponents';
+import UsageAnalytics from './pages/UsageAnalytics';
 import BuilderRevenue from './pages/BuilderRevenue';
 import TrustEngine from './pages/TrustEngine';
 import TestingSandbox from './pages/TestingSandbox';
@@ -44,6 +50,12 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Add your page Route elements here */}
+      <Route path="/" element={<Home />} />
+      <Route path="/marketplace" element={<Marketplace />} />
+      <Route path="/marketplace/:id" element={<ComponentDetail />} />
+      <Route path="/dashboard" element={<UserDashboard />} />
+      <Route path="/dashboard/installed" element={<InstalledComponents />} />
+      <Route path="/dashboard/usage" element={<UsageAnalytics />} />
       <Route path="/builder/revenue" element={<BuilderRevenue />} />
       <Route path="/builder/trust" element={<TrustEngine />} />
       <Route path="/builder/sandbox" element={<TestingSandbox />} />
