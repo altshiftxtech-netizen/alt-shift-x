@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import PublishHeader from "@/components/builder-publish/PublishHeader";
 import PublishStepper from "@/components/builder-publish/PublishStepper";
 import StepSchema from "@/components/builder-publish/StepSchema";
@@ -20,6 +21,11 @@ const INITIAL_FORM = {
   type: "",
   category: "",
   description: "",
+  longDescription: "",
+  price: 0,
+  code: "",
+  features: [],
+  schema: [],
   version: "",
   cycleTimeTarget: "",
   errorRateTarget: "",
@@ -45,7 +51,25 @@ export default function BuilderPublish() {
   const updateForm = (updates) => setForm(prev => ({ ...prev, ...updates }));
   const updateChecks = (key, val) => setForm(prev => ({ ...prev, checks: { ...prev.checks, [key]: val } }));
 
-  const handleSubmit = () => setSubmitted(true);
+  const handleSubmit = async () => {
+    try {
+      await base44.functions.invoke("publishComponent", {
+        name: form.displayName || form.name,
+        code: form.code,
+        type: form.type,
+        category: form.category,
+        description: form.description,
+        long_description: form.longDescription,
+        price: form.price,
+        features: form.features,
+        schema: form.schema,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Publish error:", error);
+      alert("Failed to publish component: " + error.message);
+    }
+  };
 
   if (submitted) {
     return (

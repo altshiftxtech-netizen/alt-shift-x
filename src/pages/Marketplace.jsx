@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight } from "lucide-react";
+import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2 } from "lucide-react";
 import InstallButton from "@/components/InstallButton";
+import { base44 } from "@/api/base44Client";
 
 const ALL_COMPONENTS = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.", builder: "BuildRight AI", certified: true },
@@ -27,18 +28,26 @@ function ScoreBadge({ score }) {
 }
 
 export default function Marketplace() {
+  const [components, setComponents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [type, setType] = useState("All");
   const [sortBy, setSortBy] = useState("installs");
 
-  const filtered = ALL_COMPONENTS
+  useEffect(() => {
+    base44.asServiceRole.entities.Component.filter({ status: "published" })
+      .then(data => { setComponents(data || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = components
     .filter(c =>
       (category === "All" || c.category === category) &&
       (type === "All" || c.type === type) &&
-      (c.name.toLowerCase().includes(search.toLowerCase()) || c.desc.toLowerCase().includes(search.toLowerCase()))
+      (c.name.toLowerCase().includes(search.toLowerCase()) || (c.description || "").toLowerCase().includes(search.toLowerCase()))
     )
-    .sort((a, b) => sortBy === "rating" ? b.rating - a.rating : sortBy === "trust" ? b.trustScore - a.trustScore : b.installs - a.installs);
+    .sort((a, b) => sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -104,33 +113,39 @@ export default function Marketplace() {
 
           {/* Results grid */}
           <div className="flex-1">
-            <p className="text-xs text-slate-400 mb-4">{filtered.length} components</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filtered.map(c => (
-                <Link key={c.id} to={`/marketplace/${c.id}`}>
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow h-full flex flex-col">
-                    <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
-                      <ScoreBadge score={c.trustScore} />
-                      {c.certified && <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">Certified</span>}
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-900 mb-0.5">{c.name}</h3>
-                    <p className="text-[10px] font-mono text-slate-400 mb-2">{c.code}</p>
-                    <p className="text-xs text-slate-500 flex-1 line-clamp-2 mb-3">{c.desc}</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <div className="flex items-center gap-1 text-xs">
-                        <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
-                        <span className="font-semibold text-slate-700">{c.rating}</span>
-                        <span className="text-slate-400">({c.reviews})</span>
+            {loading ? (
+              <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400 mb-4">{filtered.length} components</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filtered.map(c => (
+                    <Link key={c.id} to={`/marketplace/${c.id}`}>
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow h-full flex flex-col">
+                        <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
+                          <ScoreBadge score={c.trust_score || 0} />
+                          {c.certified && <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">Certified</span>}
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900 mb-0.5">{c.name}</h3>
+                        <p className="text-[10px] font-mono text-slate-400 mb-2">{c.code}</p>
+                        <p className="text-xs text-slate-500 flex-1 line-clamp-2 mb-3">{c.description}</p>
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <div className="flex items-center gap-1 text-xs">
+                            <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
+                            <span className="font-semibold text-slate-700">{(c.rating || 0).toFixed(1)}</span>
+                            <span className="text-slate-400">({c.reviews_count || 0})</span>
+                          </div>
+                          <div onClick={e => e.preventDefault()}>
+                            <InstallButton component={c} size="sm" />
+                          </div>
+                        </div>
                       </div>
-                      <div onClick={e => e.preventDefault()}>
-                        <InstallButton component={c} size="sm" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

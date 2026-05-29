@@ -1,22 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Copy, Eye, EyeOff, Plus, Trash2, Zap,
-  CheckCircle2, Code, X, AlertTriangle, Clock, ShieldOff
+  CheckCircle2, Code, X, AlertTriangle, Clock, ShieldOff, Loader2
 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import { base44 } from "@/api/base44Client";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const genKey = () => `asx_live_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
 const today = () => new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-
-const INITIAL_KEYS = [
-  { id: "key_1", name: "Production", description: "Live environment integration", key: "asx_live_k9xP2mQr4nLvWzYb8cJfHdAe3tRsUoNi", created: "Jan 15, 2026", lastUsed: "May 29, 2026", calls: 12450 },
-  { id: "key_2", name: "Development", description: "Local dev & testing", key: "asx_test_7GhKjMnPqRsVwXyZaBcDeF2iLmOp4uTv", created: "Mar 3, 2026", lastUsed: "May 28, 2026", calls: 889 },
-  { id: "key_3", name: "Staging", description: "", key: "asx_live_3SdTfUvWxYzAbCdEfGhIjKl5MnOpQrSt", created: "Apr 20, 2026", lastUsed: "Never", calls: 0 },
-];
 
 const CODE_EXAMPLE = `curl -X POST https://api.altshiftx.com/v1/extract \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
@@ -102,21 +96,28 @@ function NewKeyModal({ apiKey, onClose }) {
 function CreateKeyForm({ onCreated, onCancel }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) return;
-    const newKey = {
-      id: `key_${Date.now()}`,
-      name: name.trim(),
-      description: description.trim(),
-      key: genKey(),
-      created: today(),
-      lastUsed: "Never",
-      calls: 0,
-    };
-    onCreated(newKey);
-    setName("");
-    setDescription("");
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke("generateApiKey", {
+        name: name.trim(),
+        description: description.trim(),
+      });
+      onCreated({
+        name: name.trim(),
+        key: res.data.key,
+        description: description.trim(),
+      });
+      setName("");
+      setDescription("");
+    } catch (error) {
+      alert("Failed to generate key: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,11 +148,11 @@ function CreateKeyForm({ onCreated, onCancel }) {
           <Button
             className="bg-violet-700 hover:bg-violet-800 text-white text-sm"
             onClick={handleCreate}
-            disabled={!name.trim()}
+            disabled={!name.trim() || loading}
           >
-            Generate Key
+            {loading ? <><Loader2 className="w-3 h-3 animate-spin mr-1" /> Generating...</> : "Generate Key"}
           </Button>
-          <Button variant="outline" className="text-sm" onClick={onCancel}>Cancel</Button>
+          <Button variant="outline" className="text-sm" onClick={onCancel} disabled={loading}>Cancel</Button>
         </div>
       </CardContent>
     </Card>
@@ -169,8 +170,9 @@ function ApiKeyRow({ apiKey, onRevoke }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const masked = apiKey.key.substring(0, 14) + "•••••••••••••••••••••••••" + apiKey.key.slice(-4);
-  const neverUsed = apiKey.lastUsed === "Never";
+  const masked = apiKey.key.substring(0, 4) + "•••••••••••••••••••••••••" + apiKey.key.slice(-4);
+  const lastUsed = apiKey.last_used ? new Date(apiKey.last_used).toLocaleDateString() : "Never";
+  const neverUsed = lastUsed === "Never";
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -199,34 +201,30 @@ function ApiKeyRow({ apiKey, onRevoke }) {
           </div>
 
           {/* Meta + actions */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="hidden sm:block text-right">
-              <p className="text-xs font-bold text-slate-700">{apiKey.calls.toLocaleString()}</p>
-              <p className="text-[10px] text-slate-400">total calls</p>
-            </div>
-            <div className="text-right">
-              <div className="flex items-center gap-1 justify-end">
-                <Clock className={`w-3 h-3 ${neverUsed ? "text-slate-300" : "text-slate-400"}`} />
-                <p className={`text-xs font-semibold ${neverUsed ? "text-slate-400 italic" : "text-slate-700"}`}>
-                  {apiKey.lastUsed}
-                </p>
-              </div>
-              <p className="text-[10px] text-slate-400">last used</p>
-            </div>
-            <div className="text-right hidden sm:block">
-              <p className="text-xs text-slate-500">{apiKey.created}</p>
-              <p className="text-[10px] text-slate-400">created</p>
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-red-400 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors"
-              onClick={() => onRevoke(apiKey)}
-              title="Revoke key"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </Button>
-          </div>
+           <div className="flex items-center gap-4 shrink-0">
+             <div className="text-right">
+               <div className="flex items-center gap-1 justify-end">
+                 <Clock className={`w-3 h-3 ${neverUsed ? "text-slate-300" : "text-slate-400"}`} />
+                 <p className={`text-xs font-semibold ${neverUsed ? "text-slate-400 italic" : "text-slate-700"}`}>
+                   {lastUsed}
+                 </p>
+               </div>
+               <p className="text-[10px] text-slate-400">last used</p>
+             </div>
+             <div className="text-right hidden sm:block">
+               <p className="text-xs text-slate-500">{new Date(apiKey.created_date).toLocaleDateString()}</p>
+               <p className="text-[10px] text-slate-400">created</p>
+             </div>
+             <Button
+               variant="outline"
+               size="icon"
+               className="h-8 w-8 text-red-400 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors"
+               onClick={() => onRevoke(apiKey)}
+               title="Revoke key"
+             >
+               <Trash2 className="w-3.5 h-3.5" />
+             </Button>
+           </div>
         </div>
       </CardContent>
     </Card>
@@ -235,19 +233,36 @@ function ApiKeyRow({ apiKey, onRevoke }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ApiKeys() {
-  const [keys, setKeys] = useState(INITIAL_KEYS);
+  const [keys, setKeys] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState(null);
   const [newlyCreated, setNewlyCreated] = useState(null);
 
+  useEffect(() => {
+    base44.entities.ApiKey.filter({ status: "active" }, "-created_date", 50)
+      .then(data => { setKeys(data || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
   const handleCreated = (newKey) => {
-    setKeys(prev => [...prev, newKey]);
     setShowCreate(false);
     setNewlyCreated(newKey);
+    // Reload keys after a short delay to let API persist
+    setTimeout(() => {
+      base44.entities.ApiKey.filter({ status: "active" }, "-created_date", 50)
+        .then(data => setKeys(data || []))
+        .catch(() => {});
+    }, 500);
   };
 
-  const handleConfirmRevoke = () => {
-    setKeys(prev => prev.filter(k => k.id !== revokeTarget.id));
+  const handleConfirmRevoke = async () => {
+    try {
+      await base44.functions.invoke("revokeApiKey", { key_id: revokeTarget.id });
+      setKeys(prev => prev.filter(k => k.id !== revokeTarget.id));
+    } catch (error) {
+      alert("Failed to revoke key: " + error.message);
+    }
     setRevokeTarget(null);
   };
 
@@ -290,24 +305,30 @@ export default function ApiKeys() {
         )}
 
         {/* Keys list */}
-        <div className="space-y-3">
-          {keys.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Key className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-slate-500">No API keys yet</p>
-                <p className="text-xs text-slate-400 mb-4">Create your first key to start making API requests.</p>
-                <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2" onClick={() => setShowCreate(true)}>
-                  <Plus className="w-4 h-4" /> Create First Key
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            keys.map(k => (
-              <ApiKeyRow key={k.id} apiKey={k} onRevoke={setRevokeTarget} />
-            ))
-          )}
-        </div>
+         <div className="space-y-3">
+           {loading ? (
+             <Card>
+               <CardContent className="py-12 flex justify-center">
+                 <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+               </CardContent>
+             </Card>
+           ) : keys.length === 0 ? (
+             <Card>
+               <CardContent className="py-12 text-center">
+                 <Key className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                 <p className="text-sm font-semibold text-slate-500">No API keys yet</p>
+                 <p className="text-xs text-slate-400 mb-4">Create your first key to start making API requests.</p>
+                 <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2" onClick={() => setShowCreate(true)}>
+                   <Plus className="w-4 h-4" /> Create First Key
+                 </Button>
+               </CardContent>
+             </Card>
+           ) : (
+             keys.map(k => (
+               <ApiKeyRow key={k.id} apiKey={k} onRevoke={setRevokeTarget} />
+             ))
+           )}
+         </div>
 
         {/* Quick start */}
         <Card>

@@ -1,0 +1,118 @@
+{
+  "name": "Component",
+  "type": "object",
+  "properties": {
+    "builder_id": {
+      "type": "string",
+      "description": "ID of the builder who created this component"
+    },
+    "name": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Unique component code (e.g., RP-CONSTRUCTION-1.0)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "X1",
+        "X2",
+        "X4"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Risk & Compliance",
+        "Project Management",
+        "Site Reporting",
+        "Cost Estimation",
+        "Schedule Analysis"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "long_description": {
+      "type": "string"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Output schema field names"
+    },
+    "price": {
+      "type": "number",
+      "description": "Monthly price per installation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_review",
+        "published",
+        "rejected"
+      ],
+      "default": "draft"
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0
+    },
+    "installs_count": {
+      "type": "number",
+      "default": 0
+    },
+    "trust_score": {
+      "type": "number",
+      "default": 0
+    },
+    "trust_breakdown": {
+      "type": "object",
+      "properties": {
+        "performance": {
+          "type": "number"
+        },
+        "safety": {
+          "type": "number"
+        },
+        "satisfaction": {
+          "type": "number"
+        },
+        "retention": {
+          "type": "number"
+        }
+      }
+    },
+    "certified": {
+      "type": "boolean",
+      "default": false
+    },
+    "endpoint_url": {
+      "type": "string",
+      "description": "URL where the extraction API is deployed"
+    }
+  },
+  "required": [
+    "builder_id",
+    "name",
+    "code",
+    "type",
+    "category",
+    "description",
+    "price"
+  ]
+}
