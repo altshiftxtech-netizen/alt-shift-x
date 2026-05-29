@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight } from "lucide-react";
+import InstallButton from "@/components/InstallButton";
 
 const ALL_COMPONENTS = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.", builder: "BuildRight AI", certified: true },
@@ -122,9 +123,8 @@ export default function Marketplace() {
                         <span className="font-semibold text-slate-700">{c.rating}</span>
                         <span className="text-slate-400">({c.reviews})</span>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-slate-400">
-                        <Download className="w-3 h-3" />
-                        {c.installs.toLocaleString()}
+                      <div onClick={e => e.preventDefault()}>
+                        <InstallButton component={c} size="sm" />
                       </div>
                     </div>
                   </div>

@@ -1,0 +1,59 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "starter",
+        "pro",
+        "enterprise"
+      ],
+      "default": "starter"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "past_due",
+        "trialing",
+        "incomplete"
+      ],
+      "default": "active"
+    },
+    "api_calls_used": {
+      "type": "number",
+      "default": 0
+    },
+    "current_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "cancel_at_period_end": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "plan",
+    "status"
+  ]
+}

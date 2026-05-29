@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Zap, Users, FlaskConical } from "lucide-react";
+import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Users, FlaskConical } from "lucide-react";
+import InstallButton from "@/components/InstallButton";
 import { Card, CardContent } from "@/components/ui/card";
 
 const COMPONENTS = {
@@ -57,7 +58,6 @@ const tierConfig = { certified: "bg-emerald-100 text-emerald-700", official: "bg
 export default function ComponentDetail() {
   const { id } = useParams();
   const component = COMPONENTS[id] || DEFAULT_COMPONENT;
-  const [installed, setInstalled] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -165,9 +165,9 @@ export default function ComponentDetail() {
               <CardContent className="pt-5">
                 <div className="text-2xl font-black text-slate-900 mb-1">${component.price}<span className="text-sm font-normal text-slate-400">/install</span></div>
                 <p className="text-xs text-slate-400 mb-4">Per active installation per month</p>
-                <Button className={`w-full h-10 text-sm mb-3 gap-2 ${installed ? "bg-emerald-600 hover:bg-emerald-700" : "bg-violet-700 hover:bg-violet-800"}`} onClick={() => setInstalled(!installed)}>
-                  {installed ? <><CheckCircle2 className="w-4 h-4" /> Installed</> : <><Zap className="w-4 h-4" /> Install Component</>}
-                </Button>
+                <div className="mb-3 w-full">
+                  <InstallButton component={component} size="lg" />
+                </div>
                 <Link to="/builder/sandbox">
                   <Button variant="outline" className="w-full text-sm h-9 gap-2"><FlaskConical className="w-3.5 h-3.5" /> Try in Sandbox</Button>
                 </Link>

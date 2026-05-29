@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, CheckCircle2, XCircle, Clock, AlertTriangle, Users, Flag } from "lucide-react";
+import { ShieldCheck, CheckCircle2, XCircle, Clock, AlertTriangle, Users, Flag, CreditCard, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 
-const TABS = ["Pending Review", "Published", "Flagged", "Builders"];
+const TABS = ["Pending Review", "Published", "Flagged", "Builders", "Subscriptions"];
 
 const PENDING = [
   { id: "p1", name: "Claim Sentinel 2.0", code: "RP-CLAIMS-2.0", builder: "ClaimAI", type: "X1", submitted: "May 27, 2026", trustScore: 76, category: "Risk & Compliance", issues: [] },
@@ -40,6 +41,58 @@ const STATS = [
   { label: "Flagged", value: FLAGGED.length, icon: Flag, color: "text-red-600" },
   { label: "Builders", value: BUILDERS_LIST.length, icon: Users, color: "text-violet-600" },
 ];
+
+const PLAN_LABELS = { starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
+const PLAN_COLORS = { starter: "bg-slate-100 text-slate-600", pro: "bg-violet-100 text-violet-700", enterprise: "bg-blue-100 text-blue-700" };
+const STATUS_COLORS = { active: "bg-emerald-100 text-emerald-700", cancelled: "bg-red-100 text-red-600", past_due: "bg-amber-100 text-amber-700" };
+
+function SubscriptionsTab() {
+  const [subscriptions, setSubscriptions] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    base44.asServiceRole?.entities?.Subscription?.list("-created_date", 50)
+      .then(data => { setSubscriptions(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>;
+
+  return (
+    <div className="space-y-3">
+      {subscriptions.length === 0 ? (
+        <div className="text-center py-12 text-slate-400 text-sm">No subscriptions yet</div>
+      ) : (
+        subscriptions.map(sub => (
+          <Card key={sub.id}>
+            <CardContent className="py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-100 rounded-xl"><CreditCard className="w-4 h-4 text-slate-500" /></div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${PLAN_COLORS[sub.plan] || "bg-slate-100 text-slate-600"}`}>{PLAN_LABELS[sub.plan] || sub.plan}</span>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${STATUS_COLORS[sub.status] || "bg-slate-100 text-slate-500"}`}>{sub.status}</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">Customer: {sub.stripe_customer_id || "—"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 text-xs text-slate-500">
+                <div className="text-right hidden sm:block">
+                  <p className="font-semibold text-slate-700">{(sub.api_calls_used || 0).toLocaleString()}</p>
+                  <p className="text-slate-400">API calls used</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-slate-700">{sub.current_period_end || "—"}</p>
+                  <p className="text-slate-400">renews</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
+    </div>
+  );
+}
 
 function PendingTab() {
   const [items, setItems] = useState(PENDING);
@@ -178,6 +231,7 @@ export default function AdminPanel() {
     "Published": <PublishedTab />,
     "Flagged": <FlaggedTab />,
     "Builders": <BuildersTab />,
+    "Subscriptions": <SubscriptionsTab />,
   };
 
   return (

@@ -1,0 +1,54 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "stripe_invoice_id": {
+      "type": "string"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "open",
+        "void",
+        "uncollectible"
+      ],
+      "default": "open"
+    },
+    "invoice_pdf": {
+      "type": "string",
+      "description": "URL to downloadable PDF"
+    },
+    "hosted_invoice_url": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "user_id",
+    "stripe_invoice_id",
+    "amount",
+    "status"
+  ]
+}
