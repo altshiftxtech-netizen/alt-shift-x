@@ -1,0 +1,81 @@
+{
+  "name": "InvoiceSubmission",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor who submitted"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Invoice amount in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "description": {
+      "type": "string",
+      "description": "Itemized description or project reference"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "document_url": {
+      "type": "string",
+      "description": "URL to uploaded invoice PDF/image"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "received",
+        "under_review",
+        "approved",
+        "rejected",
+        "paid"
+      ],
+      "default": "submitted"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "scheduled",
+        "processed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "scheduled_payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Internal notes from review"
+    },
+    "rejection_reason": {
+      "type": "string"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "invoice_number",
+    "amount",
+    "invoice_date",
+    "document_url"
+  ]
+}

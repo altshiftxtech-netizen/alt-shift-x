@@ -1,0 +1,79 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "Vendor company name"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Primary contact email"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Tax ID or EIN"
+    },
+    "banking_info": {
+      "type": "object",
+      "properties": {
+        "account_holder": {
+          "type": "string"
+        },
+        "account_number": {
+          "type": "string"
+        },
+        "routing_number": {
+          "type": "string"
+        },
+        "bank_name": {
+          "type": "string"
+        },
+        "account_type": {
+          "type": "string",
+          "enum": [
+            "checking",
+            "savings"
+          ]
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "Secure token for vendor portal access"
+    },
+    "last_login": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_name",
+    "contact_email",
+    "tax_id"
+  ]
+}

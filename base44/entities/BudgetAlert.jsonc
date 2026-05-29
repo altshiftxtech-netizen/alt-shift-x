@@ -1,0 +1,72 @@
+{
+  "name": "BudgetAlert",
+  "type": "object",
+  "properties": {
+    "budget_category": {
+      "type": "string",
+      "description": "e.g., 'Materials', 'Labor', 'Equipment', 'Services'"
+    },
+    "monthly_budget": {
+      "type": "number",
+      "description": "Allocated monthly budget in dollars"
+    },
+    "current_spend": {
+      "type": "number",
+      "description": "Current month spending"
+    },
+    "threshold_percentage": {
+      "type": "number",
+      "default": 80,
+      "description": "Alert trigger at this % of budget (0-100)"
+    },
+    "alert_status": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "warning",
+        "critical"
+      ],
+      "default": "normal"
+    },
+    "projected_month_end": {
+      "type": "number",
+      "description": "AI-predicted spending by month end"
+    },
+    "variance_percentage": {
+      "type": "number",
+      "description": "Current spend vs projected trend"
+    },
+    "daily_burn_rate": {
+      "type": "number",
+      "description": "Average daily spending (calculated)"
+    },
+    "days_remaining": {
+      "type": "number",
+      "description": "Days left in budget period"
+    },
+    "budget_exceeded": {
+      "type": "boolean",
+      "default": false
+    },
+    "alert_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-generated spending optimization suggestions"
+    },
+    "last_calculated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "budget_category",
+    "monthly_budget",
+    "current_spend"
+  ]
+}
