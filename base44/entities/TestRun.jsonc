@@ -1,0 +1,74 @@
+{
+  "name": "TestRun",
+  "type": "object",
+  "properties": {
+    "test_mode": {
+      "type": "string",
+      "description": "Name of the test mode that was run"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "in_progress"
+      ],
+      "default": "in_progress"
+    },
+    "total_tests": {
+      "type": "number"
+    },
+    "passed": {
+      "type": "number",
+      "default": 0
+    },
+    "failed": {
+      "type": "number",
+      "default": 0
+    },
+    "skipped": {
+      "type": "number",
+      "default": 0
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "test_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "duration_ms": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-generated recommendations for fixes or improvements"
+    },
+    "automated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether run was triggered by automation"
+    }
+  },
+  "required": [
+    "test_mode",
+    "status",
+    "total_tests"
+  ]
+}

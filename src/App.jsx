@@ -36,6 +36,7 @@ import TermsOfService from './pages/TermsOfService';
 import BuilderAgreement from './pages/BuilderAgreement';
 import InstallSuccess from './pages/InstallSuccess';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
+import TestingDashboard from './pages/TestingDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
+      <Route path="/dashboard/testing" element={<TestingDashboard />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

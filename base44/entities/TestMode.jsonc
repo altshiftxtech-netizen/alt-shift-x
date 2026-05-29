@@ -1,0 +1,42 @@
+{
+  "name": "TestMode",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Test mode name (e.g., 'Smoke Test', 'Security Audit', 'Load Test')"
+    },
+    "description": {
+      "type": "string"
+    },
+    "test_cases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of test case names to run"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "quick",
+        "standard",
+        "comprehensive"
+      ],
+      "description": "Test scope level"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Expected runtime in minutes"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "test_cases",
+    "severity"
+  ]
+}
