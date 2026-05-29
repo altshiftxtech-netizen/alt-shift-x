@@ -90,10 +90,7 @@ export default function Pricing() {
       {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-between sticky top-0 z-40">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
-            <span className="text-white text-xs font-black">A</span>
-          </div>
-          <span className="font-bold text-slate-900 text-sm hidden sm:block">Alt+Shift+X</span>
+          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f652c13a0_AltShiftXLogo.png" alt="Alt+Shift+X" className="h-7 w-auto" />
         </Link>
         <div className="flex items-center gap-3">
           <Link to="/marketplace" className="text-sm text-slate-500 hover:text-slate-800">Marketplace</Link>
