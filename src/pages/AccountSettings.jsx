@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { User, Lock, Bell, CreditCard, CheckCircle2, Zap } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import CommandPromptToggle from "@/components/CommandPromptToggle";
+import TestModeSelector from "@/components/TestModeSelector";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
@@ -100,6 +101,17 @@ function DeveloperTab() {
         <p className="text-sm font-bold text-slate-900">Developer Tools</p>
         <p className="text-xs text-slate-500 mb-4">Enable advanced features for testing and development.</p>
         <CommandPromptToggle />
+      </CardContent></Card>
+      <TestModeSelector />
+      <Card><CardContent className="pt-5">
+        <p className="text-sm font-bold text-slate-900 mb-2">Testing Dashboard</p>
+        <p className="text-xs text-slate-500 mb-4">Access automated test results and compliance reports</p>
+        <Link to="/dashboard/testing"><Button variant="outline" className="text-sm">Go to Testing Dashboard</Button></Link>
+      </CardContent></Card>
+      <Card><CardContent className="pt-5">
+        <p className="text-sm font-bold text-slate-900 mb-2">Rollout Procedures</p>
+        <p className="text-xs text-slate-500 mb-4">View SOC2-compliant deployment checklist</p>
+        <Link to="/rollout-procedures"><Button variant="outline" className="text-sm">View Procedures</Button></Link>
       </CardContent></Card>
     </div>
   );

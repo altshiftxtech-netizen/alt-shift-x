@@ -37,6 +37,8 @@ import BuilderAgreement from './pages/BuilderAgreement';
 import InstallSuccess from './pages/InstallSuccess';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import TestingDashboard from './pages/TestingDashboard';
+import SandboxManagement from './pages/SandboxManagement';
+import RolloutProcedures from './pages/RolloutProcedures';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -94,6 +96,8 @@ const AuthenticatedApp = () => {
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
       <Route path="/dashboard/testing" element={<TestingDashboard />} />
+      <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
+      <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

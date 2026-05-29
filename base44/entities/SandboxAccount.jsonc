@@ -1,0 +1,58 @@
+{
+  "name": "SandboxAccount",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Friendly name for the sandbox account"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "Unique sandbox identifier"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "staging",
+        "qa",
+        "dev"
+      ],
+      "default": "staging"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "test_data_loaded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether sample data has been loaded"
+    },
+    "last_accessed": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "test_runs_count": {
+      "type": "number",
+      "default": 0
+    },
+    "automation_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether AI can auto-run tests on this account"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "account_id",
+    "environment"
+  ]
+}

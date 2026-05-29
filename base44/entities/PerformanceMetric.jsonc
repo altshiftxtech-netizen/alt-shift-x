@@ -1,0 +1,53 @@
+{
+  "name": "PerformanceMetric",
+  "type": "object",
+  "properties": {
+    "metric_name": {
+      "type": "string",
+      "description": "e.g., 'API Response Time', 'Database Query Speed', 'Memory Usage'"
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string",
+      "description": "e.g., 'ms', 'MB', 'percentage'"
+    },
+    "threshold": {
+      "type": "number",
+      "description": "Acceptable threshold for this metric"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "warning",
+        "critical"
+      ],
+      "default": "healthy"
+    },
+    "trend": {
+      "type": "string",
+      "enum": [
+        "improving",
+        "stable",
+        "degrading"
+      ],
+      "description": "Direction of metric over time"
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "AI-generated recommendation based on metric"
+    },
+    "measured_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "metric_name",
+    "value",
+    "unit",
+    "status"
+  ]
+}
