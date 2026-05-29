@@ -1,23 +1,92 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bot, Upload, Copy, Code, CheckCircle2, AlertTriangle, Zap, Package, ChevronRight } from "lucide-react";
+import {
+  Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
+  FileText, FileDown, Rocket, Settings2, LayoutTemplate, X, Save,
+  CheckCircle2, Loader2, Package, BookOpen
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
+import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
+import ReactMarkdown from "react-markdown";
+
+const QUICK_PROMPTS = [
+  "Help me create a new X1 Risk & Compliance component",
+  "Review my component for safety and trust score",
+  "What's the best pricing for my component type?",
+  "Generate full metadata for my component",
+  "Explain the Yotta Protocol standards",
+  "Build a component framework for construction finance",
+];
+
+const TABS = ["chat", "framework", "deploy"];
+
+const DEFAULT_FRAMEWORK = {
+  project: { enabled: true },
+  component_identity: { enabled: true },
+  ai_behavior: { enabled: true },
+  input_output: { enabled: true },
+  compliance_safety: { enabled: true },
+  pricing_monetization: { enabled: true },
+  deployment: { enabled: true },
+  branding_docs: { enabled: false },
+};
+
+function MessageBubble({ m }) {
+  const isUser = m.role === "user";
+  return (
+    <div className={`flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`}>
+      {!isUser && (
+        <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Bot className="w-3.5 h-3.5 text-white" />
+        </div>
+      )}
+      <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed
+        ${isUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 rounded-tl-sm"}`}>
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{m.content}</p>
+        ) : (
+          <ReactMarkdown
+            className="prose prose-invert prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            components={{
+              code: ({ inline, children }) => inline
+                ? <code className="bg-slate-700 px-1 py-0.5 rounded text-violet-300 text-xs">{children}</code>
+                : <pre className="bg-slate-900 rounded-lg p-3 overflow-x-auto text-xs text-green-400 my-2">{children}</pre>,
+              p: ({ children }) => <p className="my-1">{children}</p>,
+            }}
+          >{m.content}</ReactMarkdown>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function BobBuilder() {
+  const [activeTab, setActiveTab] = useState("chat");
   const [conv, setConv] = useState(null);
   const [convId, setConvId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [codeInput, setCodeInput] = useState("");
   const [showCodePanel, setShowCodePanel] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+
+  // Framework state
+  const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
+  const [frameworkName, setFrameworkName] = useState("My Component Framework");
+  const [applyToAll, setApplyToAll] = useState(false);
+  const [savedFrameworks, setSavedFrameworks] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Deploy state
+  const [deployStatus, setDeployStatus] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    initConversation();
-  }, []);
+  useEffect(() => { initConv(); loadFrameworks(); }, []);
 
   useEffect(() => {
     if (!convId) return;
@@ -28,13 +97,23 @@ export default function BobBuilder() {
     return unsub;
   }, [convId]);
 
-  const initConversation = async () => {
-    const newConv = await base44.agents.createConversation({
+  const initConv = async () => {
+    const c = await base44.agents.createConversation({
       agent_name: "bob_builder",
       metadata: { name: "BOB Session " + new Date().toLocaleTimeString() }
     });
-    setConv(newConv);
-    setConvId(newConv.id);
+    setConv(c);
+    setConvId(c.id);
+  };
+
+  const loadFrameworks = async () => {
+    const data = await base44.entities.ComponentFramework.list("-created_date", 10);
+    setSavedFrameworks(data);
+    if (data.length > 0) {
+      setFramework(data[0]);
+      setFrameworkName(data[0].framework_name || "My Component Framework");
+      setApplyToAll(data[0].apply_to_all || false);
+    }
   };
 
   const sendMessage = async (text) => {
@@ -49,158 +128,362 @@ export default function BobBuilder() {
 
   const submitCode = async () => {
     if (!codeInput.trim()) return;
-    const msg = `I'd like you to analyze this component code:\n\`\`\`\n${codeInput}\n\`\`\`\n\nPlease analyze its structure, identify the component type (X1/X2/X4), suggest improvements, flag any safety concerns, and generate publish-ready metadata.`;
+    const msg = `Please analyze this component code:\n\`\`\`\n${codeInput}\n\`\`\`\n\nIdentify the type (X1/X2/X4), improvements, safety issues, and generate publish-ready metadata. Also suggest how this fits my current framework.`;
     setShowCodePanel(false);
+    setActiveTab("chat");
     await sendMessage(msg);
   };
 
-  const QUICK_PROMPTS = [
-    "Help me create a new X1 Risk & Compliance component",
-    "Review my component for safety and trust score",
-    "What's the best pricing for my component type?",
-    "Generate metadata for my component",
-    "How do I publish to the marketplace?",
-    "Explain the Yotta Protocol standards"
+  const sendFrameworkToChat = async () => {
+    const summary = buildFrameworkSummary();
+    await sendMessage(`Here is my component framework configuration:\n\n${summary}\n\nBased on this, please:\n1. Validate the framework structure\n2. Suggest any improvements\n3. Create a starter component spec I can use to begin building\n4. Flag any compliance or safety gaps`);
+    setActiveTab("chat");
+  };
+
+  const buildFrameworkSummary = () => {
+    const lines = [`Framework: ${frameworkName}`, `Apply to all builds: ${applyToAll ? "YES" : "No"}`, ""];
+    const sections = ["project", "component_identity", "ai_behavior", "input_output", "compliance_safety", "pricing_monetization", "deployment", "branding_docs"];
+    sections.forEach(s => {
+      const d = framework[s];
+      if (!d?.enabled) return;
+      lines.push(`[${s.toUpperCase().replace("_", " ")}]`);
+      Object.entries(d).forEach(([k, v]) => {
+        if (k === "enabled" || k.endsWith("_enabled")) return;
+        if (v !== "" && v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0)) {
+          lines.push(`  ${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
+        }
+      });
+    });
+    return lines.join("\n");
+  };
+
+  const saveFramework = async () => {
+    setSaving(true);
+    const user = await base44.auth.me();
+    const data = { ...framework, framework_name: frameworkName, apply_to_all: applyToAll, builder_id: user?.id || "builder" };
+    if (framework.id) {
+      await base44.entities.ComponentFramework.update(framework.id, data);
+    } else {
+      const saved = await base44.entities.ComponentFramework.create(data);
+      setFramework(saved);
+    }
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
+    setSaving(false);
+  };
+
+  const handleExport = async (format) => {
+    setExporting(true);
+    const response = await base44.functions.invoke("exportComponentDoc", { framework, format });
+    // Trigger download from blob
+    const blob = new Blob([response.data], {
+      type: format === "word" ? "application/msword" : "application/pdf"
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${frameworkName.replace(/\s+/g, "_")}_Framework.${format === "word" ? "doc" : "pdf"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExporting(false);
+  };
+
+  const handleDeploy = async () => {
+    setDeployStatus("deploying");
+    // Send framework to BOB and ask to generate deploy-ready spec
+    await sendMessage(`I'm ready to deploy. Using my saved framework "${frameworkName}", please generate the final component specification document including:\n- Component manifest JSON\n- API endpoint spec\n- Trust score pre-check\n- Marketplace listing copy\n\nMark it as DEPLOY-READY when complete.`);
+    setDeployStatus("done");
+    setActiveTab("chat");
+  };
+
+  const TAB_CONFIG = [
+    { id: "chat", label: "BOB Chat", icon: Bot },
+    { id: "framework", label: "Component Framework", icon: LayoutTemplate },
+    { id: "deploy", label: "Deploy & Export", icon: Rocket },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900">
       <SharedNav mode="builder" />
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <Bot className="w-9 h-9 text-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/30 flex-shrink-0">
+              <Bot className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-white">BOB <span className="text-violet-400">Advanced Builder</span></h1>
+              <p className="text-slate-400 text-xs mt-0.5">Magna Dev · Yotta Protocol · YottaJoule Licensed Components</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-black text-white">BOB <span className="text-violet-400">BotOperatedBuilder</span></h1>
-            <p className="text-slate-400 text-sm mt-0.5">Powered by Magna Dev · Yotta Protocols · YottaJoule Training</p>
-          </div>
-          <div className="ml-auto hidden md:flex items-center gap-2">
+          <div className="sm:ml-auto flex items-center gap-2">
             <span className="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded-full font-semibold animate-pulse">● LIVE</span>
+            <span className="text-[10px] bg-violet-900 text-violet-300 px-2 py-1 rounded-full font-semibold">Backend Builder Platform</span>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Sidebar */}
-          <div className="space-y-4">
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-slate-200 flex items-center gap-2"><Zap className="w-4 h-4 text-violet-400" />Quick Start</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-0">
-                {QUICK_PROMPTS.map((p, i) => (
-                  <button key={i} onClick={() => sendMessage(p)}
-                    className="w-full text-left text-xs text-slate-300 hover:text-white hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group">
-                    <ChevronRight className="w-3 h-3 text-violet-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-                    {p}
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
+        {/* Tab Bar */}
+        <div className="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl p-1 mb-6">
+          {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setActiveTab(id)}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === id ? "bg-violet-600 text-white shadow" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}>
+              <Icon className="w-3.5 h-3.5" />{label}
+            </button>
+          ))}
+        </div>
 
-            <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="pt-4">
-                <button onClick={() => setShowCodePanel(!showCodePanel)}
-                  className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors">
-                  <Code className="w-4 h-4" /> Paste Component Code
-                </button>
-                <p className="text-[10px] text-slate-500 mt-2 text-center">BOB will analyze, improve, and generate metadata</p>
-              </CardContent>
-            </Card>
+        {/* CHAT TAB */}
+        {activeTab === "chat" && (
+          <div className="grid md:grid-cols-4 gap-4">
+            {/* Sidebar */}
+            <div className="space-y-3">
+              <Card className="bg-slate-800 border-slate-700">
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 pb-3 space-y-1">
+                  {QUICK_PROMPTS.map((p, i) => (
+                    <button key={i} onClick={() => sendMessage(p)}
+                      className="w-full text-left text-[11px] text-slate-400 hover:text-white hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 group">
+                      <ChevronRight className="w-2.5 h-2.5 text-violet-500 flex-shrink-0" />{p}
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
 
-            <Card className="bg-slate-800 border-violet-800 border">
-              <CardContent className="pt-4 pb-4">
+              <button onClick={() => setShowCodePanel(!showCodePanel)}
+                className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
+                <Code className="w-3.5 h-3.5" /> Paste Component Code
+              </button>
+
+              <button onClick={sendFrameworkToChat}
+                className="w-full flex items-center justify-center gap-2 bg-violet-900 hover:bg-violet-800 border border-violet-700 text-violet-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
+                <LayoutTemplate className="w-3.5 h-3.5" /> Send Framework to BOB
+              </button>
+
+              <div className="bg-slate-800 border border-amber-800/40 rounded-xl p-3">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-slate-400 leading-relaxed">BOB automatically flags components with ill-intent indicators per the <strong className="text-slate-300">Sensitive Intelligence Policy</strong>. Building safely is non-negotiable.</p>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-slate-400 leading-relaxed">BOB flags ill-intent indicators per the <strong className="text-slate-300">Sensitive Intelligence Policy</strong>.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="md:col-span-3 flex flex-col gap-3">
+              {showCodePanel && (
+                <Card className="bg-slate-800 border-violet-700">
+                  <CardContent className="pt-4">
+                    <p className="text-xs text-violet-400 font-semibold mb-2">Paste your component code:</p>
+                    <textarea value={codeInput} onChange={e => setCodeInput(e.target.value)}
+                      className="w-full h-44 bg-slate-950 text-green-400 font-mono text-xs p-3 rounded-lg border border-slate-600 outline-none focus:border-violet-500 resize-none"
+                      placeholder="// Paste component code here..." />
+                    <div className="flex gap-2 mt-2">
+                      <Button onClick={submitCode} size="sm" className="bg-violet-600 hover:bg-violet-700 text-xs">Analyze with BOB</Button>
+                      <Button onClick={() => setShowCodePanel(false)} variant="ghost" size="sm" className="text-slate-400 text-xs">Cancel</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
+                  {messages.length === 0 && (
+                    <div className="flex items-start gap-3 mt-2">
+                      <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
+                        <p className="text-slate-200 text-sm">Hey! I'm BOB — the Advanced Builder. I can help you design, analyze, and publish components using licensed YottaJoule components as a foundation.</p>
+                        <p className="text-slate-400 text-xs mt-2">Use the <strong className="text-violet-400">Framework tab</strong> to configure your project blueprint, then send it to me for analysis. Or jump straight into a build below.</p>
+                      </div>
+                    </div>
+                  )}
+                  {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
+                  {sending && (
+                    <div className="flex items-start gap-2">
+                      <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
+                        {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+                <div className="border-t border-slate-700 p-3 flex gap-2">
+                  <input type="text" value={input} onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && sendMessage()}
+                    placeholder="Ask BOB anything about component building..."
+                    className="flex-1 bg-slate-800 text-white text-sm px-4 py-2.5 rounded-xl outline-none focus:ring-1 focus:ring-violet-500 placeholder:text-slate-500" />
+                  <button onClick={() => sendMessage()} disabled={sending || !input.trim()}
+                    className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2.5 rounded-xl transition-colors">
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* FRAMEWORK TAB */}
+        {activeTab === "framework" && (
+          <div className="space-y-4">
+            {/* Framework name + save */}
+            <Card className="bg-slate-900 border-slate-700">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-400 font-semibold block mb-1">Framework Name</label>
+                    <input value={frameworkName} onChange={e => setFrameworkName(e.target.value)}
+                      className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:ring-1 focus:ring-violet-500" />
+                  </div>
+                  {savedFrameworks.length > 0 && (
+                    <div className="flex-1">
+                      <label className="text-xs text-slate-400 font-semibold block mb-1">Load Saved Framework</label>
+                      <select onChange={e => {
+                        const f = savedFrameworks.find(sf => sf.id === e.target.value);
+                        if (f) { setFramework(f); setFrameworkName(f.framework_name); setApplyToAll(f.apply_to_all); }
+                      }} className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none">
+                        <option value="">Select saved...</option>
+                        {savedFrameworks.map(f => <option key={f.id} value={f.id}>{f.framework_name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="flex gap-2 sm:mt-5">
+                    <Button onClick={saveFramework} disabled={saving} size="sm" className="bg-violet-600 hover:bg-violet-700 text-xs gap-1.5">
+                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saveSuccess ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                      {saveSuccess ? "Saved!" : "Save"}
+                    </Button>
+                    <Button onClick={sendFrameworkToChat} size="sm" variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 text-xs gap-1.5">
+                      <Bot className="w-3.5 h-3.5" /> Send to BOB
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <BobFrameworkForm
+              framework={framework}
+              onChange={setFramework}
+              applyToAll={applyToAll}
+              onToggleApplyAll={setApplyToAll}
+            />
+
+            <div className="flex gap-3 pt-2">
+              <Button onClick={saveFramework} disabled={saving} className="bg-violet-600 hover:bg-violet-700 gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Save Framework
+              </Button>
+              <Button onClick={sendFrameworkToChat} variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 gap-2">
+                <Bot className="w-4 h-4" /> Validate with BOB
+              </Button>
+              <Button onClick={() => setActiveTab("deploy")} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 gap-2">
+                <Rocket className="w-4 h-4" /> Go to Deploy
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* DEPLOY & EXPORT TAB */}
+        {activeTab === "deploy" && (
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* Export Card */}
+              <Card className="bg-slate-900 border-slate-700">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-white flex items-center gap-2"><FileText className="w-4 h-4 text-blue-400" />Export Framework Document</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-slate-400">Export your complete component framework as a downloadable document for team distribution, compliance records, or investor review.</p>
+                  <div className="bg-slate-800 rounded-xl p-3 space-y-1">
+                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">Current Framework</p>
+                    <p className="text-sm font-bold text-white">{frameworkName}</p>
+                    <p className="text-[10px] text-slate-400">
+                      {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled ·
+                      Apply to all: {applyToAll ? "ON" : "Off"}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                      Export PDF
+                    </Button>
+                    <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />}
+                      Export Word
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Deploy to Marketplace */}
+              <Card className="bg-slate-900 border-slate-700">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-white flex items-center gap-2"><Rocket className="w-4 h-4 text-emerald-400" />Deploy to Marketplace</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-slate-400">BOB will generate a complete component specification from your framework and initiate the marketplace submission workflow.</p>
+                  <div className="space-y-2 text-[11px] text-slate-400">
+                    {[
+                      "Framework validation & compliance check",
+                      "Component manifest JSON generation",
+                      "Trust score pre-assessment",
+                      "Marketplace listing copy",
+                      "Submit for admin review"
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 
+                          ${deployStatus === "done" ? "bg-emerald-600 text-white" : "bg-slate-700 text-slate-400"}`}>
+                          {deployStatus === "done" ? "✓" : i + 1}
+                        </div>
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                  <Button onClick={handleDeploy} disabled={deployStatus === "deploying"}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2 text-xs mt-2">
+                    {deployStatus === "deploying" ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating...</>
+                      : deployStatus === "done" ? <><CheckCircle2 className="w-3.5 h-3.5" />View in Chat</>
+                        : <><Rocket className="w-3.5 h-3.5" />Deploy with BOB</>}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Licensed Components */}
+            <Card className="bg-slate-900 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-white flex items-center gap-2"><Package className="w-4 h-4 text-violet-400" />Licensed Base Components</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-slate-400 mb-3">Your new component can extend these licensed YottaJoule components as a foundation:</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[
+                    { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1", licensed: true },
+                    { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4", licensed: true },
+                    { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2", licensed: true },
+                    { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2", licensed: true },
+                  ].map(c => (
+                    <div key={c.code} className="flex items-center justify-between bg-slate-800 rounded-xl px-3 py-2.5">
+                      <div>
+                        <p className="text-xs font-bold text-white">{c.name}</p>
+                        <p className="text-[10px] font-mono text-slate-400">{c.code}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">{c.type}</span>
+                        {c.licensed && <span className="text-[9px] bg-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">✓ Licensed</span>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Chat */}
-          <div className="md:col-span-2 flex flex-col">
-            {showCodePanel && (
-              <Card className="bg-slate-800 border-violet-700 mb-4">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-violet-400 font-semibold mb-2">Paste your component code below:</p>
-                  <textarea
-                    value={codeInput}
-                    onChange={e => setCodeInput(e.target.value)}
-                    className="w-full h-48 bg-slate-900 text-green-400 font-mono text-xs p-3 rounded-lg border border-slate-600 outline-none focus:border-violet-500 resize-none"
-                    placeholder="// Paste your component code here..."
-                  />
-                  <div className="flex gap-2 mt-3">
-                    <Button onClick={submitCode} size="sm" className="bg-violet-600 hover:bg-violet-700">Analyze with BOB</Button>
-                    <Button onClick={() => setShowCodePanel(false)} variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="bg-slate-800 border-slate-700 flex-1 flex flex-col min-h-[500px]">
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 && (
-                  <div className="flex items-start gap-3 mt-4">
-                    <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="bg-slate-700 rounded-xl px-4 py-3 max-w-[85%]">
-                      <p className="text-slate-200 text-sm">Hey! I'm BOB — your BotOperatedBuilder. I'm here to help you create, validate, and publish the safest and most powerful AI components on the market. Following Magna Dev's Yotta Protocols, we're going to build something exceptional together.</p>
-                      <p className="text-slate-400 text-xs mt-2">Tell me what you want to build, or paste your component code for analysis.</p>
-                    </div>
-                  </div>
-                )}
-                {messages.map((m, i) => (
-                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-2`}>
-                    {m.role !== 'user' && (
-                      <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Bot className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] px-4 py-3 rounded-xl text-sm ${m.role === 'user' ? 'bg-violet-600 text-white' : 'bg-slate-700 text-slate-200'}`}>
-                      <p className="whitespace-pre-wrap">{m.content}</p>
-                    </div>
-                  </div>
-                ))}
-                {sending && (
-                  <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-3.5 h-3.5 text-white" />
-                    </div>
-                    <div className="bg-slate-700 rounded-xl px-4 py-3">
-                      <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
-                        <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
-                        <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-              <div className="border-t border-slate-700 p-3 flex gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                  placeholder="Ask BOB anything about component building..."
-                  className="flex-1 bg-slate-700 text-white text-sm px-4 py-2 rounded-xl outline-none focus:ring-1 focus:ring-violet-500 placeholder:text-slate-500"
-                />
-                <button
-                  onClick={() => sendMessage()}
-                  disabled={sending || !input.trim()}
-                  className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-                >
-                  Send
-                </button>
-              </div>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
