@@ -1,0 +1,90 @@
+{
+  "name": "Forecast",
+  "type": "object",
+  "properties": {
+    "forecast_type": {
+      "type": "string",
+      "enum": [
+        "budget_variance",
+        "resource_requirement",
+        "cost_projection"
+      ],
+      "description": "Type of forecast"
+    },
+    "period": {
+      "type": "string",
+      "description": "Forecast period (e.g., 'next_30_days', 'next_quarter')"
+    },
+    "component_id": {
+      "type": "string",
+      "description": "Component being forecasted"
+    },
+    "historical_data_points": {
+      "type": "number",
+      "description": "Number of historical data points analyzed"
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "AI confidence in forecast (0-100%)"
+    },
+    "predicted_variance": {
+      "type": "number",
+      "description": "Predicted budget variance in dollars"
+    },
+    "variance_direction": {
+      "type": "string",
+      "enum": [
+        "overbudget",
+        "underbudget",
+        "on_track"
+      ],
+      "description": "Direction of budget variance"
+    },
+    "predicted_resource_usage": {
+      "type": "number",
+      "description": "Predicted resource units needed"
+    },
+    "resource_unit": {
+      "type": "string",
+      "description": "Unit of resource (e.g., 'API_calls', 'processing_hours')"
+    },
+    "trend_analysis": {
+      "type": "string",
+      "description": "AI-generated trend analysis and insights"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-generated actionable recommendations"
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Identified risk factors that could impact forecast"
+    },
+    "forecast_accuracy": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "description": "Expected accuracy based on data quality"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "forecast_type",
+    "period",
+    "confidence_score"
+  ]
+}

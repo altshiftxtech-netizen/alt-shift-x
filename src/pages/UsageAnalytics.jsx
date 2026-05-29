@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import SharedNav from "@/components/SharedNav";
 import { exportUsageAnalyticsPdf } from "@/utils/exportPdf";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import ForecastPanel from "@/components/ForecastPanel";
 
 const DAILY_USAGE = [
   { day: "May 1", calls: 78 }, { day: "May 5", calls: 112 }, { day: "May 10", calls: 95 },
@@ -84,6 +85,9 @@ export default function UsageAnalytics() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Forecast */}
+        <ForecastPanel />
 
         {/* By component */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
