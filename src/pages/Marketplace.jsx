@@ -36,7 +36,7 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("installs");
 
   useEffect(() => {
-    base44.asServiceRole.entities.Component.filter({ status: "published" })
+    base44.entities.Component.filter({ status: "published" })
       .then(data => { setComponents(data || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
