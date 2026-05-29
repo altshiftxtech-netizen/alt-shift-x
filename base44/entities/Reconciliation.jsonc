@@ -1,0 +1,142 @@
+{
+  "name": "Reconciliation",
+  "type": "object",
+  "properties": {
+    "reconciliation_type": {
+      "type": "string",
+      "enum": [
+        "invoice_vs_budget",
+        "invoice_vs_po",
+        "budget_variance"
+      ],
+      "description": "Type of reconciliation performed"
+    },
+    "invoice_data": {
+      "type": "object",
+      "properties": {
+        "invoice_number": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "budget_data": {
+      "type": "object",
+      "properties": {
+        "budget_id": {
+          "type": "string"
+        },
+        "allocated_amount": {
+          "type": "number"
+        },
+        "spent_amount": {
+          "type": "number"
+        },
+        "remaining_budget": {
+          "type": "number"
+        }
+      }
+    },
+    "po_data": {
+      "type": "object",
+      "properties": {
+        "po_number": {
+          "type": "string"
+        },
+        "po_amount": {
+          "type": "number"
+        },
+        "line_items": {
+          "type": "array"
+        }
+      }
+    },
+    "discrepancies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "amount_mismatch",
+              "missing_po",
+              "budget_exceeded",
+              "duplicate",
+              "unauthorized_charge"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "variance_amount": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "match_status": {
+      "type": "string",
+      "enum": [
+        "matched",
+        "partial_match",
+        "unmatched",
+        "flagged"
+      ],
+      "default": "unmatched"
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "AI confidence in reconciliation accuracy"
+    },
+    "requires_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Manual review required"
+    },
+    "audit_report_url": {
+      "type": "string",
+      "description": "URL to generated audit report PDF"
+    },
+    "reconciled_by": {
+      "type": "string",
+      "description": "User ID who performed reconciliation"
+    },
+    "reconciled_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "reconciliation_type",
+    "invoice_data",
+    "discrepancies",
+    "match_status"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "name": "AuditTrail",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "reject",
+        "flag",
+        "review",
+        "reconcile",
+        "generate_report",
+        "access"
+      ],
+      "description": "Action performed"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "component",
+        "invoice",
+        "budget",
+        "reconciliation",
+        "forecast",
+        "user",
+        "api_key"
+      ],
+      "description": "Type of entity affected"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the affected entity"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "User ID who performed the action"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of user for quick reference"
+    },
+    "user_role": {
+      "type": "string",
+      "description": "Role of user at time of action"
+    },
+    "change_summary": {
+      "type": "string",
+      "description": "Human-readable description of what changed"
+    },
+    "old_values": {
+      "type": "object",
+      "description": "Previous values (for update actions)"
+    },
+    "new_values": {
+      "type": "object",
+      "description": "New values (for create/update actions)"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of request"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "User session ID"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low",
+      "description": "Risk assessment of action"
+    },
+    "approval_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Action requires approval"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Admin user ID who approved"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "action",
+    "entity_type",
+    "performed_by",
+    "timestamp"
+  ]
+}
