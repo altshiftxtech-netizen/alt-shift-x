@@ -1,0 +1,69 @@
+{
+  "name": "AppNotification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "quota_warning",
+        "quota_critical",
+        "api_key_created",
+        "api_key_revoked",
+        "component_published",
+        "component_rejected",
+        "new_review",
+        "new_install",
+        "trust_flag",
+        "payout",
+        "emergency"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "emergency"
+      ],
+      "default": "info"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "action_url": {
+      "type": "string",
+      "description": "Deep link for the action button"
+    },
+    "action_label": {
+      "type": "string"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "sms_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "user_id",
+    "type",
+    "title",
+    "message"
+  ]
+}

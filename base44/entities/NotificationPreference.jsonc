@@ -1,0 +1,79 @@
+{
+  "name": "NotificationPreference",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address for notifications"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number for SMS (E.164 format, e.g. +15551234567)"
+    },
+    "email_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "sms_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "in_app_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_quota_warning": {
+      "type": "boolean",
+      "default": true,
+      "description": "Alert at 80% quota"
+    },
+    "notify_quota_critical": {
+      "type": "boolean",
+      "default": true,
+      "description": "Alert at 95% quota"
+    },
+    "notify_api_key_created": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_api_key_revoked": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_component_published": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_component_rejected": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_new_review": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_new_install": {
+      "type": "boolean",
+      "default": false
+    },
+    "notify_trust_flag": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_payout": {
+      "type": "boolean",
+      "default": true
+    },
+    "emergency_only_sms": {
+      "type": "boolean",
+      "default": true,
+      "description": "Only send SMS for critical/emergency events"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}
