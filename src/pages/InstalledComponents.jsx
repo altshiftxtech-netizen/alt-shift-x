@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Trash2, ExternalLink, Terminal, Package } from "lucide-react";
+import { ShieldCheck, Trash2, ExternalLink, Terminal, Package, Download } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import { exportInstalledComponentsPdf } from "@/utils/exportPdf";
 
 const INSTALLED = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", trustScore: 91, price: 5, callsThisMonth: 1240, installedDate: "Jan 15, 2026", status: "active" },
@@ -30,11 +31,16 @@ export default function InstalledComponents() {
             <h1 className="text-2xl font-bold text-slate-900">Installed Components</h1>
             <p className="text-sm text-slate-400">{components.length} active · ${totalMonthly}/mo estimated</p>
           </div>
-          <Link to="/marketplace">
-            <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm h-9 gap-2">
-              <Package className="w-4 h-4" /> Add More
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="text-sm h-9 gap-2" onClick={() => exportInstalledComponentsPdf(components)}>
+              <Download className="w-4 h-4" /> Export PDF
             </Button>
-          </Link>
+            <Link to="/marketplace">
+              <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm h-9 gap-2">
+                <Package className="w-4 h-4" /> Add More
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="space-y-3">

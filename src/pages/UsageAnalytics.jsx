@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, FileText, Clock } from "lucide-react";
+import { Zap, FileText, Clock, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import SharedNav from "@/components/SharedNav";
+import { exportUsageAnalyticsPdf } from "@/utils/exportPdf";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 const DAILY_USAGE = [
@@ -35,9 +37,15 @@ export default function UsageAnalytics() {
       <SharedNav mode="user" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Usage Analytics</h1>
-          <p className="text-sm text-slate-400">May 2026 · all installed components</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Usage Analytics</h1>
+            <p className="text-sm text-slate-400">May 2026 · all installed components</p>
+          </div>
+          <Button variant="outline" className="text-sm h-9 gap-2"
+            onClick={() => exportUsageAnalyticsPdf(STATS.map(s => ({ label: s.label, value: s.value })), BY_COMPONENT, DAILY_USAGE)}>
+            <Download className="w-4 h-4" /> Export PDF
+          </Button>
         </div>
 
         {/* Stats */}
