@@ -1,0 +1,113 @@
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown } from "lucide-react";
+
+const USER_NAV = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard/installed", label: "Installed", icon: Package },
+  { to: "/dashboard/usage", label: "Usage", icon: BarChart2 },
+  { to: "/dashboard/api-keys", label: "API Keys", icon: Key },
+  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
+const BUILDER_NAV = [
+  { to: "/builder", label: "Overview", icon: LayoutDashboard },
+  { to: "/builder/components", label: "Components", icon: Package },
+  { to: "/builder/analytics", label: "Analytics", icon: BarChart2 },
+  { to: "/builder/trust", label: "Trust Engine", icon: ShieldCheck },
+];
+
+export default function SharedNav({ mode = "user" }) {
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
+
+  const navItems = mode === "builder" ? BUILDER_NAV : USER_NAV;
+  const isActive = (path) => location.pathname === path;
+
+  return (
+    <>
+      <nav className="bg-white border-b border-slate-100 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
+            <span className="text-white text-xs font-black">A</span>
+          </div>
+          <span className="font-bold text-slate-900 text-sm hidden sm:block">Alt+Shift+X</span>
+        </Link>
+
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-1">
+          {navItems.map(({ to, label }) => (
+            <Link key={to} to={to}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive(to) ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}>
+              {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Right side */}
+        <div className="flex items-center gap-2">
+          {/* Portal switcher */}
+          <div className="relative hidden sm:block">
+            <button onClick={() => setPortalOpen(!portalOpen)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 hover:border-slate-300 transition-all">
+              {mode === "builder" ? "Builder Portal" : "User Portal"}
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {portalOpen && (
+              <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                <Link to="/dashboard" onClick={() => setPortalOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 ${mode === "user" ? "text-violet-700 font-semibold" : "text-slate-600"}`}>
+                  User Dashboard
+                </Link>
+                <Link to="/builder" onClick={() => setPortalOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 ${mode === "builder" ? "text-violet-700 font-semibold" : "text-slate-600"}`}>
+                  Builder Portal
+                </Link>
+                <Link to="/marketplace" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Marketplace
+                </Link>
+                <div className="border-t border-slate-100 my-1" />
+                <Link to="/admin" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Admin Panel
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Avatar */}
+          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 cursor-pointer">U</div>
+
+          {/* Mobile menu button */}
+          <button className="md:hidden p-1.5 rounded-lg hover:bg-slate-100" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-30 bg-black/20" onClick={() => setMobileOpen(false)}>
+          <div className="absolute top-14 left-0 right-0 bg-white border-b border-slate-100 py-2 px-4 space-y-1" onClick={e => e.stopPropagation()}>
+            {navItems.map(({ to, label, icon: Icon }) => (
+              <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${isActive(to) ? "bg-slate-100 text-slate-900 font-semibold" : "text-slate-600"}`}>
+                <Icon className="w-4 h-4" />{label}
+              </Link>
+            ))}
+            <div className="border-t border-slate-100 pt-2 mt-2 space-y-1">
+              {mode === "user"
+                ? <Link to="/builder" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600">Builder Portal</Link>
+                : <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600">User Dashboard</Link>
+              }
+              <Link to="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600">Admin Panel</Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

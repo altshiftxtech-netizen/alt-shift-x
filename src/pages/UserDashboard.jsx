@@ -2,7 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Zap, ShieldCheck, ArrowRight, Star, BarChart2, Settings } from "lucide-react";
+import { Package, Zap, ShieldCheck, ArrowRight, Key, Settings } from "lucide-react";
+import SharedNav from "@/components/SharedNav";
 
 const INSTALLED = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", trustScore: 91, callsThisMonth: 1240, lastUsed: "2 hours ago", status: "active" },
@@ -28,22 +29,7 @@ const RECENT_ACTIVITY = [
 export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Nav */}
-      <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center"><span className="text-white text-xs font-black">A</span></div>
-          <span className="font-bold text-slate-900 text-sm">Alt+Shift+X</span>
-        </Link>
-        <div className="hidden md:flex items-center gap-5 text-sm text-slate-500">
-          <Link to="/dashboard" className="text-slate-900 font-semibold">Dashboard</Link>
-          <Link to="/dashboard/installed" className="hover:text-slate-900">Installed</Link>
-          <Link to="/dashboard/usage" className="hover:text-slate-900">Usage</Link>
-          <Link to="/marketplace" className="hover:text-slate-900">Marketplace</Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">U</div>
-        </div>
-      </nav>
+      <SharedNav mode="user" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Header */}
@@ -107,6 +93,29 @@ export default function UserDashboard() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Quick links */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-bold text-slate-900">Quick Access</h2>
+            <Link to="/dashboard/api-keys">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-3 flex items-center gap-3">
+                  <Key className="w-4 h-4 text-violet-500" />
+                  <div><p className="text-xs font-semibold text-slate-800">API Keys</p><p className="text-[10px] text-slate-400">Manage access tokens</p></div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/dashboard/settings">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="py-3 flex items-center gap-3">
+                  <Settings className="w-4 h-4 text-slate-500" />
+                  <div><p className="text-xs font-semibold text-slate-800">Account Settings</p><p className="text-[10px] text-slate-400">Profile, billing, notifications</p></div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Recent activity */}

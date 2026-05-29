@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, Key, Copy, Eye, EyeOff, Plus, Trash2, Zap, CheckCircle2, Code } from "lucide-react";
+import { Key, Copy, Eye, EyeOff, Plus, Trash2, Zap, CheckCircle2, Code } from "lucide-react";
+import SharedNav from "@/components/SharedNav";
 
 const INITIAL_KEYS = [
   { id: "key_1", name: "Production", key: "asx_live_k9xP2mQr4nLvWzYb8cJfHdAe3tRsUoNi", created: "Jan 15, 2026", lastUsed: "2 hours ago", calls: 12450 },
@@ -95,11 +96,7 @@ export default function ApiKeys() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-        <Link to="/dashboard" className="text-sm text-slate-400 hover:text-slate-700">Dashboard</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-        <span className="text-sm text-slate-700 font-medium">API Keys & Integration</span>
-      </nav>
+      <SharedNav mode="user" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div className="flex items-center justify-between">

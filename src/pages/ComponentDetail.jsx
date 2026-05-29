@@ -191,7 +191,7 @@ export default function ComponentDetail() {
                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${tierConfig[component.builder.tier]}`}>{component.builder.tier}</span>
                   </div>
                 </div>
-                <Link to="/builder/profile" className="block mt-3">
+                <Link to={`/builders/${component.builder.name.toLowerCase().replace(/\s+/g, '-')}`} className="block mt-3">
                   <Button variant="outline" className="w-full text-xs h-7 gap-1"><Users className="w-3 h-3" /> View Profile</Button>
                 </Link>
               </CardContent>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SharedNav from "@/components/SharedNav";
 import ReviewsHeader from "@/components/builder-reviews/ReviewsHeader";
 import ReviewFilters from "@/components/builder-reviews/ReviewFilters";
 import ReviewCard from "@/components/builder-reviews/ReviewCard";
@@ -38,6 +39,7 @@ export default function BuilderReviews() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <ReviewsHeader total={reviews.length} pending={reviews.filter(r => !r.replied).length} />
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

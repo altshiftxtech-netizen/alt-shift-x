@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SharedNav from "@/components/SharedNav";
 import SandboxHeader from "@/components/sandbox/SandboxHeader";
 import ComponentSelector from "@/components/sandbox/ComponentSelector";
 import DocumentInput from "@/components/sandbox/DocumentInput";
@@ -137,6 +138,7 @@ export default function TestingSandbox() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         <SandboxHeader />

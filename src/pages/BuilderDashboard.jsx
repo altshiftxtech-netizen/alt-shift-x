@@ -1,4 +1,5 @@
 import React from "react";
+import SharedNav from "@/components/SharedNav";
 import DashboardHeader from "@/components/builder-dashboard/DashboardHeader";
 import DashboardStatRow from "@/components/builder-dashboard/DashboardStatRow";
 import DashboardTrustSummary from "@/components/builder-dashboard/DashboardTrustSummary";
@@ -34,6 +35,7 @@ const mockActivity = [
 export default function BuilderDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <DashboardHeader builderName="Marcus Holloway" tier="certified" />
         <DashboardStatRow stats={mockStats} />

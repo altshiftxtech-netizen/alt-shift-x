@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SharedNav from "@/components/SharedNav";
 import TrustEngineHeader from "@/components/trust-engine/TrustEngineHeader";
 import CompositeScoreGauge from "@/components/trust-engine/CompositeScoreGauge";
 import TrustBreakdownCharts from "@/components/trust-engine/TrustBreakdownCharts";
@@ -141,6 +142,7 @@ export default function TrustEngine() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         <TrustEngineHeader

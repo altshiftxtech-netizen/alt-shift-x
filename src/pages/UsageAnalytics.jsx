@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight, Zap, FileText, Clock } from "lucide-react";
+import { Zap, FileText, Clock } from "lucide-react";
+import SharedNav from "@/components/SharedNav";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 const DAILY_USAGE = [
@@ -31,11 +32,7 @@ const STATS = [
 export default function UsageAnalytics() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-        <Link to="/dashboard" className="text-sm text-slate-400 hover:text-slate-700">Dashboard</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-        <span className="text-sm text-slate-700 font-medium">Usage Analytics</span>
-      </nav>
+      <SharedNav mode="user" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div>

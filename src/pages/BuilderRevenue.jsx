@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SharedNav from "@/components/SharedNav";
 import RevenueHeader from "@/components/builder-revenue/RevenueHeader";
 import RevenueStatCards from "@/components/builder-revenue/RevenueStatCards";
 import RevenueChart from "@/components/builder-revenue/RevenueChart";
@@ -127,6 +128,7 @@ export default function BuilderRevenue() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         <RevenueHeader builderTier="certified" />

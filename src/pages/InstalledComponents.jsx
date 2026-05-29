@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Trash2, ExternalLink, ChevronRight, Package } from "lucide-react";
+import { ShieldCheck, Trash2, ExternalLink, Terminal, Package } from "lucide-react";
+import SharedNav from "@/components/SharedNav";
 
 const INSTALLED = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", trustScore: 91, price: 5, callsThisMonth: 1240, installedDate: "Jan 15, 2026", status: "active" },
@@ -21,11 +22,7 @@ export default function InstalledComponents() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-        <Link to="/dashboard" className="text-sm text-slate-400 hover:text-slate-700">Dashboard</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-        <span className="text-sm text-slate-700 font-medium">Installed Components</span>
-      </nav>
+      <SharedNav mode="user" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div className="flex items-center justify-between">
@@ -79,7 +76,12 @@ export default function InstalledComponents() {
                 </div>
                 <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span>Installed {c.installedDate}</span>
-                  <span className="flex items-center gap-1 text-emerald-600 font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />Active</span>
+                  <div className="flex items-center gap-3">
+                    <Link to={`/dashboard/setup/${c.id}`} className="flex items-center gap-1 text-violet-600 font-semibold hover:underline">
+                      <Terminal className="w-3 h-3" /> Setup Guide
+                    </Link>
+                    <span className="flex items-center gap-1 text-emerald-600 font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />Active</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

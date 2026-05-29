@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import PublishHeader from "@/components/builder-publish/PublishHeader";
 import PublishStepper from "@/components/builder-publish/PublishStepper";
 import StepSchema from "@/components/builder-publish/StepSchema";
@@ -58,12 +59,17 @@ export default function BuilderPublish() {
             <strong>{form.displayName || "Your component"}</strong> has been submitted for review. 
             Platform review typically takes 1–3 business days. You'll receive an email when it's approved or if changes are requested.
           </p>
-          <button
-            onClick={() => { setSubmitted(false); setStep(1); setForm(INITIAL_FORM); }}
-            className="text-sm text-violet-700 underline"
-          >
-            Submit another component
-          </button>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <Link to="/builder/components" className="text-sm bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium">
+              View My Components
+            </Link>
+            <button
+              onClick={() => { setSubmitted(false); setStep(1); setForm(INITIAL_FORM); }}
+              className="text-sm text-violet-700 underline"
+            >
+              Submit another component
+            </button>
+          </div>
         </div>
       </div>
     );

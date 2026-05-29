@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SharedNav from "@/components/SharedNav";
 import AnalyticsHeader from "@/components/builder-analytics/AnalyticsHeader";
 import InstallTrendChart from "@/components/builder-analytics/InstallTrendChart";
 import InstallBreakdown from "@/components/builder-analytics/InstallBreakdown";
@@ -49,6 +50,7 @@ export default function BuilderAnalytics() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <AnalyticsHeader
           components={COMPONENTS}
