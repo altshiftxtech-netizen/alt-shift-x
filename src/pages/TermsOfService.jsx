@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, FileText, ShieldCheck, Users, Scale, Clock } from "lucide-react";
+import LegalDocumentViewer from "@/components/admin/LegalDocumentViewer";
 
 function Section({ icon: Icon, title, children }) {
   return (
@@ -67,6 +68,7 @@ export default function TermsOfService() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-12">
+        <LegalDocumentViewer slug="terms_of_service">
         {/* Header */}
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
@@ -204,6 +206,7 @@ export default function TermsOfService() {
             <Link to="/" className="text-xs text-slate-500 hover:underline">Back to Platform</Link>
           </div>
         </div>
+        </LegalDocumentViewer>
       </div>
     </div>
   );

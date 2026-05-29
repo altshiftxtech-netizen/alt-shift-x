@@ -1,0 +1,28 @@
+{
+  "name": "LegalDocument",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "Identifier: privacy_policy or terms_of_service"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string",
+      "description": "Plain text content of the document"
+    },
+    "last_updated_by": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "content"
+  ]
+}

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Shield, Lock, Eye, Database, Smartphone, Globe } from "lucide-react";
+import LegalDocumentViewer from "@/components/admin/LegalDocumentViewer";
 
 function Section({ icon: Icon, title, children }) {
   return (
@@ -70,6 +71,7 @@ export default function PrivacyPolicy() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-12">
+        <LegalDocumentViewer slug="privacy_policy">
         {/* Header */}
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
@@ -183,6 +185,7 @@ export default function PrivacyPolicy() {
             <Link to="/" className="text-xs text-slate-500 hover:underline">Back to Platform</Link>
           </div>
         </div>
+        </LegalDocumentViewer>
       </div>
     </div>
   );
