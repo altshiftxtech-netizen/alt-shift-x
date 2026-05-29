@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown } from "lucide-react";
 import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const USER_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -45,7 +46,10 @@ export default function SharedNav({ mode = "user" }) {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Theme toggle */}
+          <ThemeToggle />
+
           {/* Portal switcher */}
           <div className="relative hidden sm:block">
             <button onClick={() => setPortalOpen(!portalOpen)}
