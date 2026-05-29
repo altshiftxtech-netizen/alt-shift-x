@@ -1,0 +1,68 @@
+{
+  "name": "ComponentCollaboration",
+  "type": "object",
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "ID of the component being collaborated on"
+    },
+    "component_name": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Builder who owns the component"
+    },
+    "collaborators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer"
+            ]
+          },
+          "invited_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ]
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Collaboration notes or changelog"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "component_id",
+    "component_name",
+    "owner_id"
+  ]
+}

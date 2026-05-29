@@ -5,7 +5,7 @@ import DashboardStatRow from "@/components/builder-dashboard/DashboardStatRow";
 import DashboardTrustSummary from "@/components/builder-dashboard/DashboardTrustSummary";
 import DashboardActivityFeed from "@/components/builder-dashboard/DashboardActivityFeed";
 import DashboardQuickLinks from "@/components/builder-dashboard/DashboardQuickLinks";
-import AiSearchConsultant from "@/components/AiSearchConsultant";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 const mockStats = {
   totalInstalls: 1362,
@@ -38,7 +38,7 @@ export default function BuilderDashboard() {
     <div className="min-h-screen bg-slate-50">
       <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <AiSearchConsultant />
+        <BobAdvisorWidget />
         <DashboardHeader builderName="Marcus Holloway" tier="certified" />
         <DashboardStatRow stats={mockStats} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

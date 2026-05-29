@@ -5,6 +5,11 @@ import InstallTrendChart from "@/components/builder-analytics/InstallTrendChart"
 import InstallBreakdown from "@/components/builder-analytics/InstallBreakdown";
 import GeographicBreakdown from "@/components/builder-analytics/GeographicBreakdown";
 import ChurnPanel from "@/components/builder-analytics/ChurnPanel";
+import EarningsPanel from "@/components/builder-analytics/EarningsPanel";
+import RetentionPanel from "@/components/builder-analytics/RetentionPanel";
+import BobRecommendationsPanel from "@/components/builder-analytics/BobRecommendationsPanel";
+import CollaborationPanel from "@/components/builder-analytics/CollaborationPanel";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 const COMPONENTS = [
   { id: "all", label: "All Components" },
@@ -57,19 +62,32 @@ export default function BuilderAnalytics() {
           selected={selectedComponent}
           onSelect={setSelectedComponent}
         />
-        <InstallTrendChart data={installTrend} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <InstallBreakdown breakdown={breakdown} />
-          </div>
-          <div className="lg:col-span-1">
-            <GeographicBreakdown geo={geo} />
-          </div>
-          <div className="lg:col-span-1">
-            <ChurnPanel reasons={churnReasons} totalChurned={breakdown.churnedInstalls} />
-          </div>
+
+        {/* Earnings + Retention */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <EarningsPanel />
+          <RetentionPanel />
         </div>
+
+        {/* Install Trend */}
+        <InstallTrendChart data={installTrend} />
+
+        {/* BOB Recommendations */}
+        <BobRecommendationsPanel />
+
+        {/* Bottom row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <InstallBreakdown breakdown={breakdown} />
+          <GeographicBreakdown geo={geo} />
+          <ChurnPanel reasons={churnReasons} totalChurned={breakdown.churnedInstalls} />
+        </div>
+
+        {/* Collaboration */}
+        <CollaborationPanel />
       </div>
+
+      {/* BOB Floating Widget */}
+      <BobAdvisorWidget />
     </div>
   );
 }
