@@ -29,6 +29,7 @@ import ComponentSetup from './pages/ComponentSetup';
 import AdminPanel from './pages/AdminPanel';
 import Pricing from './pages/Pricing';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
+import MobileApp from './pages/MobileApp';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -79,6 +80,7 @@ const AuthenticatedApp = () => {
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
       <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/mobile" element={<MobileApp />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
