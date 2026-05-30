@@ -87,9 +87,6 @@
     "read": {
       "$or": [
         {
-          "data.status": "published"
-        },
-        {
           "data.builder_id": "{{user.id}}"
         },
         {
