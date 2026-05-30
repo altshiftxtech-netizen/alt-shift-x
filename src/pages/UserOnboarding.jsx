@@ -219,7 +219,11 @@ export default function UserOnboarding() {
 
             {/* Navigation */}
             <div className="flex justify-between pt-2">
-              <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0} className="text-sm">← Back</Button>
+              {step > 0 ? (
+                <Button variant="outline" onClick={() => setStep(s => s - 1)} className="text-sm">← Back</Button>
+              ) : (
+                <div />
+              )}
               {step < STEPS.length - 1 ? (
                 <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm" onClick={() => setStep(s => s + 1)}
                   disabled={
