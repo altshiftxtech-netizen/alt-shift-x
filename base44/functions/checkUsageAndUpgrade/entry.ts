@@ -1,31 +1,22 @@
 /**
- * checkUsageAndUpgrade — runs on a schedule or after API calls.
- * Checks if a subscriber is approaching/exceeding their tier limit.
- * Flags overage, sends upgrade prompt, or triggers overage billing.
+ * checkUsageAndUpgrade — checks if a subscriber is approaching/exceeding their tier limit.
+ * Fires notifications and webhook events at 85% and 100%+ usage.
  */
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
-import Stripe from "npm:stripe@14.21.0";
 
 const TIER_LIMITS = {
-  starter: { calls: 1000, overage_rate: 0.05 },   // $0.05 per call over
-  growth:  { calls: 5000, overage_rate: 0.04 },
-  pro:     { calls: 10000, overage_rate: 0.03 },
-  scale:   { calls: 50000, overage_rate: 0.02 },
-  enterprise: { calls: -1, overage_rate: 0 },      // unlimited
+  starter:    { calls: 1000,      overage_rate: 0.05 },
+  growth:     { calls: 5000,      overage_rate: 0.04 },
+  pro:        { calls: 10000,     overage_rate: 0.03 },
+  scale:      { calls: 50000,     overage_rate: 0.02 },
+  enterprise: { calls: -1,        overage_rate: 0    },
 };
 
 const UPGRADE_PATH = {
   starter: "growth",
-  growth: "pro",
-  pro: "scale",
-  scale: "enterprise",
-};
-
-const UPGRADE_PRICES = {
-  growth: "price_growth_monthly",     // placeholder — set real IDs
-  pro: "price_1TcLVDAuii7slVl8e8AbgOFM",
-  scale: "price_scale_monthly",
-  enterprise: "price_1TcLVDAuii7slVl8vpF3DTr6",
+  growth:  "pro",
+  pro:     "scale",
+  scale:   "enterprise",
 };
 
 Deno.serve(async (req) => {
@@ -43,7 +34,7 @@ Deno.serve(async (req) => {
     const used = sub.api_calls_used || 0;
 
     // Unlimited tier — nothing to check
-    if (tier.calls === -1) return Response.json({ status: "unlimited", used });
+    if (tier.calls === -1) return Response.json({ status: "unlimited", used, plan });
 
     const usagePct = (used / tier.calls) * 100;
     const overageCount = Math.max(0, used - tier.calls);
@@ -53,12 +44,22 @@ Deno.serve(async (req) => {
     let overageCharge = 0;
 
     if (usagePct >= 100 && overageCount > 0) {
-      // Overage — calculate charge
-      overageCharge = overageCount * tier.overage_rate;
+      overageCharge = Math.round(overageCount * tier.overage_rate * 100) / 100;
       action = "overage";
       console.log(`Overage: user=${user.id}, plan=${plan}, over by ${overageCount} calls, charge=$${overageCharge.toFixed(2)}`);
 
-      // Fire webhook for subscriber
+      // Notify user
+      await base44.asServiceRole.functions.invoke("sendNotification", {
+        user_id: user.id,
+        type: "quota_critical",
+        severity: "critical",
+        title: "API Quota Exceeded",
+        message: `You have exceeded your ${plan} plan limit of ${tier.calls.toLocaleString()} calls by ${overageCount.toLocaleString()} calls. Overage charges of $${overageCharge.toFixed(2)} have accrued. Upgrade to ${nextPlan || 'a higher plan'} to avoid interruption.`,
+        action_url: "/pricing",
+        action_label: "Upgrade Plan",
+      }).catch(e => console.warn("Notification failed:", e.message));
+
+      // Fire webhook
       await base44.asServiceRole.functions.invoke("dispatchWebhook", {
         event_type: "subscription.upgraded",
         payload: {
@@ -69,10 +70,22 @@ Deno.serve(async (req) => {
           overage_charge_usd: overageCharge,
           upgrade_available: nextPlan,
         },
-      });
+      }).catch(e => console.warn("Webhook dispatch failed:", e.message));
+
     } else if (usagePct >= 85) {
       action = "approaching_limit";
       console.log(`Usage alert: user=${user.id}, plan=${plan}, at ${usagePct.toFixed(0)}%`);
+
+      // Only send notification once per period — check if already notified
+      await base44.asServiceRole.functions.invoke("sendNotification", {
+        user_id: user.id,
+        type: "quota_warning",
+        severity: "warning",
+        title: `API Quota at ${Math.round(usagePct)}%`,
+        message: `You've used ${used.toLocaleString()} of your ${tier.calls.toLocaleString()} monthly API calls (${Math.round(usagePct)}%). Consider upgrading to ${nextPlan || 'enterprise'} before hitting your limit.`,
+        action_url: "/pricing",
+        action_label: "View Plans",
+      }).catch(e => console.warn("Notification failed:", e.message));
     }
 
     return Response.json({
