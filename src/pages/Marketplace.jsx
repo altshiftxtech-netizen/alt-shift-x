@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2 } from "lucide-react";
+import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
 import AiSearchConsultant from "@/components/AiSearchConsultant";
+import { useAuth } from "@/lib/AuthContext";
 
 const ALL_COMPONENTS = [
   { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.", builder: "BuildRight AI", certified: true },
@@ -30,6 +31,7 @@ function ScoreBadge({ score }) {
 }
 
 export default function Marketplace() {
+  const { isAuthenticated } = useAuth();
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -58,19 +60,28 @@ export default function Marketplace() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Nav */}
-      <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo className="h-8 w-auto" />
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-          <span className="text-sm text-slate-500">Marketplace</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link to="/dashboard"><Button variant="outline" className="text-sm h-8">My Dashboard</Button></Link>
-          <Link to="/builder"><Button className="text-sm h-8 bg-slate-900 hover:bg-slate-700">Builder Portal</Button></Link>
-        </div>
-      </nav>
+       <nav className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+         <div className="flex items-center gap-2">
+           <Link to="/" className="flex items-center gap-2">
+             <Logo className="h-8 w-auto" />
+           </Link>
+           <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+           <span className="text-sm text-slate-500">Marketplace</span>
+         </div>
+         <div className="flex items-center gap-2">
+           {isAuthenticated ? (
+             <>
+               <Link to="/dashboard"><Button variant="outline" className="text-sm h-8">My Dashboard</Button></Link>
+               <Link to="/builder"><Button className="text-sm h-8 bg-slate-900 hover:bg-slate-700">Builder Portal</Button></Link>
+             </>
+           ) : (
+             <>
+               <Link to="/login"><Button variant="outline" className="text-sm h-8 gap-1.5"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
+               <Link to="/register"><Button className="text-sm h-8 bg-slate-900 hover:bg-slate-700 gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
+             </>
+           )}
+         </div>
+       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
@@ -138,16 +149,20 @@ export default function Marketplace() {
                         </div>
                         <h3 className="text-sm font-bold text-slate-900 mb-0.5">{c.name}</h3>
                         <p className="text-[10px] font-mono text-slate-400 mb-2">{c.code}</p>
-                        <p className="text-xs text-slate-500 flex-1 line-clamp-2 mb-3">{c.description}</p>
+                        <p className="text-xs text-slate-500 flex-1 line-clamp-2 mb-3">
+                          {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}
+                        </p>
                         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                           <div className="flex items-center gap-1 text-xs">
                             <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
                             <span className="font-semibold text-slate-700">{(c.rating || 0).toFixed(1)}</span>
                             <span className="text-slate-400">({c.reviews_count || 0})</span>
                           </div>
-                          <div onClick={e => e.preventDefault()}>
-                            <InstallButton component={c} size="sm" />
-                          </div>
+                          {isAuthenticated && (
+                            <div onClick={e => e.preventDefault()}>
+                              <InstallButton component={c} size="sm" />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </Link>
