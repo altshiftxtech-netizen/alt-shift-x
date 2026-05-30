@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Key, Copy, Eye, EyeOff, Plus, Trash2, Zap,
-  CheckCircle2, Code, X, AlertTriangle, Clock, ShieldOff, Loader2
+  CheckCircle2, Code, X, AlertTriangle, Clock, ShieldOff, Loader2, Download
 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import { base44 } from "@/api/base44Client";
@@ -190,11 +190,41 @@ function CreateKeyForm({ onCreated, onCancel }) {
 function ApiKeyRow({ apiKey, onRevoke }) {
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(apiKey.key);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = async (format) => {
+    setDownloading(true);
+    try {
+      const res = await base44.functions.invoke("downloadApiKey", { 
+        key_id: apiKey.id,
+        format 
+      });
+      
+      // Determine filename from response
+      const ext = format === 'env' ? 'env' : format === 'csv' ? 'csv' : 'json';
+      const filename = `api-key-${apiKey.name}.${ext}`;
+      
+      // Create blob and trigger download
+      const blob = new Blob([res.data], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert("Failed to download key: " + error.message);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const masked = apiKey.key.substring(0, 4) + "•••••••••••••••••••••••••" + apiKey.key.slice(-4);
@@ -233,7 +263,7 @@ function ApiKeyRow({ apiKey, onRevoke }) {
           </div>
 
           {/* Meta + actions */}
-           <div className="flex items-center gap-4 shrink-0">
+           <div className="flex items-center gap-3 shrink-0 flex-wrap">
              <div className="text-right">
                <div className="flex items-center gap-1 justify-end">
                  <Clock className={`w-3 h-3 ${neverUsed ? "text-slate-300" : "text-slate-400"}`} />
@@ -246,6 +276,27 @@ function ApiKeyRow({ apiKey, onRevoke }) {
              <div className="text-right hidden sm:block">
                <p className="text-xs text-slate-500">{new Date(apiKey.created_date).toLocaleDateString()}</p>
                <p className="text-[10px] text-slate-400">created</p>
+             </div>
+             {apiKey.is_active && (
+               <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                 Active
+               </span>
+             )}
+             <div className="relative group">
+               <Button
+                 variant="outline"
+                 size="icon"
+                 className="h-8 w-8 text-slate-400 hover:text-slate-700 transition-colors"
+                 disabled={downloading}
+                 title="Download key"
+               >
+                 {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+               </Button>
+               <div className="absolute right-0 bottom-full mb-2 bg-slate-900 text-white text-xs rounded-lg py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-20">
+                 <button className="block w-full text-left px-3 py-1 hover:bg-slate-800" onClick={() => handleDownload('json')}>JSON</button>
+                 <button className="block w-full text-left px-3 py-1 hover:bg-slate-800" onClick={() => handleDownload('env')}>ENV</button>
+                 <button className="block w-full text-left px-3 py-1 hover:bg-slate-800" onClick={() => handleDownload('csv')}>CSV</button>
+               </div>
              </div>
              <Button
                variant="outline"
