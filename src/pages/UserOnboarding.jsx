@@ -218,14 +218,16 @@ export default function UserOnboarding() {
             )}
 
             {/* Navigation */}
-            <div className="flex justify-between pt-2">
-              {step > 0 ? (
-                <Button variant="outline" onClick={() => setStep(s => s - 1)} className="text-sm">← Back</Button>
-              ) : (
-                <Button variant="outline" onClick={() => navigate("/")} className="text-sm">Exit</Button>
-              )}
+            <div className="flex gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={step > 0 ? () => setStep(s => s - 1) : () => navigate("/")} 
+                className="text-sm"
+              >
+                {step > 0 ? "← Back" : "Exit"}
+              </Button>
               {step < STEPS.length - 1 ? (
-                <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm" onClick={() => setStep(s => s + 1)}
+                <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm flex-1" onClick={() => setStep(s => s + 1)}
                   disabled={
                     (step === 0 && (!form.first_name || !form.last_name)) ||
                     (step === 1 && (!form.company_name || !form.job_title || !form.industry)) ||
@@ -237,7 +239,7 @@ export default function UserOnboarding() {
                 </Button>
               ) : (
                 <Button
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm flex-1"
                   onClick={handleSubmit}
                   disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy || !form.agreed_to_builder}
                 >
