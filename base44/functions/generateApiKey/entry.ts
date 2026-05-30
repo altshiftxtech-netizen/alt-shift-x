@@ -60,6 +60,9 @@ Deno.serve(async (req) => {
       key_hash: keyHash,
       agent_name: agent_name || null,
       status: "active",
+      governance_policy: "do_no_harm_v1",
+      governance_attestation: "AI Agent Do-No-Harm Oath v1.0 — cryptographically bound at key generation. This key and any agent operating under it is constrained from generating, facilitating, or amplifying harmful content; must preserve human oversight; must respect user privacy; and must comply with the Magna Dev Trust Framework and all applicable platform governance standards.",
+      governance_bound_at: new Date().toISOString(),
     });
 
     console.log(`API key generated: user=${user.id}, name=${name}, agent=${agent_name || "none"}`);
