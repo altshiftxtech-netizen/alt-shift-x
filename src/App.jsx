@@ -54,6 +54,7 @@ import GovernanceDashboard from './pages/GovernanceDashboard';
 import PlatformIntelligence from './pages/PlatformIntelligence';
 import BuilderTestLab from './pages/BuilderTestLab';
 import BuilderAnalyticsSuite from './pages/BuilderAnalyticsSuite';
+import BuilderLeaderboard from './pages/BuilderLeaderboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -128,6 +129,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
       <Route path="/builder/test-lab" element={<BuilderTestLab />} />
       <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
+      <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

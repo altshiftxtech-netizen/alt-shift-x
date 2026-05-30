@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown, TrendingUp } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown, TrendingUp, Trophy } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -22,6 +22,7 @@ const BUILDER_NAV = [
   { to: "/builder/revenue", label: "Revenue", icon: BarChart2 },
   { to: "/builder/test-lab", label: "Test Lab", icon: BarChart2 },
   { to: "/builder/analytics-suite", label: "Analytics Suite", icon: TrendingUp },
+  { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
 export default function SharedNav({ mode = "user" }) {
