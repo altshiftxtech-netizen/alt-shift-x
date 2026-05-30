@@ -15,13 +15,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: "key_id is required" }, { status: 400 });
     }
 
-    const key = await base44.asServiceRole.entities.ApiKey.filter({ id: key_id });
+    let key;
+    try {
+      const keys = await base44.asServiceRole.entities.ApiKey.filter({ id: key_id });
+      key = keys[0];
+    } catch (_) {
+      return Response.json({ error: "Key not found" }, { status: 404 });
+    }
 
-    if (key.length === 0 || key[0].user_id !== user.id) {
+    if (!key || key.user_id !== user.id) {
       return Response.json({ error: "Key not found or not owned by user" }, { status: 404 });
     }
 
-    await base44.entities.ApiKey.update(key_id, { status: "revoked" });
+    await base44.asServiceRole.entities.ApiKey.update(key_id, { status: "revoked" });
 
     console.log(`API key revoked: user=${user.id}, key=${key_id}`);
 

@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     if (!component_id) return Response.json({ error: "component_id required" }, { status: 400 });
 
     // Load the component
-    const components = await base44.entities.Component.filter({ id: component_id });
+    const components = await base44.asServiceRole.entities.Component.filter({ id: component_id });
     if (!components.length) return Response.json({ error: "Component not found" }, { status: 404 });
     const component = components[0];
 
@@ -72,8 +72,8 @@ Deno.serve(async (req) => {
 
     console.log(`Snapshot created: ${component.name} v${newVersion}`);
 
-    // Fire webhook event
-    await base44.asServiceRole.functions.invoke("dispatchWebhook", {
+    // Fire webhook event (best-effort, non-blocking)
+    base44.functions.invoke("dispatchWebhook", {
       event_type: "component.version.released",
       payload: {
         component_id,
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
         changelog,
         diff_summary: diff,
       },
-    });
+    }).catch(err => console.warn("Webhook dispatch skipped:", err.message));
 
     return Response.json({ version: newVersion, snapshot_id: version.id, diff });
   } catch (error) {

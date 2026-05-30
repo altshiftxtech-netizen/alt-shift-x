@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { planKey, componentId, successUrl, cancelUrl } = body;
-    const origin = req.headers.get("origin") || "";
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://app.altshiftx.com";
 
     // ── Reuse existing Stripe customer if available ──────────────────────────
     let customerId;
