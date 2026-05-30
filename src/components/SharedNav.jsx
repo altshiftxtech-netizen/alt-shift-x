@@ -98,6 +98,10 @@ export default function SharedNav({ mode = "user" }) {
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
                   Platform Intelligence
                 </Link>
+                <Link to="/admin/gamification" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+                  Gamification Admin
+                </Link>
               </div>
             )}
           </div>

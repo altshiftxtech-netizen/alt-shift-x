@@ -55,6 +55,7 @@ import PlatformIntelligence from './pages/PlatformIntelligence';
 import BuilderTestLab from './pages/BuilderTestLab';
 import BuilderAnalyticsSuite from './pages/BuilderAnalyticsSuite';
 import BuilderLeaderboard from './pages/BuilderLeaderboard';
+import GamificationAdmin from './pages/GamificationAdmin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -130,6 +131,7 @@ const AuthenticatedApp = () => {
       <Route path="/builder/test-lab" element={<BuilderTestLab />} />
       <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
       <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
+      <Route path="/admin/gamification" element={<GamificationAdmin />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

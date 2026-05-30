@@ -10,6 +10,7 @@ export default function BuilderLeaderboard() {
   const [installedData, setInstalledData] = useState([]);
   const [govScores, setGovScores] = useState([]);
   const [users, setUsers] = useState([]);
+  const [builderBadges, setBuilderBadges] = useState([]);
   const [forecast, setForecast] = useState(null);
   const [forecastLoading, setForecastLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -20,11 +21,13 @@ export default function BuilderLeaderboard() {
       base44.entities.InstalledComponent.list("-created_date", 1000),
       base44.entities.GovernanceScore.list("-overall_score", 200),
       base44.entities.User.list("-created_date", 200),
-    ]).then(([comps, installed, gov, usrs]) => {
+      base44.entities.BuilderBadge.list("-leaderboard_score", 200),
+    ]).then(([comps, installed, gov, usrs, badges]) => {
       setComponents(comps);
       setInstalledData(installed);
       setGovScores(gov);
       setUsers(usrs);
+      setBuilderBadges(badges);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -58,6 +61,7 @@ export default function BuilderLeaderboard() {
               installedData={installedData}
               govScores={govScores}
               users={users}
+              builderBadges={builderBadges}
             />
           </div>
           <RevenueForecastPanel

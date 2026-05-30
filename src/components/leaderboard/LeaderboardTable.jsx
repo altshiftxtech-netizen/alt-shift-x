@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { ShieldCheck, Trophy, Star, Medal } from "lucide-react";
+import { TierBadge, AchievementBadge } from "@/components/BuilderTierBadge";
 
 const RANK_STYLES = [
   "bg-amber-50 border-amber-300 text-amber-700",    // 1st
@@ -9,7 +10,12 @@ const RANK_STYLES = [
 
 const RANK_ICONS = [Trophy, Medal, Star];
 
-export default function LeaderboardTable({ components, installedData, govScores, users }) {
+export default function LeaderboardTable({ components, installedData, govScores, users, builderBadges = [] }) {
+  const badgeMap = useMemo(() => {
+    const m = {};
+    for (const b of builderBadges) m[b.builder_id] = b;
+    return m;
+  }, [builderBadges]);
   const [sortBy, setSortBy] = useState("score");
 
   const userMap = useMemo(() => {
@@ -128,11 +134,19 @@ export default function LeaderboardTable({ components, installedData, govScores,
 
               {/* Name + components */}
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-slate-900 truncate">
-                  {row.builder?.full_name || `Builder ${row.builder_id.slice(0, 6)}`}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-sm text-slate-900 truncate">
+                    {row.builder?.full_name || `Builder ${row.builder_id.slice(0, 6)}`}
+                  </span>
+                  {badgeMap[row.builder_id]?.tier && <TierBadge tier={badgeMap[row.builder_id].tier} />}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate">
-                  {row.component_count} component{row.component_count !== 1 ? "s" : ""} — {row.components.slice(0, 2).join(", ")}{row.components.length > 2 ? ` +${row.components.length - 2}` : ""}
+                <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                  {(badgeMap[row.builder_id]?.badges_earned || []).map(k => <AchievementBadge key={k} badgeKey={k} />)}
+                  {!(badgeMap[row.builder_id]?.badges_earned?.length) && (
+                    <span className="text-[10px] text-slate-400">
+                      {row.component_count} component{row.component_count !== 1 ? "s" : ""} — {row.components.slice(0, 2).join(", ")}{row.components.length > 2 ? ` +${row.components.length - 2}` : ""}
+                    </span>
+                  )}
                 </div>
               </div>
 
