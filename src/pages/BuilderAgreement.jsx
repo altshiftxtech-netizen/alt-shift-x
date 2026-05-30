@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, ShieldCheck, Lock, AlertTriangle, Eye, EyeOff, X, CheckCircle2 } from "lucide-react";
 import Logo from "@/components/Logo";
