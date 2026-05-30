@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ShieldCheck, Lock, AlertTriangle, Eye, EyeOff, X, CheckCircle2 } from "lucide-react";
+import { ChevronRight, ShieldCheck, Lock, AlertTriangle, Eye, EyeOff, X, CheckCircle2, LogIn } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/AuthContext";
 
 // ── Agreement Modal with scroll-gate ─────────────────────────────────────────
 function AgreementModal({ onClose, onAccepted }) {
@@ -116,6 +117,7 @@ function AgreementModal({ onClose, onAccepted }) {
 
 // ── Public Page ───────────────────────────────────────────────────────────────
 export default function BuilderAgreement() {
+  const { isAuthenticated } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
@@ -195,9 +197,17 @@ export default function BuilderAgreement() {
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           <h3 className="font-bold text-slate-900 mb-2">Review & Accept the Full Agreement</h3>
           <p className="text-sm text-slate-500 mb-4">
-            Click below to view the complete Builder Agreement. You must scroll through the full document and check the acceptance box to confirm your agreement.
+            {isAuthenticated
+              ? "Click below to view the complete Builder Agreement. You must scroll through the full document and check the acceptance box to confirm your agreement."
+              : "You must be signed in to view the full agreement. The complete text is only available to registered platform members."}
           </p>
-          {accepted ? (
+          {!isAuthenticated ? (
+            <Link to="/login">
+              <Button className="bg-violet-700 hover:bg-violet-800 text-white gap-2">
+                <LogIn className="w-4 h-4" /> Sign In to View Full Agreement
+              </Button>
+            </Link>
+          ) : accepted ? (
             <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm">
               <CheckCircle2 className="w-5 h-5" /> Agreement accepted — you may proceed to publish.
             </div>
@@ -207,9 +217,15 @@ export default function BuilderAgreement() {
             </Button>
           )}
           <div className="flex flex-wrap gap-3 pt-4 mt-4 border-t border-slate-100">
-            <Link to="/builder/publish" className="text-xs bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-              Publish a Component →
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/builder/publish" className="text-xs bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                Publish a Component →
+              </Link>
+            ) : (
+              <Link to="/register" className="text-xs bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                Create Account to Publish →
+              </Link>
+            )}
             <Link to="/terms" className="text-xs text-violet-600 font-semibold hover:underline self-center">Terms of Service</Link>
             <Link to="/privacy" className="text-xs text-violet-600 font-semibold hover:underline self-center">Privacy Policy</Link>
             <Link to="/" className="text-xs text-slate-400 hover:underline self-center ml-auto">Back to Platform</Link>
