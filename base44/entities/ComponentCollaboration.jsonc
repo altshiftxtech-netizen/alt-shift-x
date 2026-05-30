@@ -67,7 +67,19 @@
   ],
   "rls": {
     "create": {
-      "data.owner_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "data.collaborators.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "read": {
       "$or": [
