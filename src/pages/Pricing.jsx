@@ -4,64 +4,34 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Check, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
 
-// ── User/Developer Subscription Tiers ─────────────────────────────────────────
-const USER_PLANS = [
+// ── Developer: free account, pay per component ────────────────────────────────
+const COMPONENT_TIERS = [
   {
-    key: "free",
-    name: "Developer Free",
-    price: 0,
-    trialMonths: 1,
-    icon: Zap,
-    description: "One free month to explore the platform. Browse and install components — downloads unlock with a paid subscription.",
-    features: [
-      "1 month free access",
-      "Browse entire marketplace",
-      "1 API key (1 agent pairing)",
-      "Install & test components (no download)",
-      "Community support",
-      "Upgrade anytime",
-    ],
-    highlight: false,
-    cta: "Start Free",
-    badge: "Free for 1 Month",
+    type: "X1",
+    label: "X1 — Single Extraction",
+    color: "bg-blue-50 border-blue-200",
+    badge: "bg-blue-100 text-blue-700",
+    price: "From $49/mo",
+    description: "Single-purpose AI extraction components. Pay only for what you install.",
+    examples: ["Ironclad Protocol", "Ledger Protocol", "Claim Sentinel"],
   },
   {
-    key: "starter",
-    name: "Developer Starter",
-    price: 29,
-    icon: Shield,
-    description: "Full access for growing developers — download components and scale your API usage.",
-    features: [
-      "1,000 API calls / month",
-      "Access to all X1 & X2 components",
-      "Download & deploy components",
-      "Multiple API keys (1 agent per key)",
-      "Standard latency",
-      "Community support",
-      "JSON & webhook output",
-    ],
-    highlight: false,
-    cta: "Get Starter",
+    type: "X2",
+    label: "X2 — Project Intelligence",
+    color: "bg-violet-50 border-violet-200",
+    badge: "bg-violet-100 text-violet-700",
+    price: "From $59/mo",
+    description: "Multi-layer project management and scheduling intelligence modules.",
+    examples: ["Estimator's Eye", "Schedule Pulse"],
   },
   {
-    key: "pro",
-    name: "Developer Pro",
-    price: 99,
-    icon: Building2,
-    description: "Built for teams with high throughput and priority support needs.",
-    features: [
-      "10,000 API calls / month",
-      "All component types (X1, X2, X4)",
-      "Download & deploy all components",
-      "Multiple API keys (1 agent per key)",
-      "Priority latency queue",
-      "Email support (24h SLO)",
-      "Usage analytics dashboard",
-      "Webhook retries",
-    ],
-    highlight: true,
-    cta: "Start Pro",
-    badge: "Most Popular",
+    type: "X4",
+    label: "X4 — Reason Council",
+    color: "bg-amber-50 border-amber-200",
+    badge: "bg-amber-100 text-amber-700",
+    price: "From $49/mo",
+    description: "Multi-agent reasoning components for complex site and operational data.",
+    examples: ["The Site Board"],
   },
 ];
 
@@ -137,7 +107,28 @@ function isInIframe() {
   try { return window.self !== window.top; } catch { return true; }
 }
 
-function PlanCard({ plan, onSubscribe, loading, type }) {
+function ComponentTypeCard({ tier }) {
+  return (
+    <div className={`rounded-2xl border p-6 flex flex-col ${tier.color}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${tier.badge}`}>{tier.type}</span>
+      </div>
+      <h3 className="text-base font-bold text-slate-900 mb-1">{tier.label}</h3>
+      <p className="text-xs text-slate-500 mb-4">{tier.description}</p>
+      <div className="text-2xl font-black text-slate-900 mb-4">{tier.price} <span className="text-sm font-normal text-slate-400">per component</span></div>
+      <div className="text-xs text-slate-500 mb-1 font-semibold">Example components:</div>
+      <ul className="space-y-1 flex-1">
+        {tier.examples.map(e => (
+          <li key={e} className="flex items-center gap-2 text-xs text-slate-600">
+            <Check className="w-3 h-3 text-emerald-500 shrink-0" />{e}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PlanCard({ plan, onSubscribe, loading }) {
   const Icon = plan.icon;
   const isHighlight = plan.highlight;
 
@@ -153,18 +144,13 @@ function PlanCard({ plan, onSubscribe, loading, type }) {
       </div>
       <h2 className={`text-lg font-bold mb-1 ${isHighlight ? "text-white" : "text-slate-900"}`}>{plan.name}</h2>
       <p className={`text-xs mb-4 ${isHighlight ? "text-slate-300" : "text-slate-500"}`}>{plan.description}</p>
-
-      <div className="flex items-end gap-1 mb-2">
+      <div className="flex items-end gap-1 mb-6">
         <span className={`text-4xl font-black ${isHighlight ? "text-white" : "text-slate-900"}`}>${plan.price}</span>
         <span className={`text-sm mb-1 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>/month</span>
       </div>
-
-      {type === "builder" && plan.revenueShare && (
-        <div className={`text-xs font-bold mb-4 px-2 py-1 rounded-lg inline-block ${isHighlight ? "bg-violet-600 text-white" : "bg-emerald-50 text-emerald-700"}`}>
-          Up to {plan.revenueShare} Revenue Share
-        </div>
-      )}
-
+      <div className={`text-xs font-bold mb-4 px-2 py-1 rounded-lg inline-block ${isHighlight ? "bg-violet-600 text-white" : "bg-emerald-50 text-emerald-700"}`}>
+        Up to {plan.revenueShare} Revenue Share
+      </div>
       <ul className="space-y-2.5 mb-8 flex-1">
         {plan.features.map(f => (
           <li key={f} className="flex items-start gap-2 text-sm">
@@ -173,11 +159,9 @@ function PlanCard({ plan, onSubscribe, loading, type }) {
           </li>
         ))}
       </ul>
-
-      {type === "builder" && plan.revenueDetail && (
+      {plan.revenueDetail && (
         <p className={`text-[10px] mb-4 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>{plan.revenueDetail}</p>
       )}
-
       <Button
         onClick={() => onSubscribe(plan.key)}
         disabled={loading === plan.key}

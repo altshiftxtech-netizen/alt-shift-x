@@ -52,7 +52,6 @@ export default function BuilderDashboard() {
           </div>
         </div>
       </div>
-    </div>
       <BuilderTestBot />
     </div>
   );
