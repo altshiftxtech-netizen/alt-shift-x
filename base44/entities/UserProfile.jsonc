@@ -1,0 +1,131 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string",
+      "enum": [
+        "General Contractor",
+        "Subcontractor",
+        "Owner/Developer",
+        "Architecture & Engineering",
+        "Construction Management",
+        "Government/Public Sector",
+        "Other"
+      ]
+    },
+    "company_size": {
+      "type": "string",
+      "enum": [
+        "1-10",
+        "11-50",
+        "51-200",
+        "201-1000",
+        "1000+"
+      ]
+    },
+    "country": {
+      "type": "string"
+    },
+    "state_province": {
+      "type": "string"
+    },
+    "use_case": {
+      "type": "string",
+      "description": "Primary intended use case for the platform"
+    },
+    "how_did_you_hear": {
+      "type": "string",
+      "enum": [
+        "Google Search",
+        "LinkedIn",
+        "Colleague Referral",
+        "Industry Conference",
+        "Trade Publication",
+        "Other"
+      ]
+    },
+    "agreed_to_terms": {
+      "type": "boolean",
+      "default": false
+    },
+    "agreed_to_privacy": {
+      "type": "boolean",
+      "default": false
+    },
+    "intake_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "intake_completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "welcome_email_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "first_name",
+    "last_name",
+    "email"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

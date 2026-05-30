@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Zap, Users, Star, Package } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Users, Star, Package, X, LogOut, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
+import { useAuth } from "@/lib/AuthContext";
 
 const FEATURED = [
   { name: "Ironclad Protocol", type: "X1", category: "Risk & Compliance", rating: 4.4, installs: 847, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements." },
@@ -20,7 +21,40 @@ const STATS = [
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
 
+function InstallCTAModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"><X className="w-5 h-5" /></button>
+        <div className="w-14 h-14 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Package className="w-7 h-7 text-violet-700" />
+        </div>
+        <h2 className="text-xl font-black text-slate-900 text-center mb-2">Login Required to Install</h2>
+        <p className="text-slate-500 text-sm text-center mb-6">
+          You need an account to install AI components. Sign up free to get started — it only takes 2 minutes.
+        </p>
+        <div className="space-y-2">
+          <Link to="/register" onClick={onClose}>
+            <Button className="w-full bg-violet-700 hover:bg-violet-800 text-white h-11 gap-2">
+              <UserPlus className="w-4 h-4" /> Create Free Account
+            </Button>
+          </Link>
+          <Link to="/login" onClick={onClose}>
+            <Button variant="outline" className="w-full h-11 gap-2">
+              <LogIn className="w-4 h-4" /> Sign In
+            </Button>
+          </Link>
+        </div>
+        <p className="text-[11px] text-slate-400 text-center mt-4">No credit card required to sign up</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
   useEffect(() => {
     setSEOMeta({
       title: "Alt+Shift+X Market — Verified AI Components for Construction Intelligence",
@@ -35,6 +69,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
+      {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
       <nav className="border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <Logo className="h-8 w-auto" />
@@ -45,8 +80,19 @@ export default function Home() {
           <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white">Contact</Link>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/login"><Button variant="ghost" className="text-sm h-8">Sign in</Button></Link>
-          <Link to="/register"><Button className="text-sm h-8 bg-slate-900 dark:bg-violet-700 hover:bg-slate-700 dark:hover:bg-violet-600">Get started</Button></Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard"><Button variant="ghost" className="text-sm h-8">Dashboard</Button></Link>
+              <Button variant="outline" className="text-sm h-8 gap-1.5" onClick={() => logout()}>
+                <LogOut className="w-3.5 h-3.5" /> Sign out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login"><Button variant="ghost" className="text-sm h-8 gap-1.5"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
+              <Link to="/register"><Button className="text-sm h-8 bg-slate-900 dark:bg-violet-700 hover:bg-slate-700 dark:hover:bg-violet-600 gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -68,9 +114,15 @@ export default function Home() {
               Browse Marketplace <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <Link to="/builder">
-            <Button variant="outline" className="h-11 px-6 text-sm">Start Building</Button>
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/builder">
+              <Button variant="outline" className="h-11 px-6 text-sm">Start Building</Button>
+            </Link>
+          ) : (
+            <Button variant="outline" className="h-11 px-6 text-sm" onClick={() => setShowInstallModal(true)}>
+              Install a Component
+            </Button>
+          )}
         </div>
       </section>
 

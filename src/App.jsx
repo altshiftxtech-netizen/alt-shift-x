@@ -58,6 +58,7 @@ import BuilderAnalyticsSuite from './pages/BuilderAnalyticsSuite';
 import BuilderLeaderboard from './pages/BuilderLeaderboard';
 import GamificationAdmin from './pages/GamificationAdmin';
 import PayoutSettings from './pages/PayoutSettings';
+import UserOnboarding from './pages/UserOnboarding';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -97,6 +98,7 @@ const AuthenticatedApp = () => {
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
+      <Route path="/onboarding" element={<UserOnboarding />} />
 
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
