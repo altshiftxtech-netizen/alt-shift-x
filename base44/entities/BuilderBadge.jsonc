@@ -1,0 +1,97 @@
+{
+  "name": "BuilderBadge",
+  "type": "object",
+  "properties": {
+    "builder_id": {
+      "type": "string",
+      "description": "User ID of the builder"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze"
+    },
+    "total_installs": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_installs": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "component_count": {
+      "type": "number",
+      "default": 0
+    },
+    "certified_count": {
+      "type": "number",
+      "default": 0
+    },
+    "momentum_score": {
+      "type": "number",
+      "default": 0
+    },
+    "leaderboard_score": {
+      "type": "number",
+      "default": 0
+    },
+    "badges_earned": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Unique referral code for this builder"
+    },
+    "referral_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of successful referrals"
+    },
+    "referral_earnings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total earnings from referrals in USD"
+    },
+    "revenue_share_pct": {
+      "type": "number",
+      "default": 70
+    },
+    "stripe_connect_account_id": {
+      "type": "string",
+      "description": "Stripe Connect Express account ID"
+    },
+    "stripe_connect_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "restricted",
+        "disabled"
+      ],
+      "description": "Connect account status"
+    },
+    "last_calculated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "builder_id"
+  ]
+}

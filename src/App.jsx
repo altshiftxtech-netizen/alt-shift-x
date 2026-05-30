@@ -56,6 +56,7 @@ import BuilderTestLab from './pages/BuilderTestLab';
 import BuilderAnalyticsSuite from './pages/BuilderAnalyticsSuite';
 import BuilderLeaderboard from './pages/BuilderLeaderboard';
 import GamificationAdmin from './pages/GamificationAdmin';
+import PayoutSettings from './pages/PayoutSettings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -132,6 +133,7 @@ const AuthenticatedApp = () => {
       <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
       <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
       <Route path="/admin/gamification" element={<GamificationAdmin />} />
+      <Route path="/builder/payout-settings" element={<PayoutSettings />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
