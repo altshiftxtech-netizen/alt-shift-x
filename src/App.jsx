@@ -96,6 +96,7 @@ const AuthenticatedApp = () => {
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
       <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="/mobile" element={<MobileApp />} />
+      <Route path="/builder/agreement" element={<BuilderAgreement />} />
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
       <Route path="/onboarding" element={<UserOnboarding />} />
@@ -121,7 +122,6 @@ const AuthenticatedApp = () => {
         <Route path="/builder/reviews" element={<BuilderReviews />} />
         <Route path="/builder/publish" element={<BuilderPublish />} />
         <Route path="/builder/profile" element={<BuilderProfile />} />
-        <Route path="/builder/agreement" element={<BuilderAgreement />} />
         <Route path="/builder/bob" element={<BobBuilder />} />
         <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
         <Route path="/builder/governance" element={<GovernanceDashboard />} />

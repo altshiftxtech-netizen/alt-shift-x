@@ -30,7 +30,7 @@ export default function UserOnboarding() {
     company_name: "", job_title: "", industry: "", company_size: "",
     country: "", state_province: "",
     use_case: "", how_did_you_hear: "",
-    agreed_to_terms: false, agreed_to_privacy: false,
+    agreed_to_terms: false, agreed_to_privacy: false, agreed_to_builder: false,
   });
 
   useEffect(() => {
@@ -209,6 +209,10 @@ export default function UserOnboarding() {
                     <input type="checkbox" checked={form.agreed_to_privacy} onChange={e => set("agreed_to_privacy", e.target.checked)} className="mt-0.5" />
                     <span className="text-xs text-slate-600">I agree to the <a href="/privacy" target="_blank" className="text-violet-700 hover:underline">Privacy Policy</a> *</span>
                   </label>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={form.agreed_to_builder} onChange={e => set("agreed_to_builder", e.target.checked)} className="mt-0.5" />
+                    <span className="text-xs text-slate-600">I have read and agree to the <a href="/builder/agreement" target="_blank" className="text-violet-700 hover:underline">Builder Agreement</a> *</span>
+                  </label>
                 </div>
               </>
             )}
@@ -231,7 +235,7 @@ export default function UserOnboarding() {
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
                   onClick={handleSubmit}
-                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy}
+                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy || !form.agreed_to_builder}
                 >
                   {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-1" />Submitting...</> : "Submit Application"}
                 </Button>
