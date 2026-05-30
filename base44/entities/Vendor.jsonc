@@ -80,7 +80,7 @@
     "create": {
       "$or": [
         {
-          "id": "{{user.id}}"
+          "created_by_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -92,7 +92,10 @@
     "read": {
       "$or": [
         {
-          "id": "{{user.id}}"
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.contact_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -104,7 +107,10 @@
     "update": {
       "$or": [
         {
-          "id": "{{user.id}}"
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.contact_email": "{{user.email}}"
         },
         {
           "user_condition": {
