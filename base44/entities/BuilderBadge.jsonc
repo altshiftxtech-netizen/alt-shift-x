@@ -127,6 +127,9 @@
   ],
   "rls": {
     "create": {
+      "data.builder_id": "{{user.id}}"
+    },
+    "read": {
       "$or": [
         {
           "data.builder_id": "{{user.id}}"
@@ -138,7 +141,6 @@
         }
       ]
     },
-    "read": {},
     "update": {
       "$or": [
         {
