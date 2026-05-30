@@ -59,6 +59,10 @@ import BuilderLeaderboard from './pages/BuilderLeaderboard';
 import GamificationAdmin from './pages/GamificationAdmin';
 import PayoutSettings from './pages/PayoutSettings';
 import UserOnboarding from './pages/UserOnboarding';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -100,6 +104,10 @@ const AuthenticatedApp = () => {
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
       <Route path="/onboarding" element={<UserOnboarding />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
