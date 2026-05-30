@@ -168,6 +168,33 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Builder Agreement Section */}
+      {!isAuthenticated && (
+        <section className="max-w-3xl mx-auto px-6 py-16">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-2">Builder Agreement</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              You must be signed in to view the full agreement. The complete text is only available to registered platform members.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/login">
+                <Button className="bg-violet-700 hover:bg-violet-800 text-white gap-2">
+                  <LogIn className="w-4 h-4" /> Sign In
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button className="bg-slate-900 hover:bg-slate-700 text-white gap-2">
+                  Create Account →
+                </Button>
+              </Link>
+              <Link to="/builder/agreement" className="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline self-center">
+                View Agreement Details
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* CTA */}
       <section className="bg-slate-900 dark:bg-slate-950 py-16 text-center">
         <h2 className="text-3xl font-black text-white mb-4">Ready to build smarter?</h2>

@@ -117,18 +117,8 @@ function AgreementModal({ onClose, onAccepted }) {
 
 // ── Public Page ───────────────────────────────────────────────────────────────
 export default function BuilderAgreement() {
-  const { isAuthenticated } = useAuth();
-  const [showModal, setShowModal] = useState(false);
-  const [accepted, setAccepted] = useState(false);
-
   return (
     <div className="min-h-screen bg-slate-50">
-      {showModal && (
-        <AgreementModal
-          onClose={() => setShowModal(false)}
-          onAccepted={() => setAccepted(true)}
-        />
-      )}
 
       {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-3 flex items-center gap-2">
