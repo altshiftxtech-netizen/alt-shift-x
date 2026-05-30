@@ -184,7 +184,6 @@ export default function Home() {
           <Link to="/privacy" className="hover:text-slate-600">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-slate-600">Terms of Service</Link>
           <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
-          <Link to="/builder/bob" className="hover:text-slate-600">BOB Builder</Link>
         </div>
         <p>© 2026 Alt+Shift+X. All rights reserved.</p>
       </footer>
