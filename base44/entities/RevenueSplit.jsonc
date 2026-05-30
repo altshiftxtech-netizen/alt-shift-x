@@ -1,0 +1,101 @@
+{
+  "name": "RevenueSplit",
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "string",
+      "description": "YYYY-MM billing period"
+    },
+    "builder_id": {
+      "type": "string"
+    },
+    "component_id": {
+      "type": "string"
+    },
+    "component_name": {
+      "type": "string"
+    },
+    "gross_revenue": {
+      "type": "number",
+      "description": "Total collected from subscribers"
+    },
+    "builder_pct": {
+      "type": "number",
+      "description": "Builder revenue share %"
+    },
+    "builder_payout": {
+      "type": "number"
+    },
+    "platform_take": {
+      "type": "number"
+    },
+    "certification_bonus_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "volume_rebate_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "tier_at_period": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "paid"
+      ],
+      "default": "pending"
+    },
+    "stripe_transfer_id": {
+      "type": "string"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "period",
+    "builder_id",
+    "component_id",
+    "gross_revenue"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
