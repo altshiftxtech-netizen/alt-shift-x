@@ -169,7 +169,8 @@ export default function AccountSettings() {
 
   const TABS = ALL_TABS.filter(t => !t.adminOnly || isAdmin);
 
-  const tabContent = { profile: <ProfileTab />, security: <SecurityTab />, notifications: <NotificationsTab />, billing: <BillingTab />, developer: <DeveloperTab /> };
+  const tabComponents = { profile: ProfileTab, security: SecurityTab, notifications: NotificationsTab, billing: BillingTab, developer: DeveloperTab };
+  const ActiveTab = tabComponents[activeTab] || ProfileTab;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -189,7 +190,7 @@ export default function AccountSettings() {
               ))}
             </div>
           </aside>
-          <div className="flex-1">{tabContent[activeTab]}</div>
+          <div className="flex-1"><ActiveTab /></div>
         </div>
       </div>
     </div>
