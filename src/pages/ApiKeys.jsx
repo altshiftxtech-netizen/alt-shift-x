@@ -227,7 +227,10 @@ function ApiKeyRow({ apiKey, onRevoke }) {
     }
   };
 
-  const masked = apiKey.key.substring(0, 4) + "•••••••••••••••••••••••••" + apiKey.key.slice(-4);
+  const keyStr = apiKey.key || "";
+  const masked = keyStr.length > 8
+    ? keyStr.substring(0, 4) + "•••••••••••••••••••••••••" + keyStr.slice(-4)
+    : "••••••••••••••••••••••••••••••••";
   const lastUsed = apiKey.last_used ? new Date(apiKey.last_used).toLocaleDateString() : "Never";
   const neverUsed = lastUsed === "Never";
 
