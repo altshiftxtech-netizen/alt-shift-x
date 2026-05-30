@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Bot, X, Send, Loader2, Lock } from "lucide-react";
+import { Bot, X, Send, Loader2, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
 /**
@@ -87,6 +88,11 @@ export default function BuilderTestBot() {
                 <p className="text-sm font-bold">BOT-X</p>
                 <p className="text-[10px] text-violet-300">Builder-Exclusive Test Agent</p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/builder/test-lab" className="text-[10px] text-violet-300 hover:text-white flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" /> Full Lab
+              </Link>
             </div>
             <button onClick={() => setOpen(false)} className="text-violet-300 hover:text-white">
               <X className="w-4 h-4" />

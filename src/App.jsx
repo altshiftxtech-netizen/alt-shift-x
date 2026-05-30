@@ -52,6 +52,7 @@ import ComponentVersionHistory from './pages/ComponentVersionHistory';
 import WebhookManager from './pages/WebhookManager';
 import GovernanceDashboard from './pages/GovernanceDashboard';
 import PlatformIntelligence from './pages/PlatformIntelligence';
+import BuilderTestLab from './pages/BuilderTestLab';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -124,6 +125,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard/webhooks" element={<WebhookManager />} />
       <Route path="/builder/governance" element={<GovernanceDashboard />} />
       <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
+      <Route path="/builder/test-lab" element={<BuilderTestLab />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

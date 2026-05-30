@@ -20,6 +20,7 @@ const BUILDER_NAV = [
   { to: "/builder/trust", label: "Trust", icon: ShieldCheck },
   { to: "/builder/governance", label: "Governance", icon: ShieldCheck },
   { to: "/builder/revenue", label: "Revenue", icon: BarChart2 },
+  { to: "/builder/test-lab", label: "Test Lab", icon: BarChart2 },
 ];
 
 export default function SharedNav({ mode = "user" }) {
