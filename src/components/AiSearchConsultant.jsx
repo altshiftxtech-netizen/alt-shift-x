@@ -1,69 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { Sparkles, Send, Loader2, Mic } from "lucide-react";
 
 export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsumed }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conversation, setConversation] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  const voiceFiredRef = useRef("");
 
-  // Auto-fire when a voice command is injected
-  React.useEffect(() => {
-    if (voiceQuery && voiceQuery.trim()) {
+  // Auto-fire when a voice command is injected — guard against double-fire
+  useEffect(() => {
+    if (voiceQuery && voiceQuery.trim() && voiceQuery !== voiceFiredRef.current) {
+      voiceFiredRef.current = voiceQuery;
       setQuery(voiceQuery);
-      // Small delay so user sees the text before it fires
       const t = setTimeout(() => {
-        setQuery(voiceQuery);
-        handleVoiceSubmit(voiceQuery);
+        startConsultation(voiceQuery);
         onVoiceQueryConsumed && onVoiceQueryConsumed();
-      }, 400);
+      }, 450);
       return () => clearTimeout(t);
     }
   }, [voiceQuery]);
 
-  const handleVoiceSubmit = async (text) => {
-    if (!text.trim()) return;
+  const startConsultation = async (text) => {
+    const q = (text || query).trim();
+    if (!q) return;
     setLoading(true);
     try {
       const conv = await base44.agents.createConversation({
         agent_name: "sales_consultant",
-        metadata: { name: "Voice Consultation", description: `Voice query: ${text}` }
+        metadata: { name: "Consultation", description: `Query: ${q}` }
       });
-      await base44.agents.addMessage(conv, { role: "user", content: text });
-      setConversation(conv);
-      setShowChat(true);
-      setQuery("");
-    } catch (err) {
-      alert("Failed to start consultation: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const [conversation, setConversation] = useState(null);
-  const [showChat, setShowChat] = useState(false);
-
-  const startConsultation = async () => {
-    if (!query.trim()) return;
-
-    setLoading(true);
-    try {
-      // Create conversation with Sales Consultant agent
-      const conv = await base44.agents.createConversation({
-        agent_name: "sales_consultant",
-        metadata: {
-          name: "Sales Consultation",
-          description: `User query: ${query}`
-        }
-      });
-
-      // Send user message
-      await base44.agents.addMessage(conv, {
-        role: "user",
-        content: query
-      });
-
+      await base44.agents.addMessage(conv, { role: "user", content: q });
       setConversation(conv);
       setShowChat(true);
       setQuery("");
@@ -75,7 +46,7 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
   };
 
   if (showChat && conversation) {
-    return <ChatInterface conversation={conversation} onClose={() => setShowChat(false)} />;
+    return <ChatInterface conversation={conversation} onClose={() => { setShowChat(false); setConversation(null); }} />;
   }
 
   return (
@@ -84,19 +55,22 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-violet-600" />
           <p className="font-semibold text-slate-900">AI Sales Consultant</p>
+          <span className="ml-auto flex items-center gap-1 text-[10px] text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full">
+            <Mic className="w-2.5 h-2.5" /> Voice-enabled
+          </span>
         </div>
         <p className="text-xs text-slate-600 mb-4">
-          Get personalized component recommendations, analyze capabilities, or ask technical questions. Our AI analyzes your needs and suggests the best solutions—including transparent recommendations for products beyond our platform.
+          Get personalized component recommendations or ask technical questions. Voice commands supported — just say your query.
         </p>
         <div className="flex gap-2">
           <Input
-            placeholder="Ask about components, analysis, or project needs..."
+            placeholder="Ask about components, analysis, or project needs…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && startConsultation()}
             className="text-sm"
           />
-          <Button onClick={startConsultation} disabled={loading || !query.trim()} className="gap-2 bg-violet-600 hover:bg-violet-700">
+          <Button onClick={() => startConsultation()} disabled={loading || !query.trim()} className="gap-2 bg-violet-600 hover:bg-violet-700">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
@@ -109,58 +83,58 @@ function ChatInterface({ conversation, onClose }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState(conversation.messages || []);
   const [sending, setSending] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
+      setMessages(data.messages);
+    });
+    return () => unsubscribe();
+  }, [conversation.id]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-
+    if (!input.trim() || sending) return;
     setSending(true);
     try {
-      await base44.agents.addMessage(conversation, {
-        role: "user",
-        content: input
-      });
-
-      // Subscribe to updates
-      const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
-        setMessages(data.messages);
-      });
-
+      await base44.agents.addMessage(conversation, { role: "user", content: input });
       setInput("");
-      return () => unsubscribe();
     } catch (err) {
-      alert("Failed to send message: " + err.message);
+      alert("Failed to send: " + err.message);
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-96 shadow-2xl flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-600 to-blue-600">
+    <Card className="fixed bottom-6 right-24 w-96 h-[28rem] shadow-2xl flex flex-col z-40">
+      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-600 to-blue-600 rounded-t-xl">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-white" />
           <p className="text-sm font-semibold text-white">Sales Consultant</p>
         </div>
-        <button onClick={onClose} className="text-white hover:opacity-80">✕</button>
+        <button onClick={onClose} className="text-white hover:opacity-80 text-lg leading-none">✕</button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs px-3 py-2 rounded-lg text-xs ${
-              msg.role === 'user'
-                ? 'bg-violet-600 text-white'
-                : 'bg-slate-100 text-slate-900'
+          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-xs px-3 py-2 rounded-xl text-xs leading-relaxed ${
+              msg.role === "user" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900"
             }`}>
               {msg.content}
             </div>
           </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
-      <div className="p-4 border-t flex gap-2">
+      <div className="p-3 border-t flex gap-2">
         <Input
-          placeholder="Follow-up question..."
+          placeholder="Follow-up question…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}

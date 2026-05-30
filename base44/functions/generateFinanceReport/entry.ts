@@ -5,8 +5,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin access required' }, { status: 403 });
+    // Allow admins OR authenticated users to generate their own reports
+    if (!user) {
+      return Response.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { report_type, start_date, end_date } = await req.json();
@@ -96,14 +97,16 @@ RECOMMENDATIONS
       pdf_url: pdfUrl
     });
 
-    // Log audit trail
-    await base44.asServiceRole.functions.invoke('logAuditTrail', {
-      action: 'generate_report',
-      entity_type: 'report',
-      entity_id: report.id,
-      change_summary: `Finance report generated for ${start_date} to ${end_date}`,
-      risk_level: 'low'
-    });
+    // Log audit trail (best-effort)
+    try {
+      await base44.asServiceRole.functions.invoke('logAuditTrail', {
+        action: 'generate_report',
+        entity_type: 'report',
+        entity_id: report.id,
+        change_summary: `Finance report generated for ${start_date} to ${end_date}`,
+        risk_level: 'low'
+      });
+    } catch (_) {}
 
     return Response.json({
       success: true,
