@@ -193,43 +193,10 @@ export default function BuilderAgreement() {
           </p>
         </div>
 
-        {/* CTA */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6">
-          <h3 className="font-bold text-slate-900 mb-2">Review & Accept the Full Agreement</h3>
-          <p className="text-sm text-slate-500 mb-4">
-            {isAuthenticated
-              ? "Click below to view the complete Builder Agreement. You must scroll through the full document and check the acceptance box to confirm your agreement."
-              : "You must be signed in to view the full agreement. The complete text is only available to registered platform members."}
-          </p>
-          {!isAuthenticated ? (
-            <Link to="/login">
-              <Button className="bg-violet-700 hover:bg-violet-800 text-white gap-2">
-                <LogIn className="w-4 h-4" /> Sign In to View Full Agreement
-              </Button>
-            </Link>
-          ) : accepted ? (
-            <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm">
-              <CheckCircle2 className="w-5 h-5" /> Agreement accepted — you may proceed to publish.
-            </div>
-          ) : (
-            <Button className="bg-violet-700 hover:bg-violet-800 text-white gap-2" onClick={() => setShowModal(true)}>
-              <Eye className="w-4 h-4" /> View Full Agreement
-            </Button>
-          )}
-          <div className="flex flex-wrap gap-3 pt-4 mt-4 border-t border-slate-100">
-            {isAuthenticated ? (
-              <Link to="/builder/publish" className="text-xs bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-                Publish a Component →
-              </Link>
-            ) : (
-              <Link to="/register" className="text-xs bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-                Create Account to Publish →
-              </Link>
-            )}
-            <Link to="/terms" className="text-xs text-violet-600 font-semibold hover:underline self-center">Terms of Service</Link>
-            <Link to="/privacy" className="text-xs text-violet-600 font-semibold hover:underline self-center">Privacy Policy</Link>
-            <Link to="/" className="text-xs text-slate-400 hover:underline self-center ml-auto">Back to Platform</Link>
-          </div>
+        {/* Footer links */}
+        <div className="flex flex-wrap gap-3 pt-4">
+          <Link to="/terms" className="text-xs text-violet-600 font-semibold hover:underline">Terms of Service</Link>
+          <Link to="/privacy" className="text-xs text-violet-600 font-semibold hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>
