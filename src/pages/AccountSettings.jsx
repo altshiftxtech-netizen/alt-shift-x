@@ -7,13 +7,14 @@ import { User, Lock, Bell, CreditCard, CheckCircle2, Zap } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import CommandPromptToggle from "@/components/CommandPromptToggle";
 import TestModeSelector from "@/components/TestModeSelector";
+import { useAuth } from "@/lib/AuthContext";
 
-const TABS = [
+const ALL_TABS = [
   { id: "profile", label: "Profile", icon: User },
   { id: "security", label: "Security", icon: Lock },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "developer", label: "Developer", icon: Zap },
+  { id: "developer", label: "Developer", icon: Zap, adminOnly: true },
 ];
 
 function ProfileTab() {
@@ -163,6 +164,10 @@ function BillingTab() {
 
 export default function AccountSettings() {
   const [activeTab, setActiveTab] = useState("profile");
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
+  const TABS = ALL_TABS.filter(t => !t.adminOnly || isAdmin);
 
   const tabContent = { profile: <ProfileTab />, security: <SecurityTab />, notifications: <NotificationsTab />, billing: <BillingTab />, developer: <DeveloperTab /> };
 
