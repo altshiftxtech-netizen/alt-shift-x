@@ -222,7 +222,7 @@ export default function UserOnboarding() {
               {step > 0 ? (
                 <Button variant="outline" onClick={() => setStep(s => s - 1)} className="text-sm">← Back</Button>
               ) : (
-                <div />
+                <Button variant="outline" onClick={() => navigate("/")} className="text-sm">Exit</Button>
               )}
               {step < STEPS.length - 1 ? (
                 <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm" onClick={() => setStep(s => s + 1)}
