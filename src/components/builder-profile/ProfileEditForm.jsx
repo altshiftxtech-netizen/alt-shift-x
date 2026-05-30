@@ -1,15 +1,39 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
 
 const ALL_SPECS = ["Risk & Compliance", "Site Reporting", "Bid Estimation", "Project Management", "Scheduling", "Financial Analysis", "Document Generation", "Contract Administration"];
 
 export default function ProfileEditForm({ profile, onSave }) {
   const [form, setForm] = useState({ ...profile });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const toggleSpec = (spec) => {
     const has = form.specializations.includes(spec);
     setForm(f => ({ ...f, specializations: has ? f.specializations.filter(s => s !== spec) : [...f.specializations, spec] }));
+  };
+
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await base44.functions.invoke('updateBuilderProfile', {
+        display_name: form.name,
+        tagline: form.tagline,
+        bio: form.bio,
+        website: form.website,
+        twitter: form.twitter,
+        location: form.location,
+        specializations: form.specializations
+      });
+      onSave(form);
+    } catch (err) {
+      setError(err.message || 'Failed to save profile');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,9 +86,18 @@ export default function ProfileEditForm({ profile, onSave }) {
           <input value={form.twitter} onChange={e => setForm(f => ({ ...f, twitter: e.target.value }))}
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
         </div>
+        {error && (
+          <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
         <div className="pt-2">
-          <Button onClick={() => onSave(form)} className="w-full bg-violet-700 hover:bg-violet-800 text-white">
-            Save Profile
+          <Button 
+            onClick={handleSaveProfile} 
+            disabled={loading}
+            className="w-full bg-violet-700 hover:bg-violet-800 text-white disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Profile'}
           </Button>
         </div>
       </CardContent>

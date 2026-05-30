@@ -86,6 +86,37 @@
       ],
       "description": "Connect account status"
     },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name for the builder's profile"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "One-line tagline for the builder's profile"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Builder bio/about section (markdown supported)"
+    },
+    "website": {
+      "type": "string",
+      "description": "Builder's website URL for bio information and portfolio"
+    },
+    "twitter": {
+      "type": "string",
+      "description": "Builder's Twitter/X handle"
+    },
+    "location": {
+      "type": "string",
+      "description": "Builder's geographic location"
+    },
+    "specializations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of specialization areas (Risk & Compliance, Project Management, etc.)"
+    },
     "last_calculated": {
       "type": "string",
       "format": "date-time"
