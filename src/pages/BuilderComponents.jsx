@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive } from "lucide-react";
+import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap } from "lucide-react";
+import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
+import VersionHistoryPanel from "@/components/version-manager/VersionHistoryPanel";
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_COMPONENTS = [
@@ -98,7 +100,7 @@ function TrustBadge({ score }) {
   return <span className={`text-sm font-black ${color}`}>{score}<span className="text-xs font-normal text-slate-400">/100</span></span>;
 }
 
-function ComponentCard({ component: c, onViewHistory }) {
+function ComponentCard({ component: c, onViewHistory, onReleaseVersion }) {
   return (
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="pt-5 pb-4">
@@ -144,6 +146,11 @@ function ComponentCard({ component: c, onViewHistory }) {
           <Button variant="outline" className="flex-1 text-xs h-8 gap-1.5" onClick={onViewHistory}>
             <History className="w-3.5 h-3.5" /> History
           </Button>
+          {c.status === "published" && (
+            <Button className="flex-1 text-xs h-8 gap-1.5 bg-violet-700 hover:bg-violet-800" onClick={onReleaseVersion}>
+              <Zap className="w-3.5 h-3.5" /> Release
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -190,6 +197,7 @@ function VersionHistoryDrawer({ component, onClose }) {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function BuilderComponents() {
   const [drawerComponent, setDrawerComponent] = useState(null);
+  const [releaseComponent, setReleaseComponent] = useState(null);
   const [filter, setFilter] = useState("all");
 
   const filtered = filter === "all" ? MOCK_COMPONENTS : MOCK_COMPONENTS.filter(c => c.status === filter);
@@ -234,13 +242,30 @@ export default function BuilderComponents() {
         {/* Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filtered.map(comp => (
-            <ComponentCard key={comp.id} component={comp} onViewHistory={() => setDrawerComponent(comp)} />
+            <ComponentCard 
+              key={comp.id} 
+              component={comp} 
+              onViewHistory={() => setDrawerComponent(comp)}
+              onReleaseVersion={() => setReleaseComponent(comp)}
+            />
           ))}
         </div>
       </div>
 
       {drawerComponent && (
         <VersionHistoryDrawer component={drawerComponent} onClose={() => setDrawerComponent(null)} />
+      )}
+
+      {releaseComponent && (
+        <VersionReleaseModal
+          component={releaseComponent}
+          isOpen={!!releaseComponent}
+          onClose={() => setReleaseComponent(null)}
+          onSuccess={() => {
+            setReleaseComponent(null);
+            setDrawerComponent(null);
+          }}
+        />
       )}
     </div>
   );
