@@ -3,9 +3,9 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 
 // Builder subscription plan → Stripe price ID
 const BUILDER_PLANS = {
-  base_operator: "price_1TcLVDAuii7slVl8xjcUnYXz",
-  strategic_architect: "price_1TcLVDAuii7slVl8e8AbgOFM",
-  sovereign_commander: "price_1TcLVDAuii7slVl8vpF3DTr6",
+  base_operator: "price_1TchShAuii7slVl8cjUHwt2G",       // $49/mo — Base Operator
+  strategic_architect: "price_1TchShAuii7slVl8hg94QmAi", // $149/mo — Strategic Architect
+  sovereign_commander: "price_1TchShAuii7slVl82wPKIzAt",  // $499/mo — Sovereign Commander
 };
 
 Deno.serve(async (req) => {
