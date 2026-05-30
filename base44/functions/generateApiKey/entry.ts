@@ -26,10 +26,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description } = await req.json();
+    const { name, description, agent_name } = await req.json();
 
     if (!name) {
       return Response.json({ error: "name is required" }, { status: 400 });
+    }
+
+    // RULE: Each API key can be paired with at most 1 agent.
+    // RULE: All keys on an account count toward ONE monthly subscription.
+    // There is no limit on how many keys a user can create.
+
+    // Check if agent_name is already paired to another active key for this user
+    if (agent_name) {
+      const existingKeysWithAgent = await base44.entities.ApiKey.filter({
+        user_id: user.id,
+        status: "active",
+        agent_name: agent_name,
+      });
+      if (existingKeysWithAgent.length > 0) {
+        return Response.json({
+          error: `Agent "${agent_name}" is already paired with an existing API key. Each agent can only be paired with one key at a time. Revoke the existing key first or create a new key with a different agent.`
+        }, { status: 409 });
+      }
     }
 
     const plainKey = generateRandomKey();
@@ -40,15 +58,17 @@ Deno.serve(async (req) => {
       name,
       description: description || "",
       key_hash: keyHash,
+      agent_name: agent_name || null,
       status: "active",
     });
 
-    console.log(`API key generated: user=${user.id}, name=${name}`);
+    console.log(`API key generated: user=${user.id}, name=${name}, agent=${agent_name || "none"}`);
 
     return Response.json({
       key: plainKey,
       masked: `${plainKey.slice(0, 4)}...${plainKey.slice(-4)}`,
-      message: "Store this key securely — you won't be able to see it again.",
+      agent_name: agent_name || null,
+      message: "Store this key securely — you won't be able to see it again. This key is paired with your account's single monthly subscription.",
     }, { status: 201 });
   } catch (error) {
     console.error("generateApiKey error:", error.message);

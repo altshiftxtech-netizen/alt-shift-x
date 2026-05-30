@@ -6,6 +6,7 @@ import DashboardTrustSummary from "@/components/builder-dashboard/DashboardTrust
 import DashboardActivityFeed from "@/components/builder-dashboard/DashboardActivityFeed";
 import DashboardQuickLinks from "@/components/builder-dashboard/DashboardQuickLinks";
 import BobAdvisorWidget from "@/components/BobAdvisorWidget";
+import BuilderTestBot from "@/components/BuilderTestBot";
 
 const mockStats = {
   totalInstalls: 1362,
@@ -51,6 +52,8 @@ export default function BuilderDashboard() {
           </div>
         </div>
       </div>
+    </div>
+      <BuilderTestBot />
     </div>
   );
 }

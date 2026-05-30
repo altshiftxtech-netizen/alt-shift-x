@@ -92,10 +92,19 @@ function NewKeyModal({ apiKey, onClose }) {
   );
 }
 
+const AGENT_OPTIONS = [
+  { value: "", label: "No agent (API only)" },
+  { value: "sales_consultant", label: "Sales Consultant" },
+  { value: "customer_support", label: "Customer Support" },
+  { value: "bob_builder", label: "BOB Builder Advisor" },
+  { value: "builder_test_bot", label: "BOT-X Test Agent (Builders only)" },
+];
+
 // ── Create Key Form ───────────────────────────────────────────────────────────
 function CreateKeyForm({ onCreated, onCancel }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [agentName, setAgentName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
@@ -105,16 +114,19 @@ function CreateKeyForm({ onCreated, onCancel }) {
       const res = await base44.functions.invoke("generateApiKey", {
         name: name.trim(),
         description: description.trim(),
+        agent_name: agentName || null,
       });
       onCreated({
         name: name.trim(),
         key: res.data.key,
         description: description.trim(),
+        agent_name: agentName || null,
       });
       setName("");
       setDescription("");
+      setAgentName("");
     } catch (error) {
-      alert("Failed to generate key: " + error.message);
+      alert("Failed to generate key: " + (error.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -124,6 +136,9 @@ function CreateKeyForm({ onCreated, onCancel }) {
     <Card className="border-violet-200 bg-violet-50/30">
       <CardContent className="pt-5 space-y-3">
         <p className="text-sm font-bold text-slate-900">New API Key</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[10px] text-amber-800">
+          <strong>1 subscription, unlimited keys:</strong> All your keys count toward one monthly plan. Each key can be paired with at most 1 agent — different keys can use different agents.
+        </div>
         <div>
           <label className="text-xs text-slate-500 mb-1 block">Key name <span className="text-red-400">*</span></label>
           <Input
@@ -143,6 +158,18 @@ function CreateKeyForm({ onCreated, onCancel }) {
             onChange={e => setDescription(e.target.value)}
             className="text-sm bg-white"
           />
+        </div>
+        <div>
+          <label className="text-xs text-slate-500 mb-1 block">Pair with Agent <span className="text-slate-300">(optional — 1 agent per key)</span></label>
+          <select
+            value={agentName}
+            onChange={e => setAgentName(e.target.value)}
+            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-violet-400"
+          >
+            {AGENT_OPTIONS.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
         </div>
         <div className="flex gap-2 pt-1">
           <Button
@@ -183,6 +210,11 @@ function ApiKeyRow({ apiKey, onRevoke }) {
             <div className="flex items-center gap-2 mb-1">
               <Key className="w-3.5 h-3.5 text-violet-500 shrink-0" />
               <span className="text-sm font-bold text-slate-900 truncate">{apiKey.name}</span>
+              {apiKey.agent_name && (
+                <span className="text-[10px] font-semibold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                  🤖 {apiKey.agent_name}
+                </span>
+              )}
               {apiKey.description && (
                 <span className="text-[10px] text-slate-400 truncate hidden sm:block">{apiKey.description}</span>
               )}

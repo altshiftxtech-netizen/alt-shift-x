@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle2, Download, Loader2, Trash2 } from "lucide-react";
+import { CheckCircle2, Download, Loader2, Trash2, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function InstallButton({ component, size = "default" }) {
   const [installed, setInstalled] = useState(false);
@@ -20,6 +21,13 @@ export default function InstallButton({ component, size = "default" }) {
   }, [component.id]);
 
   const handleInstall = async () => {
+    // Check subscription before allowing download/install
+    const subs = await base44.entities.Subscription.filter({ status: "active" });
+    const hasPaid = subs && subs.length > 0 && !["free", "trial"].includes(subs[0]?.plan);
+    if (!hasPaid) {
+      window.location.href = "/pricing";
+      return;
+    }
     setLoading(true);
     const user = await base44.auth.me();
     const today = new Date().toISOString().split("T")[0];
