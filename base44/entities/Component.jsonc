@@ -123,21 +123,7 @@
     "create": {
       "data.builder_id": "{{user.id}}"
     },
-    "read": {
-      "$or": [
-        {
-          "data.status": "published"
-        },
-        {
-          "data.builder_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
+    "read": {},
     "update": {
       "$or": [
         {
@@ -151,16 +137,9 @@
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "data.builder_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
