@@ -1,12 +1,13 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
 import Marketplace from './pages/Marketplace';
@@ -74,66 +75,68 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
     }
+    // For auth_required, don't globally redirect — let ProtectedRoute handle it per-route
   }
 
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      {/* ── Public routes — no login required ── */}
       <Route path="/" element={<Home />} />
       <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
-      <Route path="/dashboard" element={<UserDashboard />} />
-      <Route path="/dashboard/installed" element={<InstalledComponents />} />
-      <Route path="/dashboard/usage" element={<UsageAnalytics />} />
-      <Route path="/builder/revenue" element={<BuilderRevenue />} />
-      <Route path="/builder/trust" element={<TrustEngine />} />
-      <Route path="/builder/sandbox" element={<TestingSandbox />} />
-      <Route path="/builder" element={<BuilderDashboard />} />
-      <Route path="/builder/components" element={<BuilderComponents />} />
-      <Route path="/builder/analytics" element={<BuilderAnalytics />} />
-      <Route path="/builder/reviews" element={<BuilderReviews />} />
-      <Route path="/builder/publish" element={<BuilderPublish />} />
-      <Route path="/builder/profile" element={<BuilderProfile />} />
-      <Route path="/builders/:id" element={<BuilderPublicProfile />} />
-      <Route path="/dashboard/api-keys" element={<ApiKeys />} />
-      <Route path="/dashboard/settings" element={<AccountSettings />} />
-      <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
       <Route path="/pricing" element={<Pricing />} />
-      <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
-      <Route path="/admin" element={<AdminPanel />} />
-      <Route path="/mobile" element={<MobileApp />} />
+      <Route path="/builders/:id" element={<BuilderPublicProfile />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
-      <Route path="/builder/agreement" element={<BuilderAgreement />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/tutorials" element={<Tutorial />} />
+      <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
+      <Route path="/rollout-procedures" element={<RolloutProcedures />} />
+      <Route path="/mobile" element={<MobileApp />} />
       <Route path="/success/install" element={<InstallSuccess />} />
       <Route path="/success/subscription" element={<SubscriptionSuccess />} />
-      <Route path="/dashboard/testing" element={<TestingDashboard />} />
-      <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
-      <Route path="/rollout-procedures" element={<RolloutProcedures />} />
-      <Route path="/vendor-portal" element={<VendorPortalPage />} />
-      <Route path="/finance" element={<FinancePortal />} />
-      <Route path="/api-partners" element={<ApiPartnerDashboard />} />
-      <Route path="/spend-intelligence" element={<SpendIntelligenceDashboard />} />
-      <Route path="/vendor-scores" element={<VendorScorecardDashboard />} />
-      <Route path="/tutorials" element={<Tutorial />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
-      <Route path="/builder/bob" element={<BobBuilder />} />
-      <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
-      <Route path="/dashboard/webhooks" element={<WebhookManager />} />
-      <Route path="/builder/governance" element={<GovernanceDashboard />} />
-      <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
-      <Route path="/builder/test-lab" element={<BuilderTestLab />} />
-      <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
-      <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
-      <Route path="/admin/gamification" element={<GamificationAdmin />} />
-      <Route path="/builder/payout-settings" element={<PayoutSettings />} />
+
+      {/* ── Protected routes — login required ── */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/dashboard/installed" element={<InstalledComponents />} />
+        <Route path="/dashboard/usage" element={<UsageAnalytics />} />
+        <Route path="/dashboard/api-keys" element={<ApiKeys />} />
+        <Route path="/dashboard/settings" element={<AccountSettings />} />
+        <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
+        <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
+        <Route path="/dashboard/testing" element={<TestingDashboard />} />
+        <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
+        <Route path="/dashboard/webhooks" element={<WebhookManager />} />
+        <Route path="/builder" element={<BuilderDashboard />} />
+        <Route path="/builder/revenue" element={<BuilderRevenue />} />
+        <Route path="/builder/trust" element={<TrustEngine />} />
+        <Route path="/builder/sandbox" element={<TestingSandbox />} />
+        <Route path="/builder/components" element={<BuilderComponents />} />
+        <Route path="/builder/analytics" element={<BuilderAnalytics />} />
+        <Route path="/builder/reviews" element={<BuilderReviews />} />
+        <Route path="/builder/publish" element={<BuilderPublish />} />
+        <Route path="/builder/profile" element={<BuilderProfile />} />
+        <Route path="/builder/agreement" element={<BuilderAgreement />} />
+        <Route path="/builder/bob" element={<BobBuilder />} />
+        <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
+        <Route path="/builder/governance" element={<GovernanceDashboard />} />
+        <Route path="/builder/test-lab" element={<BuilderTestLab />} />
+        <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
+        <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
+        <Route path="/builder/payout-settings" element={<PayoutSettings />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
+        <Route path="/admin/gamification" element={<GamificationAdmin />} />
+        <Route path="/vendor-portal" element={<VendorPortalPage />} />
+        <Route path="/finance" element={<FinancePortal />} />
+        <Route path="/api-partners" element={<ApiPartnerDashboard />} />
+        <Route path="/spend-intelligence" element={<SpendIntelligenceDashboard />} />
+        <Route path="/vendor-scores" element={<VendorScorecardDashboard />} />
+      </Route>
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
