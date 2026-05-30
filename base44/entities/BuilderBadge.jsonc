@@ -124,5 +124,37 @@
   },
   "required": [
     "builder_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
