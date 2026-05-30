@@ -21,31 +21,56 @@ export default function InstallButton({ component, size = "default" }) {
   }, [component.id]);
 
   const handleInstall = async () => {
-    // Check subscription before allowing download/install
-    const subs = await base44.entities.Subscription.filter({ status: "active" });
-    const hasPaid = subs && subs.length > 0 && !["free", "trial"].includes(subs[0]?.plan);
-    if (!hasPaid) {
-      window.location.href = "/pricing";
-      return;
-    }
-    setLoading(true);
+    // Check if already subscribed to this component
     const user = await base44.auth.me();
-    const today = new Date().toISOString().split("T")[0];
-    const rec = await base44.entities.InstalledComponent.create({
+    const existingSub = await base44.entities.Subscription.filter({
       user_id: user.id,
       component_id: component.id,
-      component_name: component.name,
-      component_code: component.code,
-      component_type: component.type,
-      trust_score: component.trustScore,
-      installed_at: today,
-      last_used: "Never",
-      calls_this_month: 0,
       status: "active",
     });
-    setRecord(rec);
-    setInstalled(true);
-    setLoading(false);
+
+    if (existingSub.length > 0) {
+      // Already subscribed — just record the install
+      const today = new Date().toISOString().split("T")[0];
+      setLoading(true);
+      const rec = await base44.entities.InstalledComponent.create({
+        user_id: user.id,
+        component_id: component.id,
+        component_name: component.name,
+        component_code: component.code,
+        component_type: component.type,
+        trust_score: component.trust_score,
+        installed_at: today,
+        last_used: "Never",
+        calls_this_month: 0,
+        status: "active",
+      });
+      setRecord(rec);
+      setInstalled(true);
+      setLoading(false);
+      return;
+    }
+
+    // Not subscribed — start checkout for this specific component
+    try {
+      if (window.self !== window.top) {
+        alert("Checkout is only available from the published app. Please open the live URL.");
+        return;
+      }
+      setLoading(true);
+      const res = await base44.functions.invoke("createCheckoutSession", {
+        componentId: component.id,
+      });
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        alert("Could not start checkout. Please try again.");
+        setLoading(false);
+      }
+    } catch {
+      alert("Could not start checkout. Please try again.");
+      setLoading(false);
+    }
   };
 
   const handleUninstall = async () => {

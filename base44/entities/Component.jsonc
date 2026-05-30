@@ -52,7 +52,11 @@
     },
     "price": {
       "type": "number",
-      "description": "Monthly price per installation"
+      "description": "Monthly price per installation in USD"
+    },
+    "stripe_price_id": {
+      "type": "string",
+      "description": "Stripe recurring price ID for this component \u2014 auto-created on first checkout"
     },
     "status": {
       "type": "string",

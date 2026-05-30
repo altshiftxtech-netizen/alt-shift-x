@@ -175,13 +175,9 @@ function PlanCard({ plan, onSubscribe, loading }) {
 
 export default function Pricing() {
   const [loading, setLoading] = useState(null);
-  const [tab, setTab] = useState("user");
+  const [tab, setTab] = useState("developer");
 
-  const handleSubscribe = async (planKey) => {
-    if (planKey === "free") {
-      window.location.href = "/dashboard";
-      return;
-    }
+  const handleBuilderSubscribe = async (planKey) => {
     if (isInIframe()) {
       alert("Checkout is only available from the published app. Please open the live URL to subscribe.");
       return;
@@ -195,8 +191,6 @@ export default function Pricing() {
     }
     setLoading(null);
   };
-
-  const plans = tab === "user" ? USER_PLANS : BUILDER_PLANS;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -216,93 +210,145 @@ export default function Pricing() {
         <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
           Magna Dev · Alt+Shift+X Marketplace
         </div>
-        <h1 className="text-4xl font-black text-slate-900 mb-3">Simple, Transparent Pricing</h1>
+        <h1 className="text-4xl font-black text-slate-900 mb-3">Free to Join. Pay Per Component.</h1>
         <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Developers get 1 free month. Builders earn up to 85% revenue share. One monthly subscription per account, no matter how many API keys you create.
+          Developers sign up for free and only pay for the components they attach to their API keys. Builders earn up to 85% revenue share.
         </p>
 
         {/* Tab switcher */}
         <div className="flex items-center justify-center gap-2 mt-8">
           <button
-            onClick={() => setTab("user")}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${tab === "user" ? "bg-slate-900 text-white" : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"}`}
+            onClick={() => setTab("developer")}
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${tab === "developer" ? "bg-slate-900 text-white" : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"}`}
           >
-            Developer Plans
+            For Developers
           </button>
           <button
             onClick={() => setTab("builder")}
             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${tab === "builder" ? "bg-violet-700 text-white" : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"}`}
           >
-            Builder Plans
+            For Builders
           </button>
         </div>
       </div>
 
-      {/* Key rule callout */}
-      <div className="max-w-3xl mx-auto px-4 mb-8">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 flex items-start gap-3">
-          <Rocket className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-          <p className="text-xs text-amber-800">
-            <strong>One subscription, unlimited keys:</strong> You can create as many API keys as you need — each key can be paired with a different agent — but all keys on your account count toward a single monthly subscription. Builders get their first month free with full marketplace listing rights, no component downloads required.
-          </p>
-        </div>
-      </div>
-
-      {/* Plans */}
-      <div className="max-w-6xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {plans.map(plan => (
-          <PlanCard key={plan.key} plan={plan} onSubscribe={handleSubscribe} loading={loading} type={tab} />
-        ))}
-      </div>
-
-      {/* Builder revenue matrix callout */}
-      {tab === "builder" && (
-        <div className="max-w-4xl mx-auto px-4 pb-20">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4">Revenue Share Matrix — Magna Dev / Alt+Shift+X</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-2 pr-4 text-slate-500 font-semibold">Builder Tier</th>
-                    <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Base Payout</th>
-                    <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Certification Bonus</th>
-                    <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Volume Rebate</th>
-                    <th className="text-center py-2 text-slate-500 font-semibold">Total Potential</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr>
-                    <td className="py-2.5 pr-4 font-semibold text-slate-800">Base Operator</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">+2% (if verified)</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-400">N/A</td>
-                    <td className="text-center py-2.5 font-bold text-emerald-700">72%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 pr-4 font-semibold text-slate-800">Strategic Architect</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">+5% (if verified)</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">+2.5% (&gt;$10k/mo)</td>
-                    <td className="text-center py-2.5 font-bold text-emerald-700">77.5%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 pr-4 font-semibold text-slate-800">Sovereign Commander</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">+10% (if verified)</td>
-                    <td className="text-center py-2.5 pr-4 text-slate-600">+5% (&gt;$50k/mo)</td>
-                    <td className="text-center py-2.5 font-bold text-emerald-700">85%</td>
-                  </tr>
-                </tbody>
-              </table>
+      {tab === "developer" && (
+        <>
+          {/* Free to join hero callout */}
+          <div className="max-w-3xl mx-auto px-4 mb-10">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-emerald-900 mb-1">Free to join — always.</p>
+                <p className="text-xs text-emerald-700 leading-relaxed">
+                  Create your account, generate API keys, and browse the full marketplace at no cost. You only pay a monthly subscription for each component you choose to attach to an API key. Add more components anytime — each one is billed separately, per key.
+                </p>
+                <Link to="/dashboard">
+                  <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs">Create Free Account →</Button>
+                </Link>
+              </div>
             </div>
-            <p className="text-[10px] text-slate-400 mt-3">Platform absorbs bundle discounts from its 30% fee to protect builder share. Pedigree Premium (40% modifier) is retained 100% by Sovereign Commander builders. Mastery Badge grants 300% marketplace visibility boost.</p>
           </div>
-        </div>
+
+          {/* How it works */}
+          <div className="max-w-4xl mx-auto px-4 mb-10">
+            <h2 className="text-lg font-bold text-slate-900 mb-5 text-center">How It Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { step: "1", title: "Sign up free", desc: "Create your account and generate your first API key — no credit card required." },
+                { step: "2", title: "Browse & choose", desc: "Explore the marketplace. Pick the components that match your project needs." },
+                { step: "3", title: "Attach & pay", desc: "Attach a component to your API key. A monthly subscription starts only for that component." },
+              ].map(s => (
+                <div key={s.step} className="bg-white border border-slate-200 rounded-xl p-5 text-center">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-black flex items-center justify-center mx-auto mb-3">{s.step}</div>
+                  <p className="font-bold text-slate-900 text-sm mb-1">{s.title}</p>
+                  <p className="text-xs text-slate-500">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Component type pricing */}
+          <div className="max-w-4xl mx-auto px-4 mb-10">
+            <h2 className="text-lg font-bold text-slate-900 mb-2 text-center">Component Pricing</h2>
+            <p className="text-xs text-slate-500 text-center mb-6">Each component has its own monthly price. You pay only for what you use, per API key.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {COMPONENT_TIERS.map(tier => (
+                <ComponentTypeCard key={tier.type} tier={tier} />
+              ))}
+            </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto px-4 mb-14">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 flex items-start gap-3">
+              <Rocket className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-amber-800">
+                <strong>One subscription per component per key:</strong> You can create multiple API keys and pair each with a different agent. Each component you attach to a key generates its own monthly charge. Browse the <Link to="/marketplace" className="underline">marketplace</Link> to see exact pricing per component.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab === "builder" && (
+        <>
+          {/* Builder plans */}
+          <div className="max-w-6xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {BUILDER_PLANS.map(plan => (
+              <PlanCard key={plan.key} plan={plan} onSubscribe={handleBuilderSubscribe} loading={loading} />
+            ))}
+          </div>
+
+          {/* Builder revenue matrix */}
+          <div className="max-w-4xl mx-auto px-4 pb-20">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4">Revenue Share Matrix — Magna Dev / Alt+Shift+X</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 pr-4 text-slate-500 font-semibold">Builder Tier</th>
+                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Base Payout</th>
+                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Certification Bonus</th>
+                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Volume Rebate</th>
+                      <th className="text-center py-2 text-slate-500 font-semibold">Total Potential</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    <tr>
+                      <td className="py-2.5 pr-4 font-semibold text-slate-800">Base Operator</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">+2% (if verified)</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-400">N/A</td>
+                      <td className="text-center py-2.5 font-bold text-emerald-700">72%</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pr-4 font-semibold text-slate-800">Strategic Architect</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">+5% (if verified)</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">+2.5% (&gt;$10k/mo)</td>
+                      <td className="text-center py-2.5 font-bold text-emerald-700">77.5%</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pr-4 font-semibold text-slate-800">Sovereign Commander</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">+10% (if verified)</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">+5% (&gt;$50k/mo)</td>
+                      <td className="text-center py-2.5 font-bold text-emerald-700">85%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-3">Platform absorbs bundle discounts from its 30% fee to protect builder share. Pedigree Premium (40% modifier) is retained 100% by Sovereign Commander builders. Mastery Badge grants 300% marketplace visibility boost.</p>
+            </div>
+          </div>
+        </>
       )}
 
       <div className="text-center pb-12 text-xs text-slate-400">
-        All plans billed monthly. Builders: first month free with full marketplace listing rights. Cancel anytime.
+        Developers: free account, pay per component. Builders: first month free with full marketplace listing rights. Cancel anytime.
       </div>
     </div>
   );
