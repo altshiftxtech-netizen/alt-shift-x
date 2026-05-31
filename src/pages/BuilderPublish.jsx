@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import PublishHeader from "@/components/builder-publish/PublishHeader";
 import PublishStepper from "@/components/builder-publish/PublishStepper";
+import StepDocUpload from "@/components/builder-publish/StepDocUpload";
 import StepSchema from "@/components/builder-publish/StepSchema";
 import StepBenchmark from "@/components/builder-publish/StepBenchmark";
 import StepCompliance from "@/components/builder-publish/StepCompliance";
 import StepConfirm from "@/components/builder-publish/StepConfirm";
 
 export const STEPS = [
+  { id: 0, label: "Upload Document" },
   { id: 1, label: "Schema & Metadata" },
   { id: 2, label: "Benchmark Declaration" },
   { id: 3, label: "Compliance Checklist" },
@@ -44,7 +46,7 @@ const INITIAL_FORM = {
 };
 
 export default function BuilderPublish() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
 
@@ -104,7 +106,13 @@ export default function BuilderPublish() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <PublishHeader />
         <PublishStepper steps={STEPS} current={step} />
-        {step === 1 && <StepSchema form={form} onChange={updateForm} onNext={() => setStep(2)} />}
+        {step === 0 && (
+          <StepDocUpload
+            onExtracted={(extracted) => { updateForm(extracted); setStep(1); }}
+            onSkip={() => setStep(1)}
+          />
+        )}
+        {step === 1 && <StepSchema form={form} onChange={updateForm} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
         {step === 2 && <StepBenchmark form={form} onChange={updateForm} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
         {step === 3 && <StepCompliance checks={form.checks} onChange={updateChecks} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
         {step === 4 && <StepConfirm form={form} onSubmit={handleSubmit} onBack={() => setStep(3)} />}

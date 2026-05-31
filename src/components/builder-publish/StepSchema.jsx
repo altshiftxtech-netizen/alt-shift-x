@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 const TYPES = ["X1 — Risk & Compliance", "X2 — Project Management", "X3 — Document Generation", "X4 — Site Reporting", "X5 — Financial Analysis"];
 const CATEGORIES = ["Risk & Compliance", "Project Management", "Site Reporting", "Bid Estimation", "Scheduling", "Financial Analysis", "Document Generation", "Other"];
 
-export default function StepSchema({ form, onChange, onNext }) {
+export default function StepSchema({ form, onChange, onNext, onBack }) {
   const valid = form.name && form.displayName && form.type && form.category && form.description && form.version && form.price;
   return (
     <Card className="border border-slate-200 shadow-sm">
@@ -64,9 +64,14 @@ export default function StepSchema({ form, onChange, onNext }) {
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
           <p className="text-[10px] text-slate-400 mt-0.5">{form.description.length} / 80 min characters</p>
         </div>
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-between pt-2">
+          {onBack && (
+            <Button variant="outline" onClick={onBack} className="text-slate-600">
+              ← Back
+            </Button>
+          )}
           <Button onClick={onNext} disabled={!valid || form.description.length < 80}
-            className="bg-violet-700 hover:bg-violet-800 text-white">
+            className="bg-violet-700 hover:bg-violet-800 text-white ml-auto">
             Next: Benchmark Declaration →
           </Button>
         </div>
