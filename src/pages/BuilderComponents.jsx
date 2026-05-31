@@ -283,7 +283,7 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
         <DeleteDialog
           component={c}
           onClose={() => setShowDelete(false)}
-          onShelf={() => { setShowDelete(false); onShelf && onShelf(c.id); }}
+          onShelf={onShelf ? () => { setShowDelete(false); onShelf(c.id); } : null}
           onDelete={() => { setShowDelete(false); onRemoved && onRemoved(c.id); }}
         />
       )}
