@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
         recommendation = `${metric.name} is healthy and performing well.`;
       }
 
-      const metricRecord = await base44.entities.PerformanceMetric.create({
+      const metricRecord = await base44.asServiceRole.entities.PerformanceMetric.create({
         metric_name: metric.name,
         value: Math.round(value * 10) / 10,
         unit: metric.unit,
