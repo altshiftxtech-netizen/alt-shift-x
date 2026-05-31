@@ -4,6 +4,7 @@ import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
 import RevenueForecastPanel from "@/components/leaderboard/RevenueForecastPanel";
 import LeaderboardHeader from "@/components/leaderboard/LeaderboardHeader";
 import { base44 } from "@/api/base44Client";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 export default function BuilderLeaderboard() {
   const [components, setComponents] = useState([]);
@@ -71,6 +72,7 @@ export default function BuilderLeaderboard() {
           />
         </div>
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }

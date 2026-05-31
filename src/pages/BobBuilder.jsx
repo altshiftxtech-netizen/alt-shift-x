@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
   FileText, FileDown, Rocket, Settings2, LayoutTemplate, X, Save,
-  CheckCircle2, Loader2, Package, BookOpen
+  CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,12 @@ const QUICK_PROMPTS = [
   "Build a component framework for construction finance",
 ];
 
-const TABS = ["chat", "framework", "deploy"];
+const SPLASH_SUGGESTIONS = [
+  { label: "Build a Risk Compliance Component", icon: "🛡️" },
+  { label: "Design a Site Reporting X4", icon: "📋" },
+  { label: "Optimize my component pricing", icon: "💡" },
+  { label: "Review my trust score", icon: "⭐" },
+];
 
 const DEFAULT_FRAMEWORK = {
   project: { enabled: true },
@@ -38,9 +43,11 @@ function MessageBubble({ m }) {
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
-        <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Bot className="w-3.5 h-3.5 text-white" />
-        </div>
+        <img
+          src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
+          className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5"
+          alt="BOB"
+        />
       )}
       <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed
         ${isUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 rounded-tl-sm"}`}>
@@ -63,6 +70,7 @@ function MessageBubble({ m }) {
 }
 
 export default function BobBuilder() {
+  const [launched, setLaunched] = useState(false); // splash → workspace
   const [activeTab, setActiveTab] = useState("chat");
   const [conv, setConv] = useState(null);
   const [convId, setConvId] = useState(null);
@@ -85,8 +93,9 @@ export default function BobBuilder() {
   const [exporting, setExporting] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const splashInputRef = useRef(null);
 
-  useEffect(() => { initConv(); loadFrameworks(); }, []);
+  useEffect(() => { loadFrameworks(); }, []);
 
   useEffect(() => {
     if (!convId) return;
@@ -104,6 +113,7 @@ export default function BobBuilder() {
     });
     setConv(c);
     setConvId(c.id);
+    return c;
   };
 
   const loadFrameworks = async () => {
@@ -114,6 +124,23 @@ export default function BobBuilder() {
       setFrameworkName(data[0].framework_name || "My Component Framework");
       setApplyToAll(data[0].apply_to_all || false);
     }
+  };
+
+  // Launch from splash — optionally with a seed message
+  const launch = async (seedText) => {
+    setLaunched(true);
+    const c = await initConv();
+    if (seedText?.trim()) {
+      setSending(true);
+      await base44.agents.addMessage(c, { role: "user", content: seedText });
+      setSending(false);
+    }
+  };
+
+  const handleSplashSubmit = (e) => {
+    e?.preventDefault();
+    if (input.trim()) launch(input);
+    else launch();
   };
 
   const sendMessage = async (text) => {
@@ -128,33 +155,16 @@ export default function BobBuilder() {
 
   const submitCode = async () => {
     if (!codeInput.trim()) return;
-    const msg = `Please analyze this component code:\n\`\`\`\n${codeInput}\n\`\`\`\n\nIdentify the type (X1/X2/X4), improvements, safety issues, and generate publish-ready metadata. Also suggest how this fits my current framework.`;
+    const msg = `Please analyze this component code:\n\`\`\`\n${codeInput}\n\`\`\`\n\nIdentify the type (X1/X2/X4), improvements, safety issues, and generate publish-ready metadata.`;
     setShowCodePanel(false);
     setActiveTab("chat");
     await sendMessage(msg);
   };
 
   const sendFrameworkToChat = async () => {
-    const summary = buildFrameworkSummary();
-    await sendMessage(`Here is my component framework configuration:\n\n${summary}\n\nBased on this, please:\n1. Validate the framework structure\n2. Suggest any improvements\n3. Create a starter component spec I can use to begin building\n4. Flag any compliance or safety gaps`);
+    const lines = [`Framework: ${frameworkName}`];
+    await sendMessage(`Here is my component framework:\n\n${lines.join("\n")}\n\nValidate it and create a starter component spec.`);
     setActiveTab("chat");
-  };
-
-  const buildFrameworkSummary = () => {
-    const lines = [`Framework: ${frameworkName}`, `Apply to all builds: ${applyToAll ? "YES" : "No"}`, ""];
-    const sections = ["project", "component_identity", "ai_behavior", "input_output", "compliance_safety", "pricing_monetization", "deployment", "branding_docs"];
-    sections.forEach(s => {
-      const d = framework[s];
-      if (!d?.enabled) return;
-      lines.push(`[${s.toUpperCase().replace("_", " ")}]`);
-      Object.entries(d).forEach(([k, v]) => {
-        if (k === "enabled" || k.endsWith("_enabled")) return;
-        if (v !== "" && v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0)) {
-          lines.push(`  ${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
-        }
-      });
-    });
-    return lines.join("\n");
   };
 
   const saveFramework = async () => {
@@ -175,7 +185,6 @@ export default function BobBuilder() {
   const handleExport = async (format) => {
     setExporting(true);
     const response = await base44.functions.invoke("exportComponentDoc", { framework, format });
-    // Trigger download from blob
     const blob = new Blob([response.data], {
       type: format === "word" ? "application/msword" : "application/pdf"
     });
@@ -190,8 +199,7 @@ export default function BobBuilder() {
 
   const handleDeploy = async () => {
     setDeployStatus("deploying");
-    // Send framework to BOB and ask to generate deploy-ready spec
-    await sendMessage(`I'm ready to deploy. Using my saved framework "${frameworkName}", please generate the final component specification document including:\n- Component manifest JSON\n- API endpoint spec\n- Trust score pre-check\n- Marketplace listing copy\n\nMark it as DEPLOY-READY when complete.`);
+    await sendMessage(`I'm ready to deploy. Using my saved framework "${frameworkName}", please generate the final component specification including manifest JSON, API endpoint spec, trust score pre-check, and marketplace listing copy. Mark it DEPLOY-READY when complete.`);
     setDeployStatus("done");
     setActiveTab("chat");
   };
@@ -202,6 +210,92 @@ export default function BobBuilder() {
     { id: "deploy", label: "Deploy & Export", icon: Rocket },
   ];
 
+  // ── SPLASH SCREEN ─────────────────────────────────────────────────────────
+  if (!launched) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900 flex flex-col">
+        <SharedNav mode="builder" />
+
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-10">
+            <img
+              src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
+              alt="BOB AI Advisor"
+              className="w-28 h-28 rounded-full object-cover shadow-2xl shadow-violet-500/40 mb-6 ring-4 ring-violet-500/30"
+            />
+            <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight text-center">
+              Meet <span className="text-violet-400">BOB</span>
+            </h1>
+            <p className="text-slate-400 text-lg mt-2 text-center max-w-md">
+              Your AI-powered component builder. Design, analyze, and publish world-class YottaJoule components.
+            </p>
+            <div className="flex items-center gap-2 mt-4">
+              <span className="text-[11px] bg-emerald-900/60 text-emerald-400 px-2.5 py-1 rounded-full font-semibold border border-emerald-700/40 animate-pulse">● LIVE</span>
+              <span className="text-[11px] bg-violet-900/60 text-violet-300 px-2.5 py-1 rounded-full font-semibold border border-violet-700/40">Yotta Protocol · Backend Builder Platform</span>
+            </div>
+          </div>
+
+          {/* Main input */}
+          <form onSubmit={handleSplashSubmit} className="w-full max-w-2xl">
+            <div className="relative flex items-center bg-slate-800/80 border border-slate-600 hover:border-violet-500 focus-within:border-violet-500 rounded-2xl shadow-2xl transition-all">
+              <input
+                ref={splashInputRef}
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="What would you like to build today?"
+                className="flex-1 bg-transparent text-white text-base px-5 py-4 outline-none placeholder:text-slate-500 rounded-2xl"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="mr-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm"
+              >
+                <Sparkles className="w-4 h-4" /> Start
+              </button>
+            </div>
+          </form>
+
+          {/* Suggestion chips */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full max-w-2xl">
+            {SPLASH_SUGGESTIONS.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => { setInput(s.label); launch(s.label); }}
+                className="flex items-center gap-3 bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group"
+              >
+                <span className="text-xl">{s.icon}</span>
+                <span className="flex-1">{s.label}</span>
+                <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-violet-400" />
+              </button>
+            ))}
+          </div>
+
+          {/* Licensed components bar */}
+          <div className="mt-10 w-full max-w-2xl">
+            <p className="text-xs text-slate-500 text-center mb-3 font-semibold uppercase tracking-widest">Licensed Foundation Components</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1" },
+                { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
+                { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
+                { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
+              ].map(c => (
+                <div key={c.code} className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2">
+                  <span className="text-[10px] bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">{c.type}</span>
+                  <span className="text-xs text-slate-300 font-medium">{c.name}</span>
+                  <span className="text-[10px] bg-emerald-900/60 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">✓ Licensed</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── WORKSPACE ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900">
       <SharedNav mode="builder" />
@@ -210,9 +304,11 @@ export default function BobBuilder() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/30 flex-shrink-0">
-              <Bot className="w-8 h-8 text-white" />
-            </div>
+            <img
+              src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
+              alt="BOB"
+              className="w-14 h-14 rounded-2xl object-cover shadow-lg shadow-violet-500/30 flex-shrink-0"
+            />
             <div>
               <h1 className="text-2xl font-black text-white">BOB <span className="text-violet-400">Advanced Builder</span></h1>
               <p className="text-slate-400 text-xs mt-0.5">Magna Dev · Yotta Protocol · YottaJoule Licensed Components</p>
@@ -221,6 +317,9 @@ export default function BobBuilder() {
           <div className="sm:ml-auto flex items-center gap-2">
             <span className="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded-full font-semibold animate-pulse">● LIVE</span>
             <span className="text-[10px] bg-violet-900 text-violet-300 px-2 py-1 rounded-full font-semibold">Backend Builder Platform</span>
+            <button onClick={() => setLaunched(false)} className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors">
+              ← New Session
+            </button>
           </div>
         </div>
 
@@ -246,7 +345,7 @@ export default function BobBuilder() {
                 <CardContent className="px-3 pb-3 space-y-1">
                   {QUICK_PROMPTS.map((p, i) => (
                     <button key={i} onClick={() => sendMessage(p)}
-                      className="w-full text-left text-[11px] text-slate-400 hover:text-white hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 group">
+                      className="w-full text-left text-[11px] text-slate-400 hover:text-white hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
                       <ChevronRight className="w-2.5 h-2.5 text-violet-500 flex-shrink-0" />{p}
                     </button>
                   ))}
@@ -290,11 +389,9 @@ export default function BobBuilder() {
 
               <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
-                  {messages.length === 0 && (
+                  {messages.length === 0 && !sending && (
                     <div className="flex items-start gap-3 mt-2">
-                      <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-4 h-4 text-white" />
-                      </div>
+                      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
                         <p className="text-slate-200 text-sm">Hey! I'm BOB — the Advanced Builder. I can help you design, analyze, and publish components using licensed YottaJoule components as a foundation.</p>
                         <p className="text-slate-400 text-xs mt-2">Use the <strong className="text-violet-400">Framework tab</strong> to configure your project blueprint, then send it to me for analysis. Or jump straight into a build below.</p>
@@ -304,9 +401,7 @@ export default function BobBuilder() {
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
                   {sending && (
                     <div className="flex items-start gap-2">
-                      <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-3.5 h-3.5 text-white" />
-                      </div>
+                      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
                         {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
                       </div>
@@ -332,7 +427,6 @@ export default function BobBuilder() {
         {/* FRAMEWORK TAB */}
         {activeTab === "framework" && (
           <div className="space-y-4">
-            {/* Framework name + save */}
             <Card className="bg-slate-900 border-slate-700">
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -366,17 +460,11 @@ export default function BobBuilder() {
               </CardContent>
             </Card>
 
-            <BobFrameworkForm
-              framework={framework}
-              onChange={setFramework}
-              applyToAll={applyToAll}
-              onToggleApplyAll={setApplyToAll}
-            />
+            <BobFrameworkForm framework={framework} onChange={setFramework} applyToAll={applyToAll} onToggleApplyAll={setApplyToAll} />
 
             <div className="flex gap-3 pt-2">
               <Button onClick={saveFramework} disabled={saving} className="bg-violet-600 hover:bg-violet-700 gap-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save Framework
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Framework
               </Button>
               <Button onClick={sendFrameworkToChat} variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 gap-2">
                 <Bot className="w-4 h-4" /> Validate with BOB
@@ -392,7 +480,6 @@ export default function BobBuilder() {
         {activeTab === "deploy" && (
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
-              {/* Export Card */}
               <Card className="bg-slate-900 border-slate-700">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-white flex items-center gap-2"><FileText className="w-4 h-4 text-blue-400" />Export Framework Document</CardTitle>
@@ -403,49 +490,37 @@ export default function BobBuilder() {
                     <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">Current Framework</p>
                     <p className="text-sm font-bold text-white">{frameworkName}</p>
                     <p className="text-[10px] text-slate-400">
-                      {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled ·
-                      Apply to all: {applyToAll ? "ON" : "Off"}
+                      {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled · Apply to all: {applyToAll ? "ON" : "Off"}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
-                      Export PDF
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} Export PDF
                     </Button>
                     <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />}
-                      Export Word
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Export Word
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Deploy to Marketplace */}
               <Card className="bg-slate-900 border-slate-700">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-white flex items-center gap-2"><Rocket className="w-4 h-4 text-emerald-400" />Deploy to Marketplace</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-xs text-slate-400">BOB will generate a complete component specification from your framework and initiate the marketplace submission workflow.</p>
+                  <p className="text-xs text-slate-400">BOB will generate a complete component specification and initiate the marketplace submission workflow.</p>
                   <div className="space-y-2 text-[11px] text-slate-400">
-                    {[
-                      "Framework validation & compliance check",
-                      "Component manifest JSON generation",
-                      "Trust score pre-assessment",
-                      "Marketplace listing copy",
-                      "Submit for admin review"
-                    ].map((step, i) => (
+                    {["Framework validation & compliance check", "Component manifest JSON generation", "Trust score pre-assessment", "Marketplace listing copy", "Submit for admin review"].map((step, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 
-                          ${deployStatus === "done" ? "bg-emerald-600 text-white" : "bg-slate-700 text-slate-400"}`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${deployStatus === "done" ? "bg-emerald-600 text-white" : "bg-slate-700 text-slate-400"}`}>
                           {deployStatus === "done" ? "✓" : i + 1}
                         </div>
                         {step}
                       </div>
                     ))}
                   </div>
-                  <Button onClick={handleDeploy} disabled={deployStatus === "deploying"}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2 text-xs mt-2">
+                  <Button onClick={handleDeploy} disabled={deployStatus === "deploying"} className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2 text-xs mt-2">
                     {deployStatus === "deploying" ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating...</>
                       : deployStatus === "done" ? <><CheckCircle2 className="w-3.5 h-3.5" />View in Chat</>
                         : <><Rocket className="w-3.5 h-3.5" />Deploy with BOB</>}
@@ -454,7 +529,6 @@ export default function BobBuilder() {
               </Card>
             </div>
 
-            {/* Licensed Components */}
             <Card className="bg-slate-900 border-slate-700">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-white flex items-center gap-2"><Package className="w-4 h-4 text-violet-400" />Licensed Base Components</CardTitle>
@@ -463,10 +537,10 @@ export default function BobBuilder() {
                 <p className="text-xs text-slate-400 mb-3">Your new component can extend these licensed YottaJoule components as a foundation:</p>
                 <div className="grid sm:grid-cols-2 gap-2">
                   {[
-                    { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1", licensed: true },
-                    { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4", licensed: true },
-                    { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2", licensed: true },
-                    { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2", licensed: true },
+                    { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1" },
+                    { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
+                    { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
+                    { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
                   ].map(c => (
                     <div key={c.code} className="flex items-center justify-between bg-slate-800 rounded-xl px-3 py-2.5">
                       <div>
@@ -475,7 +549,7 @@ export default function BobBuilder() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-[9px] bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">{c.type}</span>
-                        {c.licensed && <span className="text-[9px] bg-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">✓ Licensed</span>}
+                        <span className="text-[9px] bg-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">✓ Licensed</span>
                       </div>
                     </div>
                   ))}

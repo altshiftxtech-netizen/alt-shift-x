@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Link2 } from "lucide-react";
 import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_COMPONENTS = [
@@ -491,6 +492,8 @@ export default function BuilderComponents() {
       {drawerComponent && (
         <VersionHistoryDrawer component={drawerComponent} onClose={() => setDrawerComponent(null)} />
       )}
+
+      <BobAdvisorWidget />
 
       {releaseComponent && (
         <VersionReleaseModal

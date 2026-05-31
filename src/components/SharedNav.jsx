@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, LogOut, ChevronDown, TrendingUp, Trophy, DollarSign } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -24,6 +24,7 @@ const BUILDER_NAV = [
   { to: "/builder/analytics-suite", label: "Analytics Suite", icon: TrendingUp },
   { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/builder/payout-settings", label: "Payouts", icon: DollarSign },
+  { to: "/builder/bob", label: "BOB Builder", icon: null, isBob: true },
 ];
 
 export default function SharedNav({ mode = "user" }) {
@@ -44,11 +45,19 @@ export default function SharedNav({ mode = "user" }) {
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-1">
-          {navItems.map(({ to, label }) => (
-            <Link key={to} to={to}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive(to) ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}>
-              {label}
-            </Link>
+          {navItems.map(({ to, label, isBob }) => (
+            isBob ? (
+              <Link key={to} to={to}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${isActive(to) ? "bg-violet-600 text-white" : "bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"}`}>
+                <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-5 h-5 rounded-full object-cover" alt="BOB" />
+                {label}
+              </Link>
+            ) : (
+              <Link key={to} to={to}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive(to) ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}>
+                {label}
+              </Link>
+            )
           ))}
         </div>
 

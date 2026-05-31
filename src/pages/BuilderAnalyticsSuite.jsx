@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 export default function BuilderAnalyticsSuite() {
   const [components, setComponents] = useState([]);
@@ -125,6 +126,7 @@ export default function BuilderAnalyticsSuite() {
           governanceScores={governanceScores}
         />
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }
