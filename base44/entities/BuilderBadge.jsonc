@@ -60,21 +60,18 @@
     },
     "referral_count": {
       "type": "number",
-      "default": 0,
-      "description": "Number of successful referrals"
+      "default": 0
     },
     "referral_earnings": {
       "type": "number",
-      "default": 0,
-      "description": "Total earnings from referrals in USD"
+      "default": 0
     },
     "revenue_share_pct": {
       "type": "number",
       "default": 70
     },
     "stripe_connect_account_id": {
-      "type": "string",
-      "description": "Stripe Connect Express account ID"
+      "type": "string"
     },
     "stripe_connect_status": {
       "type": "string",
@@ -83,39 +80,79 @@
         "active",
         "restricted",
         "disabled"
-      ],
-      "description": "Connect account status"
+      ]
     },
     "display_name": {
-      "type": "string",
-      "description": "Public display name for the builder's profile"
+      "type": "string"
     },
     "tagline": {
-      "type": "string",
-      "description": "One-line tagline for the builder's profile"
+      "type": "string"
     },
     "bio": {
-      "type": "string",
-      "description": "Builder bio/about section (markdown supported)"
+      "type": "string"
     },
     "website": {
-      "type": "string",
-      "description": "Builder's website URL for bio information and portfolio"
+      "type": "string"
     },
     "twitter": {
-      "type": "string",
-      "description": "Builder's Twitter/X handle"
+      "type": "string"
     },
     "location": {
-      "type": "string",
-      "description": "Builder's geographic location"
+      "type": "string"
     },
     "specializations": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Array of specialization areas (Risk & Compliance, Project Management, etc.)"
+      }
+    },
+    "policy_tier": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "insured",
+        "verified"
+      ],
+      "default": "standard",
+      "description": "Builder's escrow policy tier: standard (20%), insured Safe Harbor (5%), or TMT-3 verified (10%)"
+    },
+    "insurance_cert_url": {
+      "type": "string",
+      "description": "URL to uploaded ACORD E&O insurance certificate"
+    },
+    "insurance_cert_name": {
+      "type": "string",
+      "description": "Filename of uploaded ACORD certificate"
+    },
+    "insurance_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "E&O policy expiry date \u2014 alerts fire 30 days before"
+    },
+    "insurance_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-confirmed insurance verification status"
+    },
+    "tmt3_passed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this builder has a component that passed the TMT-3 Sentinel audit"
+    },
+    "tmt3_passed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date of TMT-3 audit pass"
+    },
+    "escrow_holdback_pct": {
+      "type": "number",
+      "default": 20,
+      "description": "Current effective escrow holdback percentage"
+    },
+    "safe_harbor_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Safe Harbor (insured) status is currently active"
     },
     "last_calculated": {
       "type": "string",
@@ -124,39 +161,5 @@
   },
   "required": [
     "builder_id"
-  ],
-  "rls": {
-    "create": {
-      "data.builder_id": "{{user.id}}"
-    },
-    "read": {
-      "$or": [
-        {
-          "data.builder_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "update": {
-      "$or": [
-        {
-          "data.builder_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }

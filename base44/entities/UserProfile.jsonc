@@ -75,6 +75,16 @@
       "type": "boolean",
       "default": false
     },
+    "policy_tier": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "insured",
+        "verified"
+      ],
+      "default": "standard",
+      "description": "Escrow policy tier selected at signup"
+    },
     "intake_completed": {
       "type": "boolean",
       "default": false

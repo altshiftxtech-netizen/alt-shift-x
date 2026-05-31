@@ -4,14 +4,51 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Loader2, Building2, User, MapPin, Briefcase, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Loader2, Building2, User, MapPin, Briefcase, ShieldCheck, BadgeCheck, Star, Shield } from "lucide-react";
 
 const STEPS = [
   { id: "personal", label: "Personal Info", icon: User },
   { id: "company", label: "Company", icon: Building2 },
   { id: "location", label: "Location", icon: MapPin },
   { id: "usecase", label: "Use Case", icon: Briefcase },
-  { id: "confirm", label: "Confirm", icon: ShieldCheck },
+  { id: "policy", label: "Policy Tier", icon: ShieldCheck },
+  { id: "confirm", label: "Confirm", icon: CheckCircle2 },
+];
+
+const POLICY_TIERS = [
+  {
+    id: "standard",
+    label: "Standard Builder",
+    icon: Shield,
+    badge: "Standard",
+    color: "border-slate-300",
+    activeColor: "border-slate-700 bg-slate-50",
+    escrow: "20%",
+    tagline: "20% rolling escrow · Standard clawback exposure",
+    description: "Default policy. A 20% escrow holdback protects buyers. Full clawback exposure on audit failures.",
+  },
+  {
+    id: "insured",
+    label: "Safe Harbor (Insured)",
+    icon: BadgeCheck,
+    badge: "Safe Harbor",
+    color: "border-emerald-300",
+    activeColor: "border-emerald-600 bg-emerald-50",
+    escrow: "5%",
+    tagline: "5% escrow · E&O insurance covers clawbacks · Enterprise filter",
+    description: "Requires min. $1M E&O insurance. Upload ACORD certificate in your Builder Profile. Unlocks enterprise visibility and +5% Innovation Royalty.",
+  },
+  {
+    id: "verified",
+    label: "TMT-3 Verified ◆",
+    icon: Star,
+    badge: "Verified ◆",
+    color: "border-violet-300",
+    activeColor: "border-violet-600 bg-violet-50",
+    escrow: "10%",
+    tagline: "10% escrow · 15% price premium · Verified badge",
+    description: "Pass the TMT-3 Sentinel Truth Audit to earn the Verified ◆ badge and a 15% marketplace price premium. Apply via the Certification Queue.",
+  },
 ];
 
 const INDUSTRIES = ["General Contractor", "Subcontractor", "Owner/Developer", "Architecture & Engineering", "Construction Management", "Government/Public Sector", "Other"];
@@ -31,6 +68,7 @@ export default function UserOnboarding() {
     country: "", state_province: "",
     use_case: "", how_did_you_hear: "",
     agreed_to_terms: false, agreed_to_privacy: false, agreed_to_builder: false,
+    policy_tier: "standard",
   });
 
   useEffect(() => {
@@ -176,8 +214,38 @@ export default function UserOnboarding() {
               </>
             )}
 
-            {/* Step 4 — Confirm */}
+            {/* Step 4 — Policy Tier */}
             {step === 4 && (
+              <>
+                <h2 className="font-bold text-slate-900">Choose Your Escrow Policy Tier</h2>
+                <p className="text-xs text-slate-500">This determines your escrow holdback rate and clawback exposure. You can change this later in your Builder Profile.</p>
+                <div className="space-y-3 mt-1">
+                  {POLICY_TIERS.map(t => {
+                    const TIcon = t.icon;
+                    const isActive = form.policy_tier === t.id;
+                    return (
+                      <button key={t.id} type="button" onClick={() => set("policy_tier", t.id)}
+                        className={`w-full text-left border-2 rounded-xl p-4 transition-all ${isActive ? t.activeColor : "border-slate-200 bg-white hover:border-slate-300"}`}>
+                        <div className="flex items-start gap-3">
+                          <TIcon className={`w-5 h-5 mt-0.5 shrink-0 ${isActive ? "text-slate-800" : "text-slate-400"}`} />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className={`text-sm font-bold ${isActive ? "text-slate-900" : "text-slate-600"}`}>{t.label}</span>
+                              <span className="text-xs font-bold text-slate-500">{t.escrow} escrow</span>
+                            </div>
+                            <p className={`text-xs mt-0.5 ${isActive ? "text-slate-600" : "text-slate-400"}`}>{t.tagline}</p>
+                            {isActive && <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{t.description}</p>}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Step 5 — Confirm */}
+            {step === 5 && (
               <>
                 <h2 className="font-bold text-slate-900">Review & Confirm</h2>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 text-sm">
@@ -193,6 +261,7 @@ export default function UserOnboarding() {
                     ["State/Province", form.state_province || "—"],
                     ["Use Case", form.use_case],
                     ["Referral", form.how_did_you_hear || "—"],
+                    ["Policy Tier", POLICY_TIERS.find(t => t.id === form.policy_tier)?.label || "Standard Builder"],
                   ].map(([label, val]) => (
                     <div key={label} className="flex gap-2">
                       <span className="text-slate-400 w-32 shrink-0">{label}:</span>
@@ -232,7 +301,8 @@ export default function UserOnboarding() {
                     (step === 0 && (!form.first_name || !form.last_name)) ||
                     (step === 1 && (!form.company_name || !form.job_title || !form.industry)) ||
                     (step === 2 && !form.country) ||
-                    (step === 3 && !form.use_case)
+                    (step === 3 && !form.use_case) ||
+                    (step === 4 && !form.policy_tier)
                   }
                 >
                   Next →
@@ -241,7 +311,7 @@ export default function UserOnboarding() {
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm flex-1"
                   onClick={handleSubmit}
-                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy || !form.agreed_to_builder}
+                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy}
                 >
                   {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-1" />Submitting...</> : "Submit Application"}
                 </Button>

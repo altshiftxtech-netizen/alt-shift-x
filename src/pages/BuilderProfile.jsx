@@ -3,9 +3,12 @@ import { base44 } from "@/api/base44Client";
 import ProfileHeader from "@/components/builder-profile/ProfileHeader";
 import ProfileEditForm from "@/components/builder-profile/ProfileEditForm";
 import ProfilePreviewCard from "@/components/builder-profile/ProfilePreviewCard";
+import CredentialVault from "@/components/builder-profile/CredentialVault";
 
 export default function BuilderProfile() {
   const [profile, setProfile] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [policyTier, setPolicyTier] = useState("standard");
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
 
@@ -14,10 +17,12 @@ export default function BuilderProfile() {
       try {
         const user = await base44.auth.me();
         if (!user) return;
+        setUserId(user.id);
 
         // Load builder badge data
         const badges = await base44.entities.BuilderBadge.filter({ builder_id: user.id });
         const badge = badges[0];
+        if (badge?.policy_tier) setPolicyTier(badge.policy_tier);
 
         // Load components for stats
         const components = await base44.entities.Component.filter({ builder_id: user.id });
@@ -73,8 +78,9 @@ export default function BuilderProfile() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <ProfileHeader saved={saved} />
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-6">
             <ProfileEditForm profile={profile} onSave={handleSave} />
+            <CredentialVault builderId={userId} currentTier={policyTier} onTierChange={setPolicyTier} />
           </div>
           <div className="lg:col-span-2">
             <ProfilePreviewCard profile={profile} />
