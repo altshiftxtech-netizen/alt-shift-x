@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Link2 } from "lucide-react";
 import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
 import VersionHistoryPanel from "@/components/version-manager/VersionHistoryPanel";
 
@@ -174,8 +174,101 @@ function DeleteDialog({ component, onClose, onShelf, onDelete }) {
   );
 }
 
-function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemoved, onShelf }) {
+function RedeployDialog({ component, onClose, onRedeploy }) {
+  const [mode, setMode] = useState("keep"); // "keep" | "new"
+  const [newEndpoint, setNewEndpoint] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    const endpointUrl = mode === "keep" ? component.endpoint_url : newEndpoint.trim();
+    await onRedeploy(component.id, endpointUrl);
+    setLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-violet-600" />
+            </div>
+            <p className="text-sm font-bold text-slate-900">Redeploy Component</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-xs text-slate-500">
+            Redeploying <span className="font-semibold text-slate-700">{component.displayName}</span> will restore it to <span className="font-semibold text-amber-700">draft</span> status and re-submit for platform review before going live.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-700">API Endpoint</p>
+
+            <button onClick={() => setMode("keep")}
+              className={`w-full text-left border-2 rounded-xl p-4 transition-all ${mode === "keep" ? "border-violet-400 bg-violet-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${mode === "keep" ? "border-violet-600" : "border-slate-300"}`}>
+                  {mode === "keep" && <div className="w-2 h-2 rounded-full bg-violet-600" />}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Keep existing endpoint</p>
+                  {component.endpoint_url
+                    ? <p className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">{component.endpoint_url}</p>
+                    : <p className="text-[10px] text-slate-400 mt-0.5">No endpoint on record — will be set during review</p>
+                  }
+                </div>
+              </div>
+            </button>
+
+            <button onClick={() => setMode("new")}
+              className={`w-full text-left border-2 rounded-xl p-4 transition-all ${mode === "new" ? "border-violet-400 bg-violet-50" : "border-slate-200 hover:border-slate-300"}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${mode === "new" ? "border-violet-600" : "border-slate-300"}`}>
+                  {mode === "new" && <div className="w-2 h-2 rounded-full bg-violet-600" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <Link2 className="w-3 h-3 text-slate-500" />
+                    <p className="text-sm font-semibold text-slate-800">Link a new API endpoint</p>
+                  </div>
+                  {mode === "new" && (
+                    <input
+                      autoFocus
+                      type="url"
+                      placeholder="https://your-api-endpoint.com/v1/extract"
+                      value={newEndpoint}
+                      onChange={e => setNewEndpoint(e.target.value)}
+                      onClick={e => e.stopPropagation()}
+                      className="mt-2 w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-400 font-mono placeholder-slate-300"
+                    />
+                  )}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <Button variant="outline" className="flex-1 text-xs h-9" onClick={onClose}>Cancel</Button>
+            <Button
+              className="flex-1 text-xs h-9 bg-violet-700 hover:bg-violet-800"
+              onClick={handleConfirm}
+              disabled={loading || (mode === "new" && !newEndpoint.trim())}
+            >
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><RefreshCw className="w-3.5 h-3.5" /> Redeploy</>}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemoved, onShelf, onRedeploy }) {
   const [showDelete, setShowDelete] = useState(false);
+  const [showRedeploy, setShowRedeploy] = useState(false);
 
   return (
     <>
@@ -185,6 +278,13 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
           onClose={() => setShowDelete(false)}
           onShelf={() => { setShowDelete(false); onShelf && onShelf(c.id); }}
           onDelete={() => onRemoved && onRemoved(c.id)}
+        />
+      )}
+      {showRedeploy && (
+        <RedeployDialog
+          component={c}
+          onClose={() => setShowRedeploy(false)}
+          onRedeploy={onRedeploy}
         />
       )}
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
@@ -237,6 +337,11 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
           {c.status === "published" && (
             <Button className="flex-1 text-xs h-8 gap-1.5 bg-violet-700 hover:bg-violet-800" onClick={onReleaseVersion}>
               <Zap className="w-3.5 h-3.5" /> Release
+            </Button>
+          )}
+          {c.status === "shelved" && (
+            <Button className="flex-1 text-xs h-8 gap-1.5 bg-amber-600 hover:bg-amber-700 text-white" onClick={() => setShowRedeploy(true)}>
+              <RefreshCw className="w-3.5 h-3.5" /> Redeploy
             </Button>
           )}
         </div>
@@ -302,6 +407,13 @@ export default function BuilderComponents() {
     _components = _components.map(c => c.id === id ? { ...c, status: "shelved" } : c);
     setComponents([..._components]);
   };
+
+  const handleRedeploy = (id, endpointUrl) => {
+    _components = _components.map(c =>
+      c.id === id ? { ...c, status: "draft", ...(endpointUrl ? { endpoint_url: endpointUrl } : {}) } : c
+    );
+    setComponents([..._components]);
+  };
   const filtered = filter === "all" ? components.filter(c => c.status !== "shelved") : components.filter(c => c.status === filter);
 
   return (
@@ -351,6 +463,7 @@ export default function BuilderComponents() {
               onReleaseVersion={() => setReleaseComponent(comp)}
               onRemoved={handleRemoved}
               onShelf={handleShelf}
+              onRedeploy={handleRedeploy}
             />
           ))}
         </div>
