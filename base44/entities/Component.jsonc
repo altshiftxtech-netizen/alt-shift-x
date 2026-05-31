@@ -124,7 +124,19 @@
       "data.builder_id": "{{user.id}}"
     },
     "read": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "data.status": "published"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "update": {
       "$or": [
