@@ -47,7 +47,7 @@ export default function VersionReleaseModal({ component, isOpen, onClose, onSucc
       setChanges(result.data.changes);
       setStep(2);
     } else {
-      setError(result.data?.error || 'Failed to generate changelog');
+      setError(result.data?.error || 'Failed to generate changelog. Make sure the component exists in the database.');
     }
     setLoading(false);
   };

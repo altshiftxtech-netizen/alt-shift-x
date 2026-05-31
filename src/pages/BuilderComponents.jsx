@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Link2 } from "lucide-react";
 import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
-import VersionHistoryPanel from "@/components/version-manager/VersionHistoryPanel";
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_COMPONENTS = [
@@ -105,7 +104,7 @@ function DeleteDialog({ component, onClose, onShelf, onDelete }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const act = async (fn) => { setLoading(true); await fn(); setLoading(false); onClose(); };
+  const act = async (fn) => { setLoading(true); await fn(); setLoading(false); };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -277,7 +276,7 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
           component={c}
           onClose={() => setShowDelete(false)}
           onShelf={() => { setShowDelete(false); onShelf && onShelf(c.id); }}
-          onDelete={() => onRemoved && onRemoved(c.id)}
+          onDelete={() => { setShowDelete(false); onRemoved && onRemoved(c.id); }}
         />
       )}
       {showRedeploy && (
@@ -454,19 +453,31 @@ export default function BuilderComponents() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {filtered.map(comp => (
-            <ComponentCard 
-              key={comp.id} 
-              component={comp} 
-              onViewHistory={() => setDrawerComponent(comp)}
-              onReleaseVersion={() => setReleaseComponent(comp)}
-              onRemoved={handleRemoved}
-              onShelf={handleShelf}
-              onRedeploy={handleRedeploy}
-            />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+              <Package className="w-6 h-6 text-slate-400" />
+            </div>
+            <p className="text-sm font-semibold text-slate-600 mb-1">No {filter === "all" ? "" : filter} components</p>
+            <p className="text-xs text-slate-400">
+              {filter === "shelved" ? "Components you shelf will appear here." : "Publish a new component to get started."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {filtered.map(comp => (
+              <ComponentCard 
+                key={comp.id} 
+                component={comp} 
+                onViewHistory={() => setDrawerComponent(_components.find(c => c.id === comp.id) || comp)}
+                onReleaseVersion={() => setReleaseComponent(_components.find(c => c.id === comp.id) || comp)}
+                onRemoved={handleRemoved}
+                onShelf={handleShelf}
+                onRedeploy={handleRedeploy}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {drawerComponent && (
@@ -478,7 +489,16 @@ export default function BuilderComponents() {
           component={releaseComponent}
           isOpen={!!releaseComponent}
           onClose={() => setReleaseComponent(null)}
-          onSuccess={() => {
+          onSuccess={(data) => {
+            // Update the local component's version label
+            if (data?.version) {
+              _components = _components.map(c =>
+                c.id === releaseComponent.id
+                  ? { ...c, version: `v${data.version}`, versions: [{ version: `v${data.version}`, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), notes: data.changelog || "New version released.", status: "live" }, ...c.versions] }
+                  : c
+              );
+              setComponents([..._components]);
+            }
             setReleaseComponent(null);
             setDrawerComponent(null);
           }}
