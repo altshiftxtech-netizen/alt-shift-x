@@ -101,7 +101,7 @@ function TrustBadge({ score }) {
 }
 
 function DeleteDialog({ component, onClose, onShelf, onDelete }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(onShelf ? 1 : 2);
   const [loading, setLoading] = useState(false);
 
   const act = async (fn) => { setLoading(true); await fn(); setLoading(false); };
@@ -138,19 +138,26 @@ function DeleteDialog({ component, onClose, onShelf, onDelete }) {
             </>
           ) : (
             <>
-              <p className="text-sm font-semibold text-slate-800">What would you like to do with <span className="text-violet-700">{component.displayName}</span>?</p>
-              <button onClick={() => act(onShelf)} disabled={loading}
-                className="w-full text-left border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50 rounded-xl p-4 transition-all group">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center shrink-0">
-                    <Archive className="w-4 h-4 text-slate-500 group-hover:text-violet-600" />
+              <p className="text-sm font-semibold text-slate-800">
+                {onShelf
+                  ? <>What would you like to do with <span className="text-violet-700">{component.displayName}</span>?</>
+                  : <>Permanently delete <span className="text-violet-700">{component.displayName}</span>?</>
+                }
+              </p>
+              {onShelf && (
+                <button onClick={() => act(onShelf)} disabled={loading}
+                  className="w-full text-left border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50 rounded-xl p-4 transition-all group">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center shrink-0">
+                      <Archive className="w-4 h-4 text-slate-500 group-hover:text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 group-hover:text-violet-800">Shelf Component</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Hidden from marketplace. Data, reviews, and history preserved. Restorable at any time.</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 group-hover:text-violet-800">Shelf Component</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Hidden from marketplace. Data, reviews, and history preserved. Restorable at any time.</p>
-                  </div>
-                </div>
-              </button>
+                </button>
+              )}
               <button onClick={() => act(onDelete)} disabled={loading}
                 className="w-full text-left border-2 border-slate-200 hover:border-red-400 hover:bg-red-50 rounded-xl p-4 transition-all group">
                 <div className="flex items-start gap-3">
@@ -164,7 +171,8 @@ function DeleteDialog({ component, onClose, onShelf, onDelete }) {
                 </div>
               </button>
               {loading && <div className="flex items-center justify-center gap-2 py-1"><Loader2 className="w-4 h-4 animate-spin text-slate-400" /><span className="text-xs text-slate-400">Processing...</span></div>}
-              <Button variant="outline" className="w-full text-xs h-9" onClick={() => setStep(1)}>← Back</Button>
+              {onShelf && <Button variant="outline" className="w-full text-xs h-9" onClick={() => setStep(1)}>← Back</Button>}
+              {!onShelf && <Button variant="outline" className="w-full text-xs h-9" onClick={onClose}>Cancel</Button>}
             </>
           )}
         </div>
@@ -472,7 +480,7 @@ export default function BuilderComponents() {
                 onViewHistory={() => setDrawerComponent(_components.find(c => c.id === comp.id) || comp)}
                 onReleaseVersion={() => setReleaseComponent(_components.find(c => c.id === comp.id) || comp)}
                 onRemoved={handleRemoved}
-                onShelf={handleShelf}
+                onShelf={comp.status === "shelved" ? null : handleShelf}
                 onRedeploy={handleRedeploy}
               />
             ))}
