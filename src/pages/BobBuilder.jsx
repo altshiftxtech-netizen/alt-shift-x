@@ -305,19 +305,61 @@ export default function BobBuilder() {
 
           {/* Main input */}
           <form onSubmit={handleSplashSubmit} className="w-full max-w-2xl">
+            {/* Uploaded file chips */}
+            {uploadedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2 px-1">
+                {uploadedFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-1.5 bg-violet-900/60 border border-violet-700 text-violet-300 text-[11px] px-2.5 py-1 rounded-full">
+                    <Paperclip className="w-3 h-3" />
+                    <span className="max-w-[120px] truncate">{f.name}</span>
+                    <button type="button" onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="relative flex items-center bg-slate-800/80 border border-slate-600 hover:border-violet-500 focus-within:border-violet-500 rounded-2xl shadow-2xl transition-all">
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              {/* Upload button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                title="Attach files (PDF, CSV, Word, etc.)"
+                className="ml-3 text-slate-400 hover:text-violet-400 p-1.5 rounded-lg transition-colors flex-shrink-0"
+              >
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+              </button>
+              {/* Voice button */}
+              <button
+                type="button"
+                onClick={toggleRecording}
+                title={isRecording ? "Stop recording" : "Voice to text"}
+                className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${isRecording ? "text-red-400 animate-pulse" : "text-slate-400 hover:text-violet-400"}`}
+              >
+                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
               <input
                 ref={splashInputRef}
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="What would you like to build today?"
-                className="flex-1 bg-transparent text-white text-base px-5 py-4 outline-none placeholder:text-slate-500 rounded-2xl"
+                placeholder={isRecording ? "🎙 Listening..." : "What would you like to build today?"}
+                className="flex-1 bg-transparent text-white text-base px-3 py-4 outline-none placeholder:text-slate-500 rounded-2xl"
                 autoFocus
               />
               <button
                 type="submit"
-                className="mr-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm"
+                className="mr-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm flex-shrink-0"
               >
                 <Sparkles className="w-4 h-4" /> Start
               </button>
