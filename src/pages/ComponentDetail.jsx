@@ -1,63 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Users, FlaskConical } from "lucide-react";
+import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Users, FlaskConical, Loader2 } from "lucide-react";
 import InstallButton from "@/components/InstallButton";
 import { Card, CardContent } from "@/components/ui/card";
+import { base44 } from "@/api/base44Client";
 
-const COMPONENTS = {
-  "ironclad-protocol": {
-    id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance",
-    rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, certified: true,
-    builder: { name: "BuildRight AI", tier: "certified", avatar: "B" },
-    desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.",
-    longDesc: "Ironclad Protocol is a precision-engineered risk extraction component designed for the construction industry. It processes subcontractor agreements through a four-pass pipeline — classification, structural parsing, semantic extraction, and cross-reference validation — to surface every material risk clause with citation accuracy of 98.1%.",
-    features: ["Retention clause detection (NZS 3910, AS 4000)", "Liquidated damages extraction with rate & cap", "Milestone & completion obligation mapping", "Extension of time trigger identification", "Cross-party obligation cross-referencing"],
-    schema: ["retention_amount", "ld_rate_per_day", "ld_cap", "milestones[]", "eot_triggers[]", "practical_completion_date"],
-    trustBreakdown: { performance: 94, safety: 96, satisfaction: 89, retention: 84 },
-    recentReviews: [
-      { author: "T. Marshall", rating: 5, text: "The retention clause detection is phenomenal. Saved us hours on every new subcontract." },
-      { author: "J. Chen", rating: 4, text: "Very accurate on AS 4000 contracts. Still working on NEC4 edge cases but the team is responsive." },
-      { author: "R. Patel", rating: 4, text: "Solid component. The 4-pass pipeline means you get structured output that's actually reliable." },
-    ],
-  },
-  "estimators-eye": {
-    id: "estimators-eye", name: "Estimator's Eye", code: "PM-CONSTRUCTION-BID", type: "X2", category: "Project Management",
-    rating: 4.2, reviews: 312, installs: 890, trustScore: 87, price: 6, certified: true,
-    builder: { name: "SiteIntel", tier: "official", avatar: "S" },
-    desc: "Parses construction bid estimates and extracts division-level costs, alternates, contingencies, and validity windows.",
-    longDesc: "Estimator's Eye deconstructs bid documents using CSI MasterFormat division taxonomy, extracting direct costs, alternates, exclusions, contingency allowances, and bid validity windows for structured comparison and audit.",
-    features: ["CSI MasterFormat division parsing", "Alternate item detection (up to 10)", "Contingency and allowance extraction", "Bid validity window identification", "Exclusion clause cataloguing"],
-    schema: ["divisions[]", "alternates[]", "contingency_amount", "bid_validity_date", "exclusions[]", "total_bid_amount"],
-    trustBreakdown: { performance: 80, safety: 91, satisfaction: 88, retention: 82 },
-    recentReviews: [
-      { author: "A. Wilson", rating: 5, text: "CSI division parsing is best-in-class. Makes bid levelling across multiple contractors fast." },
-      { author: "M. Garcia", rating: 4, text: "Good accuracy on standard formats. Some custom templates need manual mapping still." },
-    ],
-  },
-  "the-site-board": {
-    id: "the-site-board", name: "The Site Board", code: "RC-CONSTRUCTION", type: "X4", category: "Site Reporting",
-    rating: 4.7, reviews: 203, installs: 612, trustScore: 93, price: 4, certified: true,
-    builder: { name: "BuildRight AI", tier: "certified", avatar: "B" },
-    desc: "Transforms daily site reports into structured workforce and programme impact data.",
-    longDesc: "The Site Board processes daily site diaries and inspection reports, extracting structured data across workforce, materials, activities, RFIs, weather, and programme impact — enabling automated progress dashboards and early warning systems.",
-    features: ["Workforce count by trade", "Materials received and on-hand", "Work completed vs planned delta", "RFI open/close chain tracking", "Programme impact delta calculation"],
-    schema: ["workforce[]", "materials_received[]", "activities_completed[]", "rfis[]", "weather", "programme_impact_days"],
-    trustBreakdown: { performance: 95, safety: 97, satisfaction: 94, retention: 91 },
-    recentReviews: [
-      { author: "L. Thomas", rating: 5, text: "The RFI chain tracking alone is worth the install. Programme delta extraction is also excellent." },
-      { author: "P. Nguyen", rating: 5, text: "Running this on 200 site diaries per month — output quality is consistent and reliable." },
-    ],
-  },
-};
-
-const DEFAULT_COMPONENT = COMPONENTS["ironclad-protocol"];
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
 const tierConfig = { certified: "bg-emerald-100 text-emerald-700", official: "bg-violet-100 text-violet-700" };
 
 export default function ComponentDetail() {
   const { id } = useParams();
-  const component = COMPONENTS[id] || DEFAULT_COMPONENT;
+  const [component, setComponent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    base44.entities.Component.list()
+      .then(data => {
+        const found = (data || []).find(item => item.id === id);
+        if (found) {
+          const c = found;
+          setComponent({
+            ...c,
+            trustScore: c.trust_score,
+            trustBreakdown: c.trust_breakdown || {},
+            longDesc: c.long_description || c.description,
+            features: c.features || [],
+            schema: c.schema || [],
+            reviews: c.reviews_count || 0,
+            installs: c.installs_count || 0,
+            builder: { name: c.builder_id || "Unknown", tier: c.certified ? "certified" : "official", avatar: (c.builder_id || "U")[0].toUpperCase() },
+            recentReviews: [],
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
+  if (!component) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+        <p className="text-slate-500">Component not found.</p>
+        <Link to="/marketplace"><Button variant="outline">Back to Marketplace</Button></Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
