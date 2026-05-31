@@ -642,12 +642,15 @@ export default function BobBuilder() {
                       {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled · Apply to all: {applyToAll ? "ON" : "Off"}
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} Export PDF
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} PDF
                     </Button>
                     <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Export Word
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Word
+                    </Button>
+                    <Button onClick={() => handleExport("csv")} disabled={exporting} className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5">
+                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} CSV
                     </Button>
                   </div>
                 </CardContent>
