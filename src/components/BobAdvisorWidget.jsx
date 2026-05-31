@@ -100,9 +100,9 @@ export default function BobAdvisorWidget() {
       {!open && (
         <button
           onClick={openChat}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-violet-600 hover:bg-violet-700 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105"
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl transition-all hover:scale-110 overflow-hidden"
+          style={{ backgroundImage: 'url(https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
-          <Bot className="w-7 h-7 text-white" />
         </button>
       )}
 
