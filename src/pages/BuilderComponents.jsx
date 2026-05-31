@@ -87,6 +87,7 @@ const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-
 const statusStyles = {
   published: "bg-emerald-100 text-emerald-700 border-emerald-200",
   draft: "bg-slate-100 text-slate-500 border-slate-200",
+  shelved: "bg-amber-100 text-amber-700 border-amber-200",
 };
 const versionStatusConfig = {
   live: { label: "Live", className: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
@@ -173,7 +174,7 @@ function DeleteDialog({ component, onClose, onShelf, onDelete }) {
   );
 }
 
-function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemoved }) {
+function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemoved, onShelf }) {
   const [showDelete, setShowDelete] = useState(false);
 
   return (
@@ -182,7 +183,7 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
         <DeleteDialog
           component={c}
           onClose={() => setShowDelete(false)}
-          onShelf={() => onRemoved && onRemoved(c.id)}
+          onShelf={() => { setShowDelete(false); onShelf && onShelf(c.id); }}
           onDelete={() => onRemoved && onRemoved(c.id)}
         />
       )}
@@ -282,15 +283,26 @@ function VersionHistoryDrawer({ component, onClose }) {
   );
 }
 
+// ── Module-level state (persists across navigations within the session) ────────
+let _components = MOCK_COMPONENTS;
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function BuilderComponents() {
   const [drawerComponent, setDrawerComponent] = useState(null);
   const [releaseComponent, setReleaseComponent] = useState(null);
   const [filter, setFilter] = useState("all");
-  const [components, setComponents] = useState(MOCK_COMPONENTS);
+  const [components, setComponents] = useState(_components);
 
-  const handleRemoved = (id) => setComponents(prev => prev.filter(c => c.id !== id));
-  const filtered = filter === "all" ? components : components.filter(c => c.status === filter);
+  const handleRemoved = (id) => {
+    _components = _components.filter(c => c.id !== id);
+    setComponents(_components);
+  };
+
+  const handleShelf = (id) => {
+    _components = _components.map(c => c.id === id ? { ...c, status: "shelved" } : c);
+    setComponents([..._components]);
+  };
+  const filtered = filter === "all" ? components.filter(c => c.status !== "shelved") : components.filter(c => c.status === filter);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -314,7 +326,7 @@ export default function BuilderComponents() {
           </div>
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
-              {["all", "published", "draft"].map(f => (
+              {["all", "published", "draft", "shelved"].map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all ${filter === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"}`}>
                   {f}
@@ -338,6 +350,7 @@ export default function BuilderComponents() {
               onViewHistory={() => setDrawerComponent(comp)}
               onReleaseVersion={() => setReleaseComponent(comp)}
               onRemoved={handleRemoved}
+              onShelf={handleShelf}
             />
           ))}
         </div>
