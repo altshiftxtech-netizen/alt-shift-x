@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { Upload, Code, Eye, EyeOff, ShieldCheck, AlertTriangle, CheckCircle2, Bot } from "lucide-react";
+import { Upload, Code, Eye, EyeOff, ShieldCheck, AlertTriangle, CheckCircle2, Bot, FileText, Loader2 } from "lucide-react";
 
 const SENSITIVE_KEYWORDS = [
   "military", "weapon", "nuclear", "mass shoot", "explosive", "bomb", "harm", "kill",
@@ -20,11 +20,13 @@ export default function ComponentUploadTab() {
   const [showCode, setShowCode] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
-  const [form, setForm] = useState({ name: "", code: "", type: "X1", category: "Risk & Compliance", description: "", price: 49 });
+  const [form, setForm] = useState({ name: "", code: "", type: "X1", category: "Risk & Compliance", description: "", price: 49, long_description: "", endpoint_url: "" });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [sensitiveFlags, setSensitiveFlags] = useState([]);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfStatus, setPdfStatus] = useState("");
 
   const handleCodeChange = (val) => {
     setCodeInput(val);
@@ -42,6 +44,67 @@ export default function ComponentUploadTab() {
       setUploadingFile(false);
     };
     reader.readAsText(file);
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingPdf(true);
+    setPdfStatus("Uploading document...");
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setPdfStatus("Extracting component data with AI...");
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an AI analyst for the Alt+Shift+X construction intelligence marketplace. A PDF document has been uploaded describing a software component. Extract all relevant information to create a marketplace listing.
+
+Return a JSON object with:
+- name: component display name (concise, professional)
+- code: unique component code like "RP-CONSTRUCTION-1.0" 
+- type: one of "X1" (Risk & Compliance), "X2" (Project Management), "X4" (Site Reporting)
+- category: one of "Risk & Compliance", "Project Management", "Site Reporting", "Cost Estimation", "Schedule Analysis"
+- description: 2-3 sentence description for marketplace listing
+- long_description: detailed description (3-5 paragraphs)
+- features: array of 3-6 key features
+- schema: array of output field names this component produces
+- price: suggested monthly price in USD (number, e.g. 49)
+- endpoint_url: if mentioned in the document, otherwise null
+- safety_ok: boolean whether content seems safe/appropriate
+- safety_notes: any concerns noted`,
+        file_urls: [file_url],
+        response_json_schema: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            code: { type: "string" },
+            type: { type: "string" },
+            category: { type: "string" },
+            description: { type: "string" },
+            long_description: { type: "string" },
+            features: { type: "array", items: { type: "string" } },
+            schema: { type: "array", items: { type: "string" } },
+            price: { type: "number" },
+            endpoint_url: { type: "string" },
+            safety_ok: { type: "boolean" },
+            safety_notes: { type: "string" }
+          }
+        }
+      });
+      setAnalysis({ ...result, from_pdf: true });
+      setForm(prev => ({
+        ...prev,
+        name: result.name || prev.name,
+        code: result.code || prev.code,
+        type: result.type || prev.type,
+        category: result.category || prev.category,
+        description: result.description || prev.description,
+        price: result.price || prev.price
+      }));
+      setPdfStatus("✓ Document processed successfully");
+    } catch (err) {
+      console.error(err);
+      setPdfStatus("Error processing document. Please try again.");
+    }
+    setUploadingPdf(false);
   };
 
   const analyzeCode = async () => {
@@ -100,6 +163,8 @@ ${codeInput.slice(0, 3000)}`,
       status: "pending_review",
       features: analysis?.features || [],
       schema: analysis?.schema || [],
+      long_description: analysis?.long_description || "",
+      endpoint_url: analysis?.endpoint_url || "",
       trust_score: 0,
       installs_count: 0
     });
@@ -116,6 +181,31 @@ ${codeInput.slice(0, 3000)}`,
         <h2 className="text-lg font-bold text-slate-900 mb-1">Component Upload & Analysis</h2>
         <p className="text-sm text-slate-500">Upload or paste component code. BOB AI will analyze structure, safety, and generate marketplace metadata automatically.</p>
       </div>
+
+      {/* PDF Import */}
+      <Card className="border-violet-200 bg-violet-50/40">
+        <CardContent className="pt-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-violet-600" />
+            <p className="text-sm font-semibold text-slate-900">Import from PDF / Word Document</p>
+            <span className="text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">AI-Powered</span>
+          </div>
+          <p className="text-xs text-slate-500">Upload a component specification, technical brief, or documentation PDF. AI will extract all metadata and pre-fill the component form automatically.</p>
+          <div className="flex items-center gap-3">
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed cursor-pointer transition-all text-sm font-medium
+              ${uploadingPdf ? "border-violet-300 bg-violet-50 text-violet-400 pointer-events-none" : "border-violet-300 hover:border-violet-500 hover:bg-violet-50 text-violet-700"}`}>
+              {uploadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {uploadingPdf ? "Processing..." : "Upload PDF or Word Doc"}
+              <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handlePdfUpload} disabled={uploadingPdf} />
+            </label>
+            {pdfStatus && (
+              <p className={`text-xs font-medium ${pdfStatus.startsWith("✓") ? "text-emerald-600" : pdfStatus.startsWith("Error") ? "text-red-500" : "text-violet-600"}`}>
+                {pdfStatus}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Code Input */}
       <Card>
@@ -188,6 +278,11 @@ ${codeInput.slice(0, 3000)}`,
                   className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5" />
               </div>
               <div>
+                <label className="text-xs text-slate-500">Component Code</label>
+                <input value={form.code} onChange={e => setForm(p => ({...p, code: e.target.value}))}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5 font-mono" placeholder="RP-CONSTRUCTION-1.0" />
+              </div>
+              <div>
                 <label className="text-xs text-slate-500">Type</label>
                 <select value={form.type} onChange={e => setForm(p => ({...p, type: e.target.value}))}
                   className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5">
@@ -196,11 +291,6 @@ ${codeInput.slice(0, 3000)}`,
                   <option value="X4">X4</option>
                 </select>
               </div>
-              <div className="col-span-2">
-                <label className="text-xs text-slate-500">Description</label>
-                <textarea value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5 h-16 resize-none" />
-              </div>
               <div>
                 <label className="text-xs text-slate-500">Category</label>
                 <select value={form.category} onChange={e => setForm(p => ({...p, category: e.target.value}))}
@@ -208,10 +298,20 @@ ${codeInput.slice(0, 3000)}`,
                   {["Risk & Compliance","Project Management","Site Reporting","Cost Estimation","Schedule Analysis"].map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
+              <div className="col-span-2">
+                <label className="text-xs text-slate-500">Description</label>
+                <textarea value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5 h-16 resize-none" />
+              </div>
               <div>
                 <label className="text-xs text-slate-500">Price ($/mo)</label>
                 <input type="number" value={form.price} onChange={e => setForm(p => ({...p, price: Number(e.target.value)}))}
                   className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Endpoint URL (optional)</label>
+                <input value={form.endpoint_url} onChange={e => setForm(p => ({...p, endpoint_url: e.target.value}))}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm mt-0.5" placeholder="https://..." />
               </div>
             </div>
 
