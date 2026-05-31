@@ -6,7 +6,7 @@ export default function PublishHeader() {
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-sm text-slate-400 mb-2">
-        <Link to="/builder" className="hover:text-slate-600">Builder Dashboard</Link>
+        <Link to="/builder/components" className="hover:text-slate-600">My Components</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-slate-700 font-medium">Publish Component</span>
       </nav>
