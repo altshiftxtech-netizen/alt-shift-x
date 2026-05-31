@@ -5,6 +5,7 @@ import CompositeScoreGauge from "@/components/trust-engine/CompositeScoreGauge";
 import TrustBreakdownCharts from "@/components/trust-engine/TrustBreakdownCharts";
 import TrustFlagsPanel from "@/components/trust-engine/TrustFlagsPanel";
 import TrustScoreTrend from "@/components/trust-engine/TrustScoreTrend";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 // --- MOCK DATA ---
 const mockComponents = [
@@ -171,6 +172,7 @@ export default function TrustEngine() {
         <TrustFlagsPanel metrics={data.metrics} composite={data.composite} />
 
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }

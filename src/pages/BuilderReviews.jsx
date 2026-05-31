@@ -4,6 +4,7 @@ import ReviewsHeader from "@/components/builder-reviews/ReviewsHeader";
 import ReviewFilters from "@/components/builder-reviews/ReviewFilters";
 import ReviewCard from "@/components/builder-reviews/ReviewCard";
 import RatingSummary from "@/components/builder-reviews/RatingSummary";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 const ALL_REVIEWS = [
   { id: 1, component: "Ironclad Protocol", componentId: "rp", rating: 5, author: "Lachlan Byrne", role: "Project Director", org: "Meridian Build NZ", date: "May 26, 2026", body: "Transforms what used to take our legal team 2 hours into a 40-second automated check. The retention clause detection is frighteningly accurate.", helpful: 34, replied: false, flagged: false },
@@ -58,6 +59,7 @@ export default function BuilderReviews() {
           </div>
         </div>
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }

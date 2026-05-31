@@ -6,6 +6,7 @@ import RevenueChart from "@/components/builder-revenue/RevenueChart";
 import PayoutHistoryTable from "@/components/builder-revenue/PayoutHistoryTable";
 import StripeConnectPanel from "@/components/builder-revenue/StripeConnectPanel";
 import RevenueByComponent from "@/components/builder-revenue/RevenueByComponent";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 
 // --- MOCK DATA ---
 const mockStats = {
@@ -155,6 +156,7 @@ export default function BuilderRevenue() {
         <PayoutHistoryTable payouts={mockPayouts} />
 
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }

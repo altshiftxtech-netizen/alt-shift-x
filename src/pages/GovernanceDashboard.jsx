@@ -8,6 +8,7 @@ import {
   RefreshCw, Lock, Eye, TrendingUp, Award, XCircle
 } from "lucide-react";
 import AutoCertifyPanel from "@/components/governance/AutoCertifyPanel";
+import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from "recharts";
 
 const CERT_COLORS = {
@@ -249,6 +250,7 @@ export default function GovernanceDashboard() {
           </div>
         </div>
       </div>
+      <BobAdvisorWidget />
     </div>
   );
 }
