@@ -101,7 +101,7 @@ function TrustBadge({ score }) {
 }
 
 function DeleteDialog({ component, onClose, onShelf, onDelete }) {
-  const [step, setStep] = useState(onShelf ? 1 : 2);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const act = async (fn) => { setLoading(true); await fn(); setLoading(false); };
