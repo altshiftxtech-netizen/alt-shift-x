@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
-  FileText, FileDown, Rocket, Settings2, LayoutTemplate, X, Save,
-  CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight
+  FileText, FileDown, Rocket, LayoutTemplate, X, Save,
+  CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight,
+  Mic, MicOff, Paperclip, Upload
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,12 @@ export default function BobBuilder() {
   const [sending, setSending] = useState(false);
   const [showCodePanel, setShowCodePanel] = useState(false);
   const [codeInput, setCodeInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const fileInputRef = useRef(null);
 
   // Framework state
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
@@ -150,6 +157,66 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
+    setSending(false);
+  };
+
+  // ── Voice recording ───────────────────────────────────────────────────────
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    audioChunksRef.current = [];
+    recorder.ondataavailable = e => audioChunksRef.current.push(e.data);
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      const file = new File([blob], "voice.webm", { type: "audio/webm" });
+      setSending(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: file_url });
+      setInput(prev => (prev ? prev + " " : "") + transcript);
+      setSending(false);
+    };
+    mediaRecorderRef.current = recorder;
+    recorder.start();
+    setIsRecording(true);
+  };
+
+  // ── File upload ────────────────────────────────────────────────────────────
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    const uploaded = [];
+    for (const file of files) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      uploaded.push({ name: file.name, url: file_url });
+    }
+    setUploadedFiles(prev => [...prev, ...uploaded]);
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const sendWithFiles = async () => {
+    if (!conv || sending) return;
+    const msg = input.trim();
+    if (!msg && uploadedFiles.length === 0) return;
+    setSending(true);
+    setInput("");
+    const fileList = uploadedFiles.map(f => f.name).join(", ");
+    const fullMsg = uploadedFiles.length > 0
+      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.`
+      : msg;
+    await base44.agents.addMessage(conv, {
+      role: "user",
+      content: fullMsg,
+      file_urls: uploadedFiles.map(f => f.url)
+    });
+    setUploadedFiles([]);
     setSending(false);
   };
 
@@ -409,13 +476,53 @@ export default function BobBuilder() {
                   )}
                   <div ref={messagesEndRef} />
                 </div>
-                <div className="border-t border-slate-700 p-3 flex gap-2">
+                {/* Uploaded file chips */}
+                {uploadedFiles.length > 0 && (
+                  <div className="px-3 pt-2 flex flex-wrap gap-1.5">
+                    {uploadedFiles.map((f, i) => (
+                      <div key={i} className="flex items-center gap-1.5 bg-violet-900/60 border border-violet-700 text-violet-300 text-[11px] px-2.5 py-1 rounded-full">
+                        <Paperclip className="w-3 h-3" />
+                        <span className="max-w-[120px] truncate">{f.name}</span>
+                        <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="border-t border-slate-700 p-3 flex gap-2 items-center">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                  {/* Upload button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    title="Attach files (PDF, CSV, Word, etc.)"
+                    className="text-slate-400 hover:text-violet-400 p-2 rounded-xl hover:bg-slate-800 transition-colors flex-shrink-0"
+                  >
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                  </button>
+                  {/* Voice button */}
+                  <button
+                    onClick={toggleRecording}
+                    title={isRecording ? "Stop recording" : "Voice to text"}
+                    className={`p-2 rounded-xl transition-colors flex-shrink-0 ${isRecording ? "bg-red-600 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 hover:bg-slate-800"}`}
+                  >
+                    {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </button>
                   <input type="text" value={input} onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && sendMessage()}
-                    placeholder="Ask BOB anything about component building..."
+                    onKeyDown={e => e.key === "Enter" && sendWithFiles()}
+                    placeholder={isRecording ? "🎙 Listening..." : "Ask BOB anything about component building..."}
                     className="flex-1 bg-slate-800 text-white text-sm px-4 py-2.5 rounded-xl outline-none focus:ring-1 focus:ring-violet-500 placeholder:text-slate-500" />
-                  <button onClick={() => sendMessage()} disabled={sending || !input.trim()}
-                    className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2.5 rounded-xl transition-colors">
+                  <button onClick={sendWithFiles} disabled={sending || (!input.trim() && uploadedFiles.length === 0)}
+                    className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2.5 rounded-xl transition-colors flex-shrink-0">
                     <Send className="w-4 h-4" />
                   </button>
                 </div>
