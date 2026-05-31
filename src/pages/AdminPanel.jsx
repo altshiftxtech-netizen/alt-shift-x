@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, CheckCircle2, XCircle, Clock, AlertTriangle, Users, Flag, CreditCard, Loader2, FileText } from "lucide-react";
+import { ShieldCheck, CheckCircle2, XCircle, Clock, AlertTriangle, Users, Flag, CreditCard, Loader2, FileText, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import LegalDocumentsTab from "@/components/admin/LegalDocumentsTab";
@@ -148,22 +148,52 @@ function PendingTab() {
 }
 
 function PublishedTab() {
+  const [components, setComponents] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [deletingId, setDeletingId] = React.useState(null);
+
+  React.useEffect(() => {
+    base44.entities.Component.list("-created_date", 100)
+      .then(data => { setComponents(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleDelete = async (component) => {
+    if (!window.confirm(`Delete "${component.name}"? This cannot be undone.`)) return;
+    setDeletingId(component.id);
+    await base44.entities.Component.delete(component.id);
+    setComponents(prev => prev.filter(c => c.id !== component.id));
+    setDeletingId(null);
+  };
+
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>;
+
   return (
     <div className="space-y-3">
-      {PUBLISHED.map(c => (
+      {components.length === 0 && <div className="text-center py-12 text-slate-400 text-sm">No components found</div>}
+      {components.map(c => (
         <Card key={c.id}>
           <CardContent className="py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type] || "bg-slate-100 text-slate-600"}`}>{c.type}</span>
               <div>
                 <p className="text-sm font-bold text-slate-900">{c.name}</p>
-                <p className="text-xs font-mono text-slate-400">{c.code} · {c.builder}</p>
+                <p className="text-xs font-mono text-slate-400">{c.code} · <span className={`capitalize px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${c.status === "published" ? "bg-emerald-100 text-emerald-700" : c.status === "pending_review" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"}`}>{c.status}</span></p>
               </div>
             </div>
-            <div className="flex items-center gap-5 text-xs">
-              <span className="text-emerald-600 font-bold flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{c.trustScore}</span>
-              <span className="text-slate-500">{c.installs.toLocaleString()} installs</span>
-              <Button variant="outline" className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50">Unpublish</Button>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="text-slate-500 hidden sm:block">{(c.installs_count || 0).toLocaleString()} installs</span>
+              <span className="text-slate-500">${c.price || 0}/mo</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-500 border-red-200 hover:bg-red-50 h-7 gap-1.5"
+                onClick={() => handleDelete(c)}
+                disabled={deletingId === c.id}
+              >
+                {deletingId === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                Delete
+              </Button>
             </div>
           </CardContent>
         </Card>
