@@ -9,17 +9,7 @@ import { base44 } from "@/api/base44Client";
 import AiSearchConsultant from "@/components/AiSearchConsultant";
 import { useAuth } from "@/lib/AuthContext";
 
-const ALL_COMPONENTS = [
-  { id: "ironclad-protocol", name: "Ironclad Protocol", code: "RP-CONSTRUCTION-1.0", type: "X1", category: "Risk & Compliance", rating: 4.4, reviews: 847, installs: 2341, trustScore: 91, price: 5, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.", builder: "BuildRight AI", certified: true },
-  { id: "estimators-eye", name: "Estimator's Eye", code: "PM-CONSTRUCTION-BID", type: "X2", category: "Project Management", rating: 4.2, reviews: 312, installs: 890, trustScore: 87, price: 6, desc: "Parses construction bid estimates and extracts division-level costs, alternates, contingencies, and validity windows.", builder: "SiteIntel", certified: true },
-  { id: "the-site-board", name: "The Site Board", code: "RC-CONSTRUCTION", type: "X4", category: "Site Reporting", rating: 4.7, reviews: 203, installs: 612, trustScore: 93, price: 4, desc: "Transforms daily site reports into structured data: workforce counts, RFI tracking, materials received, and programme impact.", builder: "BuildRight AI", certified: true },
-  { id: "claim-sentinel", name: "Claim Sentinel", code: "RP-CLAIMS-1.0", type: "X1", category: "Risk & Compliance", rating: 4.1, reviews: 156, installs: 445, trustScore: 84, price: 7, desc: "Identifies and structures variation claims, extension of time events, and dispute indicators in contract correspondence.", builder: "ClaimAI", certified: false },
-  { id: "schedule-pulse", name: "Schedule Pulse", code: "PM-SCHEDULE-1.0", type: "X2", category: "Project Management", rating: 4.5, reviews: 289, installs: 734, trustScore: 89, price: 5, desc: "Parses project schedules to extract critical path activities, float values, and delay impact assessments.", builder: "SiteIntel", certified: true },
-  { id: "safety-observer", name: "Safety Observer", code: "RC-SAFETY-1.0", type: "X4", category: "Safety & Compliance", rating: 4.6, reviews: 178, installs: 523, trustScore: 92, price: 4, desc: "Extracts safety incidents, near-miss events, and corrective action records from site inspection reports.", builder: "SafetyFirst AI", certified: true },
-  { id: "permit-tracker", name: "Permit Tracker", code: "RP-PERMIT-1.0", type: "X1", category: "Risk & Compliance", rating: 3.9, reviews: 92, installs: 267, trustScore: 78, price: 3, desc: "Monitors and extracts permit conditions, expiry dates, and compliance obligations from local authority documents.", builder: "ComplianceBot", certified: false },
-  { id: "cost-variance", name: "Cost Variance Lens", code: "PM-COST-1.0", type: "X2", category: "Project Management", rating: 4.3, reviews: 134, installs: 398, trustScore: 86, price: 6, desc: "Analyses cost reports to surface budget variances, committed costs, and forecast-to-complete divergence.", builder: "BuildRight AI", certified: true },
-  { id: "rfi-tracker", name: "RFI Tracker", code: "RC-RFI-1.0", type: "X4", category: "Site Reporting", rating: 4.0, reviews: 211, installs: 601, trustScore: 82, price: 3, desc: "Extracts RFI chains, response times, impact statements, and resolution status from project communication logs.", builder: "SiteIntel", certified: false },
-];
+const ALL_COMPONENTS = [];
 
 const CATEGORIES = ["All", "Risk & Compliance", "Project Management", "Site Reporting", "Safety & Compliance"];
 const TYPES = ["All", "X1", "X2", "X4"];
@@ -42,11 +32,10 @@ export default function Marketplace() {
   useEffect(() => {
     base44.entities.Component.filter({ status: "published" })
       .then(data => {
-        // Fall back to static showcase data if no DB components yet
-        setComponents(data && data.length > 0 ? data : ALL_COMPONENTS);
+        setComponents(data || []);
         setLoading(false);
       })
-      .catch(() => { setComponents(ALL_COMPONENTS); setLoading(false); });
+      .catch(() => { setComponents([]); setLoading(false); });
   }, []);
 
   const filtered = components
