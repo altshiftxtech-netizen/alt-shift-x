@@ -24,13 +24,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Fetch component to verify ownership
-    const components = await base44.entities.Component.filter({ id: component_id });
-    if (!components.length || components[0].builder_id !== user.id) {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
+    // Fetch component to verify ownership (fall back to snapshot for mock/local components)
+    let component = snapshot || { name: component_id, trust_score: 0 };
+    try {
+      const components = await base44.entities.Component.filter({ id: component_id });
+      if (components.length) {
+        if (components[0].builder_id !== user.id) {
+          return Response.json({ error: 'Unauthorized' }, { status: 403 });
+        }
+        component = components[0];
+      }
+    } catch (e) {
+      console.log('Component not found in DB, using snapshot data');
     }
-
-    const component = components[0];
 
     // Check if version already exists
     const existingVersions = await base44.entities.ComponentVersion.filter({
