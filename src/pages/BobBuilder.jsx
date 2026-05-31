@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
+import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import ReactMarkdown from "react-markdown";
 
 const QUICK_PROMPTS = [
@@ -303,11 +304,11 @@ export default function BobBuilder() {
             </div>
           </div>
 
-          {/* Main input */}
-          <form onSubmit={handleSplashSubmit} className="w-full max-w-2xl">
+          {/* Main input — rich doc-style prompt */}
+          <div className="w-full max-w-2xl space-y-2">
             {/* Uploaded file chips */}
             {uploadedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2 px-1">
+              <div className="flex flex-wrap gap-1.5 px-1">
                 {uploadedFiles.map((f, i) => (
                   <div key={i} className="flex items-center gap-1.5 bg-violet-900/60 border border-violet-700 text-violet-300 text-[11px] px-2.5 py-1 rounded-full">
                     <Paperclip className="w-3 h-3" />
@@ -319,7 +320,19 @@ export default function BobBuilder() {
                 ))}
               </div>
             )}
-            <div className="relative flex items-center bg-slate-800/80 border border-slate-600 hover:border-violet-500 focus-within:border-violet-500 rounded-2xl shadow-2xl transition-all">
+
+            <RichPromptEditor
+              value={input}
+              onChange={(text) => setInput(text)}
+              onSubmit={handleSplashSubmit}
+              placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "What would you like to build today? Use Enter for new lines, Ctrl+Enter to launch..."}
+              minHeight={120}
+              maxHeight={320}
+              autoFocus
+            />
+
+            {/* Action row */}
+            <div className="flex items-center gap-2">
               {/* Hidden file input */}
               <input
                 ref={fileInputRef}
@@ -329,42 +342,36 @@ export default function BobBuilder() {
                 className="hidden"
                 onChange={handleFileUpload}
               />
-              {/* Upload button */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                title="Attach files (PDF, CSV, Word, etc.)"
-                className="ml-3 text-slate-400 hover:text-violet-400 p-1.5 rounded-lg transition-colors flex-shrink-0"
+                title="Attach files"
+                className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all"
               >
-                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                Attach
               </button>
-              {/* Voice button */}
               <button
                 type="button"
                 onClick={toggleRecording}
                 title={isRecording ? "Stop recording" : "Voice to text"}
-                className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ${isRecording ? "text-red-400 animate-pulse" : "text-slate-400 hover:text-violet-400"}`}
+                className={`flex items-center gap-1.5 border px-3 py-2 rounded-xl text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}
               >
-                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                {isRecording ? "Stop" : "Voice"}
               </button>
-              <input
-                ref={splashInputRef}
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder={isRecording ? "🎙 Listening..." : "What would you like to build today?"}
-                className="flex-1 bg-transparent text-white text-base px-3 py-4 outline-none placeholder:text-slate-500 rounded-2xl"
-                autoFocus
-              />
+              <div className="flex-1" />
               <button
-                type="submit"
-                className="mr-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm flex-shrink-0"
+                type="button"
+                onClick={handleSplashSubmit}
+                disabled={!input.trim()}
+                className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-5 py-2 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm"
               >
-                <Sparkles className="w-4 h-4" /> Start
+                <Sparkles className="w-4 h-4" /> Start Building
               </button>
             </div>
-          </form>
+          </div>
 
           {/* Suggestion chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full max-w-2xl">
@@ -532,41 +539,50 @@ export default function BobBuilder() {
                     ))}
                   </div>
                 )}
-                <div className="border-t border-slate-700 p-3 flex gap-2 items-center">
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
-                    className="hidden"
-                    onChange={handleFileUpload}
+                <div className="border-t border-slate-700 p-3 space-y-2">
+                  <RichPromptEditor
+                    value={input}
+                    onChange={(text) => setInput(text)}
+                    onSubmit={sendWithFiles}
+                    placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything... Enter = new line · Ctrl+Enter = send"}
+                    minHeight={80}
+                    maxHeight={260}
+                    disabled={sending}
                   />
-                  {/* Upload button */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    title="Attach files (PDF, CSV, Word, etc.)"
-                    className="text-slate-400 hover:text-violet-400 p-2 rounded-xl hover:bg-slate-800 transition-colors flex-shrink-0"
-                  >
-                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
-                  </button>
-                  {/* Voice button */}
-                  <button
-                    onClick={toggleRecording}
-                    title={isRecording ? "Stop recording" : "Voice to text"}
-                    className={`p-2 rounded-xl transition-colors flex-shrink-0 ${isRecording ? "bg-red-600 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 hover:bg-slate-800"}`}
-                  >
-                    {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  </button>
-                  <input type="text" value={input} onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && sendWithFiles()}
-                    placeholder={isRecording ? "🎙 Listening..." : "Ask BOB anything about component building..."}
-                    className="flex-1 bg-slate-800 text-white text-sm px-4 py-2.5 rounded-xl outline-none focus:ring-1 focus:ring-violet-500 placeholder:text-slate-500" />
-                  <button onClick={sendWithFiles} disabled={sending || (!input.trim() && uploadedFiles.length === 0)}
-                    className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2.5 rounded-xl transition-colors flex-shrink-0">
-                    <Send className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      title="Attach files"
+                      className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                    >
+                      {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+                      Attach
+                    </button>
+                    <button
+                      onClick={toggleRecording}
+                      title={isRecording ? "Stop recording" : "Voice to text"}
+                      className={`flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}
+                    >
+                      {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                      {isRecording ? "Stop" : "Voice"}
+                    </button>
+                    <div className="flex-1" />
+                    <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
+                    <button onClick={sendWithFiles} disabled={sending || (!input.trim() && uploadedFiles.length === 0)}
+                      className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                      <Send className="w-3.5 h-3.5" /> Send
+                    </button>
+                  </div>
                 </div>
               </Card>
             </div>
