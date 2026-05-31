@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ShieldCheck, DollarSign, History, FlaskConical } from "lucide-react";
+import { Download, ShieldCheck, DollarSign, History, FlaskConical, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import ComponentDeleteDialog from "@/components/builder-ComponentDeleteDialog";
+import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
 const statusStyles = {
@@ -16,8 +18,29 @@ function TrustBadge({ score }) {
   return <span className={`text-sm font-black ${color}`}>{score}<span className="text-xs font-normal text-slate-400">/100</span></span>;
 }
 
-export default function ComponentCard({ component: c, onViewHistory }) {
+export default function ComponentCard({ component: c, onViewHistory, onRemoved }) {
+  const [showDelete, setShowDelete] = useState(false);
+
+  const handleShelf = async (comp) => {
+    await base44.entities.Component.update(comp.id, { status: "shelved" });
+    onRemoved && onRemoved(comp.id);
+  };
+
+  const handleDelete = async (comp) => {
+    await base44.entities.Component.delete(comp.id);
+    onRemoved && onRemoved(comp.id);
+  };
+
   return (
+    <>
+      {showDelete && (
+        <ComponentDeleteDialog
+          component={c}
+          onClose={() => setShowDelete(false)}
+          onShelf={handleShelf}
+          onDelete={handleDelete}
+        />
+      )}
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="pt-5 pb-4">
         <div className="flex items-start justify-between mb-3">
@@ -26,6 +49,9 @@ export default function ComponentCard({ component: c, onViewHistory }) {
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusStyles[c.status]}`}>{c.status}</span>
             <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{c.version}</span>
           </div>
+          <button onClick={() => setShowDelete(true)} className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50" title="Remove component">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <h3 className="text-base font-bold text-slate-900 mb-0.5">{c.displayName}</h3>
@@ -68,5 +94,6 @@ export default function ComponentCard({ component: c, onViewHistory }) {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

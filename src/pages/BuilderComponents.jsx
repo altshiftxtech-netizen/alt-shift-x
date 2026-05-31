@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap } from "lucide-react";
+import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
 import VersionHistoryPanel from "@/components/version-manager/VersionHistoryPanel";
 
@@ -100,8 +100,92 @@ function TrustBadge({ score }) {
   return <span className={`text-sm font-black ${color}`}>{score}<span className="text-xs font-normal text-slate-400">/100</span></span>;
 }
 
-function ComponentCard({ component: c, onViewHistory, onReleaseVersion }) {
+function DeleteDialog({ component, onClose, onShelf, onDelete }) {
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const act = async (fn) => { setLoading(true); await fn(); setLoading(false); onClose(); };
+
   return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center">
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </div>
+            <p className="text-sm font-bold text-slate-900">Remove Component</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          {step === 1 ? (
+            <>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-amber-800 mb-1">This will affect active subscribers</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    <span className="font-semibold">{component.displayName}</span> will be <span className="font-semibold">immediately unavailable</span> to all users who have installed or subscribed to it.
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">You can <span className="font-semibold text-slate-700">shelf it</span> (hidden but restorable) or <span className="font-semibold text-red-600">permanently delete</span> all data.</p>
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" className="flex-1 text-xs h-9" onClick={onClose}>Cancel</Button>
+                <Button className="flex-1 text-xs h-9 bg-red-600 hover:bg-red-700 text-white" onClick={() => setStep(2)}>Continue →</Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-slate-800">What would you like to do with <span className="text-violet-700">{component.displayName}</span>?</p>
+              <button onClick={() => act(onShelf)} disabled={loading}
+                className="w-full text-left border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50 rounded-xl p-4 transition-all group">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center shrink-0">
+                    <Archive className="w-4 h-4 text-slate-500 group-hover:text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-violet-800">Shelf Component</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Hidden from marketplace. Data, reviews, and history preserved. Restorable at any time.</p>
+                  </div>
+                </div>
+              </button>
+              <button onClick={() => act(onDelete)} disabled={loading}
+                className="w-full text-left border-2 border-slate-200 hover:border-red-400 hover:bg-red-50 rounded-xl p-4 transition-all group">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-red-100 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-4 h-4 text-slate-500 group-hover:text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-red-700">Permanently Delete</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Removes all data from the platform. <span className="font-semibold text-red-600">Cannot be undone.</span></p>
+                  </div>
+                </div>
+              </button>
+              {loading && <div className="flex items-center justify-center gap-2 py-1"><Loader2 className="w-4 h-4 animate-spin text-slate-400" /><span className="text-xs text-slate-400">Processing...</span></div>}
+              <Button variant="outline" className="w-full text-xs h-9" onClick={() => setStep(1)}>← Back</Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemoved }) {
+  const [showDelete, setShowDelete] = useState(false);
+
+  return (
+    <>
+      {showDelete && (
+        <DeleteDialog
+          component={c}
+          onClose={() => setShowDelete(false)}
+          onShelf={() => onRemoved && onRemoved(c.id)}
+          onDelete={() => onRemoved && onRemoved(c.id)}
+        />
+      )}
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="pt-5 pb-4">
         <div className="flex items-start justify-between mb-3">
@@ -110,6 +194,9 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion }) {
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusStyles[c.status]}`}>{c.status}</span>
             <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{c.version}</span>
           </div>
+          <button onClick={() => setShowDelete(true)} className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50" title="Remove component">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
         <h3 className="text-base font-bold text-slate-900 mb-0.5">{c.displayName}</h3>
         <p className="text-[10px] text-slate-400 font-mono mb-2">{c.name}</p>
@@ -154,6 +241,7 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion }) {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }
 
@@ -199,8 +287,10 @@ export default function BuilderComponents() {
   const [drawerComponent, setDrawerComponent] = useState(null);
   const [releaseComponent, setReleaseComponent] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [components, setComponents] = useState(MOCK_COMPONENTS);
 
-  const filtered = filter === "all" ? MOCK_COMPONENTS : MOCK_COMPONENTS.filter(c => c.status === filter);
+  const handleRemoved = (id) => setComponents(prev => prev.filter(c => c.id !== id));
+  const filtered = filter === "all" ? components : components.filter(c => c.status === filter);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -218,7 +308,7 @@ export default function BuilderComponents() {
               <div className="p-2 rounded-xl bg-slate-100"><Package className="w-5 h-5 text-slate-600" /></div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">My Components</h1>
-                <p className="text-sm text-slate-500">{MOCK_COMPONENTS.length} components in your portfolio</p>
+                <p className="text-sm text-slate-500">{components.length} components in your portfolio</p>
               </div>
             </div>
           </div>
@@ -247,6 +337,7 @@ export default function BuilderComponents() {
               component={comp} 
               onViewHistory={() => setDrawerComponent(comp)}
               onReleaseVersion={() => setReleaseComponent(comp)}
+              onRemoved={handleRemoved}
             />
           ))}
         </div>

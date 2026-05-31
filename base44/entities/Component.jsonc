@@ -64,7 +64,8 @@
         "draft",
         "pending_review",
         "published",
-        "rejected"
+        "rejected",
+        "shelved"
       ],
       "default": "draft"
     },
