@@ -195,7 +195,7 @@ export default function Marketplace() {
                   const bundlePrice = bundleComponents.reduce((sum, c) => sum + (c.price || 0), 0);
                   const discountedPrice = Math.round(bundlePrice * 0.75);
                   return (
-                    <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl">
+                    <div className="neon-glow-wave mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl">
                       <div className="flex items-center gap-2 mb-3">
                         <Package className="w-4 h-4 text-violet-300" />
                         <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
