@@ -15,9 +15,9 @@ export default function ComponentDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Component.list()
+    base44.entities.Component.filter({ id })
       .then(data => {
-        const found = (data || []).find(item => item.id === id);
+        const found = (data || [])[0];
         if (found) {
           const c = found;
           setComponent({

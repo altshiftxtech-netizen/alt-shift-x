@@ -21,37 +21,7 @@ export default function InstallButton({ component, size = "default" }) {
   }, [component.id]);
 
   const handleInstall = async () => {
-    // Check if already subscribed to this component
-    const user = await base44.auth.me();
-    const existingSub = await base44.entities.Subscription.filter({
-      user_id: user.id,
-      component_id: component.id,
-      status: "active",
-    });
-
-    if (existingSub.length > 0) {
-      // Already subscribed — just record the install
-      const today = new Date().toISOString().split("T")[0];
-      setLoading(true);
-      const rec = await base44.entities.InstalledComponent.create({
-        user_id: user.id,
-        component_id: component.id,
-        component_name: component.name,
-        component_code: component.code,
-        component_type: component.type,
-        trust_score: component.trust_score,
-        installed_at: today,
-        last_used: "Never",
-        calls_this_month: 0,
-        status: "active",
-      });
-      setRecord(rec);
-      setInstalled(true);
-      setLoading(false);
-      return;
-    }
-
-    // Not subscribed — start checkout for this specific component
+    // Start checkout for this specific component
     try {
       if (window.self !== window.top) {
         alert("Checkout is only available from the published app. Please open the live URL.");

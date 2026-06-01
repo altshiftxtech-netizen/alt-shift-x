@@ -86,19 +86,26 @@ Deno.serve(async (req) => {
             user_id: userId,
             component_id: componentId,
           });
+          // Fetch component record for name/code/type and install count update
+          const comps = await base44.asServiceRole.entities.Component.filter({ id: componentId });
+          const compRecord = comps.length > 0 ? comps[0] : {};
+
           if (alreadyInstalled.length === 0) {
             await base44.asServiceRole.entities.InstalledComponent.create({
               user_id: userId,
               component_id: componentId,
+              component_name: session.metadata?.component_name || compRecord.name || "",
+              component_code: compRecord.code || "",
+              component_type: compRecord.type || "X2",
+              trust_score: compRecord.trust_score || 0,
               stripe_subscription_id: subscriptionId,
               status: "active",
-              installed_at: new Date().toISOString(),
+              installed_at: new Date().toISOString().split("T")[0],
             });
             // Increment installs count on component
-            const comps = await base44.asServiceRole.entities.Component.filter({ id: componentId });
             if (comps.length > 0) {
               await base44.asServiceRole.entities.Component.update(componentId, {
-                installs_count: (comps[0].installs_count || 0) + 1,
+                installs_count: (compRecord.installs_count || 0) + 1,
               });
             }
           }
