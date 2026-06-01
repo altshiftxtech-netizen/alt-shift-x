@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus, Zap, Package } from "lucide-react";
+import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus, Zap, Package, CheckCircle2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
@@ -74,6 +74,7 @@ export default function Marketplace() {
   const [currentUser, setCurrentUser] = useState(null);
   // map of component_id -> InstalledComponent record
   const [installedMap, setInstalledMap] = useState({});
+  const [bundleInstalling, setBundleInstalling] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -100,6 +101,28 @@ export default function Marketplace() {
     };
     fetchAll();
   }, []);
+
+  const handleBundleInstall = async (bundleComponents) => {
+    if (!isAuthenticated) {
+      window.location.href = "/login";
+      return;
+    }
+    if (window.self !== window.top) {
+      alert("Checkout is only available from the published app. Please open the live URL.");
+      return;
+    }
+    // Find first component not yet installed and start checkout
+    const first = bundleComponents.find(c => !installedMap[c.id]);
+    if (!first) return; // all installed
+    setBundleInstalling(true);
+    const res = await base44.functions.invoke("createCheckoutSession", { componentId: first.id });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      alert("Could not start checkout. Please try again.");
+      setBundleInstalling(false);
+    }
+  };
 
   const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
 
@@ -286,7 +309,7 @@ export default function Marketplace() {
 
                       {/* CTA row */}
                       <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {bundleComponents.map(c => (
                             <Link key={c.id} to={`/marketplace/${c.id}`}
                               className="text-[10px] text-violet-300 hover:text-violet-100 bg-violet-900/40 border border-violet-400/20 px-2 py-1 rounded-lg transition-colors font-mono">
@@ -294,7 +317,31 @@ export default function Marketplace() {
                             </Link>
                           ))}
                         </div>
-                        <span className="text-xs text-white/40 ml-auto">3 components · bundle pricing applied at checkout</span>
+                        <div className="ml-auto flex items-center gap-3">
+                          <span className="text-xs text-white/40 hidden sm:block">3 components · bundle pricing at checkout</span>
+                          {(() => {
+                            const allInstalled = bundleComponents.every(c => installedMap[c.id]);
+                            const someInstalled = bundleComponents.some(c => installedMap[c.id]);
+                            const remaining = bundleComponents.filter(c => !installedMap[c.id]);
+                            if (allInstalled) {
+                              return (
+                                <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-400 bg-emerald-900/30 border border-emerald-400/30 px-4 py-2 rounded-xl">
+                                  <CheckCircle2 className="w-4 h-4" /> All Installed
+                                </span>
+                              );
+                            }
+                            return (
+                              <button
+                                onClick={() => handleBundleInstall(bundleComponents)}
+                                disabled={bundleInstalling}
+                                className="flex items-center gap-2 text-sm font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-5 py-2 rounded-xl transition-all shadow-lg shadow-violet-900/40"
+                              >
+                                {bundleInstalling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                {bundleInstalling ? "Starting…" : someInstalled ? `Install Remaining (${remaining.length})` : "Install Bundle"}
+                              </button>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
                   );
