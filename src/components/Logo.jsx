@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/341f551f7_Copilot_20260601_014609.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b9193c2b6_Copilot_20260601_015315.png";
 
 /**
  * Protected logo — blocks right-click, double-click save, drag, and context menu.
@@ -11,7 +11,7 @@ export default function Logo({ className = "h-8 w-auto" }) {
   const block = (e) => e.preventDefault();
 
   return (
-    <Link to="/" draggable={false} className="inline-flex items-center justify-center rounded-xl p-1" style={{ background: "radial-gradient(ellipse at center, rgba(120,60,180,0.55) 0%, rgba(60,10,90,0.75) 100%)", backdropFilter: "blur(6px)", boxShadow: "0 0 18px 4px rgba(140,60,200,0.35)" }}>
+    <Link to="/" draggable={false} className="inline-flex items-center justify-center rounded-xl overflow-hidden">
       <img
         src={LOGO_URL}
         alt="Alt+Shift+X"
