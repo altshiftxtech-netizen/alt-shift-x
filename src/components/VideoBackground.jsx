@@ -54,6 +54,7 @@ export default function VideoBackground() {
         className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
         src={VIDEO_URL}
         autoPlay
+        muted
         playsInline
       />
       {/* Dark overlay so content stays readable */}
