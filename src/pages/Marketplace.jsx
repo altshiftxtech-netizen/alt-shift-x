@@ -25,43 +25,27 @@ const CATEGORIES = [
 ];
 const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
 
-// Per-component category override: maps component code → new taxonomy category
+// Legacy category override map — DB categories are now correct; this is kept as a safety net for any components still showing old values
 const COMPONENT_CATEGORY_OVERRIDE = {
-  // AI Agent Development
+  // Legacy "Project Management" → correct category
   "MLAAU-BUS": "AI Agent Development",
   "MLAAU-UAP": "AI Agent Development",
   "MLAAU-AA": "AI Agent Development",
-  "CEREBRAL-1.0": "AI Agent Development",
-  "SRTM-1.0": "AI Agent Development",
-  "AAD-1.0": "AI Agent Development",
-  "MQR-1.0": "AI Agent Development",
-  "YJ-SUITE-1.0": "AI Agent Development",
-  "ASCENSION-1.01": "AI Agent Development",
   "HBP-1.0": "AI Agent Development",
   "VMP-1.0": "AI Agent Development",
-  // Pedigree Specialized Pairings
-  "YJ-380": "Pedigree Specialized Pairings",
-  "CLAIRE-1.0": "Pedigree Specialized Pairings",
-  "YJ-LIGHTYEAR": "Pedigree Specialized Pairings",
-  "YJ-LIGHTYEAR-S": "Pedigree Specialized Pairings",
-  // Military & Business Strategy
+  "AAD-1.0": "AI Agent Development",
+  "MQR-1.0": "AI Agent Development",
+  // Legacy "Risk & Compliance" → correct category
   "OVERWATCH-1.0": "Military & Business Strategy",
   "TMT-UNIFIED": "Military & Business Strategy",
   "CHAMBER-FULL": "Military & Business Strategy",
-  "TMT-1": "Military & Business Strategy",
-  "TMT-2": "Military & Business Strategy",
-  "TMT-3": "Military & Business Strategy",
-  "TMT-4": "Military & Business Strategy",
-  "TMT-5": "Military & Business Strategy",
-  // Legal & Compliance
-  "UPIES-1.0": "Legal & Compliance",
+  "ASCENSION-1.01": "Military & Business Strategy",
+  "CEREBRAL-1.0": "AI Agent Development",
+  "SRTM-1.0": "AI Agent Development",
   "DNH-1.0": "Legal & Compliance",
   "CIP-DOCTORAL": "Legal & Compliance",
-  "UQAP-1.0": "Legal & Compliance",
-  // Marketplace & Deployment Kits
-  "MKT-KIT-1.0": "Marketplace & Deployment Kits",
-  // Operational Engineering
-  "OPS-SYS-1.0": "Operational Engineering",
+  "YJ-LIGHTYEAR-S": "Pedigree Specialized Pairings",
+  "YJ-LIGHTYEAR": "Pedigree Specialized Pairings",
 };
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
