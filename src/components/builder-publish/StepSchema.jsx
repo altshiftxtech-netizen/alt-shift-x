@@ -2,8 +2,23 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const TYPES = ["X1 — Risk & Compliance", "X2 — Project Management", "X3 — Document Generation", "X4 — Site Reporting", "X5 — Financial Analysis"];
-const CATEGORIES = ["Risk & Compliance", "Project Management", "Site Reporting", "Bid Estimation", "Scheduling", "Financial Analysis", "Document Generation", "Other"];
+const TYPES = [
+  "X1 — Reading Protocols",
+  "X2 — Prophecy Models",
+  "X3 — Speed Profiles",
+  "X4 — Reason Councils",
+  "X5 — Complete Agents",
+];
+const CATEGORIES = [
+  "Military & Business Strategy",
+  "AI Agent Development",
+  "Marketplace & Deployment Kits",
+  "Pedigree Specialized Pairings",
+  "Legal & Compliance",
+  "Operational Engineering",
+  "Human Capital",
+  "Strategic Growth",
+];
 
 export default function StepSchema({ form, onChange, onNext, onBack }) {
   const valid = form.name && form.displayName && form.type && form.category && form.description && form.version && form.price;

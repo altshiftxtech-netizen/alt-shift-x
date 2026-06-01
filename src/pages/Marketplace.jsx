@@ -12,9 +12,25 @@ import VideoBackground from "@/components/VideoBackground";
 
 const ALL_COMPONENTS = [];
 
-const CATEGORIES = ["All", "Risk & Compliance", "Project Management", "Site Reporting", "Safety & Compliance"];
-const TYPES = ["All", "X1", "X2", "X4"];
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const CATEGORIES = [
+  "All",
+  "Military & Business Strategy",
+  "AI Agent Development",
+  "Marketplace & Deployment Kits",
+  "Pedigree Specialized Pairings",
+  "Legal & Compliance",
+  "Operational Engineering",
+  "Human Capital",
+  "Strategic Growth",
+];
+const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
+const typeColors = {
+  X1: "bg-violet-100 text-violet-700",
+  X2: "bg-blue-100 text-blue-700",
+  X3: "bg-cyan-100 text-cyan-700",
+  X4: "bg-amber-100 text-amber-700",
+  X5: "bg-emerald-100 text-emerald-700",
+};
 
 function ScoreBadge({ score }) {
   const color = score >= 90 ? "text-emerald-600 bg-emerald-50" : score >= 80 ? "text-blue-600 bg-blue-50" : "text-amber-600 bg-amber-50";

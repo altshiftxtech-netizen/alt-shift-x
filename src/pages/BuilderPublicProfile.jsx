@@ -56,7 +56,13 @@ const BUILDERS = {
 };
 
 const DEFAULT = BUILDERS["buildright-ai"];
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const typeColors = {
+  X1: "bg-violet-100 text-violet-700",
+  X2: "bg-blue-100 text-blue-700",
+  X3: "bg-cyan-100 text-cyan-700",
+  X4: "bg-amber-100 text-amber-700",
+  X5: "bg-emerald-100 text-emerald-700",
+};
 const tierConfig = {
   certified: { label: "Certified Builder", className: "bg-emerald-100 text-emerald-700" },
   official: { label: "Official Partner", className: "bg-violet-100 text-violet-700" },

@@ -18,17 +18,23 @@
       "enum": [
         "X1",
         "X2",
-        "X4"
-      ]
+        "X3",
+        "X4",
+        "X5"
+      ],
+      "description": "X1: Reading Protocols | X2: Prophecy Models | X3: Speed Profiles | X4: Reason Councils | X5: Complete Agents"
     },
     "category": {
       "type": "string",
       "enum": [
-        "Risk & Compliance",
-        "Project Management",
-        "Site Reporting",
-        "Cost Estimation",
-        "Schedule Analysis"
+        "Military & Business Strategy",
+        "AI Agent Development",
+        "Marketplace & Deployment Kits",
+        "Pedigree Specialized Pairings",
+        "Legal & Compliance",
+        "Operational Engineering",
+        "Human Capital",
+        "Strategic Growth"
       ]
     },
     "description": {
