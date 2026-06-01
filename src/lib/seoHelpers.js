@@ -50,7 +50,7 @@ export function setSEOMeta(config = {}) {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Alt+Shift+X",
-      "url": "https://altshiftx.com",
+      "url": "https://altshiftx.tech",
       "logo": ogImage,
       "description": description,
       "sameAs": [

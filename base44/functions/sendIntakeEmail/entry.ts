@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const BUSINESS_EMAIL = "intake@altshiftx.com"; // Change to your real business email
+const BUSINESS_EMAIL = "altshiftx.tech@gmail.com";
 
 Deno.serve(async (req) => {
   try {
@@ -57,8 +57,8 @@ Deno.serve(async (req) => {
             <li>Track usage and analytics</li>
             <li>Build and publish your own components</li>
           </ul>
-          <a href="${req.headers.get('origin') || 'https://altshiftx.com'}/dashboard" style="display:inline-block;background:#4c1d95;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px;">Go to Dashboard →</a>
-          <p style="color:#94a3b8;font-size:12px;margin-top:32px;">If you have any questions, contact us at support@altshiftx.com</p>
+          <a href="${req.headers.get('origin') || 'https://altshiftx.tech'}/dashboard" style="display:inline-block;background:#4c1d95;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px;">Go to Dashboard →</a>
+          <p style="color:#94a3b8;font-size:12px;margin-top:32px;">If you have any questions, contact us at altshiftx.tech@gmail.com</p>
         </div>
       `,
     });

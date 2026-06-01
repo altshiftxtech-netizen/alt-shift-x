@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       ${componentHtml}
     </table>
     <div style="text-align:center;margin-top:32px;">
-      <a href="https://altshiftx.com/marketplace" style="background:#7c3aed;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">Browse Marketplace →</a>
+      <a href="https://altshiftx.tech/marketplace" style="background:#7c3aed;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">Browse Marketplace →</a>
     </div>
   </div>
   <div style="padding:24px;background:#f8fafc;text-align:center;border-top:1px solid #e2e8f0;">
