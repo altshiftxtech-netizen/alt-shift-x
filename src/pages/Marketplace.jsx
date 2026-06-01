@@ -208,7 +208,7 @@ export default function Marketplace() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {bundleComponents.map(c => (
                           <Link key={c.id} to={`/marketplace/${c.id}`}>
-                            <div className="neon-glow-tile bg-white/10 border border-violet-400/30 rounded-xl p-3 hover:bg-white/15 transition-all h-full flex flex-col">
+                            <div className="bg-white/10 border border-violet-400/30 rounded-xl p-3 hover:bg-white/15 hover:shadow-lg transition-all h-full flex flex-col">
                               <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
                                 <ScoreBadge score={c.trust_score || 0} />

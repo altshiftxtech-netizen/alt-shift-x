@@ -77,18 +77,6 @@
 
 
 
-@keyframes neon-wave {
-  0%   { box-shadow: -8px 0 18px 2px rgba(167,139,250,0.7),  0 0 8px 1px rgba(139,92,246,0.4); }
-  25%  { box-shadow:  8px 0 18px 2px rgba(167,139,250,0.7),  0 0 8px 1px rgba(139,92,246,0.4); }
-  50%  { box-shadow:  0 -8px 18px 2px rgba(167,139,250,0.7), 0 0 8px 1px rgba(139,92,246,0.4); }
-  75%  { box-shadow:  0  8px 18px 2px rgba(167,139,250,0.7), 0 0 8px 1px rgba(139,92,246,0.4); }
-  100% { box-shadow: -8px 0 18px 2px rgba(167,139,250,0.7),  0 0 8px 1px rgba(139,92,246,0.4); }
-}
-
-.neon-glow-tile {
-  animation: neon-wave 3s ease-in-out infinite;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
