@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 
-const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a2ed8f4c7_Altshiftx.mov";
+const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/0127d6547_no_make_the_videos.mp4";
 
 // Clip: skip the first 1.5s and last 1s to get a cleaner loop
 const LOOP_START = 1.5;

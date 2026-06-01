@@ -12,11 +12,16 @@ Deno.serve(async (req) => {
 
     const results = [];
     for (const update of updates) {
-      const result = await base44.asServiceRole.entities.Component.update(update.id, update.data);
-      results.push({ id: update.id, success: true });
+      if (update.id === 'CREATE') {
+        const created = await base44.asServiceRole.entities.Component.create(update.data);
+        results.push({ id: created.id, action: 'created', success: true });
+      } else {
+        await base44.asServiceRole.entities.Component.update(update.id, update.data);
+        results.push({ id: update.id, action: 'updated', success: true });
+      }
     }
 
-    return Response.json({ success: true, updated: results.length, results });
+    return Response.json({ success: true, count: results.length, results });
   } catch (error) {
     console.error('adminUpdateComponents error:', error);
     return Response.json({ error: error.message }, { status: 500 });
