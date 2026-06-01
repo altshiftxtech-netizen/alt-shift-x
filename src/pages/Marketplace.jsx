@@ -71,14 +71,34 @@ export default function Marketplace() {
   const [type, setType] = useState("All");
   const [sortBy, setSortBy] = useState("installs");
   const [sharingId, setSharingId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  // map of component_id -> InstalledComponent record
+  const [installedMap, setInstalledMap] = useState({});
 
   useEffect(() => {
-    base44.entities.Component.filter({ status: "published" })
-      .then(data => {
+    const fetchAll = async () => {
+      try {
+        const [data] = await Promise.all([
+          base44.entities.Component.filter({ status: "published" }),
+        ]);
         setComponents(data || []);
+
+        // Fetch user + installs in parallel after components load
+        const user = await base44.auth.me().catch(() => null);
+        setCurrentUser(user);
+        if (user) {
+          const installed = await base44.entities.InstalledComponent.filter({ user_id: user.id });
+          const map = {};
+          (installed || []).forEach(r => { map[r.component_id] = r; });
+          setInstalledMap(map);
+        }
+      } catch {
+        setComponents([]);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => { setComponents([]); setLoading(false); });
+      }
+    };
+    fetchAll();
   }, []);
 
   const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
@@ -237,7 +257,7 @@ export default function Marketplace() {
                                       <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
                                     )}
                                   </div>
-                                  {isAuthenticated && <InstallButton component={c} size="sm" />}
+                                  {isAuthenticated && <InstallButton component={c} size="sm" userId={currentUser?.id} installedRecord={installedMap[c.id] || null} onUninstalled={cid => setInstalledMap(m => { const n = {...m}; delete n[cid]; return n; })} />}
                                 </div>
                               </div>
                             </div>
@@ -282,7 +302,7 @@ export default function Marketplace() {
                                 <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
                               )}
                             </div>
-                            {isAuthenticated && <InstallButton component={c} size="sm" />}
+                            {isAuthenticated && <InstallButton component={c} size="sm" userId={currentUser?.id} installedRecord={installedMap[c.id] || null} onUninstalled={cid => setInstalledMap(m => { const n = {...m}; delete n[cid]; return n; })} />}
                           </div>
                         </div>
                       </div>
