@@ -81,7 +81,7 @@ export default function Marketplace() {
       .catch(() => { setComponents([]); setLoading(false); });
   }, []);
 
-  const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0"];
+  const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
 
   const filtered = components
     .filter(c => {
