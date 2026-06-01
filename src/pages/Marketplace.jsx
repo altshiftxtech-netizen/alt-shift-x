@@ -24,6 +24,18 @@ const CATEGORIES = [
   "Strategic Growth",
 ];
 const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
+
+// Map old category values → new taxonomy so legacy data still appears
+const CATEGORY_MAP = {
+  "Military & Business Strategy": ["Military & Business Strategy", "Security & Intelligence", "Defense", "Strategy"],
+  "AI Agent Development": ["AI Agent Development", "Project Management", "Artificial Intelligence", "Machine Learning", "Education", "Training"],
+  "Marketplace & Deployment Kits": ["Marketplace & Deployment Kits", "Developer Tools", "Deployment", "Infrastructure"],
+  "Pedigree Specialized Pairings": ["Pedigree Specialized Pairings", "Specialized", "Pairings"],
+  "Legal & Compliance": ["Legal & Compliance", "Risk & Compliance", "Legal", "Compliance", "Ethics"],
+  "Operational Engineering": ["Operational Engineering", "Operations", "Engineering", "Systems"],
+  "Human Capital": ["Human Capital", "HR & Talent", "HR", "People", "Talent"],
+  "Strategic Growth": ["Strategic Growth", "Financial Analytics", "Sales & Marketing", "Growth", "Finance", "Revenue"],
+};
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
   X2: "bg-blue-100 text-blue-700",
@@ -56,11 +68,14 @@ export default function Marketplace() {
   }, []);
 
   const filtered = components
-    .filter(c =>
-      (category === "All" || c.category === category) &&
-      (type === "All" || c.type === type) &&
-      (c.name.toLowerCase().includes(search.toLowerCase()) || (c.description || "").toLowerCase().includes(search.toLowerCase()))
-    )
+    .filter(c => {
+      const categoryMatch = category === "All" || 
+        (CATEGORY_MAP[category] ? CATEGORY_MAP[category].includes(c.category) : c.category === category);
+      const typeMatch = type === "All" || c.type === type;
+      const searchMatch = c.name.toLowerCase().includes(search.toLowerCase()) || 
+        (c.description || "").toLowerCase().includes(search.toLowerCase());
+      return categoryMatch && typeMatch && searchMatch;
+    })
     .sort((a, b) => sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0));
 
   return (
