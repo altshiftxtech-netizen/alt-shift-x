@@ -11,7 +11,7 @@ export default function Logo({ className = "h-8 w-auto" }) {
   const block = (e) => e.preventDefault();
 
   return (
-    <Link to="/" draggable={false}>
+    <Link to="/" draggable={false} className="inline-flex items-center justify-center rounded-xl bg-violet-950/60 backdrop-blur-sm border border-violet-500/20 p-1.5 shadow-lg shadow-violet-900/30">
       <img
         src={LOGO_URL}
         alt="Alt+Shift+X"
