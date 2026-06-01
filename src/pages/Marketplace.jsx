@@ -212,58 +212,89 @@ export default function Marketplace() {
                   const bundleCodes = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
                   const bundleComponents = bundleCodes.map(code => components.find(c => c.code === code)).filter(Boolean);
                   if (bundleComponents.length < 3) return null;
-                  const bundlePrice = bundleComponents.reduce((sum, c) => sum + (c.price || 0), 0);
-                  const discountedPrice = Math.round(bundlePrice * 0.75);
+                  const bundleUrl = `${window.location.origin}/marketplace?bundle=super-dev-kit`;
                   return (
-                    <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl">
-                      <div className="flex items-center gap-2 mb-3">
+                    <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl relative">
+                      {/* Share button top-right */}
+                      <div className="absolute top-4 right-4">
+                        <div className="relative">
+                          <button
+                            onClick={() => setSharingId(sharingId === "bundle" ? null : "bundle")}
+                            className="flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <Share2 className="w-3.5 h-3.5" /> Share
+                          </button>
+                          {sharingId === "bundle" && (
+                            <div className="absolute right-0 top-9 z-50 bg-slate-900 border border-white/20 rounded-xl shadow-2xl p-3 w-56">
+                              <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Share Super Dev Kit</p>
+                              {[
+                                { label: "Twitter / X", url: `https://twitter.com/intent/tweet?text=Check+out+the+Super+Dev+Kit+on+Alt%2BShift%2BX+%E2%80%94+3+elite+AI+agents+bundled+at+25%25+off!&url=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-sky-500/20 hover:text-sky-300" },
+                                { label: "LinkedIn", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-blue-600/20 hover:text-blue-300" },
+                                { label: "Facebook", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-blue-500/20 hover:text-blue-300" },
+                              ].map(p => (
+                                <a key={p.label} href={p.url} target="_blank" rel="noopener noreferrer"
+                                  className={`flex items-center gap-2 text-xs text-white/70 px-2 py-1.5 rounded-lg transition-all ${p.color}`}>
+                                  {p.label}
+                                </a>
+                              ))}
+                              <button
+                                onClick={() => { navigator.clipboard.writeText(bundleUrl); setSharingId(null); }}
+                                className="flex items-center gap-2 text-xs text-white/70 px-2 py-1.5 rounded-lg hover:bg-white/10 hover:text-white transition-all w-full mt-1"
+                              >
+                                Copy Link
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Header badges */}
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <Package className="w-4 h-4 text-violet-300" />
                         <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
                         <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
                         <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">⏳ Limited Time</span>
                       </div>
-                      <h2 className="text-xl font-extrabold text-white mb-1">⚡ Super Dev Kit</h2>
-                      <p className="text-xs text-white/60 mb-4 max-w-lg">
-                        The complete AI agent trio for serious builders. Ship apps in one take, print them on demand, and train like a master — all in one bundle.
+
+                      <h2 className="text-2xl font-extrabold text-white mb-2">⚡ Super Dev Kit</h2>
+
+                      {/* Description */}
+                      <p className="text-sm text-white/70 mb-5 max-w-2xl leading-relaxed">
+                        The <span className="text-violet-300 font-semibold">Super Dev Kit</span> is a precision-engineered trio of AI agents designed to work in concert — from ideation to deployment to mastery. Together they eliminate the three biggest bottlenecks every serious builder faces: slow iteration, chaotic output, and shallow expertise.
                       </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {bundleComponents.map(c => (
-                          <Link key={c.id} to={`/marketplace/${c.id}`}>
-                            <div className="bg-white/10 border border-violet-400/30 rounded-xl p-3 hover:bg-white/15 hover:shadow-lg transition-all h-full flex flex-col">
-                              <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
-                                <ScoreBadge score={c.trust_score || 0} />
-                                <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>
-                              </div>
-                              <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
-                              <p className="text-[10px] font-mono text-white/40 mb-2">{c.code}</p>
-                              <p className="text-xs text-white/60 flex-1 line-clamp-2 mb-3">
-                                {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}
-                              </p>
-                              <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                                <div className="flex items-center gap-1 text-xs">
-                                  <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
-                                  <span className="font-semibold text-white">{(c.rating || 0).toFixed(1)}</span>
-                                  <span className="text-white/40">({c.reviews_count || 0})</span>
-                                </div>
-                                <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
-                                  <div className="relative">
-                                    <button
-                                      onClick={e => { e.preventDefault(); setSharingId(sharingId === c.id ? null : c.id); }}
-                                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
-                                    >
-                                      <Share2 className="w-3.5 h-3.5" />
-                                    </button>
-                                    {sharingId === c.id && (
-                                      <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
-                                    )}
-                                  </div>
-                                  {isAuthenticated && <InstallButton component={c} size="sm" userId={currentUser?.id} installedRecord={installedMap[c.id] || null} onUninstalled={cid => setInstalledMap(m => { const n = {...m}; delete n[cid]; return n; })} />}
-                                </div>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
+
+                      {/* How they work together */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4">
+                          <div className="text-lg mb-1">🖨️</div>
+                          <h4 className="text-sm font-bold text-white mb-1">App Printer</h4>
+                          <p className="text-xs text-white/55 leading-relaxed">Generates production-ready app scaffolds from a single prompt. Your starting line — not a blank page.</p>
+                        </div>
+                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
+                          <div className="text-lg mb-1">🎬</div>
+                          <h4 className="text-sm font-bold text-white mb-1">1TakeJay</h4>
+                          <p className="text-xs text-white/55 leading-relaxed">Ships your features in one clean execution pass — no reruns, no rewrites. The agent that closes the loop fast.</p>
+                        </div>
+                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
+                          <div className="text-lg mb-1">🥷</div>
+                          <h4 className="text-sm font-bold text-white mb-1">Miyagi-San</h4>
+                          <p className="text-xs text-white/55 leading-relaxed">Trains you on what was built — turning delivered code into deep, lasting expertise. Learn by doing, accelerated.</p>
+                        </div>
+                      </div>
+
+                      {/* CTA row */}
+                      <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
+                        <div className="flex gap-2">
+                          {bundleComponents.map(c => (
+                            <Link key={c.id} to={`/marketplace/${c.id}`}
+                              className="text-[10px] text-violet-300 hover:text-violet-100 bg-violet-900/40 border border-violet-400/20 px-2 py-1 rounded-lg transition-colors font-mono">
+                              {c.code}
+                            </Link>
+                          ))}
+                        </div>
+                        <span className="text-xs text-white/40 ml-auto">3 components · bundle pricing applied at checkout</span>
                       </div>
                     </div>
                   );
