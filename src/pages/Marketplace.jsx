@@ -25,16 +25,43 @@ const CATEGORIES = [
 ];
 const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
 
-// Map old category values → new taxonomy so legacy data still appears
-const CATEGORY_MAP = {
-  "Military & Business Strategy": ["Military & Business Strategy", "Security & Intelligence", "Defense", "Strategy"],
-  "AI Agent Development": ["AI Agent Development", "Project Management", "Artificial Intelligence", "Machine Learning", "Education", "Training"],
-  "Marketplace & Deployment Kits": ["Marketplace & Deployment Kits", "Developer Tools", "Deployment", "Infrastructure"],
-  "Pedigree Specialized Pairings": ["Pedigree Specialized Pairings", "Specialized", "Pairings"],
-  "Legal & Compliance": ["Legal & Compliance", "Risk & Compliance", "Legal", "Compliance", "Ethics"],
-  "Operational Engineering": ["Operational Engineering", "Operations", "Engineering", "Systems"],
-  "Human Capital": ["Human Capital", "HR & Talent", "HR", "People", "Talent"],
-  "Strategic Growth": ["Strategic Growth", "Financial Analytics", "Sales & Marketing", "Growth", "Finance", "Revenue"],
+// Per-component category override: maps component code → new taxonomy category
+const COMPONENT_CATEGORY_OVERRIDE = {
+  // AI Agent Development
+  "MLAAU-BUS": "AI Agent Development",
+  "MLAAU-UAP": "AI Agent Development",
+  "MLAAU-AA": "AI Agent Development",
+  "CEREBRAL-1.0": "AI Agent Development",
+  "SRTM-1.0": "AI Agent Development",
+  "AAD-1.0": "AI Agent Development",
+  "MQR-1.0": "AI Agent Development",
+  "YJ-SUITE-1.0": "AI Agent Development",
+  "ASCENSION-1.01": "AI Agent Development",
+  "HBP-1.0": "AI Agent Development",
+  "VMP-1.0": "AI Agent Development",
+  // Pedigree Specialized Pairings
+  "YJ-380": "Pedigree Specialized Pairings",
+  "CLAIRE-1.0": "Pedigree Specialized Pairings",
+  "YJ-LIGHTYEAR": "Pedigree Specialized Pairings",
+  "YJ-LIGHTYEAR-S": "Pedigree Specialized Pairings",
+  // Military & Business Strategy
+  "OVERWATCH-1.0": "Military & Business Strategy",
+  "TMT-UNIFIED": "Military & Business Strategy",
+  "CHAMBER-FULL": "Military & Business Strategy",
+  "TMT-1": "Military & Business Strategy",
+  "TMT-2": "Military & Business Strategy",
+  "TMT-3": "Military & Business Strategy",
+  "TMT-4": "Military & Business Strategy",
+  "TMT-5": "Military & Business Strategy",
+  // Legal & Compliance
+  "UPIES-1.0": "Legal & Compliance",
+  "DNH-1.0": "Legal & Compliance",
+  "CIP-DOCTORAL": "Legal & Compliance",
+  "UQAP-1.0": "Legal & Compliance",
+  // Marketplace & Deployment Kits
+  "MKT-KIT-1.0": "Marketplace & Deployment Kits",
+  // Operational Engineering
+  "OPS-SYS-1.0": "Operational Engineering",
 };
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -69,8 +96,8 @@ export default function Marketplace() {
 
   const filtered = components
     .filter(c => {
-      const categoryMatch = category === "All" || 
-        (CATEGORY_MAP[category] ? CATEGORY_MAP[category].includes(c.category) : c.category === category);
+      const effectiveCategory = COMPONENT_CATEGORY_OVERRIDE[c.code] || c.category;
+      const categoryMatch = category === "All" || effectiveCategory === category;
       const typeMatch = type === "All" || c.type === type;
       const searchMatch = c.name.toLowerCase().includes(search.toLowerCase()) || 
         (c.description || "").toLowerCase().includes(search.toLowerCase());
