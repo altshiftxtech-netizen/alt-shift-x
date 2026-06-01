@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus } from "lucide-react";
+import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus, Zap, Package } from "lucide-react";
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
@@ -187,6 +187,69 @@ export default function Marketplace() {
               <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
             ) : (
               <>
+                {/* Super Dev Kit Bundle */}
+                {(category === "All" && !search) && (() => {
+                  const bundleCodes = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
+                  const bundleComponents = bundleCodes.map(code => components.find(c => c.code === code)).filter(Boolean);
+                  if (bundleComponents.length < 3) return null;
+                  const bundlePrice = bundleComponents.reduce((sum, c) => sum + (c.price || 0), 0);
+                  const discountedPrice = Math.round(bundlePrice * 0.75);
+                  return (
+                    <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Package className="w-4 h-4 text-violet-300" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
+                            <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
+                          </div>
+                          <h2 className="text-xl font-extrabold text-white mb-1">⚡ Super Dev Kit</h2>
+                          <p className="text-xs text-white/60 mb-3 max-w-lg">
+                            The complete AI agent trio for serious builders. Ship apps in one take, print them on demand, and train like a master — all in one bundle.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {bundleComponents.map(c => (
+                              <Link key={c.id} to={`/marketplace/${c.id}`} onClick={e => e.stopPropagation()}>
+                                <span className="text-[11px] font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-2.5 py-1 rounded-full transition-colors flex items-center gap-1">
+                                  <Zap className="w-2.5 h-2.5 text-violet-300" />{c.name}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-center sm:text-right">
+                          <p className="text-xs text-white/40 line-through mb-0.5">${bundlePrice}/mo each</p>
+                          <p className="text-3xl font-black text-white">${discountedPrice}<span className="text-sm font-normal text-white/50">/mo</span></p>
+                          <p className="text-[10px] text-white/40 mb-3">billed per agent</p>
+                          {isAuthenticated ? (
+                            <Button
+                              className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 h-9 gap-2 shadow-lg"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                const isIframe = window.self !== window.top;
+                                if (isIframe) { alert("Checkout only works from the published app."); return; }
+                                for (const c of bundleComponents) {
+                                  const res = await base44.functions.invoke("createCheckoutSession", { componentId: c.id });
+                                  window.open(res.data.url, "_blank");
+                                  await new Promise(r => setTimeout(r, 400));
+                                }
+                              }}
+                            >
+                              <Package className="w-4 h-4" /> Get the Bundle
+                            </Button>
+                          ) : (
+                            <Link to="/register">
+                              <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 h-9 gap-2">
+                                <Package className="w-4 h-4" /> Sign up to Bundle
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <p className="text-xs text-white/40 mb-4">{filtered.length} components</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filtered.map(c => (
