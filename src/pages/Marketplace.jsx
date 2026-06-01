@@ -220,6 +220,7 @@ export default function Marketplace() {
                         <Package className="w-4 h-4 text-violet-300" />
                         <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
                         <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
+                        <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">⏳ Limited Time</span>
                       </div>
                       <h2 className="text-xl font-extrabold text-white mb-1">⚡ Super Dev Kit</h2>
                       <p className="text-xs text-white/60 mb-4 max-w-lg">
