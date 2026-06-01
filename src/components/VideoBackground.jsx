@@ -34,17 +34,16 @@ export default function VideoBackground() {
         src={VIDEO_URL}
         autoPlay
         loop
-        muted
         playsInline
       />
       {/* Dark overlay so content stays readable */}
       <div className="fixed inset-0 bg-black/55 z-0 pointer-events-none" />
 
-      {/* Floating play/pause button — top right */}
+      {/* Floating play/pause button — center of screen, only visible when paused or on hover */}
       <button
         onClick={toggle}
         title={playing ? "Pause background video" : "Play background video"}
-        className="fixed top-4 right-4 z-50 flex items-center gap-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all shadow-lg"
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all shadow-lg ${playing ? "opacity-30 hover:opacity-100" : "opacity-100"}`}
       >
         {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
         {playing ? "Pause" : "Play"}
