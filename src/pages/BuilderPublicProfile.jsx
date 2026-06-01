@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShieldCheck, Star, Download, CheckCircle2, Globe, ExternalLink } from "lucide-react";
+import SocialSharePanel from "@/components/social/SocialSharePanel";
 
 const BUILDERS = {
   "buildright-ai": {
@@ -75,7 +76,10 @@ export default function BuilderPublicProfile() {
         </Link>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main content */}
+        <div className="flex-1 space-y-6">
         {/* Profile header */}
         <Card>
           <CardContent className="pt-6 pb-6">
@@ -164,6 +168,19 @@ export default function BuilderPublicProfile() {
             ))}
           </div>
         </div>
+        </div>{/* end main content */}
+
+        {/* Sidebar: social share */}
+        <div className="lg:w-72 shrink-0">
+          <div className="sticky top-6 bg-slate-900 rounded-2xl p-5 space-y-4">
+            <SocialSharePanel
+              builderId={builder.id}
+              builderName={builder.name}
+              builderSlug={builder.id}
+            />
+          </div>
+        </div>
+      </div>{/* end flex row */}
       </div>
     </div>
   );

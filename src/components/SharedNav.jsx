@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -24,6 +24,7 @@ const BUILDER_NAV = [
   { to: "/builder/analytics-suite", label: "Analytics Suite", icon: TrendingUp },
   { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/builder/payout-settings", label: "Payouts", icon: DollarSign },
+  { to: "/builder/social", label: "Social", icon: Share2 },
   { to: "/builder/bob", label: "BOB Builder", icon: null, isBob: true },
 ];
 
