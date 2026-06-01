@@ -84,15 +84,15 @@ export default function Home() {
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <Link to="/dashboard"><Button variant="ghost" className="text-sm h-8">Dashboard</Button></Link>
-              <Button variant="outline" className="text-sm h-8 gap-1.5" onClick={() => logout()}>
+              <Link to="/dashboard"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><LogIn className="w-3.5 h-3.5" /> Dashboard</Button></Link>
+              <Button className="text-sm h-8 bg-white/20 hover:bg-white/30 border border-white/30 text-white gap-1.5 backdrop-blur-sm" onClick={() => logout()}>
                 <LogOut className="w-3.5 h-3.5" /> Sign out
               </Button>
             </>
           ) : (
             <>
-              <Link to="/login"><Button variant="ghost" className="text-sm h-8 gap-1.5"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
-              <Link to="/register"><Button className="text-sm h-8 bg-slate-900 dark:bg-violet-700 hover:bg-slate-700 dark:hover:bg-violet-600 gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
+              <Link to="/login"><Button className="text-sm h-8 bg-white/15 hover:bg-white/25 border border-white/25 text-white gap-1.5 backdrop-blur-sm"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
+              <Link to="/register"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
             </>
           )}
         </div>

@@ -3,6 +3,10 @@ import { Play, Pause } from "lucide-react";
 
 const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a2ed8f4c7_Altshiftx.mov";
 
+// Clip: skip the first 1.5s and last 1s to get a cleaner loop
+const LOOP_START = 1.5;
+const LOOP_END_OFFSET = 1.0; // seconds before end to jump back
+
 export default function VideoBackground() {
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(true);
@@ -10,7 +14,24 @@ export default function VideoBackground() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    v.play().catch(() => setPlaying(false));
+
+    const handleLoaded = () => {
+      v.currentTime = LOOP_START;
+      v.play().catch(() => setPlaying(false));
+    };
+
+    const handleTimeUpdate = () => {
+      if (v.duration && v.currentTime >= v.duration - LOOP_END_OFFSET) {
+        v.currentTime = LOOP_START;
+      }
+    };
+
+    v.addEventListener("loadedmetadata", handleLoaded);
+    v.addEventListener("timeupdate", handleTimeUpdate);
+    return () => {
+      v.removeEventListener("loadedmetadata", handleLoaded);
+      v.removeEventListener("timeupdate", handleTimeUpdate);
+    };
   }, []);
 
   const toggle = () => {
@@ -33,7 +54,6 @@ export default function VideoBackground() {
         className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
         src={VIDEO_URL}
         autoPlay
-        loop
         playsInline
       />
       {/* Dark overlay so content stays readable */}
