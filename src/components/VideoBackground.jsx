@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 
-const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/25faf87b5_make_it_longer_too_and_a_seem.mp4";
+const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a2ed8f4c7_Altshiftx.mov";
 
-// Loop only the clean first half — cut before the disruption around the 5s mark
-const LOOP_START = 0.5;
-const LOOP_END_OFFSET = 5.5; // will be subtracted from duration to get loop-back point
-
-// We store the calculated end time after metadata loads
-let loopEndTime = null;
+// Clip: skip the first 1.5s and last 1s to get a cleaner loop
+const LOOP_START = 1.5;
+const LOOP_END_OFFSET = 1.0; // seconds before end to jump back
 
 export default function VideoBackground() {
   const videoRef = useRef(null);
@@ -19,13 +16,12 @@ export default function VideoBackground() {
     if (!v) return;
 
     const handleLoaded = () => {
-      loopEndTime = v.duration - LOOP_END_OFFSET;
       v.currentTime = LOOP_START;
       v.play().catch(() => setPlaying(false));
     };
 
     const handleTimeUpdate = () => {
-      if (loopEndTime && v.currentTime >= loopEndTime) {
+      if (v.duration && v.currentTime >= v.duration - LOOP_END_OFFSET) {
         v.currentTime = LOOP_START;
       }
     };
