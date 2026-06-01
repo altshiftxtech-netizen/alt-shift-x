@@ -5,6 +5,7 @@ import { ArrowRight, ShieldCheck, Zap, Users, Star, Package, X, LogOut, LogIn, U
 import Logo from "@/components/Logo";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
+import VideoBackground from "@/components/VideoBackground";
 
 const FEATURED = [
   { name: "Ironclad Protocol", type: "X1", category: "Risk & Compliance", rating: 4.4, installs: 847, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements." },
@@ -68,16 +69,17 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
+    <div className="min-h-screen relative">
+      <VideoBackground />
       {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
-      <nav className="border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+      <nav className="relative z-10 border-b border-white/10 bg-black/30 backdrop-blur-md px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
         <Logo className="h-8 w-auto" />
-        <div className="hidden md:flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-          <Link to="/marketplace" className="hover:text-slate-900 dark:hover:text-white">Marketplace</Link>
-          <Link to="/builder" className="hover:text-slate-900 dark:hover:text-white">Build</Link>
-          <Link to="/dashboard" className="hover:text-slate-900 dark:hover:text-white">Dashboard</Link>
-          <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white">Contact</Link>
+        <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
+          <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
+          <Link to="/builder" className="hover:text-white">Build</Link>
+          <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
+          <Link to="/contact" className="hover:text-white">Contact</Link>
         </div>
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
@@ -97,15 +99,15 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-violet-50 dark:bg-violet-900 text-violet-700 dark:text-violet-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-16 text-center">
+        <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6 backdrop-blur-sm border border-white/20">
           <ShieldCheck className="w-3.5 h-3.5" /> Trust-scored AI components for construction
         </div>
-        <h1 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-tight">
+        <h1 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight drop-shadow-lg">
           The marketplace for<br />
-          <span className="text-violet-700 dark:text-violet-400">verified AI components</span>
+          <span className="text-violet-300">verified AI components</span>
         </h1>
-        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10">
+        <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">
           Discover, install, and deploy battle-tested extraction models for construction documents — each one benchmarked, scored, and certified.
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -127,40 +129,40 @@ export default function Home() {
       </section>
 
       {/* Stats */}
-      <section className="border-y border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-10">
+      <section className="relative z-10 border-y border-white/10 bg-black/30 backdrop-blur-sm py-10">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6">
           {STATS.map(({ label, value, icon: Icon }) => (
             <div key={label} className="text-center">
-              <div className="flex justify-center mb-2"><Icon className="w-5 h-5 text-slate-400 dark:text-slate-500" /></div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">{value}</div>
-              <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{label}</div>
+              <div className="flex justify-center mb-2"><Icon className="w-5 h-5 text-white/40" /></div>
+              <div className="text-2xl font-black text-white">{value}</div>
+              <div className="text-xs text-white/50 mt-0.5">{label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Featured */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Featured Components</h2>
-          <Link to="/marketplace" className="text-sm text-violet-700 dark:text-violet-400 hover:underline flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
+          <h2 className="text-2xl font-bold text-white">Featured Components</h2>
+          <Link to="/marketplace" className="text-sm text-violet-300 hover:underline flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {FEATURED.map(c => (
             <Link key={c.name} to="/marketplace">
-              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:shadow-md dark:hover:shadow-lg transition-shadow bg-white dark:bg-slate-800 h-full flex flex-col">
+              <div className="border border-white/10 rounded-xl p-5 hover:shadow-xl transition-shadow bg-white/10 backdrop-blur-sm h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-3">
                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
-                   <span className="text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{c.category}</span>
+                   <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{c.category}</span>
                  </div>
-                 <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">{c.name}</h3>
-                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 flex-1">{c.desc}</p>
+                 <h3 className="text-base font-bold text-white mb-1">{c.name}</h3>
+                 <p className="text-xs text-white/60 mb-4 flex-1">{c.desc}</p>
                  <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-1 text-xs text-amber-500">
+                   <div className="flex items-center gap-1 text-xs text-amber-400">
                      <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
-                     <span className="font-semibold text-slate-700 dark:text-amber-400">{c.rating}</span>
+                     <span className="font-semibold">{c.rating}</span>
                    </div>
-                   <span className="text-xs text-slate-400 dark:text-slate-500">{c.installs.toLocaleString()} installs</span>
+                   <span className="text-xs text-white/40">{c.installs.toLocaleString()} installs</span>
                  </div>
               </div>
             </Link>
@@ -170,10 +172,10 @@ export default function Home() {
 
       {/* Builder Agreement Section */}
       {!isAuthenticated && (
-        <section className="max-w-3xl mx-auto px-6 py-16">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
-            <h3 className="font-bold text-slate-900 dark:text-white mb-2">Builder Agreement</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <section className="relative z-10 max-w-3xl mx-auto px-6 py-16">
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+            <h3 className="font-bold text-white mb-2">Builder Agreement</h3>
+            <p className="text-sm text-white/60 mb-6">
               You must be signed in to view the full agreement. The complete text is only available to registered platform members.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -196,15 +198,15 @@ export default function Home() {
       )}
 
       {/* CTA */}
-      <section className="bg-slate-900 dark:bg-slate-950 py-16 text-center">
+      <section className="relative z-10 bg-black/40 backdrop-blur-sm py-16 text-center">
         <h2 className="text-3xl font-black text-white mb-4">Ready to build smarter?</h2>
-        <p className="text-slate-400 dark:text-slate-500 mb-8 text-sm">Join 80+ builders shipping verified AI components to construction teams worldwide.</p>
+        <p className="text-white/50 mb-8 text-sm">Join 80+ builders shipping verified AI components to construction teams worldwide.</p>
         <Link to="/register">
           <Button className="bg-violet-600 dark:bg-violet-700 hover:bg-violet-700 dark:hover:bg-violet-600 text-white h-11 px-8 text-sm">Create your account</Button>
         </Link>
       </section>
 
-      <footer className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 py-8 text-center text-xs text-slate-400 dark:text-slate-500 space-y-2">
+      <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm py-8 text-center text-xs text-white/40 space-y-2">
         <div className="flex justify-center gap-4 flex-wrap">
           <Link to="/contact" className="hover:text-slate-600">Contact</Link>
           <Link to="/tutorials" className="hover:text-slate-600">Tutorials</Link>
