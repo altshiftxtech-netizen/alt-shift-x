@@ -6,8 +6,14 @@ import InstallButton from "@/components/InstallButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
-const tierConfig = { certified: "bg-emerald-100 text-emerald-700", official: "bg-violet-100 text-violet-700" };
+const typeColors = {
+  X1: "bg-violet-100 text-violet-700",
+  X2: "bg-blue-100 text-blue-700",
+  X3: "bg-cyan-100 text-cyan-700",
+  X4: "bg-amber-100 text-amber-700",
+  X5: "bg-emerald-100 text-emerald-700",
+};
+const tierConfig = { certified: "bg-emerald-100 text-emerald-700", official: "bg-violet-100 text-violet-700", standard: "bg-slate-100 text-slate-600" };
 
 export default function ComponentDetail() {
   const { id } = useParams();
@@ -29,7 +35,7 @@ export default function ComponentDetail() {
             schema: c.schema || [],
             reviews: c.reviews_count || 0,
             installs: c.installs_count || 0,
-            builder: { name: c.builder_id || "Unknown", tier: c.certified ? "certified" : "official", avatar: (c.builder_id || "U")[0].toUpperCase() },
+            builder: { name: c.builder_id || "Unknown", tier: c.certified ? "certified" : "standard", avatar: (c.builder_id || "U")[0].toUpperCase() },
             recentReviews: [],
           });
         }

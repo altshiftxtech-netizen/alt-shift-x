@@ -8,9 +8,9 @@ import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
 
 const FEATURED = [
-  { name: "Ironclad Protocol", type: "X1", category: "Risk & Compliance", rating: 4.4, installs: 847, desc: "Extracts and validates all contractual risk indicators from subcontractor agreements." },
-  { name: "Estimator's Eye", type: "X2", category: "Project Management", rating: 4.2, installs: 312, desc: "Parses construction bid estimates and extracts division-level costs and alternates." },
-  { name: "The Site Board", type: "X4", category: "Site Reporting", rating: 4.7, installs: 203, desc: "Transforms daily site reports into structured workforce and programme impact data." },
+  { name: "The App Printer", type: "X5", category: "AI Agent Development", rating: 4.9, installs: 312, desc: "Prints full production-ready apps on demand. Describe it, deploy it. Zero friction from idea to live app." },
+  { name: "1 Take Jay", type: "X5", category: "AI Agent Development", rating: 4.8, installs: 203, desc: "Ships features in one take. No revisions, no back-and-forth — just precise, deployable output every time." },
+  { name: "Miyagi San", type: "X5", category: "AI Agent Development", rating: 4.9, installs: 178, desc: "Master-level AI training agent. Wax on, wax off — builds elite developer instincts through guided practice." },
 ];
 
 const STATS = [
