@@ -196,55 +196,53 @@ export default function Marketplace() {
                   const discountedPrice = Math.round(bundlePrice * 0.75);
                   return (
                     <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Package className="w-4 h-4 text-violet-300" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
-                            <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
-                          </div>
-                          <h2 className="text-xl font-extrabold text-white mb-1">⚡ Super Dev Kit</h2>
-                          <p className="text-xs text-white/60 mb-3 max-w-lg">
-                            The complete AI agent trio for serious builders. Ship apps in one take, print them on demand, and train like a master — all in one bundle.
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {bundleComponents.map(c => (
-                              <Link key={c.id} to={`/marketplace/${c.id}`} onClick={e => e.stopPropagation()}>
-                                <span className="text-[11px] font-semibold bg-white/10 hover:bg-white/20 border border-white/15 text-white px-2.5 py-1 rounded-full transition-colors flex items-center gap-1">
-                                  <Zap className="w-2.5 h-2.5 text-violet-300" />{c.name}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="shrink-0 text-center sm:text-right">
-                          <p className="text-xs text-white/40 line-through mb-0.5">${bundlePrice}/mo each</p>
-                          <p className="text-3xl font-black text-white">${discountedPrice}<span className="text-sm font-normal text-white/50">/mo</span></p>
-                          <p className="text-[10px] text-white/40 mb-3">billed per agent</p>
-                          {isAuthenticated ? (
-                            <Button
-                              className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 h-9 gap-2 shadow-lg"
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                const isIframe = window.self !== window.top;
-                                if (isIframe) { alert("Checkout only works from the published app."); return; }
-                                for (const c of bundleComponents) {
-                                  const res = await base44.functions.invoke("createCheckoutSession", { componentId: c.id });
-                                  window.open(res.data.url, "_blank");
-                                  await new Promise(r => setTimeout(r, 400));
-                                }
-                              }}
-                            >
-                              <Package className="w-4 h-4" /> Get the Bundle
-                            </Button>
-                          ) : (
-                            <Link to="/register">
-                              <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 h-9 gap-2">
-                                <Package className="w-4 h-4" /> Sign up to Bundle
-                              </Button>
-                            </Link>
-                          )}
-                        </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Package className="w-4 h-4 text-violet-300" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
+                        <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
+                      </div>
+                      <h2 className="text-xl font-extrabold text-white mb-1">⚡ Super Dev Kit</h2>
+                      <p className="text-xs text-white/60 mb-4 max-w-lg">
+                        The complete AI agent trio for serious builders. Ship apps in one take, print them on demand, and train like a master — all in one bundle.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {bundleComponents.map(c => (
+                          <Link key={c.id} to={`/marketplace/${c.id}`}>
+                            <div className="bg-white/10 border border-violet-400/30 rounded-xl p-3 hover:bg-white/15 hover:shadow-lg transition-all h-full flex flex-col">
+                              <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
+                                <ScoreBadge score={c.trust_score || 0} />
+                                <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>
+                              </div>
+                              <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
+                              <p className="text-[10px] font-mono text-white/40 mb-2">{c.code}</p>
+                              <p className="text-xs text-white/60 flex-1 line-clamp-2 mb-3">
+                                {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}
+                              </p>
+                              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                                <div className="flex items-center gap-1 text-xs">
+                                  <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
+                                  <span className="font-semibold text-white">{(c.rating || 0).toFixed(1)}</span>
+                                  <span className="text-white/40">({c.reviews_count || 0})</span>
+                                </div>
+                                <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
+                                  <div className="relative">
+                                    <button
+                                      onClick={e => { e.preventDefault(); setSharingId(sharingId === c.id ? null : c.id); }}
+                                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
+                                    >
+                                      <Share2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    {sharingId === c.id && (
+                                      <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
+                                    )}
+                                  </div>
+                                  {isAuthenticated && <InstallButton component={c} size="sm" />}
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
                     </div>
                   );
