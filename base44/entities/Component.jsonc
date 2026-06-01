@@ -128,7 +128,16 @@
   ],
   "rls": {
     "create": {
-      "data.builder_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "read": {
       "$or": [

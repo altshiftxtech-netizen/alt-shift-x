@@ -9,6 +9,8 @@ import { base44 } from "@/api/base44Client";
 import AiSearchConsultant from "@/components/AiSearchConsultant";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
+import ComponentSharePanel from "@/components/ComponentSharePanel";
+import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
 
@@ -68,6 +70,7 @@ export default function Marketplace() {
   const [category, setCategory] = useState("All");
   const [type, setType] = useState("All");
   const [sortBy, setSortBy] = useState("installs");
+  const [sharingId, setSharingId] = useState(null);
 
   useEffect(() => {
     base44.entities.Component.filter({ status: "published" })
@@ -78,6 +81,8 @@ export default function Marketplace() {
       .catch(() => { setComponents([]); setLoading(false); });
   }, []);
 
+  const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0"];
+
   const filtered = components
     .filter(c => {
       const effectiveCategory = COMPONENT_CATEGORY_OVERRIDE[c.code] || c.category;
@@ -87,7 +92,19 @@ export default function Marketplace() {
         (c.description || "").toLowerCase().includes(search.toLowerCase());
       return categoryMatch && typeMatch && searchMatch;
     })
-    .sort((a, b) => sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0));
+    .sort((a, b) => {
+      // Pin featured components to top when viewing "All" category
+      if (category === "All") {
+        const aPin = PINNED_CODES.indexOf(a.code);
+        const bPin = PINNED_CODES.indexOf(b.code);
+        if (aPin !== -1 || bPin !== -1) {
+          if (aPin === -1) return 1;
+          if (bPin === -1) return -1;
+          return aPin - bPin;
+        }
+      }
+      return sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0);
+    });
 
   return (
     <div className="min-h-screen relative">
@@ -174,11 +191,12 @@ export default function Marketplace() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filtered.map(c => (
                     <Link key={c.id} to={`/marketplace/${c.id}`}>
-                      <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl p-4 hover:bg-white/15 hover:shadow-xl transition-all h-full flex flex-col">
+                      <div className={`bg-white/10 backdrop-blur-sm border rounded-xl p-4 hover:bg-white/15 hover:shadow-xl transition-all h-full flex flex-col ${PINNED_CODES.includes(c.code) ? "border-violet-400/40 ring-1 ring-violet-400/20" : "border-white/15"}`}>
                         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
                           <ScoreBadge score={c.trust_score || 0} />
                           {c.certified && <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-900/50 px-1.5 py-0.5 rounded-full">Certified</span>}
+                          {PINNED_CODES.includes(c.code) && <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>}
                         </div>
                         <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
                         <p className="text-[10px] font-mono text-white/40 mb-2">{c.code}</p>
@@ -191,11 +209,20 @@ export default function Marketplace() {
                             <span className="font-semibold text-white">{(c.rating || 0).toFixed(1)}</span>
                             <span className="text-white/40">({c.reviews_count || 0})</span>
                           </div>
-                          {isAuthenticated && (
-                            <div onClick={e => e.preventDefault()}>
-                              <InstallButton component={c} size="sm" />
+                          <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
+                            <div className="relative">
+                              <button
+                                onClick={e => { e.preventDefault(); setSharingId(sharingId === c.id ? null : c.id); }}
+                                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
+                              >
+                                <Share2 className="w-3.5 h-3.5" />
+                              </button>
+                              {sharingId === c.id && (
+                                <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
+                              )}
                             </div>
-                          )}
+                            {isAuthenticated && <InstallButton component={c} size="sm" />}
+                          </div>
                         </div>
                       </div>
                     </Link>
