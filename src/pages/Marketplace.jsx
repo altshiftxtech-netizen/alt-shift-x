@@ -166,7 +166,7 @@ export default function Marketplace() {
        <nav className="relative z-10 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between">
          <div className="flex items-center gap-2">
            <Link to="/" className="flex items-center gap-2">
-             <Logo className="h-8 w-auto" />
+             <Logo className="h-8 w-auto" variant="purple" />
            </Link>
            <ChevronRight className="w-3.5 h-3.5 text-white/30" />
            <span className="text-sm text-white/60">Marketplace</span>

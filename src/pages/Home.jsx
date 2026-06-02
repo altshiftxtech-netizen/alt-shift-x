@@ -74,7 +74,7 @@ export default function Home() {
       {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
       <nav className="relative z-10 border-b border-white/10 bg-black/30 backdrop-blur-md px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
-        <Logo className="h-8 w-auto" />
+        <Logo className="h-8 w-auto" variant="purple" />
         <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
           <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
           <Link to="/builder" className="hover:text-white">Build</Link>
