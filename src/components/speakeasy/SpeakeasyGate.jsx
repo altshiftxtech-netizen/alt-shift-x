@@ -12,15 +12,28 @@ export default function SpeakeasyGate({ children }) {
   const [status, setStatus] = useState("loading"); // loading | coming_soon | locked | member
 
   useEffect(() => {
-    // Pre-launch: locked for everyone until July 1, 2026.
-    if (new Date() < LAUNCH_DATE) {
-      setStatus("coming_soon");
-      return;
-    }
-    // After launch: any logged-in user may enter.
     base44.auth.me()
-      .then(() => setStatus("member"))
-      .catch(() => setStatus("locked"));
+      .then(user => {
+        // Admins always get in (viewing & maintenance), even before launch.
+        if (user?.role === "admin") {
+          setStatus("member");
+          return;
+        }
+        // Pre-launch: locked for everyone else until July 1, 2026.
+        if (new Date() < LAUNCH_DATE) {
+          setStatus("coming_soon");
+          return;
+        }
+        // After launch: any logged-in user may enter.
+        setStatus("member");
+      })
+      .catch(() => {
+        if (new Date() < LAUNCH_DATE) {
+          setStatus("coming_soon");
+        } else {
+          setStatus("locked");
+        }
+      });
   }, []);
 
   if (status === "loading") {
