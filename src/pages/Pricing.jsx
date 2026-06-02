@@ -4,35 +4,36 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
+import Logo from "@/components/Logo";
 
 // ── Developer: free account, pay per component ────────────────────────────────
 const COMPONENT_TIERS = [
   {
     type: "X1",
-    label: "X1 — Single Extraction",
-    color: "bg-blue-50 border-blue-200",
-    badge: "bg-blue-100 text-blue-700",
+    label: "X1 — Reading Protocols",
+    color: "bg-violet-50 border-violet-200",
+    badge: "bg-violet-100 text-violet-700",
     price: "From $49/mo",
-    description: "Single-purpose AI extraction components. Pay only for what you install.",
-    examples: ["Ironclad Protocol", "Ledger Protocol", "Claim Sentinel"],
+    description: "Single-purpose AI reading & extraction protocols. Pay only for what you install.",
+    examples: ["Ironclad Protocol", "Ledger Protocol", "Cerebral Training"],
   },
   {
     type: "X2",
-    label: "X2 — Project Intelligence",
-    color: "bg-violet-50 border-violet-200",
-    badge: "bg-violet-100 text-violet-700",
-    price: "From $59/mo",
-    description: "Multi-layer project management and scheduling intelligence modules.",
-    examples: ["Estimator's Eye", "Schedule Pulse"],
+    label: "X2 — Prophecy Models",
+    color: "bg-blue-50 border-blue-200",
+    badge: "bg-blue-100 text-blue-700",
+    price: "From $99/mo",
+    description: "Developer-grade AI build agents — production-ready code, one-shot scaffolds, and disciplined engineering.",
+    examples: ["1 Take Jay", "The App Printer", "Miyagi San"],
   },
   {
     type: "X4",
-    label: "X4 — Reason Council",
+    label: "X4 — Reason Councils",
     color: "bg-amber-50 border-amber-200",
     badge: "bg-amber-100 text-amber-700",
-    price: "From $49/mo",
-    description: "Multi-agent reasoning components for complex site and operational data.",
-    examples: ["The Site Board"],
+    price: "From $129/mo",
+    description: "Multi-agent reasoning councils for complex strategy and operational data.",
+    examples: ["The Site Board", "Overwatch"],
   },
 ];
 
@@ -257,9 +258,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-slate-50">
       {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-between sticky top-0 z-40">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f652c13a0_AltShiftXLogo.png" alt="Alt+Shift+X" className="h-7 w-auto" />
-        </Link>
+        <Logo className="h-9 w-auto" />
         <div className="flex items-center gap-3">
           <Link to="/marketplace" className="text-sm text-slate-500 hover:text-slate-800">Marketplace</Link>
           <PricingSharePanel />
