@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b9193c2b6_Copilot_20260601_015315.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f652c13a0_AltShiftXLogo.png";
 
 /**
  * Protected logo — blocks right-click, double-click save, drag, and context menu.

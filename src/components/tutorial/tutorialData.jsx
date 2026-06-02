@@ -52,18 +52,18 @@ export const TUTORIALS = [
     video: "https://www.youtube.com/embed/2Vv-BfVoq4g",
     sections: [
       {
-        title: "Browsing components by category",
+        title: "Browsing components",
         steps: [
           "Open the Marketplace from the top navigation.",
-          "Use the left sidebar to filter by category (e.g. AI Agent Development).",
-          "Scroll through the grid to see available components.",
+          "Try the AI Search Consultant at the top to find components by describing your need.",
+          "Scroll through the grid to see available components, including the featured Super Dev Kit bundle.",
         ],
       },
       {
         title: "Filtering and searching",
         steps: [
           "Type keywords in the search bar at the top.",
-          "Filter by type (X1–X5) in the sidebar.",
+          "Click the 'Filters' button to filter by type (X1–X5).",
           "Sort by Most Installed, Highest Rated, or Trust Score.",
         ],
       },

@@ -39,17 +39,29 @@ export default function GamificationAdmin() {
 
   const handleRecalc = async () => {
     setRecalcLoading(true);
-    await base44.functions.invoke("computeBuilderBadges", {});
-    await load();
-    setRecalcLoading(false);
+    try {
+      await base44.functions.invoke("computeBuilderBadges", {});
+      await load();
+    } catch (err) {
+      console.error("Recalculate badges failed:", err);
+      alert("Could not recalculate tiers & badges. Please try again.");
+    } finally {
+      setRecalcLoading(false);
+    }
   };
 
   const handleRunSplits = async () => {
     setSplitLoading(true);
-    const res = await base44.functions.invoke("processRevenueSplits", splitPeriod ? { period: splitPeriod } : {});
-    setLastSplitResult(res.data);
-    await load();
-    setSplitLoading(false);
+    try {
+      const res = await base44.functions.invoke("processRevenueSplits", splitPeriod ? { period: splitPeriod } : {});
+      setLastSplitResult(res.data);
+      await load();
+    } catch (err) {
+      console.error("Run revenue splits failed:", err);
+      alert("Could not run revenue splits. Please try again.");
+    } finally {
+      setSplitLoading(false);
+    }
   };
 
   const totalPending = splits.filter(s => s.status === "pending").reduce((a, s) => a + (s.builder_payout || 0), 0);
