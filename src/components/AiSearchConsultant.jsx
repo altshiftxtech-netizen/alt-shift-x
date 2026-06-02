@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Send, Loader2, Mic } from "lucide-react";
+import VoiceButton from "@/components/VoiceButton";
 
 export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsumed }) {
   const [query, setQuery] = useState("");
@@ -70,6 +71,7 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
             onKeyDown={(e) => e.key === "Enter" && startConsultation()}
             className="text-sm"
           />
+          <VoiceButton onTranscript={(t) => setQuery((p) => (p ? p + " " : "") + t)} />
           <Button onClick={() => startConsultation()} disabled={loading || !query.trim()} className="gap-2 bg-violet-600 hover:bg-violet-700">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
@@ -141,6 +143,7 @@ function ChatInterface({ conversation, onClose }) {
           className="text-xs"
           disabled={sending}
         />
+        <VoiceButton size="sm" onTranscript={(t) => setInput((p) => (p ? p + " " : "") + t)} />
         <Button onClick={handleSend} disabled={sending || !input.trim()} size="sm" className="bg-violet-600 hover:bg-violet-700">
           {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
         </Button>
