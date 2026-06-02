@@ -93,7 +93,9 @@ const BUILDER_PLANS = [
     revenueShare: "77.5%",
     revenueDetail: "70% base + 5% verified + 2.5% volume rebate (>$10k/mo)",
     description: "For serious builders scaling revenue with multiple high-performing components.",
+    graceDays: 14,
     features: [
+      "14-day grace period — build before you're billed",
       "Everything in Base Operator",
       "Foundation Kit — evolving advanced modules",
       "+5% certification bonus (if verified)",
@@ -115,7 +117,9 @@ const BUILDER_PLANS = [
     revenueShare: "85%",
     revenueDetail: "70% base + 10% verified + 5% volume rebate (>$50k/mo) + 100% Pedigree Premium",
     description: "Elite tier — the only plan with full Platform Intelligence access.",
+    graceDays: 14,
     features: [
+      "14-day grace period — build before you're billed",
       "Everything in Strategic Architect",
       "★ Platform Intelligence access (exclusive)",
       "+10% certification bonus (if verified)",
@@ -179,9 +183,14 @@ function PlanCard({ plan, onSubscribe, loading }) {
         {!isFree && <span className={`text-sm mb-1 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>/month</span>}
         {isFree && <span className="text-sm mb-1 text-slate-400">forever</span>}
       </div>
-      <div className={`text-xs font-bold mb-4 px-2 py-1 rounded-lg inline-block ${isHighlight ? "bg-violet-600 text-white" : "bg-emerald-50 text-emerald-700"}`}>
+      <div className={`text-xs font-bold mb-3 px-2 py-1 rounded-lg inline-block ${isHighlight ? "bg-violet-600 text-white" : "bg-emerald-50 text-emerald-700"}`}>
         Up to {plan.revenueShare} Revenue Share
       </div>
+      {plan.graceDays && (
+        <div className={`text-[11px] font-semibold mb-4 px-2 py-1 rounded-lg inline-flex items-center gap-1.5 ${isHighlight ? "bg-amber-400/20 text-amber-300" : "bg-amber-50 text-amber-700"}`}>
+          <Shield className="w-3 h-3 shrink-0" /> {plan.graceDays}-day grace period included
+        </div>
+      )}
       <ul className="space-y-2.5 mb-4 flex-1">
         {plan.features.map(f => (
           <li key={f} className="flex items-start gap-2 text-sm">
@@ -206,13 +215,20 @@ function PlanCard({ plan, onSubscribe, loading }) {
           </Button>
         </Link>
       ) : (
-        <Button
-          onClick={() => onSubscribe(plan.key)}
-          disabled={loading === plan.key}
-          className={`w-full font-semibold ${isHighlight ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white"}`}
-        >
-          {loading === plan.key ? "Redirecting..." : plan.cta}
-        </Button>
+        <>
+          <Button
+            onClick={() => onSubscribe(plan.key)}
+            disabled={loading === plan.key}
+            className={`w-full font-semibold ${isHighlight ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white"}`}
+          >
+            {loading === plan.key ? "Redirecting..." : plan.cta}
+          </Button>
+          {plan.graceDays && (
+            <p className={`text-[10px] text-center mt-2 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>
+              No charge for {plan.graceDays} days · cancel anytime during grace
+            </p>
+          )}
+        </>
       )}
     </div>
   );

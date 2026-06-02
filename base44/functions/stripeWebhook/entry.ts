@@ -68,9 +68,13 @@ Deno.serve(async (req) => {
 
         const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_customer_id: customerId });
 
+        // Respect the real Stripe status so the grace period (trialing) is reflected accurately.
+        // trialing → builder is in their 14-day grace window; active → already billed.
+        const resolvedStatus = stripeSubscription.status === "trialing" ? "trialing" : "active";
+
         const subData = {
           plan: planKey,
-          status: "active",
+          status: resolvedStatus,
           stripe_subscription_id: subscriptionId,
           current_period_start: periodStart,
           current_period_end: periodEnd,
@@ -125,21 +129,24 @@ Deno.serve(async (req) => {
         const sub = event.data.object;
         const customerId = sub.customer;
         const priceId = sub.items.data[0]?.price?.id;
-        const planKey = PRICE_TO_PLAN[priceId] || "starter";
         const periodStart = new Date(sub.current_period_start * 1000).toISOString().split("T")[0];
         const periodEnd = new Date(sub.current_period_end * 1000).toISOString().split("T")[0];
 
-        console.log(`Subscription updated: customer=${customerId}, plan=${planKey}, status=${sub.status}`);
+        console.log(`Subscription updated: customer=${customerId}, status=${sub.status} (e.g. trial → active transition)`);
 
         const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_customer_id: customerId });
         if (existing.length > 0) {
-          await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
-            plan: planKey,
+          // Only re-map the plan if the price is a known plan; otherwise preserve the
+          // stored plan (builder plans aren't in PRICE_TO_PLAN, so we must not clobber them).
+          const mappedPlan = PRICE_TO_PLAN[priceId];
+          const updates = {
             status: sub.status,
             current_period_start: periodStart,
             current_period_end: periodEnd,
             cancel_at_period_end: sub.cancel_at_period_end,
-          });
+          };
+          if (mappedPlan) updates.plan = mappedPlan;
+          await base44.asServiceRole.entities.Subscription.update(existing[0].id, updates);
         }
         break;
       }

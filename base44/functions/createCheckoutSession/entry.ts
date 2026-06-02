@@ -9,6 +9,15 @@ const BUILDER_PLANS = {
   sovereign_commander: "price_1TdjwEAuii7slVl80LDZhMlB",  // $599/mo — Sovereign Commander
 };
 
+// ── Grace period (trial) for higher-commitment tiers ──────────────────────────
+// Mid + top tiers get a 14-day grace window: builders start producing immediately
+// and aren't charged for 14 days, while the card is collected upfront to protect
+// the brand from abuse. Base/Free tiers are not granted a trial.
+const TRIAL_DAYS_BY_PLAN = {
+  strategic_architect: 14,
+  sovereign_commander: 14,
+};
+
 // ── Sentinel rate limit: cap checkout-session creation per IP to stop card-testing/abuse loops ──
 // In-memory window; fails open so legitimate users are never blocked by a limiter glitch.
 const checkoutAttempts = new Map(); // ip -> [timestamps]
@@ -122,16 +131,20 @@ Deno.serve(async (req) => {
         return Response.json({ error: "Invalid plan" }, { status: 400 });
       }
 
+      const trialDays = TRIAL_DAYS_BY_PLAN[planKey];
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
         line_items: [{ price: BUILDER_PLANS[planKey], quantity: 1 }],
+        ...(trialDays
+          ? { subscription_data: { trial_period_days: trialDays } }
+          : {}),
         metadata: {
           ...baseParams.metadata,
           plan: planKey,
         },
       });
 
-      console.log(`[INFO] Builder checkout created: user=${user.id}, plan=${planKey}`);
+      console.log(`[INFO] Builder checkout created: user=${user.id}, plan=${planKey}, trialDays=${trialDays || 0}`);
       return Response.json({ url: session.url });
     }
 

@@ -13,12 +13,14 @@ export default function SubscriptionGate({ children, builder = false, action = "
   const [status, setStatus] = useState("loading"); // loading | free | paid
 
   useEffect(() => {
-    base44.entities.Subscription.filter({ status: "active" })
+    // Include trialing so builders in their grace period get full paid access.
+    base44.entities.Subscription.filter({})
       .then(subs => {
-        if (!subs || subs.length === 0) {
+        const activeSubs = (subs || []).filter(s => s.status === "active" || s.status === "trialing");
+        if (activeSubs.length === 0) {
           setStatus("free");
         } else {
-          const plan = subs[0].plan || "";
+          const plan = activeSubs[0].plan || "";
           if (builder) {
             const builderPlans = ["base_operator", "strategic_architect", "sovereign_commander"];
             setStatus(builderPlans.includes(plan) ? "paid" : "free");
