@@ -1,0 +1,109 @@
+{
+  "name": "SecurityIncident",
+  "type": "object",
+  "properties": {
+    "incident_type": {
+      "type": "string",
+      "enum": [
+        "rate_limit_exceeded",
+        "honeypot_triggered",
+        "injection_attempt",
+        "xss_attempt",
+        "brute_force",
+        "suspicious_pattern",
+        "bot_detected",
+        "unauthorized_access"
+      ],
+      "description": "Category of detected threat"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Source IP of the request"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "geo_country": {
+      "type": "string"
+    },
+    "geo_city": {
+      "type": "string"
+    },
+    "geo_region": {
+      "type": "string"
+    },
+    "request_path": {
+      "type": "string",
+      "description": "Path/endpoint that was targeted"
+    },
+    "request_method": {
+      "type": "string"
+    },
+    "payload_sample": {
+      "type": "string",
+      "description": "Sanitized sample of the malicious payload"
+    },
+    "headers_fingerprint": {
+      "type": "object",
+      "description": "Collected request headers for forensic analysis"
+    },
+    "detection_rule": {
+      "type": "string",
+      "description": "Which rule flagged this incident"
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the request was blocked"
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewed",
+        "reported_to_authorities",
+        "dismissed"
+      ],
+      "default": "new"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "incident_type",
+    "ip_address"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

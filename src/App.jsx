@@ -60,6 +60,7 @@ import GamificationAdmin from './pages/GamificationAdmin';
 import PayoutSettings from './pages/PayoutSettings';
 import BuilderSocialDashboard from './pages/BuilderSocialDashboard';
 import UserOnboarding from './pages/UserOnboarding';
+import SecurityCenter from './pages/SecurityCenter';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -141,6 +142,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
+        <Route path="/admin/security" element={<SecurityCenter />} />
         <Route path="/admin/gamification" element={<GamificationAdmin />} />
         <Route path="/vendor-portal" element={<VendorPortalPage />} />
         <Route path="/finance" element={<FinancePortal />} />
