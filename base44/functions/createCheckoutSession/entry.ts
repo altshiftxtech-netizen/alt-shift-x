@@ -115,9 +115,16 @@ Deno.serve(async (req) => {
         });
       }
 
+      // POLICY: builder promo codes apply ONLY to standalone components — NOT paired kits.
+      // Allow promo codes only when this component is not locked into an active/pending kit.
+      const kitReq = await base44.asServiceRole.entities.KitPairing.filter({ requester_component_id: component.id });
+      const kitPart = await base44.asServiceRole.entities.KitPairing.filter({ partner_component_id: component.id });
+      const inActiveKit = [...kitReq, ...kitPart].some((p) => ["pending", "accepted"].includes(p.status));
+
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
         line_items: [{ price: stripePriceId, quantity: 1 }],
+        ...(inActiveKit ? {} : { allow_promotion_codes: true }),
         metadata: {
           ...baseParams.metadata,
           component_id: component.id,
@@ -126,7 +133,7 @@ Deno.serve(async (req) => {
         },
       });
 
-      console.log(`[INFO] Component checkout created: user=${user.id}, component=${component.name}`);
+      console.log(`[INFO] Component checkout created: user=${user.id}, component=${component.name}, promoAllowed=${!inActiveKit}`);
       return Response.json({ url: session.url });
     }
 

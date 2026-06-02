@@ -1,0 +1,109 @@
+{
+  "name": "BuilderDiscount",
+  "type": "object",
+  "properties": {
+    "builder_id": {
+      "type": "string",
+      "description": "User ID of the builder who owns this discount"
+    },
+    "builder_name": {
+      "type": "string"
+    },
+    "component_id": {
+      "type": "string",
+      "description": "Component this discount applies to. Must be owned by the builder. Paired-kit components are NOT eligible."
+    },
+    "component_name": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Shareable promo code (e.g. SUMMER20)"
+    },
+    "percent_off": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Percentage discount off the component price"
+    },
+    "stripe_coupon_id": {
+      "type": "string",
+      "description": "Stripe coupon ID created for this discount"
+    },
+    "stripe_promotion_code_id": {
+      "type": "string",
+      "description": "Stripe promotion code ID (the shareable code)"
+    },
+    "max_redemptions": {
+      "type": "number",
+      "description": "Optional cap on total redemptions"
+    },
+    "redemptions": {
+      "type": "number",
+      "default": 0
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "disabled"
+      ],
+      "default": "active"
+    },
+    "created_via_bob": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether BOB set up this discount"
+    }
+  },
+  "required": [
+    "builder_id",
+    "component_id",
+    "code",
+    "percent_off"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

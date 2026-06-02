@@ -1,0 +1,168 @@
+{
+  "name": "KitPairing",
+  "type": "object",
+  "properties": {
+    "kit_name": {
+      "type": "string",
+      "description": "Display name for the paired kit"
+    },
+    "requester_id": {
+      "type": "string",
+      "description": "User ID of the builder who initiated the pairing request"
+    },
+    "requester_name": {
+      "type": "string"
+    },
+    "requester_component_id": {
+      "type": "string",
+      "description": "Component ID owned by the requester"
+    },
+    "requester_component_name": {
+      "type": "string"
+    },
+    "requester_component_price": {
+      "type": "number",
+      "description": "List price of requester's component (USD) \u2014 used for proportional revenue split"
+    },
+    "partner_id": {
+      "type": "string",
+      "description": "User ID of the builder who must accept/decline (like a friend request)"
+    },
+    "partner_name": {
+      "type": "string"
+    },
+    "partner_component_id": {
+      "type": "string",
+      "description": "Component ID owned by the partner"
+    },
+    "partner_component_name": {
+      "type": "string"
+    },
+    "partner_component_price": {
+      "type": "number",
+      "description": "List price of partner's component (USD)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "revoked",
+        "terminated"
+      ],
+      "default": "pending",
+      "description": "Lifecycle of the pairing request"
+    },
+    "ip_statement": {
+      "type": "string",
+      "description": "BOB-generated IP & proprietary-protected pairing statement (locked facts on the pairing)"
+    },
+    "ip_statement_hash": {
+      "type": "string",
+      "description": "Integrity hash of the ip_statement so it cannot be silently altered after acceptance"
+    },
+    "revenue_split": {
+      "type": "object",
+      "description": "Proportional split snapshot at acceptance time",
+      "properties": {
+        "requester_pct": {
+          "type": "number"
+        },
+        "partner_pct": {
+          "type": "number"
+        }
+      }
+    },
+    "requester_acknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Requester accepted the IP statement terms"
+    },
+    "partner_acknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Partner accepted the IP statement terms"
+    },
+    "kit_price": {
+      "type": "number",
+      "description": "Combined kit price (USD), set at acceptance"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_by_id": {
+      "type": "string",
+      "description": "Which builder revoked/terminated the pairing"
+    },
+    "revoke_notice_days": {
+      "type": "number",
+      "default": 30,
+      "description": "Notice period (days) before termination takes effect"
+    },
+    "termination_effective_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the revocation/termination becomes effective after notice"
+    },
+    "decline_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "requester_id",
+    "requester_component_id",
+    "partner_id",
+    "partner_component_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.requester_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.requester_id": "{{user.id}}"
+        },
+        {
+          "data.partner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.requester_id": "{{user.id}}"
+        },
+        {
+          "data.partner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
