@@ -10,7 +10,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { report_type, start_date, end_date } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { report_type } = body;
+
+    // Default to the current calendar month when no range is provided,
+    // so the report never crashes on missing dates.
+    const now = new Date();
+    const start_date = body.start_date || new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+    const end_date = body.end_date || new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
 
     // Fetch invoices in date range
     const allInvoices = await base44.asServiceRole.entities.InvoiceSubmission.list('-created_date', 500);

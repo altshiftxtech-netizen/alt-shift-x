@@ -102,8 +102,8 @@ Deno.serve(async (req) => {
         risk_level: discrepancies.length > 0 ? 'medium' : 'low',
         new_values: { reconciliation_id: reconciliation.id }
       });
-    } catch (auditErr) {
-      console.warn('Audit log failed:', auditErr.message);
+    } catch (_auditErr) {
+      // Audit logging is best-effort and non-blocking — ignore failures quietly.
     }
 
     return Response.json({

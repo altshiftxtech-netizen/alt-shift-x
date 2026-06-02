@@ -68,6 +68,15 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error("stripeConnectOnboard error:", error.message);
+
+    // Stripe Connect not yet enabled on the platform account — give a clear, actionable message
+    if (/signed up for Connect/i.test(error.message)) {
+      return Response.json({
+        error: "Builder payouts aren't available yet. The platform owner needs to enable Stripe Connect at https://dashboard.stripe.com/connect before builders can link a payout account.",
+        code: "connect_not_enabled",
+      }, { status: 503 });
+    }
+
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
