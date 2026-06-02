@@ -17,11 +17,16 @@
     "plan": {
       "type": "string",
       "enum": [
+        "free",
         "starter",
         "pro",
-        "enterprise"
+        "enterprise",
+        "base_operator",
+        "strategic_architect",
+        "sovereign_commander"
       ],
-      "default": "starter"
+      "default": "starter",
+      "description": "Subscription plan. 'free' is the baseline tier a user reverts to on downgrade \u2014 all records preserved, paid benefits hidden."
     },
     "status": {
       "type": "string",
@@ -30,7 +35,8 @@
         "cancelled",
         "past_due",
         "trialing",
-        "incomplete"
+        "incomplete",
+        "unpaid"
       ],
       "default": "active"
     },

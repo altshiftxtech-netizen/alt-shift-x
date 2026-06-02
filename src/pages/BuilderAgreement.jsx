@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import DowngradeDataPolicy from "@/components/builder-agreement/DowngradeDataPolicy";
 
 // ─── Policy tier definitions ───────────────────────────────────────────────
 const POLICY_TIERS = [
@@ -440,6 +441,9 @@ export default function BuilderAgreement() {
             </div>
           </div>
         </div>
+
+        {/* Free baseline + paid addendum — data preservation on downgrade */}
+        <DowngradeDataPolicy />
 
         {/* Standard sections summary */}
         <div className="space-y-3">

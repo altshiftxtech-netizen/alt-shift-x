@@ -158,10 +158,15 @@ Deno.serve(async (req) => {
 
         const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_customer_id: customerId });
         if (existing.length > 0) {
+          // Downgrade to free: flip plan + status, but PRESERVE all underlying records
+          // (profile, components, badges, installs, revenue history remain intact).
+          // Paid-only benefits are simply hidden going forward via SubscriptionGate.
           await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
+            plan: "free",
             status: "cancelled",
             cancel_at_period_end: false,
           });
+          console.log(`[stripeWebhook] Downgraded customer=${customerId} to free — all records preserved, paid benefits hidden.`);
         }
 
         // Mark any installed components via this subscription as cancelled
