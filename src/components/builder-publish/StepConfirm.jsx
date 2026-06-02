@@ -42,7 +42,7 @@ export default function StepConfirm({ form, onSubmit, onBack }) {
         <div className="flex justify-between pt-2">
           <Button variant="outline" onClick={onBack}>← Back</Button>
           <Button onClick={onSubmit} className="bg-violet-700 hover:bg-violet-800 text-white px-8">
-            Submit for Review →
+            Ship →
           </Button>
         </div>
       </CardContent>
