@@ -59,7 +59,7 @@ export default function SpeakeasyGate({ children }) {
             The doors are not open yet. The Speakeasy unlocks <span className="text-white font-semibold">July 1, 2026</span>. Polish your stories and save your seat at the bar. <Sparkles className="inline w-3.5 h-3.5 text-[#C8A95B]" />
           </p>
           <p className="text-xs text-[#C8A95B]/80 italic leading-relaxed mb-6">
-            No water or noise pollution prevention needed — it's a data center, not a fish pond. 🐟🚫
+            No Water or Noise Pollution Prevention Needed
           </p>
           <Link to="/dashboard">
             <Button className="bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] text-[#0A0A0C] font-bold hover:opacity-90 w-full">
