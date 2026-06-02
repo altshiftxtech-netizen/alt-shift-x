@@ -6,6 +6,10 @@
       "type": "string",
       "description": "ID of the builder who created this component"
     },
+    "builder_name": {
+      "type": "string",
+      "description": "Optional display name for the builder, shown instead of the raw builder_id"
+    },
     "name": {
       "type": "string"
     },

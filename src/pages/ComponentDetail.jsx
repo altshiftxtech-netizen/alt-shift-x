@@ -35,7 +35,7 @@ export default function ComponentDetail() {
             schema: c.schema || [],
             reviews: c.reviews_count || 0,
             installs: c.installs_count || 0,
-            builder: { name: c.builder_id || "Unknown", tier: c.certified ? "certified" : "standard", avatar: (c.builder_id || "U")[0].toUpperCase() },
+            builder: { name: c.builder_name || c.builder_id || "Unknown", tier: c.certified ? "certified" : "standard", avatar: (c.builder_name || c.builder_id || "U")[0].toUpperCase() },
             recentReviews: [],
           });
         }
