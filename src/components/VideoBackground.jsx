@@ -51,7 +51,8 @@ export default function VideoBackground() {
       {/* Background video */}
       <video
         ref={videoRef}
-        className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        className="fixed inset-0 w-full h-full object-cover object-center z-0 pointer-events-none"
+        style={{ objectPosition: "center 35%" }}
         src={VIDEO_URL}
         autoPlay
         muted
