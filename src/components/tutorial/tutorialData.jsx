@@ -194,7 +194,7 @@ export const TUTORIALS = [
     title: "Analytics & Reports",
     description: "Track usage and performance",
     icon: BarChart3,
-    video: "https://www.youtube.com/embed/fEcXfamkbN8",
+    video: null,
     sections: [
       {
         title: "Understanding metrics",
