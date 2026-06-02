@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,7 +126,7 @@ export default function Marketplace() {
 
   const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
 
-  const filtered = components
+  const filtered = useMemo(() => components
     .filter(c => {
       const effectiveCategory = COMPONENT_CATEGORY_OVERRIDE[c.code] || c.category;
       const categoryMatch = category === "All" || effectiveCategory === category;
@@ -147,7 +147,7 @@ export default function Marketplace() {
         }
       }
       return sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0);
-    });
+    }), [components, category, type, search, sortBy]);
 
   return (
     <div className="min-h-screen relative">
@@ -351,7 +351,7 @@ export default function Marketplace() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filtered.map(c => (
                     <Link key={c.id} to={`/marketplace/${c.id}`}>
-                      <div className={`bg-white/10 backdrop-blur-sm border rounded-xl p-4 hover:bg-white/15 hover:shadow-xl transition-all h-full flex flex-col ${PINNED_CODES.includes(c.code) ? "border-violet-400/40 ring-1 ring-violet-400/20" : "border-white/15"}`}>
+                      <div className={`bg-slate-900/70 border rounded-xl p-4 hover:bg-slate-900/80 hover:shadow-xl transition-colors h-full flex flex-col ${PINNED_CODES.includes(c.code) ? "border-violet-400/40 ring-1 ring-violet-400/20" : "border-white/15"}`}>
                         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
                           <ScoreBadge score={c.trust_score || 0} />

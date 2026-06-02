@@ -3,9 +3,8 @@ import { Play, Pause } from "lucide-react";
 
 const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/0127d6547_no_make_the_videos.mp4";
 
-// Clip: skip the first 1.5s and last 1s to get a cleaner loop
+// Clip: skip the first 1.5s to get a cleaner loop entry
 const LOOP_START = 1.5;
-const LOOP_END_OFFSET = 1.0; // seconds before end to jump back
 
 export default function VideoBackground() {
   const videoRef = useRef(null);
@@ -20,17 +19,18 @@ export default function VideoBackground() {
       v.play().catch(() => setPlaying(false));
     };
 
-    const handleTimeUpdate = () => {
-      if (v.duration && v.currentTime >= v.duration - LOOP_END_OFFSET) {
-        v.currentTime = LOOP_START;
-      }
+    // Only reset near the very end (avoids per-frame seek stalls that make
+    // overlaid blurred content flicker). Native-style seamless loop.
+    const handleEnded = () => {
+      v.currentTime = LOOP_START;
+      v.play().catch(() => {});
     };
 
     v.addEventListener("loadedmetadata", handleLoaded);
-    v.addEventListener("timeupdate", handleTimeUpdate);
+    v.addEventListener("ended", handleEnded);
     return () => {
       v.removeEventListener("loadedmetadata", handleLoaded);
-      v.removeEventListener("timeupdate", handleTimeUpdate);
+      v.removeEventListener("ended", handleEnded);
     };
   }, []);
 
