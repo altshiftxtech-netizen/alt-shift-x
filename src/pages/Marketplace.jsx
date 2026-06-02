@@ -27,6 +27,14 @@ const CATEGORIES = [
   "Strategic Growth",
 ];
 const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
+const TYPE_LABELS = {
+  All: "All Types",
+  X1: "X1 · Reading Protocols",
+  X2: "X2 · Prophecy Models",
+  X3: "X3 · Speed Profiles",
+  X4: "X4 · Reason Councils",
+  X5: "X5 · Complete Agents",
+};
 
 // Legacy category override map — DB categories are now correct; this is kept as a safety net for any components still showing old values
 const COMPONENT_CATEGORY_OVERRIDE = {
@@ -194,23 +202,20 @@ export default function Marketplace() {
               <button
                 onClick={() => setShowFilters(v => !v)}
                 title="Filters"
-                className={`flex items-center gap-1.5 text-xs h-full px-3 py-2 rounded-md border transition-all ${showFilters || category !== "All" || type !== "All" ? "bg-violet-600 border-violet-500 text-white" : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"}`}
+                className={`flex items-center gap-1.5 text-xs h-full px-3 py-2 rounded-md border transition-all ${showFilters || type !== "All" ? "bg-violet-600 border-violet-500 text-white" : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"}`}
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span className="hidden sm:inline">Filters</span>
-                {(category !== "All" || type !== "All") && (
+                {type !== "All" && (
                   <span className="bg-white text-violet-700 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {(category !== "All" ? 1 : 0) + (type !== "All" ? 1 : 0)}
+                    1
                   </span>
                 )}
               </button>
               {showFilters && (
                 <FilterPanel
-                  categories={CATEGORIES}
                   types={TYPES}
-                  category={category}
                   type={type}
-                  onCategory={(c) => { setCategory(c); }}
                   onType={(t) => { setType(t); }}
                   onClose={() => setShowFilters(false)}
                 />
@@ -226,25 +231,14 @@ export default function Marketplace() {
 
         <div className="flex gap-6">
           {/* Sidebar filters */}
-          <aside className="hidden lg:block w-48 shrink-0 space-y-5">
-            <div>
-              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Category</p>
-              <div className="space-y-1">
-                {CATEGORIES.map(c => (
-                  <button key={c} onClick={() => setCategory(c)}
-                    className={`block w-full text-left text-xs px-2 py-1.5 rounded-md transition-all ${category === c ? "bg-violet-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <aside className="hidden lg:block w-56 shrink-0">
             <div>
               <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Type</p>
               <div className="space-y-1">
                 {TYPES.map(t => (
                   <button key={t} onClick={() => setType(t)}
-                    className={`block w-full text-left text-xs px-2 py-1.5 rounded-md transition-all ${type === t ? "bg-violet-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
-                    {t === "All" ? "All Types" : t}
+                    className={`block w-full text-left text-xs px-2.5 py-2 rounded-md transition-all ${type === t ? "bg-violet-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
+                    {TYPE_LABELS[t] || t}
                   </button>
                 ))}
               </div>
