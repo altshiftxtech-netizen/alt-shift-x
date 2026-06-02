@@ -118,7 +118,9 @@ export default function Home() {
           </Link>
           {isAuthenticated ? (
             <Link to="/builder">
-              <Button variant="outline" className="h-11 px-6 text-sm">Start Building</Button>
+              <Button className="h-11 px-6 text-sm gap-2 bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-900/40 ring-2 ring-violet-300/40">
+                <Zap className="w-4 h-4" /> Start Building
+              </Button>
             </Link>
           ) : (
             <Button variant="outline" className="h-11 px-6 text-sm" onClick={() => setShowInstallModal(true)}>
