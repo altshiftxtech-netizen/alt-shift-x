@@ -1,0 +1,65 @@
+{
+  "name": "EsiUnlock",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID who purchased the unlock"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "BOB conversation/project this ESI unlock applies to"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe checkout session id that granted this unlock"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount paid in cents"
+    },
+    "consumed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this single-use unlock has been used to download the ESI record"
+    }
+  },
+  "required": [
+    "user_id",
+    "conversation_id"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

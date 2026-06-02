@@ -53,6 +53,25 @@ Deno.serve(async (req) => {
 
         console.log(`Checkout completed: customer=${customerId}, plan=${planKey}, user=${userId}, component=${componentId || 'n/a'}`);
 
+        // ── One-time ESI Legal Export unlock ($10) — grants a single download ──
+        if (session.metadata?.purchase_type === "esi_unlock") {
+          const conversationId = session.metadata?.conversation_id;
+          if (userId && conversationId) {
+            const dup = await base44.asServiceRole.entities.EsiUnlock.filter({ stripe_session_id: session.id });
+            if (dup.length === 0) {
+              await base44.asServiceRole.entities.EsiUnlock.create({
+                user_id: userId,
+                conversation_id: conversationId,
+                stripe_session_id: session.id,
+                amount: session.amount_total || 1000,
+                consumed: false,
+              });
+              console.log(`[stripeWebhook] ESI unlock granted: user=${userId}, conversation=${conversationId}`);
+            }
+          }
+          break;
+        }
+
         if (!subscriptionId) {
           console.warn("No subscription ID in checkout.session.completed — skipping subscription update");
           break;
