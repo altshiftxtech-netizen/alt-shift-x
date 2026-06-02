@@ -186,7 +186,7 @@ export default function Marketplace() {
          </div>
        </nav>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-8">
         <div className="mb-8">
           <AiSearchConsultant />
         </div>
