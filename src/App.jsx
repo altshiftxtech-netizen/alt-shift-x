@@ -59,6 +59,7 @@ import BuilderLeaderboard from './pages/BuilderLeaderboard';
 import GamificationAdmin from './pages/GamificationAdmin';
 import PayoutSettings from './pages/PayoutSettings';
 import BuilderSocialDashboard from './pages/BuilderSocialDashboard';
+import BuilderKitPairing from './pages/BuilderKitPairing';
 import UserOnboarding from './pages/UserOnboarding';
 import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
@@ -143,6 +144,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
         <Route path="/builder/payout-settings" element={<PayoutSettings />} />
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
+        <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />

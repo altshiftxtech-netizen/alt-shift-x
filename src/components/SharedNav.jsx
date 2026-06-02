@@ -27,6 +27,7 @@ const BUILDER_NAV = [
   { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/builder/payout-settings", label: "Payouts", icon: DollarSign },
   { to: "/builder/social", label: "Social", icon: Share2 },
+  { to: "/builder/kit-pairing", label: "Kit Pairing", icon: Share2 },
   { to: "/builder/bob", label: "BOB Builder", icon: null, isBob: true },
 ];
 
