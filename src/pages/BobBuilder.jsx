@@ -110,6 +110,7 @@ export default function BobBuilder() {
   const [esiTarget, setEsiTarget] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const splashInputRef = useRef(null);
 
   useEffect(() => { loadFrameworks(); }, []);
@@ -138,8 +139,17 @@ export default function BobBuilder() {
   useEffect(() => {
     if (!convId) return;
     const unsub = base44.agents.subscribeToConversation(convId, (data) => {
+      // Capture whether the user is near the bottom BEFORE the messages update,
+      // so streaming tokens don't fight the user's scroll position.
+      const el = scrollContainerRef.current;
+      const nearBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 120 : true;
       setMessages(data.messages || []);
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      if (nearBottom) {
+        setTimeout(() => {
+          const c = scrollContainerRef.current;
+          if (c) c.scrollTop = c.scrollHeight;
+        }, 60);
+      }
     });
     return unsub;
   }, [convId]);
@@ -620,7 +630,7 @@ export default function BobBuilder() {
               )}
 
               <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
+                <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
                   {messages.length === 0 && !sending && (
                     <div className="flex items-start gap-3 mt-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />
