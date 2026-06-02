@@ -17,6 +17,7 @@ const RULES = [
   "Credit your sources. No stolen work.",
   "Ask @frontman anything — the host has your back.",
   "What's said in the Speakeasy, stays in the Speakeasy.",
+  "No water or noise pollution prevention needed — it's a data center, not a fish pond. 🐟🚫",
 ];
 
 export default function SpeakeasySidebar() {

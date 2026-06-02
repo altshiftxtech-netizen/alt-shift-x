@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/38c5a3f1e_give_me_a_video_with_the_last.mp4";
+const VIDEO_URL = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/8050f475e_render_a_construction_site_ope.mp4";
 
 // Muted, seamless, perfectly looping background video for the Speakeasy pages.
 // Glass overlay matches the homepage treatment.
