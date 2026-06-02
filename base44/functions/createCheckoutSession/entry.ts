@@ -4,9 +4,9 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 // Builder subscription plan → Stripe price ID
 // free_builder has no Stripe price — it's a no-charge tier handled client-side.
 const BUILDER_PLANS = {
-  base_operator: "price_1TdjwEAuii7slVl85bYGev1w",        // $49/mo — Base Operator
-  strategic_architect: "price_1TdjwEAuii7slVl8lMMUoLyZ",  // $199/mo — Strategic Architect
-  sovereign_commander: "price_1TdjwEAuii7slVl80LDZhMlB",  // $599/mo — Sovereign Commander
+  base_operator: "price_1TdpP5JpBWpVB4VLCblAfpbK",        // $49/mo — Base Operator (LIVE)
+  strategic_architect: "price_1TdpP5JpBWpVB4VLxfqCX771",  // $199/mo — Strategic Architect (LIVE)
+  sovereign_commander: "price_1TdpP5JpBWpVB4VLMKPm0vPI",  // $599/mo — Sovereign Commander (LIVE)
 };
 
 // ── Grace period (trial) for higher-commitment tiers ──────────────────────────
@@ -17,6 +17,11 @@ const TRIAL_DAYS_BY_PLAN = {
   strategic_architect: 14,
   sovereign_commander: 14,
 };
+
+// ── Vested100 Beta: 50%-off coupon auto-applied to the first 100 paid builder subs ──
+// Coupon created by the setupVested100 function. Limit caps how many subs get it.
+const VESTED100_COUPON = "VESTED100_BETA";
+const VESTED100_LIMIT = 100;
 
 // ── Sentinel rate limit: cap checkout-session creation per IP to stop card-testing/abuse loops ──
 // In-memory window; fails open so legitimate users are never blocked by a limiter glitch.
@@ -135,7 +140,18 @@ Deno.serve(async (req) => {
 
       // ── Vested100 Beta: auto-apply 50%-off coupon to the first 100 paid builder subs ──
       const vestedCount = await base44.asServiceRole.entities.Subscription.filter({ vested100: true });
-      const vestedEligible = vestedCount.length < VESTED100_LIMIT;
+      let vestedEligible = vestedCount.length < VESTED100_LIMIT;
+
+      // Only apply the coupon if it actually exists in this Stripe account (live vs test).
+      // If it's missing, fall back to promo codes so checkout never crashes.
+      if (vestedEligible) {
+        try {
+          await stripe.coupons.retrieve(VESTED100_COUPON);
+        } catch {
+          console.warn(`[createCheckoutSession] Coupon ${VESTED100_COUPON} not found — falling back to promo codes.`);
+          vestedEligible = false;
+        }
+      }
 
       const session = await stripe.checkout.sessions.create({
         ...baseParams,

@@ -1,16 +1,11 @@
 import Stripe from "npm:stripe@14.21.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 
-const PLAN_LIMITS = {
-  starter: 1000,
-  pro: 10000,
-  enterprise: 999999999,
-};
-
+// Map LIVE builder-plan price IDs → plan keys (matches createCheckoutSession + website)
 const PRICE_TO_PLAN = {
-  "price_1TcN53Auii7slVl8tRdNcQjN": "starter",
-  "price_1TcN53Auii7slVl8vnIV5uQp": "pro",
-  "price_1TcN53Auii7slVl8s9oWY7F5": "enterprise",
+  "price_1TdpP5JpBWpVB4VLCblAfpbK": "base_operator",        // $49/mo
+  "price_1TdpP5JpBWpVB4VLxfqCX771": "strategic_architect",  // $199/mo
+  "price_1TdpP5JpBWpVB4VLMKPm0vPI": "sovereign_commander",  // $599/mo
 };
 
 Deno.serve(async (req) => {
