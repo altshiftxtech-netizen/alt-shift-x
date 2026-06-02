@@ -147,7 +147,7 @@ export const TUTORIALS = [
     title: "Billing & Subscriptions",
     description: "Manage payments and plans",
     icon: Users,
-    video: "https://www.youtube.com/embed/Q8Tw5dC5wKw",
+    video: null,
     sections: [
       {
         title: "Viewing your subscription",
