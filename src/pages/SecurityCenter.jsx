@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Shield, Loader2, AlertTriangle, Ban, Mail, Activity } from "lucide-react";
 import IncidentRow from "@/components/security/IncidentRow";
+import SecretLeakScanner from "@/components/security/SecretLeakScanner";
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
@@ -73,6 +74,8 @@ export default function SecurityCenter() {
           <h1 className="text-2xl font-bold text-slate-900">Security Center</h1>
         </div>
         <p className="text-sm text-slate-500 mb-6">Sentinel threat detection — logged incidents with forensic metadata for law enforcement.</p>
+
+        <SecretLeakScanner />
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <StatCard icon={Activity} label="Total Incidents" value={stats.total} color="bg-slate-100 text-slate-700" />

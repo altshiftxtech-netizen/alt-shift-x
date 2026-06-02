@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
+import PasswordStrength, { evaluatePassword } from "@/components/auth/PasswordStrength";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -22,6 +23,10 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!evaluatePassword(password).valid) {
+      setError("Please choose a stronger password that meets the requirements below.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -195,6 +200,7 @@ export default function Register() {
               required
             />
           </div>
+          <PasswordStrength password={password} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>

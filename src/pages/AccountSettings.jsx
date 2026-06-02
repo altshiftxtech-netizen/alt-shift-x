@@ -7,6 +7,7 @@ import { User, Lock, Bell, CreditCard, CheckCircle2, Zap } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import CommandPromptToggle from "@/components/CommandPromptToggle";
 import TestModeSelector from "@/components/TestModeSelector";
+import TwoFactorPanel from "@/components/auth/TwoFactorPanel";
 import { useAuth } from "@/lib/AuthContext";
 
 const ALL_TABS = [
@@ -56,7 +57,7 @@ function SecurityTab() {
       <Card><CardContent className="pt-5">
         <p className="text-sm font-bold text-slate-900 mb-1">Two-Factor Authentication</p>
         <p className="text-xs text-slate-400 mb-4">Add an extra layer of security to your account.</p>
-        <Button variant="outline" className="text-sm">Enable 2FA</Button>
+        <TwoFactorPanel />
       </CardContent></Card>
       <Card className="border-red-200"><CardContent className="pt-5">
         <p className="text-sm font-bold text-red-700 mb-1">Danger Zone</p>
