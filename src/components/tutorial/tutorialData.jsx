@@ -234,7 +234,7 @@ export const TUTORIALS = [
     title: "Security & Compliance",
     description: "Keep your data safe",
     icon: Lock,
-    video: "https://www.youtube.com/embed/hMVqDP-1aHg",
+    video: null,
     sections: [
       {
         title: "Password management",
