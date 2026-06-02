@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import { base44 } from "@/api/base44Client";
 
 const USER_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,6 +33,23 @@ export default function SharedNav({ mode = "user" }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
+  const [canSpeakeasy, setCanSpeakeasy] = useState(false);
+
+  // The Speakeasy is for paying builders/developers only — free-tier users don't see it.
+  useEffect(() => {
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user?.role === "admin") { setCanSpeakeasy(true); return; }
+        const subs = await base44.entities.Subscription.filter({ user_id: user.id });
+        const sub = subs[0];
+        const isPaying = sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status);
+        setCanSpeakeasy(!!isPaying);
+      } catch {
+        setCanSpeakeasy(false);
+      }
+    })();
+  }, []);
 
   const navItems = mode === "builder" ? BUILDER_NAV : USER_NAV;
   const isActive = (path) => location.pathname === path;
@@ -76,13 +94,15 @@ export default function SharedNav({ mode = "user" }) {
             </button>
             {portalOpen && (
               <div className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
-                {/* Highlighted Speakeasy — platinum members lounge */}
-                <Link to="/speakeasy" onClick={() => setPortalOpen(false)}
-                  className="flex items-center gap-2 mx-1 mb-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] hover:opacity-90 shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  The Speakeasy
-                  <span className="ml-auto text-[8px] font-bold uppercase tracking-wider bg-[#0A0A0C]/15 px-1.5 py-0.5 rounded-full">Platinum</span>
-                </Link>
+                {/* Highlighted Speakeasy — paying members only */}
+                {canSpeakeasy && (
+                  <Link to="/speakeasy" onClick={() => setPortalOpen(false)}
+                    className="flex items-center gap-2 mx-1 mb-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] hover:opacity-90 shadow-sm">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    The Speakeasy
+                    <span className="ml-auto text-[8px] font-bold uppercase tracking-wider bg-[#0A0A0C]/15 px-1.5 py-0.5 rounded-full">Platinum</span>
+                  </Link>
+                )}
                 <Link to="/dashboard" onClick={() => setPortalOpen(false)}
                   className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 ${mode === "user" ? "text-violet-700 font-semibold" : "text-slate-600"}`}>
                   User Dashboard
