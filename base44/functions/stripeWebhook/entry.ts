@@ -38,6 +38,14 @@ Deno.serve(async (req) => {
   try {
     console.log(`[stripeWebhook] Processing event: ${event.type}, id=${event.id}`);
 
+    // ── Event-level idempotency: skip if this exact Stripe event was already handled ──
+    // Prevents replayed/duplicate webhook deliveries from re-running side effects (double installs, double provisioning).
+    const alreadyProcessed = await base44.asServiceRole.entities.ProcessedWebhookEvent.filter({ event_id: event.id });
+    if (alreadyProcessed.length > 0) {
+      console.log(`[stripeWebhook] Duplicate event ${event.id} — already processed, skipping.`);
+      return Response.json({ received: true, duplicate: true, event_type: event.type });
+    }
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -231,6 +239,13 @@ Deno.serve(async (req) => {
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
+
+    // Record successful processing so duplicates are ignored going forward
+    await base44.asServiceRole.entities.ProcessedWebhookEvent.create({
+      event_id: event.id,
+      event_type: event.type,
+      processed_at: new Date().toISOString(),
+    }).catch((e) => console.error("Failed to record processed event:", e.message));
 
     return Response.json({ received: true, event_type: event.type });
   } catch (err) {

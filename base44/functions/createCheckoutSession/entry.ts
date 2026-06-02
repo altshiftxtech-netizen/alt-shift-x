@@ -8,6 +8,18 @@ const BUILDER_PLANS = {
   sovereign_commander: "price_1TchShAuii7slVl82wPKIzAt",  // $499/mo — Sovereign Commander
 };
 
+// ── Sentinel rate limit: cap checkout-session creation per IP to stop card-testing/abuse loops ──
+// In-memory window; fails open so legitimate users are never blocked by a limiter glitch.
+const checkoutAttempts = new Map(); // ip -> [timestamps]
+const RATE_WINDOW_MS = 60 * 1000;   // 1 minute
+const RATE_MAX = 8;                 // max checkout sessions per IP per minute
+
+function trustedIp(req) {
+  // Trust only edge-set headers, not arbitrary client values
+  const fwd = req.headers.get("x-forwarded-for") || "";
+  return (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
+}
+
 Deno.serve(async (req) => {
   try {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
@@ -17,6 +29,17 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Rate-limit by IP — silent for normal use, blocks rapid-fire abuse
+    const ip = trustedIp(req);
+    const now = Date.now();
+    const recent = (checkoutAttempts.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+    if (recent.length >= RATE_MAX) {
+      console.warn(`[createCheckoutSession] Rate limit hit for IP ${ip}`);
+      return Response.json({ error: "Too many checkout attempts. Please wait a moment and try again." }, { status: 429 });
+    }
+    recent.push(now);
+    checkoutAttempts.set(ip, recent);
 
     const body = await req.json();
     const { planKey, componentId, successUrl, cancelUrl } = body;

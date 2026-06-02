@@ -1,0 +1,39 @@
+{
+  "name": "ProcessedWebhookEvent",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Stripe event ID (evt_...) \u2014 unique per webhook delivery"
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Stripe event type, e.g. checkout.session.completed"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
