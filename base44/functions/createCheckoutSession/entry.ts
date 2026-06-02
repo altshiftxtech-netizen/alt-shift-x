@@ -18,9 +18,9 @@ const TRIAL_DAYS_BY_PLAN = {
   sovereign_commander: 14,
 };
 
-// ── Vested100 Beta: 50%-off coupon auto-applied to the first 100 paid builder subs ──
-// Coupon created by the setupVested100 function. Limit caps how many subs get it.
-const VESTED100_COUPON = "VESTED100_BETA";
+// ── Vested100 Beta: 50%-off auto-applied to the first 100 paid builder subs ──
+// Resolved live by looking up the "VESTED100" promotion code in Stripe.
+const VESTED100_PROMO_CODE = "VESTED100";
 const VESTED100_LIMIT = 100;
 
 // ── Sentinel rate limit: cap checkout-session creation per IP to stop card-testing/abuse loops ──
@@ -138,17 +138,19 @@ Deno.serve(async (req) => {
 
       const trialDays = TRIAL_DAYS_BY_PLAN[planKey];
 
-      // ── Vested100 Beta: auto-apply 50%-off coupon to the first 100 paid builder subs ──
+      // ── Vested100 Beta: auto-apply 50%-off to the first 100 paid builder subs ──
       const vestedCount = await base44.asServiceRole.entities.Subscription.filter({ vested100: true });
       let vestedEligible = vestedCount.length < VESTED100_LIMIT;
 
-      // Only apply the coupon if it actually exists in this Stripe account (live vs test).
-      // If it's missing, fall back to promo codes so checkout never crashes.
+      // Resolve the live coupon from the "VESTED100" promotion code. If the code
+      // isn't found (or not active), fall back to allowing promo codes so checkout never crashes.
+      let vestedCouponId = null;
       if (vestedEligible) {
-        try {
-          await stripe.coupons.retrieve(VESTED100_COUPON);
-        } catch {
-          console.warn(`[createCheckoutSession] Coupon ${VESTED100_COUPON} not found — falling back to promo codes.`);
+        const codes = await stripe.promotionCodes.list({ code: VESTED100_PROMO_CODE, active: true, limit: 1 });
+        if (codes.data.length > 0) {
+          vestedCouponId = codes.data[0].coupon.id;
+        } else {
+          console.warn(`[createCheckoutSession] Promo code ${VESTED100_PROMO_CODE} not found/active — falling back to promo codes.`);
           vestedEligible = false;
         }
       }
@@ -159,8 +161,8 @@ Deno.serve(async (req) => {
         ...(trialDays
           ? { subscription_data: { trial_period_days: trialDays } }
           : {}),
-        ...(vestedEligible
-          ? { discounts: [{ coupon: VESTED100_COUPON }] }
+        ...(vestedEligible && vestedCouponId
+          ? { discounts: [{ coupon: vestedCouponId }] }
           : { allow_promotion_codes: true }),
         metadata: {
           ...baseParams.metadata,
