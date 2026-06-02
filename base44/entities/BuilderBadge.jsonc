@@ -134,6 +134,11 @@
       "default": false,
       "description": "Admin-confirmed insurance verification status"
     },
+    "insurance_alert_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When an insurance-expiry alert was last sent"
+    },
     "tmt3_passed": {
       "type": "boolean",
       "default": false,

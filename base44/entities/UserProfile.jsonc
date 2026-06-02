@@ -96,6 +96,11 @@
     "welcome_email_sent": {
       "type": "boolean",
       "default": false
+    },
+    "onboarding_nudged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a no-install onboarding nudge email was sent"
     }
   },
   "required": [

@@ -115,6 +115,16 @@
     "endpoint_url": {
       "type": "string",
       "description": "URL where the extraction API is deployed"
+    },
+    "stale_flagged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the no-installs stale flag notification was last sent"
+    },
+    "low_rating_alert_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a low-rating alert was last sent to the builder"
     }
   },
   "required": [

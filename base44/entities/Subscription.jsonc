@@ -55,6 +55,21 @@
     "cancel_at_period_end": {
       "type": "boolean",
       "default": false
+    },
+    "dunning_notified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time a failed-payment reminder was sent"
+    },
+    "quota_nudged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time a quota upgrade nudge was sent"
+    },
+    "winback_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a win-back email was sent after cancellation"
     }
   },
   "required": [
