@@ -1,32 +1,33 @@
 User-agent: *
-Disallow: /dashboard
-Disallow: /dashboard/
-Disallow: /builder
-Disallow: /builder/
-Disallow: /admin
-Disallow: /admin/
-Disallow: /pricing
-Disallow: /mobile
-Disallow: /builders/
-Disallow: /marketplace/
-Disallow: /privacy
-Disallow: /terms
 
-# Allow only the homepage and public marketplace index
+# Public, indexable pages
 Allow: /$
-Allow: /marketplace$
+Allow: /marketplace
+Allow: /pricing
+Allow: /builders
+Allow: /privacy
+Allow: /terms
+Allow: /contact
+Allow: /tutorials
+Allow: /sensitive-intelligence-policy
+Allow: /mobile
 
-User-agent: GPTBot
-Disallow: /
+# Private / authenticated areas — do not index or crawl
+Disallow: /dashboard
+Disallow: /builder
+Disallow: /admin
+Disallow: /finance
+Disallow: /vendor-portal
+Disallow: /api-partners
+Disallow: /spend-intelligence
+Disallow: /vendor-scores
+Disallow: /onboarding
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /success
+Disallow: /rollout-procedures
+Disallow: /builder/agreement
 
-User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
+Sitemap: https://altshiftx.com/sitemap.xml

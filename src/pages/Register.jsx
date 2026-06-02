@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/auth/PasswordStrength";
 
 export default function Register() {
+  const { isAuthenticated, authChecked } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +21,20 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    // If already logged in, don't show the signup form (unless mid-OTP verification)
+    if (authChecked && isAuthenticated && !showOtp) {
+      window.location.href = "/dashboard";
+    }
+  }, [authChecked, isAuthenticated, showOtp]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,9 +75,11 @@ export default function Register() {
   };
 
   const handleResend = async () => {
+    if (resendCooldown > 0) return;
     setError("");
     try {
       await base44.auth.resendOtp(email);
+      setResendCooldown(30);
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",
@@ -121,8 +139,12 @@ export default function Register() {
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
           Didn't receive the code?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
+          <button
+            onClick={handleResend}
+            disabled={resendCooldown > 0}
+            className="text-primary font-medium hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
+          >
+            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend"}
           </button>
         </p>
       </AuthLayout>

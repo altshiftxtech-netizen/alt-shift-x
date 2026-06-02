@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
+import PasswordStrength, { evaluatePassword } from "@/components/auth/PasswordStrength";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,10 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!evaluatePassword(newPassword).valid) {
+      setError("Please choose a stronger password that meets the requirements below.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -81,6 +86,7 @@ export default function ResetPassword() {
               required
             />
           </div>
+          <PasswordStrength password={newPassword} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
