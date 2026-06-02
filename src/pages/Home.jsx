@@ -8,19 +8,19 @@ import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
 
 const FEATURED = [
-  { name: "The App Printer", type: "X5", category: "AI Agent Development", rating: 4.9, installs: 312, desc: "Prints full production-ready apps on demand. Describe it, deploy it. Zero friction from idea to live app." },
-  { name: "1 Take Jay", type: "X5", category: "AI Agent Development", rating: 4.8, installs: 203, desc: "Ships features in one take. No revisions, no back-and-forth — just precise, deployable output every time." },
-  { name: "Miyagi San", type: "X5", category: "AI Agent Development", rating: 4.9, installs: 178, desc: "Master-level AI training agent. Wax on, wax off — builds elite developer instincts through guided practice." },
+  { name: "The App Printer", type: "X2", category: "AI Agent Development", rating: 4.8, trust: 96, desc: "Eliminates the AI erosion loop — ≥97.6% first-time render accuracy via doc-grounding and an 8-point self-render gate." },
+  { name: "1 Take Jay", type: "X2", category: "AI Agent Development", rating: 4.9, trust: 94, desc: "One prompt in, one complete shippable app shell out. No clarifying questions, no follow-ups — the first take is the hit." },
+  { name: "Miyagi San", type: "X2", category: "AI Agent Development", rating: 4.9, trust: 97, desc: "Ship production-ready apps on the first build. A 7-stage discipline that compresses 40–120 hrs of hardening to 4–8." },
 ];
 
 const STATS = [
-  { label: "Components", value: "240+", icon: Package },
-  { label: "Builders", value: "80+", icon: Users },
-  { label: "Installs", value: "18k+", icon: Zap },
-  { label: "Avg Trust Score", value: "91", icon: ShieldCheck },
+  { label: "Certified Components", value: "Curated", icon: Package },
+  { label: "Avg Trust Score", value: "95+", icon: ShieldCheck },
+  { label: "Do-No-Harm Audited", value: "100%", icon: Users },
+  { label: "Stage", value: "Beta", icon: Zap },
 ];
 
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
 
 function InstallCTAModal({ onClose }) {
   return (
@@ -58,8 +58,8 @@ export default function Home() {
 
   useEffect(() => {
     setSEOMeta({
-      title: "Alt+Shift+X Market — Verified AI Components for Construction Intelligence",
-      description: "Discover 240+ verified AI-powered components for construction document extraction, risk analysis, project management, and site reporting. Trusted by enterprises worldwide.",
+      title: "Alt+Shift+X Market — Verified AI Components",
+      description: "Discover certified, trust-scored AI-powered components — each one benchmarked, Do-No-Harm audited, and certified before publishing.",
       keywords: "AI components, construction, document extraction, risk management, project management, site reporting, verified AI, enterprise software",
       robots: "index, follow",
     });
@@ -162,7 +162,7 @@ export default function Home() {
                      <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
                      <span className="font-semibold">{c.rating}</span>
                    </div>
-                   <span className="text-xs text-white/40">{c.installs.toLocaleString()} installs</span>
+                   <span className="flex items-center gap-1 text-xs text-emerald-400"><ShieldCheck className="w-3.5 h-3.5" /> {c.trust} Trust</span>
                  </div>
               </div>
             </Link>
@@ -200,7 +200,7 @@ export default function Home() {
       {/* CTA */}
       <section className="relative z-10 bg-black/40 backdrop-blur-sm py-16 text-center">
         <h2 className="text-3xl font-black text-white mb-4">Ready to build smarter?</h2>
-        <p className="text-white/50 mb-8 text-sm">Join 80+ builders shipping verified AI components to construction teams worldwide.</p>
+        <p className="text-white/50 mb-8 text-sm">Join our beta and start shipping verified, Do-No-Harm audited AI components.</p>
         <Link to="/register">
           <Button className="bg-violet-600 dark:bg-violet-700 hover:bg-violet-700 dark:hover:bg-violet-600 text-white h-11 px-8 text-sm">Create your account</Button>
         </Link>
