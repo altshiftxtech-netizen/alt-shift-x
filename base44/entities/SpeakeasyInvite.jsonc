@@ -1,0 +1,77 @@
+{
+  "name": "SpeakeasyInvite",
+  "type": "object",
+  "properties": {
+    "inviter_id": {
+      "type": "string",
+      "description": "User ID of the member who sent the invite"
+    },
+    "inviter_name": {
+      "type": "string"
+    },
+    "invitee_email": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Unique invite code"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "joined",
+        "expired"
+      ],
+      "default": "sent"
+    }
+  },
+  "required": [
+    "inviter_id",
+    "invitee_email",
+    "code"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.inviter_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.inviter_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.inviter_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

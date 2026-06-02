@@ -62,6 +62,7 @@ import BuilderSocialDashboard from './pages/BuilderSocialDashboard';
 import UserOnboarding from './pages/UserOnboarding';
 import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
+import Speakeasy from './pages/Speakeasy';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -124,6 +125,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/testing" element={<TestingDashboard />} />
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
         <Route path="/dashboard/webhooks" element={<WebhookManager />} />
+        <Route path="/speakeasy" element={<Speakeasy />} />
         <Route path="/builder" element={<BuilderDashboard />} />
         <Route path="/builder/revenue" element={<BuilderRevenue />} />
         <Route path="/builder/trust" element={<TrustEngine />} />

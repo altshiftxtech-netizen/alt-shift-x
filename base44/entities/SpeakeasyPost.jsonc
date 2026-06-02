@@ -1,0 +1,119 @@
+{
+  "name": "SpeakeasyPost",
+  "type": "object",
+  "properties": {
+    "author_id": {
+      "type": "string",
+      "description": "User ID of the author. 'AI_HOST' for the Front Man."
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "is_ai": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if posted by the AI Host (The Front Man)"
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "video",
+        "meme",
+        "job",
+        "app_promo",
+        "announcement"
+      ],
+      "default": "text",
+      "description": "Type of post. job/app_promo reserved for future expansion."
+    },
+    "content": {
+      "type": "string",
+      "description": "The post body text (supports emojis)"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "YouTube URL, meme image URL, or app/job link"
+    },
+    "media_title": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "If set, this post is a reply to another post"
+    },
+    "mentions_ai": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the post @mentions the AI host or asks it a question"
+    },
+    "escalated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this conversation was escalated to admin by the AI"
+    },
+    "reactions": {
+      "type": "object",
+      "description": "Map of emoji -> count, e.g. { \"\ud83d\udd25\": 3, \"\ud83e\udd42\": 1 }",
+      "default": {}
+    },
+    "reply_count": {
+      "type": "number",
+      "default": 0
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "author_id",
+    "author_name",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "data.author_id": "AI_HOST"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

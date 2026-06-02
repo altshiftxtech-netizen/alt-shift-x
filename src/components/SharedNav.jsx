@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2 } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -75,7 +75,14 @@ export default function SharedNav({ mode = "user" }) {
               <ChevronDown className="w-3 h-3" />
             </button>
             {portalOpen && (
-              <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                {/* Highlighted Speakeasy — platinum members lounge */}
+                <Link to="/speakeasy" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 mx-1 mb-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] hover:opacity-90 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  The Speakeasy
+                  <span className="ml-auto text-[8px] font-bold uppercase tracking-wider bg-[#0A0A0C]/15 px-1.5 py-0.5 rounded-full">Platinum</span>
+                </Link>
                 <Link to="/dashboard" onClick={() => setPortalOpen(false)}
                   className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 ${mode === "user" ? "text-violet-700 font-semibold" : "text-slate-600"}`}>
                   User Dashboard
