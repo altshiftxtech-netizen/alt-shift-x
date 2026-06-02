@@ -43,9 +43,16 @@ function computeAchievements(row, allRows) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== "admin") {
-      return Response.json({ error: "Admin only" }, { status: 403 });
+    const body = await req.json().catch(() => ({}));
+
+    // Authorize: must be an admin user OR an internal scheduled task carrying the secret.
+    const internalSecret = Deno.env.get("INTERNAL_TASK_SECRET");
+    const isInternalTask = !!internalSecret && body.task_secret === internalSecret;
+    if (!isInternalTask) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== "admin") {
+        return Response.json({ error: "Admin only" }, { status: 403 });
+      }
     }
 
     const [components, allInstalled, govScores, reviews, existingBadges] = await Promise.all([

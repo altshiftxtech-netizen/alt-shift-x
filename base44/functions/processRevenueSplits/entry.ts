@@ -12,12 +12,17 @@ const CERT_BONUS = { platinum: 10, gold: 5, silver: 2, bronze: 0 };
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== "admin") {
-      return Response.json({ error: "Admin only" }, { status: 403 });
-    }
-
     const body = await req.json().catch(() => ({}));
+
+    // Authorize: must be an admin user OR an internal scheduled task carrying the secret.
+    const internalSecret = Deno.env.get("INTERNAL_TASK_SECRET");
+    const isInternalTask = !!internalSecret && body.task_secret === internalSecret;
+    if (!isInternalTask) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== "admin") {
+        return Response.json({ error: "Admin only" }, { status: 403 });
+      }
+    }
     const now = new Date();
     const periodDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const period = body.period || `${periodDate.getFullYear()}-${String(periodDate.getMonth() + 1).padStart(2, "0")}`;
