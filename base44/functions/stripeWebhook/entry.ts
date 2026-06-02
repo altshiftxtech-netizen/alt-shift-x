@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
         const planKey = session.metadata?.plan || "starter";
         const userId = session.metadata?.user_id;
         const componentId = session.metadata?.component_id;
+        const isVested = session.metadata?.vested100 === "true";
 
         console.log(`Checkout completed: customer=${customerId}, plan=${planKey}, user=${userId}, component=${componentId || 'n/a'}`);
 
@@ -81,15 +82,40 @@ Deno.serve(async (req) => {
           cancel_at_period_end: false,
           api_calls_used: 0,
         };
+        if (isVested) subData.vested100 = true;
 
+        let subRecordId;
         if (existing.length > 0) {
+          subRecordId = existing[0].id;
           await base44.asServiceRole.entities.Subscription.update(existing[0].id, subData);
         } else {
-          await base44.asServiceRole.entities.Subscription.create({
+          const created = await base44.asServiceRole.entities.Subscription.create({
             user_id: userId || "",
             stripe_customer_id: customerId,
             ...subData,
           });
+          subRecordId = created.id;
+        }
+
+        // ── Vested100 Beta welcome email — sent once, on first qualifying purchase ──
+        if (isVested) {
+          const subRow = (await base44.asServiceRole.entities.Subscription.filter({ id: subRecordId }))[0];
+          if (subRow && !subRow.vested100_email_sent) {
+            let toEmail = session.customer_details?.email || session.customer_email;
+            if (!toEmail && userId) {
+              const u = await base44.asServiceRole.entities.User.filter({ id: userId }).catch(() => []);
+              toEmail = u[0]?.email;
+            }
+            if (toEmail) {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: toEmail,
+                subject: "🎉 You're a Vested100 Beta Builder — 50% off for a year",
+                body: `Welcome to the Alt+Shift+X Beta!\n\nYou're one of our first 100 builders, which means you've locked in 50% off your builder subscription for a full year.\n\nYour promo code: VESTED100\n\nUse this code at checkout on any future builder plan purchase to keep your 50% beta discount (valid for one year). Thank you for building with us early.\n\n— The Alt+Shift+X Team`,
+              }).catch((e) => console.error("[stripeWebhook] Vested100 email failed:", e.message));
+              await base44.asServiceRole.entities.Subscription.update(subRecordId, { vested100_email_sent: true });
+              console.log(`[stripeWebhook] Vested100 welcome email sent to ${toEmail}`);
+            }
+          }
         }
 
         // If this was a component subscription, record the installed component

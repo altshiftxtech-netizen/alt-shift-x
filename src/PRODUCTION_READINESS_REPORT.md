@@ -160,6 +160,16 @@
 - **Volume Rebate**: +2.5–5% if monthly revenue > $10–50k
 - **Idempotent**: Updates existing splits, creates new ones once per period
 
+### Vested100 Beta Promotion (Compliance)
+- **Program**: First **100 paid builder subscriptions total** receive **50% off for 1 year**.
+- **Mechanism**: Stripe coupon `VESTED100_BETA` (`percent_off: 50`, `duration: repeating`, `duration_in_months: 12`).
+- **Auto-apply**: `createCheckoutSession` counts existing `vested100` subscriptions; if under 100, the coupon is applied automatically and the checkout is tagged `vested100=true`. At/after 100, full price resumes and manual promo codes are allowed instead.
+- **Promo code**: `VESTED100` (shared promotion code, **expires 1 year from setup**), emailed to each beta builder on first purchase so they can reuse the discount on future builder plans.
+- **Marking**: On `checkout.session.completed`, the subscriber's `Subscription.vested100` is set true and a one-time welcome email (`vested100_email_sent` guard) delivers the promo code.
+- **Scope**: Builder plans only (Base Operator / Strategic Architect / Sovereign Commander). Components are excluded.
+- **Setup**: One-time admin action via Admin Panel → **Beta Program** tab → "Create / Verify Coupon + Promo Code" (`setupVested100`, admin-only, idempotent).
+- **Audit**: Live counter (X/100) and remaining slots visible in the admin Beta Program tab.
+
 ### Builder Payouts
 - **Function**: `initiateBuilderPayout`
 - **Minimum Threshold**: $50 USD
@@ -261,3 +271,5 @@ All critical financial, compliance, and user-facing systems are working as desig
 ---
 
 **Report Generated**: May 30, 2026 | **Platform Version**: 3.0+ | **Testing Scope**: Comprehensive
+
+**Last Updated**: June 2, 2026 — Added Vested100 Beta promotion (first 100 builder subs: 50% off for 1 year; `VESTED100` promo code emailed on first purchase, expires in 1 year).

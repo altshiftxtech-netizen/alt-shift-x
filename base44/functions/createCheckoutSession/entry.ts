@@ -132,19 +132,28 @@ Deno.serve(async (req) => {
       }
 
       const trialDays = TRIAL_DAYS_BY_PLAN[planKey];
+
+      // ── Vested100 Beta: auto-apply 50%-off coupon to the first 100 paid builder subs ──
+      const vestedCount = await base44.asServiceRole.entities.Subscription.filter({ vested100: true });
+      const vestedEligible = vestedCount.length < VESTED100_LIMIT;
+
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
         line_items: [{ price: BUILDER_PLANS[planKey], quantity: 1 }],
         ...(trialDays
           ? { subscription_data: { trial_period_days: trialDays } }
           : {}),
+        ...(vestedEligible
+          ? { discounts: [{ coupon: VESTED100_COUPON }] }
+          : { allow_promotion_codes: true }),
         metadata: {
           ...baseParams.metadata,
           plan: planKey,
+          vested100: vestedEligible ? "true" : "false",
         },
       });
 
-      console.log(`[INFO] Builder checkout created: user=${user.id}, plan=${planKey}, trialDays=${trialDays || 0}`);
+      console.log(`[INFO] Builder checkout created: user=${user.id}, plan=${planKey}, trialDays=${trialDays || 0}, vested100=${vestedEligible}`);
       return Response.json({ url: session.url });
     }
 
