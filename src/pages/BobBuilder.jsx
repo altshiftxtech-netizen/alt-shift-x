@@ -10,7 +10,11 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
+import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import RichPromptEditor from "@/components/bob/RichPromptEditor";
+import useBobAccess from "@/hooks/useBobAccess";
+import { Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
 const QUICK_PROMPTS = [
@@ -72,6 +76,7 @@ function MessageBubble({ m }) {
 }
 
 export default function BobBuilder() {
+  const { isPaying } = useBobAccess();
   const [launched, setLaunched] = useState(false); // splash → workspace
   const [activeTab, setActiveTab] = useState("chat");
   const [conv, setConv] = useState(null);
@@ -149,6 +154,60 @@ export default function BobBuilder() {
     e?.preventDefault();
     if (input.trim()) launch(input);
     else launch();
+  };
+
+  // Wipe Board — start a brand-new project conversation, keeping the workspace open.
+  const wipeBoard = async () => {
+    setMessages([]);
+    setActiveTab("chat");
+    await initConv();
+  };
+
+  // Open an existing project from the Wipe Board history.
+  const openProject = async (c) => {
+    const full = await base44.agents.getConversation(c.id);
+    setConv(full);
+    setConvId(full.id);
+    setMessages(full.messages || []);
+    setActiveTab("chat");
+  };
+
+  // Spin Off — fork a project into a NEW conversation that already carries the
+  // original component context + attached sources, plus a proposed spin-off
+  // direction. The builder only has to say "go".
+  const spinOff = async (c) => {
+    const full = await base44.agents.getConversation(c.id);
+    const history = (full.messages || []);
+    const firstUser = history.find(m => m.role === "user");
+    const sourceUrls = [...new Set(history.flatMap(m => m.file_urls || []))];
+    const originalBrief = firstUser?.content || "the original component";
+
+    const newConv = await base44.agents.createConversation({
+      agent_name: "bob_builder",
+      metadata: { name: "BOB Session Spin-Off " + new Date().toLocaleTimeString() }
+    });
+    setConv(newConv);
+    setConvId(newConv.id);
+    setMessages([]);
+    setActiveTab("chat");
+
+    const seed =
+      `SPIN-OFF REQUEST — fork of a prior project.\n\n` +
+      `Original brief:\n"${originalBrief}"\n\n` +
+      (sourceUrls.length ? `Original source files are attached.\n\n` : ``) +
+      `Using all the context, codes, framework, and pricing from the original, ` +
+      `proactively propose ONE strong spin-off variant (a new version, a different vertical, ` +
+      `or an upmarket tier) that I can monetize. Pre-fill everything — name, type (X1/X2/X4), ` +
+      `description, pricing, and the marketplace listing — and lay out the full build plan. ` +
+      `Assume I approve unless I object. End by asking me to simply say "go" to generate it.`;
+
+    setSending(true);
+    await base44.agents.addMessage(newConv, {
+      role: "user",
+      content: seed,
+      ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
+    });
+    setSending(false);
   };
 
   const sendMessage = async (text) => {
@@ -251,6 +310,7 @@ export default function BobBuilder() {
   };
 
   const handleExport = async (format) => {
+    if (!isPaying) return; // downloads are a paid benefit
     setExporting(true);
     const response = await base44.functions.invoke("exportComponentDoc", { framework, format });
     const blob = new Blob([response.data], {
@@ -454,6 +514,13 @@ export default function BobBuilder() {
           <div className="grid md:grid-cols-4 gap-4">
             {/* Sidebar */}
             <div className="space-y-3">
+              <BobHistoryPanel
+                activeConvId={convId}
+                onOpen={openProject}
+                onWipeBoard={wipeBoard}
+                onSpinOff={spinOff}
+              />
+
               <Card className="bg-slate-800 border-slate-700">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle>
@@ -658,17 +725,30 @@ export default function BobBuilder() {
                       {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled · Apply to all: {applyToAll ? "ON" : "Off"}
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} PDF
-                    </Button>
-                    <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Word
-                    </Button>
-                    <Button onClick={() => handleExport("csv")} disabled={exporting} className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5">
-                      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} CSV
-                    </Button>
-                  </div>
+                  {isPaying ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
+                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} PDF
+                      </Button>
+                      <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
+                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Word
+                      </Button>
+                      <Button onClick={() => handleExport("csv")} disabled={exporting} className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5">
+                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} CSV
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-violet-700/40 bg-violet-950/40 p-3 text-center">
+                      <Lock className="w-4 h-4 text-violet-400 mx-auto mb-1.5" />
+                      <p className="text-[11px] text-slate-300 font-semibold mb-0.5">Document downloads are a paid feature</p>
+                      <p className="text-[10px] text-slate-500 mb-2.5">Upgrade to download your framework as PDF, Word, or CSV.</p>
+                      <Link to="/pricing">
+                        <Button size="sm" className="bg-gradient-to-r from-violet-500 to-violet-700 hover:opacity-90 text-xs gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5" /> Upgrade to Unlock
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
