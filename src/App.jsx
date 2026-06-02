@@ -61,6 +61,7 @@ import PayoutSettings from './pages/PayoutSettings';
 import BuilderSocialDashboard from './pages/BuilderSocialDashboard';
 import UserOnboarding from './pages/UserOnboarding';
 import SecurityCenter from './pages/SecurityCenter';
+import SystemHealth from './pages/SystemHealth';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -143,6 +144,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />
+        <Route path="/admin/health" element={<SystemHealth />} />
         <Route path="/admin/gamification" element={<GamificationAdmin />} />
         <Route path="/vendor-portal" element={<VendorPortalPage />} />
         <Route path="/finance" element={<FinancePortal />} />

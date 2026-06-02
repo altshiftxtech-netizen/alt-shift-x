@@ -1,0 +1,93 @@
+{
+  "name": "HealthCheckReport",
+  "type": "object",
+  "properties": {
+    "run_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the health check ran"
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "degraded",
+        "critical"
+      ],
+      "default": "healthy"
+    },
+    "checks": {
+      "type": "array",
+      "description": "Individual system checks",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "warn",
+              "fail"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fixes_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Auto-healing actions taken this run"
+    },
+    "issues_found": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Outstanding issues that need attention"
+    },
+    "whats_working": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Snapshot counts: components, incidents, errors, automations, etc."
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "run_date",
+    "overall_status"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
