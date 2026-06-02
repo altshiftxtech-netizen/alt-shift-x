@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Lock, Loader2, Sparkles, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import SpeakeasyVideoBackground from "@/components/speakeasy/SpeakeasyVideoBackground";
 
 // The Speakeasy launches July 1, 2026. No entry before then (unless otherwise notified).
 const LAUNCH_DATE = new Date("2026-07-01T00:00:00");
@@ -46,15 +47,19 @@ export default function SpeakeasyGate({ children }) {
 
   if (status === "coming_soon") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0C] px-6">
-        <div className="max-w-md w-full text-center rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent backdrop-blur-xl p-10">
+      <div className="min-h-screen flex items-center justify-center px-6 relative">
+        <SpeakeasyVideoBackground />
+        <div className="relative z-10 max-w-md w-full text-center rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-black/30 backdrop-blur-xl p-10">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[#D9DCE1]/20 to-[#C8A95B]/20 border border-white/10 flex items-center justify-center mb-5">
             <Clock className="w-6 h-6 text-[#C8A95B]" />
           </div>
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#C8A95B] mb-2">Coming Soon</p>
           <h1 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>The Speakeasy</h1>
-          <p className="text-sm text-[#9CA0A8] leading-relaxed mb-6">
+          <p className="text-sm text-[#9CA0A8] leading-relaxed mb-4">
             The doors are not open yet. The Speakeasy unlocks <span className="text-white font-semibold">July 1, 2026</span>. Polish your stories and save your seat at the bar. <Sparkles className="inline w-3.5 h-3.5 text-[#C8A95B]" />
+          </p>
+          <p className="text-xs text-[#C8A95B]/80 italic leading-relaxed mb-6">
+            No water or noise pollution prevention needed — it's a data center, not a fish pond. 🐟🚫
           </p>
           <Link to="/dashboard">
             <Button className="bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] text-[#0A0A0C] font-bold hover:opacity-90 w-full">
