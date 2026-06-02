@@ -3,7 +3,7 @@ import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
   FileText, FileDown, Rocket, LayoutTemplate, X, Save,
   CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight,
-  Mic, MicOff, Paperclip, Upload
+  Mic, MicOff, Paperclip, Upload, History
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,6 +154,13 @@ export default function BobBuilder() {
     e?.preventDefault();
     if (input.trim()) launch(input);
     else launch();
+  };
+
+  // Open the workspace straight into the Wipe Board history (no new conversation seeded).
+  const openHistory = async () => {
+    setLaunched(true);
+    setActiveTab("chat");
+    await initConv();
   };
 
   // Wipe Board — start a brand-new project conversation, keeping the workspace open.
@@ -447,6 +454,21 @@ export default function BobBuilder() {
               </button>
             ))}
           </div>
+
+          {/* View History placard — jumps into the workspace with the Wipe Board open */}
+          <button
+            onClick={openHistory}
+            className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-violet-900/30 hover:bg-violet-800/40 border border-violet-700/50 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group"
+          >
+            <span className="w-8 h-8 rounded-lg bg-violet-800/60 flex items-center justify-center flex-shrink-0">
+              <History className="w-4 h-4 text-violet-300" />
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold">View Project History</p>
+              <p className="text-[11px] text-slate-500">Reopen, fork, or spin off a past project from the Wipe Board</p>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-violet-400" />
+          </button>
 
           {/* Licensed components bar */}
           <div className="mt-10 w-full max-w-2xl">
