@@ -50,7 +50,7 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
   }
 
   return (
-    <Card className="bg-gradient-to-r from-violet-50 to-blue-50 border-violet-200">
+    <Card className="backdrop-blur-md bg-white/40 border-2 border-white/60 shadow-2xl">
       <CardContent className="pt-6">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-violet-600" />
@@ -110,8 +110,8 @@ function ChatInterface({ conversation, onClose }) {
   };
 
   return (
-    <Card className="fixed bottom-6 right-24 w-96 h-[28rem] shadow-2xl flex flex-col z-40">
-      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-600 to-blue-600 rounded-t-xl">
+    <Card className="fixed bottom-6 right-24 w-96 h-[28rem] backdrop-blur-lg bg-white/30 border-2 border-white/50 shadow-2xl flex flex-col z-40">
+      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-violet-600/90 to-blue-600/90 backdrop-blur-sm rounded-t-xl">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-white" />
           <p className="text-sm font-semibold text-white">Sales Consultant</p>
