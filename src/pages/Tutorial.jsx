@@ -1,87 +1,11 @@
 import React, { useState } from "react";
-import { ChevronRight, Play, BookOpen, Zap, Users, BarChart3, Lock, Settings } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SharedNav from "@/components/SharedNav";
-
-const TUTORIALS = [
-  {
-    id: "getting-started",
-    title: "Getting Started",
-    description: "Learn the basics of the platform",
-    icon: Play,
-    sections: [
-      "Creating your first account",
-      "Understanding the dashboard",
-      "Navigating the interface",
-      "Setting up your profile"
-    ]
-  },
-  {
-    id: "marketplace",
-    title: "Using the Marketplace",
-    description: "Discover and install AI components",
-    icon: BookOpen,
-    sections: [
-      "Browsing components by category",
-      "Filtering and searching",
-      "Reading component details",
-      "Installing components",
-      "Managing installations"
-    ]
-  },
-  {
-    id: "api",
-    title: "API Integration",
-    description: "Connect with external systems",
-    icon: Zap,
-    sections: [
-      "Generating API keys",
-      "Using the API reference",
-      "Making requests",
-      "Error handling",
-      "Rate limiting"
-    ]
-  },
-  {
-    id: "billing",
-    title: "Billing & Subscriptions",
-    description: "Manage payments and plans",
-    icon: Users,
-    sections: [
-      "Viewing your subscription",
-      "Changing your plan",
-      "Payment methods",
-      "Invoices and receipts",
-      "Cancellation policy"
-    ]
-  },
-  {
-    id: "analytics",
-    title: "Analytics & Reports",
-    description: "Track usage and performance",
-    icon: BarChart3,
-    sections: [
-      "Understanding metrics",
-      "Viewing analytics",
-      "Exporting reports",
-      "Trends and forecasts"
-    ]
-  },
-  {
-    id: "security",
-    title: "Security & Compliance",
-    description: "Keep your data safe",
-    icon: Lock,
-    sections: [
-      "Password management",
-      "Two-factor authentication",
-      "Data privacy",
-      "Security best practices"
-    ]
-  }
-];
+import { TUTORIALS } from "@/components/tutorial/tutorialData";
+import TutorialSection from "@/components/tutorial/TutorialSection";
 
 export default function Tutorial() {
   const [selectedTutorial, setSelectedTutorial] = useState(null);
@@ -91,7 +15,7 @@ export default function Tutorial() {
     (t) =>
       t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.sections.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+      t.sections.some((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const selected = selectedTutorial ? TUTORIALS.find((t) => t.id === selectedTutorial) : null;
@@ -137,7 +61,7 @@ export default function Tutorial() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-slate-600">
-                        {tutorial.sections.length} topics to explore
+                        {tutorial.sections.length} step-by-step topics
                       </p>
                     </CardContent>
                   </Card>
@@ -153,11 +77,7 @@ export default function Tutorial() {
           </>
         ) : (
           <div>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedTutorial(null)}
-              className="mb-6"
-            >
+            <Button variant="outline" onClick={() => setSelectedTutorial(null)} className="mb-6">
               ← Back to Tutorials
             </Button>
 
@@ -173,21 +93,22 @@ export default function Tutorial() {
                   </div>
                 </div>
 
+                {selected.video && (
+                  <div className="mb-8 aspect-video w-full overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-black">
+                    <iframe
+                      className="w-full h-full"
+                      src={selected.video}
+                      title={`${selected.title} video walkthrough`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">Step-by-step guide</h2>
                 <div className="space-y-4">
                   {selected.sections.map((section, idx) => (
-                    <Card key={idx} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                              {idx + 1}
-                            </div>
-                            <h3 className="font-medium text-slate-900">{section}</h3>
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-slate-400" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <TutorialSection key={idx} index={idx} section={section} />
                   ))}
                 </div>
 
