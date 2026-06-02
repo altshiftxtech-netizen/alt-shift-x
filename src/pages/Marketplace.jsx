@@ -10,6 +10,7 @@ import AiSearchConsultant from "@/components/AiSearchConsultant";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
 import ComponentSharePanel from "@/components/ComponentSharePanel";
+import FilterPanel from "@/components/marketplace/FilterPanel";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
@@ -70,6 +71,7 @@ export default function Marketplace() {
   const [category, setCategory] = useState("All");
   const [type, setType] = useState("All");
   const [sortBy, setSortBy] = useState("installs");
+  const [showFilters, setShowFilters] = useState(false);
   const [sharingId, setSharingId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   // map of component_id -> InstalledComponent record
@@ -188,7 +190,32 @@ export default function Marketplace() {
             <Input placeholder="Search components…" className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/20" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-white/50" />
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(v => !v)}
+                title="Filters"
+                className={`flex items-center gap-1.5 text-xs h-full px-3 py-2 rounded-md border transition-all ${showFilters || category !== "All" || type !== "All" ? "bg-violet-600 border-violet-500 text-white" : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"}`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="hidden sm:inline">Filters</span>
+                {(category !== "All" || type !== "All") && (
+                  <span className="bg-white text-violet-700 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {(category !== "All" ? 1 : 0) + (type !== "All" ? 1 : 0)}
+                  </span>
+                )}
+              </button>
+              {showFilters && (
+                <FilterPanel
+                  categories={CATEGORIES}
+                  types={TYPES}
+                  category={category}
+                  type={type}
+                  onCategory={(c) => { setCategory(c); }}
+                  onType={(t) => { setType(t); }}
+                  onClose={() => setShowFilters(false)}
+                />
+              )}
+            </div>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="text-xs border border-white/20 rounded-md px-2 py-2 bg-white/10 text-white focus:outline-none">
               <option value="installs">Most Installed</option>
               <option value="rating">Highest Rated</option>

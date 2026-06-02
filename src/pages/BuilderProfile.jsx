@@ -9,6 +9,7 @@ export default function BuilderProfile() {
   const [profile, setProfile] = useState(null);
   const [userId, setUserId] = useState(null);
   const [policyTier, setPolicyTier] = useState("standard");
+  const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
 
@@ -23,6 +24,10 @@ export default function BuilderProfile() {
         const badges = await base44.entities.BuilderBadge.filter({ builder_id: user.id });
         const badge = badges[0];
         if (badge?.policy_tier) setPolicyTier(badge.policy_tier);
+
+        // Determine paid status — any active builder subscription unlocks website + Foundation Kit
+        const subs = await base44.entities.Subscription.filter({ user_id: user.id });
+        setIsPaid(subs.some(s => s.status === "active" || s.status === "trialing"));
 
         // Load components for stats
         const components = await base44.entities.Component.filter({ builder_id: user.id });
@@ -79,7 +84,7 @@ export default function BuilderProfile() {
         <ProfileHeader saved={saved} />
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            <ProfileEditForm profile={profile} onSave={handleSave} />
+            <ProfileEditForm profile={profile} onSave={handleSave} isPaid={isPaid} />
             <CredentialVault builderId={userId} currentTier={policyTier} onTierChange={setPolicyTier} />
           </div>
           <div className="lg:col-span-2">

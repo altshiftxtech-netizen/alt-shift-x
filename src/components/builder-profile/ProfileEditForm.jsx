@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const ALL_SPECS = ["Risk & Compliance", "Site Reporting", "Bid Estimation", "Project Management", "Scheduling", "Financial Analysis", "Document Generation", "Contract Administration"];
 
-export default function ProfileEditForm({ profile, onSave }) {
+export default function ProfileEditForm({ profile, onSave, isPaid = false }) {
   const [form, setForm] = useState({ ...profile });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -23,7 +25,7 @@ export default function ProfileEditForm({ profile, onSave }) {
         display_name: form.name,
         tagline: form.tagline,
         bio: form.bio,
-        website: form.website,
+        website: isPaid ? form.website : '',
         twitter: form.twitter,
         location: form.location,
         specializations: form.specializations
@@ -77,8 +79,14 @@ export default function ProfileEditForm({ profile, onSave }) {
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-600 block mb-1">Website</label>
-            <input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+            {isPaid ? (
+              <input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+            ) : (
+              <Link to="/pricing" className="flex items-center gap-2 w-full text-xs text-slate-400 border border-dashed border-slate-300 rounded-lg px-3 py-2 hover:border-violet-300 hover:text-violet-600 transition-colors">
+                <Lock className="w-3.5 h-3.5 shrink-0" /> Upgrade to add a website
+              </Link>
+            )}
           </div>
         </div>
         <div>

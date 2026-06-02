@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Check, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
+import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
 
 // ── Developer: free account, pay per component ────────────────────────────────
 const COMPONENT_TIERS = [
@@ -36,7 +36,33 @@ const COMPONENT_TIERS = [
 ];
 
 // ── Builder Subscription Tiers (Revenue Share Matrix) ─────────────────────────
+// Premium ladder: Free → $49 → $199 → $599. Top tier unlocks Platform Intelligence.
+// Free tier = browse + Do-No-Harm API install + 1 component publish (no website, no Foundation Kit).
 const BUILDER_PLANS = [
+  {
+    key: "free_builder",
+    name: "Free Builder",
+    price: 0,
+    free: true,
+    icon: Rocket,
+    revenueShare: "70%",
+    revenueDetail: "70% base revenue share on your one published component.",
+    description: "Get started for free. Browse, install Do-No-Harm components to your API, and publish your first component.",
+    features: [
+      "Browse the full marketplace",
+      "Do-No-Harm install to API",
+      "Publish 1 component",
+      "70% base revenue share",
+      "Component analytics (basic)",
+    ],
+    notIncluded: [
+      "Custom website / profile links",
+      "altshiftx.tech Builder Foundation Kit",
+      "Platform Intelligence access",
+    ],
+    highlight: false,
+    cta: "Start Free",
+  },
   {
     key: "base_operator",
     name: "Base Operator",
@@ -44,15 +70,16 @@ const BUILDER_PLANS = [
     icon: Zap,
     revenueShare: "72%",
     revenueDetail: "70% base + 2% verified bonus",
-    description: "Start building and publishing Magna Dev components to the marketplace.",
+    description: "Unlock unlimited publishing, your public builder website, and the Foundation Kit.",
     features: [
+      "Everything in Free Builder",
       "Publish unlimited components",
-      "70% base revenue share",
+      "Custom website + profile links",
+      "altshiftx.tech Builder Foundation Kit",
       "+2% certification bonus (if verified)",
       "Access to BOT-X test agent",
-      "Component analytics",
-      "1 free month — list to marketplace immediately",
       "Version control & changelogs",
+      "1 free month — list to marketplace immediately",
     ],
     highlight: false,
     cta: "Become a Builder",
@@ -60,14 +87,14 @@ const BUILDER_PLANS = [
   {
     key: "strategic_architect",
     name: "Strategic Architect",
-    price: 149,
+    price: 199,
     icon: Star,
     revenueShare: "77.5%",
     revenueDetail: "70% base + 5% verified + 2.5% volume rebate (>$10k/mo)",
     description: "For serious builders scaling revenue with multiple high-performing components.",
     features: [
       "Everything in Base Operator",
-      "70% base revenue share",
+      "Foundation Kit — evolving advanced modules",
       "+5% certification bonus (if verified)",
       "+2.5% volume rebate above $10k/month",
       "Bundle Protection (full share on discounted bundles)",
@@ -82,14 +109,14 @@ const BUILDER_PLANS = [
   {
     key: "sovereign_commander",
     name: "Sovereign Commander",
-    price: 499,
+    price: 599,
     icon: Crown,
     revenueShare: "85%",
     revenueDetail: "70% base + 10% verified + 5% volume rebate (>$50k/mo) + 100% Pedigree Premium",
-    description: "Maximum revenue extraction for elite builders with institutional-grade components.",
+    description: "Elite tier — the only plan with full Platform Intelligence access.",
     features: [
       "Everything in Strategic Architect",
-      "70% base revenue share",
+      "★ Platform Intelligence access (exclusive)",
       "+10% certification bonus (if verified)",
       "+5% volume rebate above $50k/month",
       "100% Pedigree Premium retention",
@@ -100,6 +127,7 @@ const BUILDER_PLANS = [
     ],
     highlight: false,
     cta: "Command the Market",
+    badge: "Intelligence",
   },
 ];
 
@@ -131,11 +159,12 @@ function ComponentTypeCard({ tier }) {
 function PlanCard({ plan, onSubscribe, loading }) {
   const Icon = plan.icon;
   const isHighlight = plan.highlight;
+  const isFree = plan.free;
 
   return (
-    <div className={`relative rounded-2xl border p-6 flex flex-col ${isHighlight ? "bg-slate-900 text-white border-slate-900 shadow-2xl scale-105" : "bg-white border-slate-200 shadow-sm"}`}>
+    <div className={`relative rounded-2xl border p-6 flex flex-col ${isHighlight ? "bg-slate-900 text-white border-slate-900 shadow-2xl lg:scale-105" : isFree ? "bg-slate-50 border-dashed border-slate-300" : "bg-white border-slate-200 shadow-sm"}`}>
       {plan.badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap ${plan.badge === "Intelligence" ? "bg-amber-500" : "bg-violet-600"}`}>
           {plan.badge}
         </div>
       )}
@@ -146,29 +175,44 @@ function PlanCard({ plan, onSubscribe, loading }) {
       <p className={`text-xs mb-4 ${isHighlight ? "text-slate-300" : "text-slate-500"}`}>{plan.description}</p>
       <div className="flex items-end gap-1 mb-6">
         <span className={`text-4xl font-black ${isHighlight ? "text-white" : "text-slate-900"}`}>${plan.price}</span>
-        <span className={`text-sm mb-1 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>/month</span>
+        {!isFree && <span className={`text-sm mb-1 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>/month</span>}
+        {isFree && <span className="text-sm mb-1 text-slate-400">forever</span>}
       </div>
       <div className={`text-xs font-bold mb-4 px-2 py-1 rounded-lg inline-block ${isHighlight ? "bg-violet-600 text-white" : "bg-emerald-50 text-emerald-700"}`}>
         Up to {plan.revenueShare} Revenue Share
       </div>
-      <ul className="space-y-2.5 mb-8 flex-1">
+      <ul className="space-y-2.5 mb-4 flex-1">
         {plan.features.map(f => (
           <li key={f} className="flex items-start gap-2 text-sm">
             <Check className={`w-4 h-4 mt-0.5 shrink-0 ${isHighlight ? "text-violet-400" : "text-emerald-500"}`} />
             <span className={isHighlight ? "text-slate-300" : "text-slate-600"}>{f}</span>
           </li>
         ))}
+        {plan.notIncluded?.map(f => (
+          <li key={f} className="flex items-start gap-2 text-sm">
+            <X className="w-4 h-4 mt-0.5 shrink-0 text-slate-300" />
+            <span className="text-slate-400 line-through">{f}</span>
+          </li>
+        ))}
       </ul>
       {plan.revenueDetail && (
         <p className={`text-[10px] mb-4 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>{plan.revenueDetail}</p>
       )}
-      <Button
-        onClick={() => onSubscribe(plan.key)}
-        disabled={loading === plan.key}
-        className={`w-full font-semibold ${isHighlight ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white"}`}
-      >
-        {loading === plan.key ? "Redirecting..." : plan.cta}
-      </Button>
+      {isFree ? (
+        <Link to="/register" className="w-full">
+          <Button className="w-full font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">
+            {plan.cta}
+          </Button>
+        </Link>
+      ) : (
+        <Button
+          onClick={() => onSubscribe(plan.key)}
+          disabled={loading === plan.key}
+          className={`w-full font-semibold ${isHighlight ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white"}`}
+        >
+          {loading === plan.key ? "Redirecting..." : plan.cta}
+        </Button>
+      )}
     </div>
   );
 }
@@ -212,7 +256,7 @@ export default function Pricing() {
         </div>
         <h1 className="text-4xl font-black text-slate-900 mb-3">Free to Join. Pay Per Component.</h1>
         <p className="text-slate-500 text-base max-w-xl mx-auto">
-          Developers sign up for free and only pay for the components they attach to their API keys. Builders earn up to 85% revenue share.
+          Developers sign up for free and only pay for the components they attach to their API keys. Builders start free and climb a premium ladder — the top tier unlocks Platform Intelligence and earns up to 85% revenue share.
         </p>
 
         {/* Tab switcher */}
@@ -295,7 +339,7 @@ export default function Pricing() {
       {tab === "builder" && (
         <>
           {/* Builder plans */}
-          <div className="max-w-6xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="max-w-7xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {BUILDER_PLANS.map(plan => (
               <PlanCard key={plan.key} plan={plan} onSubscribe={handleBuilderSubscribe} loading={loading} />
             ))}
@@ -317,6 +361,13 @@ export default function Pricing() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
+                    <tr>
+                      <td className="py-2.5 pr-4 font-semibold text-slate-800">Free Builder <span className="text-[9px] text-slate-400">($0)</span></td>
+                      <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-400">N/A</td>
+                      <td className="text-center py-2.5 pr-4 text-slate-400">N/A</td>
+                      <td className="text-center py-2.5 font-bold text-emerald-700">70%</td>
+                    </tr>
                     <tr>
                       <td className="py-2.5 pr-4 font-semibold text-slate-800">Base Operator</td>
                       <td className="text-center py-2.5 pr-4 text-slate-600">70%</td>

@@ -2,10 +2,11 @@ import Stripe from "npm:stripe@14.21.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 
 // Builder subscription plan → Stripe price ID
+// free_builder has no Stripe price — it's a no-charge tier handled client-side.
 const BUILDER_PLANS = {
-  base_operator: "price_1TchShAuii7slVl8cjUHwt2G",       // $49/mo — Base Operator
-  strategic_architect: "price_1TchShAuii7slVl8hg94QmAi", // $149/mo — Strategic Architect
-  sovereign_commander: "price_1TchShAuii7slVl82wPKIzAt",  // $499/mo — Sovereign Commander
+  base_operator: "price_1TdjwEAuii7slVl85bYGev1w",        // $49/mo — Base Operator
+  strategic_architect: "price_1TdjwEAuii7slVl8lMMUoLyZ",  // $199/mo — Strategic Architect
+  sovereign_commander: "price_1TdjwEAuii7slVl80LDZhMlB",  // $599/mo — Sovereign Commander
 };
 
 // ── Sentinel rate limit: cap checkout-session creation per IP to stop card-testing/abuse loops ──

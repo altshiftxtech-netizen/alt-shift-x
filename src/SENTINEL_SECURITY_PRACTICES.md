@@ -77,6 +77,23 @@ Only **public marketing pages** may be crawled or indexed. Everything authentica
 
 ---
 
+## 6. Tiered Access / Plan Gating
+
+Builder access is tiered (Free $0 → Base Operator $49 → Strategic Architect $199 → Sovereign Commander $599). Paid-only capabilities MUST be gated, not just hidden visually:
+
+- **Free Builder ($0):** browse marketplace, Do-No-Harm install to API, publish **1** component, 70% base revenue share.
+- **Paid-only (any paid tier):** custom website / profile links, **altshiftx.tech Builder Foundation Kit**, unlimited publishing.
+- **Top tier only (Sovereign Commander):** **Platform Intelligence** access.
+
+Gating implementation:
+- `pages/BuilderProfile.jsx` derives `isPaid` from an active/trialing `Subscription` record and passes it to `ProfileEditForm`.
+- `ProfileEditForm` hides the website input behind an upgrade lock and **strips `website` from the save payload** when not paid (never trust the UI alone — the value is forced empty).
+- Stripe price IDs for builder plans live in `functions/createCheckoutSession` (`BUILDER_PLANS`). Free tier has **no** Stripe price and routes to `/register`.
+
+**Rule:** Any new paid-only feature must check subscription status server-side (or strip the value before persisting), not rely solely on conditionally rendering UI.
+
+---
+
 ## Maintenance Checklist (run on every relevant PR)
 
 - [ ] New route added → updated `robots.txt` (Allow or Disallow) and placed under correct route group in `App.jsx`.
