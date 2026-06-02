@@ -1,0 +1,85 @@
+{
+  "name": "ErrorReport",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "function",
+        "security",
+        "http"
+      ],
+      "description": "Where the error originated"
+    },
+    "error_key": {
+      "type": "string",
+      "description": "Stable dedup key, e.g. automation name or status+path"
+    },
+    "title": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "status_code": {
+      "type": "number",
+      "description": "HTTP status if applicable (404, 403, 500...)"
+    },
+    "occurrence_count": {
+      "type": "number",
+      "default": 1,
+      "description": "How many times this error pattern has been observed"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "alerted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether admins have been alerted about this pattern"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "source",
+    "error_key",
+    "title"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
