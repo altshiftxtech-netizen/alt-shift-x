@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
+import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 
 // ── Developer: free account, pay per component ────────────────────────────────
 const COMPONENT_TIERS = [
@@ -245,6 +246,7 @@ export default function Pricing() {
         </Link>
         <div className="flex items-center gap-3">
           <Link to="/marketplace" className="text-sm text-slate-500 hover:text-slate-800">Marketplace</Link>
+          <PricingSharePanel />
           <Link to="/dashboard"><Button size="sm" variant="outline" className="text-xs">Dashboard</Button></Link>
         </div>
       </nav>
