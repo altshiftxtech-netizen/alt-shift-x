@@ -230,21 +230,6 @@ export default function Marketplace() {
         </div>
 
         <div className="flex gap-6">
-          {/* Sidebar filters */}
-          <aside className="hidden lg:block w-56 shrink-0">
-            <div>
-              <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Type</p>
-              <div className="space-y-1">
-                {TYPES.map(t => (
-                  <button key={t} onClick={() => setType(t)}
-                    className={`block w-full text-left text-xs px-2.5 py-2 rounded-md transition-all ${type === t ? "bg-violet-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
-                    {TYPE_LABELS[t] || t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
-
           {/* Results grid */}
           <div className="flex-1">
             {loading ? (
