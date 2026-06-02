@@ -6,6 +6,7 @@ import SpeakeasyGate from "@/components/speakeasy/SpeakeasyGate";
 import SpeakeasyComposer from "@/components/speakeasy/SpeakeasyComposer";
 import SpeakeasyPostCard from "@/components/speakeasy/SpeakeasyPostCard";
 import SpeakeasySidebar from "@/components/speakeasy/SpeakeasySidebar";
+import SpeakeasyVideoBackground from "@/components/speakeasy/SpeakeasyVideoBackground";
 
 function SpeakeasyFeed() {
   const [user, setUser] = useState(null);
@@ -69,9 +70,10 @@ function SpeakeasyFeed() {
 export default function Speakeasy() {
   return (
     <SpeakeasyGate>
-      <div className="min-h-screen bg-[#0A0A0C]">
+      <div className="min-h-screen relative">
+        <SpeakeasyVideoBackground />
         {/* Header */}
-        <header className="border-b border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-xl sticky top-0 z-40">
+        <header className="relative z-40 border-b border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-xl sticky top-0">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link to="/dashboard" className="text-[#9CA0A8] hover:text-white transition-colors">
@@ -89,7 +91,7 @@ export default function Speakeasy() {
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-6">
           <SpeakeasyFeed />
         </main>
       </div>
