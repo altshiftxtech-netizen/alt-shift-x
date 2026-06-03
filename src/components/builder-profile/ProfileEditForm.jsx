@@ -27,6 +27,8 @@ export default function ProfileEditForm({ profile, onSave, isPaid = false }) {
         bio: form.bio,
         website: isPaid ? form.website : '',
         twitter: form.twitter,
+        facebook: form.facebook,
+        linkedin: form.linkedin,
         location: form.location,
         specializations: form.specializations
       });
@@ -89,10 +91,25 @@ export default function ProfileEditForm({ profile, onSave, isPaid = false }) {
             )}
           </div>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1">X / Twitter</label>
-          <input value={form.twitter} onChange={e => setForm(f => ({ ...f, twitter: e.target.value }))}
-            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">X / Twitter</label>
+            <input value={form.twitter} onChange={e => setForm(f => ({ ...f, twitter: e.target.value }))}
+              placeholder="https://x.com/yourhandle"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">LinkedIn</label>
+            <input value={form.linkedin} onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
+              placeholder="https://linkedin.com/in/yourprofile"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Facebook</label>
+            <input value={form.facebook} onChange={e => setForm(f => ({ ...f, facebook: e.target.value }))}
+              placeholder="https://facebook.com/yourpage"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+          </div>
         </div>
         {error && (
           <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">

@@ -97,6 +97,14 @@
     "twitter": {
       "type": "string"
     },
+    "facebook": {
+      "type": "string",
+      "description": "Facebook profile URL"
+    },
+    "linkedin": {
+      "type": "string",
+      "description": "LinkedIn profile URL"
+    },
     "location": {
       "type": "string"
     },

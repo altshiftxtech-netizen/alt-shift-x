@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
  * updateBuilderProfile — update builder's public bio, website, social links, and specializations
@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { display_name, tagline, bio, website, twitter, location, specializations } = await req.json();
+    const { display_name, tagline, bio, website, twitter, facebook, linkedin, location, specializations } = await req.json();
 
     // Validate website URL if provided
     if (website) {
@@ -28,6 +28,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid Twitter handle format' }, { status: 400 });
     }
 
+    // Validate social URLs if provided
+    if (facebook) {
+      try {
+        new URL(facebook);
+      } catch (e) {
+        return Response.json({ error: 'Invalid Facebook URL' }, { status: 400 });
+      }
+    }
+
+    if (linkedin) {
+      try {
+        new URL(linkedin);
+      } catch (e) {
+        return Response.json({ error: 'Invalid LinkedIn URL' }, { status: 400 });
+      }
+    }
+
     // Get or create builder badge record
     const badges = await base44.entities.BuilderBadge.filter({ builder_id: user.id });
     const badgeId = badges[0]?.id;
@@ -38,6 +55,8 @@ Deno.serve(async (req) => {
     if (bio !== undefined) profileData.bio = bio || null;
     if (website !== undefined) profileData.website = website || null;
     if (twitter !== undefined) profileData.twitter = twitter || null;
+    if (facebook !== undefined) profileData.facebook = facebook || null;
+    if (linkedin !== undefined) profileData.linkedin = linkedin || null;
     if (location !== undefined) profileData.location = location || null;
     if (specializations !== undefined) profileData.specializations = Array.isArray(specializations) ? specializations : null;
 

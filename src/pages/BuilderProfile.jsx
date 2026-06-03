@@ -41,6 +41,8 @@ export default function BuilderProfile() {
           location: badge?.location || '',
           website: badge?.website || '',
           twitter: badge?.twitter || '',
+          facebook: badge?.facebook || '',
+          linkedin: badge?.linkedin || '',
           totalInstalls: badge?.total_installs || 0,
           avgTrustScore: Math.round(badge?.avg_rating * 10) / 10 || 0,
           components: components.length,
