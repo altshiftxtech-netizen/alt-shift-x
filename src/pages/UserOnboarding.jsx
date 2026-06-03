@@ -311,7 +311,7 @@ export default function UserOnboarding() {
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm flex-1"
                   onClick={handleSubmit}
-                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy}
+                  disabled={submitting || !form.agreed_to_terms || !form.agreed_to_privacy || !form.agreed_to_builder}
                 >
                   {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-1" />Submitting...</> : "Submit Application"}
                 </Button>
