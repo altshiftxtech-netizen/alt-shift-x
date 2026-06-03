@@ -6,6 +6,7 @@ import Logo from "@/components/Logo";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
+import PlatformSocials from "@/components/PlatformSocials";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -226,7 +227,7 @@ export default function Home() {
         </Link>
       </section>
 
-      <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm py-8 text-center text-xs text-white/40 space-y-2">
+      <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm py-8 text-center text-xs text-white/40 space-y-4">
         <div className="flex justify-center gap-4 flex-wrap">
           <Link to="/contact" className="hover:text-slate-600">Contact</Link>
           <Link to="/tutorials" className="hover:text-slate-600">Tutorials</Link>
@@ -234,7 +235,9 @@ export default function Home() {
           <Link to="/terms" className="hover:text-slate-600">Terms of Service</Link>
           <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
         </div>
+        <PlatformSocials variant="light" />
         <p>© 2026 Alt+Shift+X. All rights reserved.</p>
+        <p className="text-white/30">Powered by: Trust AR LLC.</p>
       </footer>
     </div>
   );

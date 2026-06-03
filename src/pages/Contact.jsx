@@ -3,6 +3,7 @@ import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
+import PlatformSocials from "@/components/PlatformSocials";
 
 export default function Contact() {
   const [info, setInfo] = useState(null);
@@ -151,6 +152,13 @@ export default function Contact() {
           >
             <MessageCircle className="w-5 h-5" /> Start Live Chat
           </button>
+        </div>
+
+        {/* Follow us */}
+        <div className="mt-12 pt-8 border-t border-slate-200 text-center space-y-3">
+          <p className="text-sm font-semibold text-slate-700">Follow us</p>
+          <PlatformSocials variant="dark" />
+          <p className="text-xs text-slate-400 pt-2">Powered by: Trust AR LLC.</p>
         </div>
       </div>
 
