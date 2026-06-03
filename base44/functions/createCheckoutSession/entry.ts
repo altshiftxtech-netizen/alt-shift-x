@@ -1,5 +1,5 @@
 import Stripe from "npm:stripe@14.21.0";
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 // Builder subscription plan → Stripe price ID
 // free_builder has no Stripe price — it's a no-charge tier handled client-side.
@@ -91,8 +91,20 @@ Deno.serve(async (req) => {
       }
       const component = components[0];
 
-      // Use stored Stripe price ID if available, otherwise create a price on the fly
+      // Use stored Stripe price ID if available, otherwise create a price on the fly.
+      // A stored price may be stale (e.g. created in a different/test Stripe account),
+      // so we verify it still exists and regenerate it if not.
       let stripePriceId = component.stripe_price_id;
+
+      if (stripePriceId) {
+        try {
+          const existingPrice = await stripe.prices.retrieve(stripePriceId);
+          if (!existingPrice || !existingPrice.active) stripePriceId = null;
+        } catch (e) {
+          console.warn(`[createCheckoutSession] Stored price ${stripePriceId} invalid (${e.message}) — regenerating.`);
+          stripePriceId = null;
+        }
+      }
 
       if (!stripePriceId) {
         // Create a Stripe product + recurring price for this component

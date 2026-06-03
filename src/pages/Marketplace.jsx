@@ -128,13 +128,17 @@ export default function Marketplace() {
     const first = bundleComponents.find(c => !installedMap[c.id]);
     if (!first) return; // all installed
     setBundleInstalling(true);
-    const res = await base44.functions.invoke("createCheckoutSession", { componentId: first.id });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else {
+    try {
+      const res = await base44.functions.invoke("createCheckoutSession", { componentId: first.id });
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+        return;
+      }
+      alert(res.data?.error || "Could not start checkout. Please try again.");
+    } catch (e) {
       alert("Could not start checkout. Please try again.");
-      setBundleInstalling(false);
     }
+    setBundleInstalling(false);
   };
 
   // Featured kit codes drive the pinned/highlighted components. Falls back to the
@@ -302,7 +306,9 @@ export default function Marketplace() {
                         <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">⏳ This Month Only</span>
                       </div>
 
-                      <h2 className="text-2xl font-extrabold text-white mb-2">⚡ {activeKit.kit_name}</h2>
+                      <Link to={`/marketplace/${bundleComponents[0].id}`} className="inline-block">
+                        <h2 className="text-2xl font-extrabold text-white mb-2 hover:text-violet-200 transition-colors cursor-pointer">⚡ {activeKit.kit_name}</h2>
+                      </Link>
 
                       {/* Description */}
                       <p className="text-sm text-white/70 mb-5 max-w-2xl leading-relaxed">
@@ -312,13 +318,13 @@ export default function Marketplace() {
                       {/* Components in the kit */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                         {bundleComponents.map((c, i) => (
-                          <div key={c.id} className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
+                          <Link key={c.id} to={`/marketplace/${c.id}`} className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative hover:bg-white/10 hover:border-violet-400/40 transition-colors block">
                             {i > 0 && (
                               <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
                             )}
                             <h4 className="text-sm font-bold text-white mb-1">{c.name}</h4>
                             <p className="text-xs text-white/55 leading-relaxed line-clamp-3">{c.description}</p>
-                          </div>
+                          </Link>
                         ))}
                       </div>
 
