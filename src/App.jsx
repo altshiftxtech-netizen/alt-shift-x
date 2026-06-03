@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import AnalyticsTracker from './components/AnalyticsTracker';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
@@ -170,6 +171,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
+            <AnalyticsTracker />
             <AuthenticatedApp />
           </Router>
           <Toaster />
