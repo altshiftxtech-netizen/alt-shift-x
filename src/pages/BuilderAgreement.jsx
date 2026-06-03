@@ -245,6 +245,17 @@ export function AgreementModal({ onClose, onAccepted }) {
             <p>Builders retain full ownership of their components. Alt+Shift+X will never clone a successful community component. Components reaching 5,000+ installs and a 95+ Trust Score are eligible for acquisition at 24–36× monthly revenue.</p>
           </div>
 
+          <div className="bg-violet-900/15 border border-violet-700/40 rounded-xl p-4">
+            <h3 className="font-bold text-white mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-violet-400" /> 8a. IP & Proprietary Information Masking Clause</h3>
+            <p className="mb-2">Any intellectual property, trade secrets, or proprietary information that appears in content processed by your component — whether belonging to you, the platform, or an end user — is <strong className="text-white">automatically masked, redacted, or tokenized</strong> in any statement, report, or output the platform generates (including pairing statements, compliance statements, and audit records).</p>
+            <ul className="space-y-1.5 list-disc list-inside text-slate-400 text-xs">
+              <li><strong className="text-slate-300">Applies to every user:</strong> This masking scheme is enforced for all users, including free and non-paying accounts. It is never gated behind a paid plan.</li>
+              <li><strong className="text-slate-300">No raw exposure:</strong> Raw proprietary values are never surfaced in shared statements; original values remain only inside the private runtime session and are then discarded under the Zero-Persistence Rule (§6).</li>
+              <li><strong className="text-slate-300">Consistent practice:</strong> All statements made by or through the platform follow these established protection practices so that sensitive IP and proprietary information is masked by default.</li>
+            </ul>
+            <p className="mt-2 text-xs text-slate-500">By accepting this Agreement you acknowledge and rely on the fact that IP and proprietary information is masked in all platform-generated statements, consistent with our standing protection practices.</p>
+          </div>
+
           <div>
             <h3 className="font-bold text-white mb-2">9. Governing Law</h3>
             <p>This Agreement is governed by the laws of the State of Delaware, USA. Disputes resolved through binding arbitration per American Arbitration Association rules.</p>
@@ -454,6 +465,7 @@ export default function BuilderAgreement() {
             { icon: Eye, color: "text-amber-400", bg: "bg-amber-900/20 border-amber-800/40", title: "Certification & Adversarial Testing", summary: "Privacy audits, 95%+ adversarial test pass rate, and continuous Trust Engine monitoring required for Certified (◇) or Official (◆) status." },
             { icon: AlertTriangle, color: "text-red-400", bg: "bg-red-900/20 border-red-800/40", title: "Enforcement & Legal Penalties", summary: "Material breach: immediate delisting, revenue forfeiture, legal liability, permanent platform ban for intentional violations." },
             { icon: Star, color: "text-emerald-400", bg: "bg-emerald-900/20 border-emerald-800/40", title: "Builder Rights (Law 6)", summary: "Builders own their IP. No platform cloning. Acquisition path at 5,000+ installs / 95+ Trust Score at 24–36× monthly revenue." },
+            { icon: ShieldCheck, color: "text-violet-400", bg: "bg-violet-900/20 border-violet-800/40", title: "IP & Proprietary Masking Clause", summary: "Any IP, trade secrets, or proprietary information is automatically masked, redacted, or tokenized in all platform-generated statements and reports. Enforced for every user — free or paid — under our standing protection practices, with no raw proprietary data exposed in shared outputs." },
           ].map(({ icon: Icon, color, bg, title, summary }) => (
             <div key={title} className={`border rounded-xl p-4 flex items-start gap-3 ${bg}`}>
               <Icon className={`w-4 h-4 ${color} shrink-0 mt-0.5`} />

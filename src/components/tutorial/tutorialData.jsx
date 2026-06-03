@@ -1,4 +1,4 @@
-import { Play, BookOpen, Zap, Users, BarChart3, Lock } from "lucide-react";
+import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck } from "lucide-react";
 
 // Each tutorial has sections; each section has step-by-step instructions and an optional video URL.
 export const TUTORIALS = [
@@ -225,6 +225,47 @@ export const TUTORIALS = [
         steps: [
           "Review the forecast panel for projected usage.",
           "Use trends to plan plan upgrades ahead of time.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "ip-protection",
+    title: "IP & Proprietary Protection",
+    description: "How your IP and proprietary information stays protected — for every user, free or paid",
+    icon: ShieldCheck,
+    video: null,
+    sections: [
+      {
+        title: "Protection applies to everyone",
+        steps: [
+          "IP and proprietary protection is built into the platform for ALL users — including free, non-paying accounts.",
+          "You never have to pay or upgrade to receive these protections; they are on by default.",
+          "Every document, input, and output you process is handled under the same protective scheme.",
+        ],
+      },
+      {
+        title: "How masking works",
+        steps: [
+          "Any IP, trade secrets, or proprietary information detected in your content is automatically masked in generated statements and reports.",
+          "Sensitive identifiers are redacted or tokenized before any statement is produced, so raw proprietary data is never exposed.",
+          "Masking is irreversible in shared outputs — the original sensitive values remain only inside your private session.",
+        ],
+      },
+      {
+        title: "Zero-persistence handling",
+        steps: [
+          "Your documents exist only in the runtime processing session and are never stored, cached, or logged.",
+          "Once processing ends, the source material is discarded — nothing is retained on our servers.",
+          "This zero-persistence rule is enforced platform-wide, regardless of plan or payment status.",
+        ],
+      },
+      {
+        title: "What you'll see in statements",
+        steps: [
+          "Generated statements (e.g. pairing or compliance statements) display only masked, protected values.",
+          "Look for the protection indicator confirming IP and proprietary information has been masked.",
+          "If you believe something was not masked correctly, contact support immediately so we can review it.",
         ],
       },
     ],
