@@ -6,21 +6,9 @@ import Logo from "@/components/Logo";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
+import { base44 } from "@/api/base44Client";
 
-const FEATURED = [
-  { name: "The App Printer", type: "X2", category: "AI Agent Development", rating: 4.8, trust: 96, desc: "Eliminates the AI erosion loop — ≥97.6% first-time render accuracy via doc-grounding and an 8-point self-render gate." },
-  { name: "1 Take Jay", type: "X2", category: "AI Agent Development", rating: 4.9, trust: 94, desc: "One prompt in, one complete shippable app shell out. No clarifying questions, no follow-ups — the first take is the hit." },
-  { name: "Miyagi San", type: "X2", category: "AI Agent Development", rating: 4.9, trust: 97, desc: "Ship production-ready apps on the first build. A 7-stage discipline that compresses 40–120 hrs of hardening to 4–8." },
-];
-
-const STATS = [
-  { label: "Certified Components", value: "Curated", icon: Package },
-  { label: "Avg Trust Score", value: "95+", icon: ShieldCheck },
-  { label: "Do-No-Harm Audited", value: "100%", icon: Users },
-  { label: "Stage", value: "Beta", icon: Zap },
-];
-
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
+const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
 
 function InstallCTAModal({ onClose }) {
   return (
@@ -55,6 +43,30 @@ function InstallCTAModal({ onClose }) {
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [featured, setFeatured] = useState([]);
+  const [componentCount, setComponentCount] = useState(0);
+  const [avgTrust, setAvgTrust] = useState(null);
+
+  useEffect(() => {
+    base44.entities.Component.filter({ status: "published" }, "-installs_count", 100)
+      .then((data) => {
+        const list = data || [];
+        setComponentCount(list.length);
+        setFeatured(list.slice(0, 3));
+        const scored = list.filter((c) => c.trust_score > 0);
+        if (scored.length) {
+          setAvgTrust(Math.round(scored.reduce((s, c) => s + c.trust_score, 0) / scored.length));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const STATS = [
+    { label: "Published Components", value: componentCount > 0 ? String(componentCount) : "—", icon: Package },
+    { label: "Avg Trust Score", value: avgTrust != null ? String(avgTrust) : "—", icon: ShieldCheck },
+    { label: "Do-No-Harm Audited", value: "Every component", icon: Users },
+    { label: "Stage", value: "Beta", icon: Zap },
+  ];
 
   useEffect(() => {
     setSEOMeta({
@@ -144,33 +156,39 @@ export default function Home() {
       </section>
 
       {/* Featured */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-white">Featured Components</h2>
-          <Link to="/marketplace" className="text-sm text-violet-300 hover:underline flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {FEATURED.map(c => (
-            <Link key={c.name} to="/marketplace">
-              <div className="border border-white/10 rounded-xl p-5 hover:shadow-xl transition-shadow bg-white/10 backdrop-blur-sm h-full flex flex-col">
-                <div className="flex items-center gap-2 mb-3">
-                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
-                   <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{c.category}</span>
-                 </div>
-                 <h3 className="text-base font-bold text-white mb-1">{c.name}</h3>
-                 <p className="text-xs text-white/60 mb-4 flex-1">{c.desc}</p>
-                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-1 text-xs text-amber-400">
-                     <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
-                     <span className="font-semibold">{c.rating}</span>
+      {featured.length > 0 && (
+        <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-white">Featured Components</h2>
+            <Link to="/marketplace" className="text-sm text-violet-300 hover:underline flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {featured.map(c => (
+              <Link key={c.id} to={`/marketplace/${c.id}`}>
+                <div className="border border-white/10 rounded-xl p-5 hover:shadow-xl transition-shadow bg-white/10 backdrop-blur-sm h-full flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[c.type] || "bg-slate-100 text-slate-600"}`}>{c.type}</span>
+                     <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{c.category}</span>
                    </div>
-                   <span className="flex items-center gap-1 text-xs text-emerald-400"><ShieldCheck className="w-3.5 h-3.5" /> {c.trust} Trust</span>
-                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+                   <h3 className="text-base font-bold text-white mb-1">{c.name}</h3>
+                   <p className="text-xs text-white/60 mb-4 flex-1 line-clamp-3">{c.description}</p>
+                   <div className="flex items-center justify-between">
+                     {(c.rating || 0) > 0 ? (
+                       <div className="flex items-center gap-1 text-xs text-amber-400">
+                         <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
+                         <span className="font-semibold">{(c.rating || 0).toFixed(1)}</span>
+                       </div>
+                     ) : <span />}
+                     {(c.trust_score || 0) > 0 && (
+                       <span className="flex items-center gap-1 text-xs text-emerald-400"><ShieldCheck className="w-3.5 h-3.5" /> {c.trust_score} Trust</span>
+                     )}
+                   </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Builder Agreement Section */}
       {!isAuthenticated && (
