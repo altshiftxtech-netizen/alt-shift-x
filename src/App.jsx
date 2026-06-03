@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import AnalyticsTracker from './components/AnalyticsTracker';
+import AffiliateCapture from './components/AffiliateCapture';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
@@ -172,6 +173,7 @@ function App() {
           <Router>
             <ScrollToTop />
             <AnalyticsTracker />
+            <AffiliateCapture />
             <AuthenticatedApp />
           </Router>
           <Toaster />

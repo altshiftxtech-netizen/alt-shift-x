@@ -1,0 +1,81 @@
+{
+  "name": "AffiliateLink",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique ref code that appears in the URL as ?ref=CODE"
+    },
+    "campaign": {
+      "type": "string",
+      "description": "Campaign name this link belongs to (e.g. Vested100 Beta)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-friendly label for this specific link (e.g. Twitter Post #3)"
+    },
+    "destination": {
+      "type": "string",
+      "enum": [
+        "home",
+        "pricing",
+        "marketplace"
+      ],
+      "default": "home",
+      "description": "Where the link lands: home (general signups), pricing (builder subs), marketplace (Super Dev / component purchases)"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the admin/partner who owns this link"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Total times the link was clicked / landed on"
+    },
+    "signups": {
+      "type": "number",
+      "default": 0,
+      "description": "Total attributed signups"
+    },
+    "paid_conversions": {
+      "type": "number",
+      "default": 0,
+      "description": "Total attributed paid purchases (subscriptions or marketplace)"
+    },
+    "revenue_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Total attributed purchase amount in USD"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "code",
+    "destination"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

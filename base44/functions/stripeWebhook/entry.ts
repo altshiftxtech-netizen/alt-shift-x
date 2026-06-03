@@ -132,6 +132,33 @@ Deno.serve(async (req) => {
           }
         }
 
+        // ── Affiliate purchase attribution ──────────────────────────────────
+        // If this buyer was referred by an affiliate link, mark their attribution
+        // as purchased with the cart amount, and bump the link's conversion totals.
+        if (userId) {
+          const attributions = await base44.asServiceRole.entities.AffiliateAttribution.filter({ user_id: userId });
+          if (attributions.length > 0 && !attributions[0].purchased) {
+            const attr = attributions[0];
+            const cartAmount = (session.amount_total || 0) / 100;
+            const purchaseType = componentId ? "marketplace" : "subscription";
+            await base44.asServiceRole.entities.AffiliateAttribution.update(attr.id, {
+              purchased: true,
+              purchase_type: purchaseType,
+              cart_amount: cartAmount,
+              purchased_at: new Date().toISOString(),
+            });
+            const refLinks = await base44.asServiceRole.entities.AffiliateLink.filter({ code: attr.ref_code });
+            if (refLinks.length > 0) {
+              const rl = refLinks[0];
+              await base44.asServiceRole.entities.AffiliateLink.update(rl.id, {
+                paid_conversions: (rl.paid_conversions || 0) + 1,
+                revenue_total: (rl.revenue_total || 0) + cartAmount,
+              });
+            }
+            console.log(`[stripeWebhook] Affiliate conversion: code=${attr.ref_code}, user=${userId}, type=${purchaseType}, amount=${cartAmount}`);
+          }
+        }
+
         // If this was a component subscription, record the installed component
         if (componentId && userId) {
           const alreadyInstalled = await base44.asServiceRole.entities.InstalledComponent.filter({

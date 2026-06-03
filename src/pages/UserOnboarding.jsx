@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Loader2, Building2, User, MapPin, Briefcase, ShieldCheck, BadgeCheck, Star, Shield } from "lucide-react";
+import { getStoredRef, clearStoredRef } from "@/lib/affiliate";
 
 const STEPS = [
   { id: "personal", label: "Personal Info", icon: User },
@@ -93,6 +94,17 @@ export default function UserOnboarding() {
       }
       // Send emails
       await base44.functions.invoke("sendIntakeEmail", { profile: profileData });
+      // Affiliate attribution (best-effort) — link this signup to the ref code that brought them in
+      const ref = getStoredRef();
+      if (ref) {
+        await base44.functions.invoke("trackAffiliate", {
+          action: "signup",
+          code: ref,
+          user_id: user.id,
+          user_email: user.email,
+          user_name: `${form.first_name} ${form.last_name}`.trim(),
+        }).then(() => clearStoredRef()).catch(() => {});
+      }
       setDone(true);
     } catch (err) {
       alert("Submission failed: " + err.message);
