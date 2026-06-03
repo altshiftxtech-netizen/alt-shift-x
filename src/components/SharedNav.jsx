@@ -62,15 +62,15 @@ export default function SharedNav({ mode = "user", theme }) {
   const isActive = (path) => location.pathname === path;
 
   const navInner = (
-    <nav className={`px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 ${isDev ? "bg-[#0d1117]" : "bg-white border-b border-slate-100"}`}>
+    <nav className={`px-4 sm:px-6 py-3 flex items-center gap-2 sticky top-0 z-40 w-full max-w-full overflow-hidden ${isDev ? "bg-[#0d1117]" : "bg-white border-b border-slate-100"}`}>
         {/* Logo */}
         <div className="shrink-0 flex items-center gap-2">
           <Logo className="h-8 w-auto" variant={isDev ? "purple" : "white"} />
           {isDev && <span className="hidden lg:inline text-[11px] font-mono text-[#3fb950]">$ _</span>}
         </div>
 
-        {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-1">
+        {/* Desktop nav links — scroll within the bar instead of widening the page */}
+        <div className="hidden md:flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar [&>a]:shrink-0">
           {navItems.map(({ to, label, isBob }) => (
             isBob ? (
               <Link key={to} to={to}
@@ -90,7 +90,7 @@ export default function SharedNav({ mode = "user", theme }) {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {/* Theme toggle */}
           <ThemeToggle />
 

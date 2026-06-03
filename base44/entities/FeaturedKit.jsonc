@@ -1,0 +1,75 @@
+{
+  "name": "FeaturedKit",
+  "type": "object",
+  "properties": {
+    "month_key": {
+      "type": "string",
+      "description": "The month this kit is featured for, format YYYY-MM (e.g. 2026-07)"
+    },
+    "kit_name": {
+      "type": "string",
+      "description": "Display name of the featured kit/bundle"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short marketing tagline shown under the kit name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Marketing description explaining the kit and why it's featured"
+    },
+    "component_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Component codes included in this featured kit"
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Bundle discount percentage shown on the featured card"
+    },
+    "ai_reasoning": {
+      "type": "string",
+      "description": "Why the AI selected this kit to drive sales this month"
+    },
+    "selected_by": {
+      "type": "string",
+      "enum": [
+        "ai",
+        "manual"
+      ],
+      "default": "ai",
+      "description": "Whether the kit was chosen by AI or set manually by an admin"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is the currently active featured kit"
+    }
+  },
+  "required": [
+    "month_key",
+    "kit_name",
+    "component_codes"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

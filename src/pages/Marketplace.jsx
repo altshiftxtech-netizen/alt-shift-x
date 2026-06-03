@@ -85,14 +85,17 @@ export default function Marketplace() {
   // map of component_id -> InstalledComponent record
   const [installedMap, setInstalledMap] = useState({});
   const [bundleInstalling, setBundleInstalling] = useState(false);
+  const [featuredKit, setFeaturedKit] = useState(null);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [data] = await Promise.all([
+        const [data, kits] = await Promise.all([
           base44.entities.Component.filter({ status: "published" }),
+          base44.entities.FeaturedKit.filter({ active: true }, "-created_date", 1).catch(() => []),
         ]);
         setComponents(data || []);
+        setFeaturedKit((kits && kits[0]) || null);
 
         // Fetch user + installs in parallel after components load
         const user = await base44.auth.me().catch(() => null);
@@ -134,7 +137,17 @@ export default function Marketplace() {
     }
   };
 
-  const PINNED_CODES = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
+  // Featured kit codes drive the pinned/highlighted components. Falls back to the
+  // flagship Super Dev Kit trio before the AI rotation has seeded a kit.
+  const FALLBACK_KIT = {
+    kit_name: "Super Dev Kit",
+    tagline: "3 elite AI agents bundled at 25% off",
+    description: "The Super Dev Kit is a precision-engineered trio of AI agents designed to work in concert — from ideation to deployment to mastery. Together they eliminate the three biggest bottlenecks every serious builder faces: slow iteration, chaotic output, and shallow expertise.",
+    component_codes: ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"],
+    discount_percent: 25,
+  };
+  const activeKit = featuredKit || FALLBACK_KIT;
+  const PINNED_CODES = activeKit.component_codes || [];
 
   const filtered = useMemo(() => components
     .filter(c => {
@@ -236,12 +249,14 @@ export default function Marketplace() {
               <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
             ) : (
               <>
-                {/* Super Dev Kit Bundle */}
+                {/* Featured Kit of the Month (AI-rotated) */}
                 {(category === "All" && !search) && (() => {
-                  const bundleCodes = ["APP-PRINTER-1.0", "1TAKEJAY-1.0", "MIYAGI-SAN-1.0"];
+                  const bundleCodes = activeKit.component_codes || [];
                   const bundleComponents = bundleCodes.map(code => components.find(c => c.code === code)).filter(Boolean);
-                  if (bundleComponents.length < 3) return null;
-                  const bundleUrl = `${window.location.origin}/marketplace?bundle=super-dev-kit`;
+                  if (bundleComponents.length < 2) return null;
+                  const kitSlug = (activeKit.kit_name || "featured-kit").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  const bundleUrl = `${window.location.origin}/marketplace?bundle=${kitSlug}`;
+                  const isAiPick = !!featuredKit && featuredKit.selected_by === "ai";
                   return (
                     <div className="mb-6 rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/60 via-indigo-900/50 to-black/60 backdrop-blur-md p-5 ring-1 ring-violet-400/20 shadow-xl relative">
                       {/* Share button top-right */}
@@ -255,9 +270,9 @@ export default function Marketplace() {
                           </button>
                           {sharingId === "bundle" && (
                             <div className="absolute right-0 top-9 z-50 bg-slate-900 border border-white/20 rounded-xl shadow-2xl p-3 w-56">
-                              <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Share Super Dev Kit</p>
+                              <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">Share {activeKit.kit_name}</p>
                               {[
-                                { label: "Twitter / X", url: `https://twitter.com/intent/tweet?text=Check+out+the+Super+Dev+Kit+on+Alt%2BShift%2BX+%E2%80%94+3+elite+AI+agents+bundled+at+25%25+off!&url=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-sky-500/20 hover:text-sky-300" },
+                                { label: "Twitter / X", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${activeKit.kit_name} on Alt+Shift+X${activeKit.discount_percent ? ` — ${activeKit.discount_percent}% off this month!` : "!"}`)}&url=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-sky-500/20 hover:text-sky-300" },
                                 { label: "LinkedIn", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-blue-600/20 hover:text-blue-300" },
                                 { label: "Facebook", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(bundleUrl)}`, color: "hover:bg-blue-500/20 hover:text-blue-300" },
                               ].map(p => (
@@ -280,37 +295,31 @@ export default function Marketplace() {
                       {/* Header badges */}
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <Package className="w-4 h-4 text-violet-300" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Bundle Deal</span>
-                        <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save 25%</span>
-                        <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">⏳ Limited Time</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">{isAiPick ? "AI Pick of the Month" : "Featured Kit"}</span>
+                        {activeKit.discount_percent > 0 && (
+                          <span className="text-[10px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Save {activeKit.discount_percent}%</span>
+                        )}
+                        <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">⏳ This Month Only</span>
                       </div>
 
-                      <h2 className="text-2xl font-extrabold text-white mb-2">⚡ Super Dev Kit</h2>
+                      <h2 className="text-2xl font-extrabold text-white mb-2">⚡ {activeKit.kit_name}</h2>
 
                       {/* Description */}
                       <p className="text-sm text-white/70 mb-5 max-w-2xl leading-relaxed">
-                        The <span className="text-violet-300 font-semibold">Super Dev Kit</span> is a precision-engineered trio of AI agents designed to work in concert — from ideation to deployment to mastery. Together they eliminate the three biggest bottlenecks every serious builder faces: slow iteration, chaotic output, and shallow expertise.
+                        {activeKit.description}
                       </p>
 
-                      {/* How they work together */}
+                      {/* Components in the kit */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4">
-                          <div className="text-lg mb-1">🖨️</div>
-                          <h4 className="text-sm font-bold text-white mb-1">App Printer</h4>
-                          <p className="text-xs text-white/55 leading-relaxed">Generates production-ready app scaffolds from a single prompt. Your starting line — not a blank page.</p>
-                        </div>
-                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
-                          <div className="text-lg mb-1">🎬</div>
-                          <h4 className="text-sm font-bold text-white mb-1">1TakeJay</h4>
-                          <p className="text-xs text-white/55 leading-relaxed">Ships your features in one clean execution pass — no reruns, no rewrites. The agent that closes the loop fast.</p>
-                        </div>
-                        <div className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
-                          <div className="text-lg mb-1">🥷</div>
-                          <h4 className="text-sm font-bold text-white mb-1">Miyagi-San</h4>
-                          <p className="text-xs text-white/55 leading-relaxed">Trains you on what was built — turning delivered code into deep, lasting expertise. Learn by doing, accelerated.</p>
-                        </div>
+                        {bundleComponents.map((c, i) => (
+                          <div key={c.id} className="bg-white/5 border border-violet-400/20 rounded-xl p-4 relative">
+                            {i > 0 && (
+                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-300 bg-violet-900 border border-violet-400/30 px-2 py-0.5 rounded-full">THEN</div>
+                            )}
+                            <h4 className="text-sm font-bold text-white mb-1">{c.name}</h4>
+                            <p className="text-xs text-white/55 leading-relaxed line-clamp-3">{c.description}</p>
+                          </div>
+                        ))}
                       </div>
 
                       {/* CTA row */}
@@ -324,7 +333,7 @@ export default function Marketplace() {
                           ))}
                         </div>
                         <div className="ml-auto flex items-center gap-3">
-                          <span className="text-xs text-white/40 hidden sm:block">3 components · bundle pricing at checkout</span>
+                          <span className="text-xs text-white/40 hidden sm:block">{bundleComponents.length} components · bundle pricing at checkout</span>
                           {(() => {
                             const allInstalled = bundleComponents.every(c => installedMap[c.id]);
                             const someInstalled = bundleComponents.some(c => installedMap[c.id]);

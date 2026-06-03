@@ -88,3 +88,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide scrollbar for horizontally-scrollable nav rows while keeping scroll behavior */
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
