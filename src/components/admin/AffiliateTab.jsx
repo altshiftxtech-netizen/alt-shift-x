@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link2, Plus, Copy, Check, Loader2, MousePointerClick, UserPlus, DollarSign } from "lucide-react";
+import { Link2, Plus, Copy, Check, Loader2, MousePointerClick, UserPlus, DollarSign, Sparkles } from "lucide-react";
 
 const DESTINATIONS = [
   { id: "home", label: "Homepage", path: "/" },
@@ -22,6 +22,7 @@ export default function AffiliateTab() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [seeding, setSeeding] = useState(false);
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({ campaign: "", label: "", destination: "home" });
 
@@ -62,6 +63,14 @@ export default function AffiliateTab() {
     setTimeout(() => setCopied(null), 1500);
   };
 
+  const seedVested100 = async () => {
+    setSeeding(true);
+    const res = await base44.functions.invoke("seedVested100Links", {}).catch(e => ({ data: { error: e.message } }));
+    if (res?.data?.error) alert("Seeding failed: " + res.data.error);
+    else await load();
+    setSeeding(false);
+  };
+
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>;
 
   const totals = links.reduce((a, l) => ({
@@ -99,9 +108,14 @@ export default function AffiliateTab() {
               {DESTINATIONS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
             </select>
           </div>
-          <Button onClick={create} disabled={creating} className="bg-slate-900 hover:bg-slate-800 text-white text-sm gap-2">
-            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />} Generate Link
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={create} disabled={creating} className="bg-slate-900 hover:bg-slate-800 text-white text-sm gap-2">
+              {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />} Generate Link
+            </Button>
+            <Button onClick={seedVested100} disabled={seeding} variant="outline" className="text-sm gap-2 border-violet-300 text-violet-700 hover:bg-violet-50">
+              {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Seed Vested100 Campaign (20 links)
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
