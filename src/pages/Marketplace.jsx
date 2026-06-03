@@ -382,7 +382,6 @@ export default function Marketplace() {
                           <div className="flex items-center gap-1 text-xs">
                             <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
                             <span className="font-semibold text-white">{(c.rating || 0).toFixed(1)}</span>
-                            <span className="text-white/40">({c.reviews_count || 0})</span>
                           </div>
                           <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
                             <div className="relative">
