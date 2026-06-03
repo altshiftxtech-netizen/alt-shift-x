@@ -3,6 +3,9 @@ import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Share2, Twitter, Linkedin, Facebook, Copy, Download, TrendingUp, Users } from "lucide-react";
+import StatsBragShare from "@/components/social/StatsBragShare";
+
+const PAID_PLANS = ["starter", "pro", "enterprise", "base_operator", "strategic_architect", "sovereign_commander"];
 
 const PLATFORM_META = {
   twitter:    { label: "X / Twitter",       icon: Twitter,   color: "text-slate-800",   bg: "bg-slate-100" },
@@ -16,6 +19,8 @@ const PLATFORM_META = {
 export default function BuilderSocialDashboard() {
   const [user, setUser] = useState(null);
   const [shares, setShares] = useState([]);
+  const [stats, setStats] = useState({ installs: 0, avgTrust: 0, components: 0, revenue: 0 });
+  const [hasProfilePage, setHasProfilePage] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +29,23 @@ export default function BuilderSocialDashboard() {
       setUser(me);
       const data = await base44.entities.SocialShare.filter({ builder_id: me.id }, "-created_date", 200);
       setShares(data);
+
+      const [badges, subs] = await Promise.all([
+        base44.entities.BuilderBadge.filter({ builder_id: me.id }),
+        base44.entities.Subscription.filter({ user_id: me.id }),
+      ]);
+      const badge = badges?.[0];
+      if (badge) {
+        setStats({
+          installs: badge.total_installs || 0,
+          avgTrust: Math.round(badge.avg_rating ? badge.avg_rating * 20 : 0),
+          components: badge.component_count || 0,
+          revenue: Math.round(badge.total_revenue || 0),
+        });
+      }
+      const sub = subs?.[0];
+      setHasProfilePage(sub && sub.status === "active" && PAID_PLANS.includes(sub.plan));
+
       setLoading(false);
     };
     init().catch(() => setLoading(false));
@@ -92,6 +114,17 @@ export default function BuilderSocialDashboard() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Brag your stats + share profile page */}
+        {user && (
+          <StatsBragShare
+            builderId={user.id}
+            builderName={user.full_name}
+            slug={user.full_name?.toLowerCase().replace(/\s+/g, "")}
+            stats={stats}
+            hasProfilePage={hasProfilePage}
+          />
         )}
 
         {/* Stats */}
