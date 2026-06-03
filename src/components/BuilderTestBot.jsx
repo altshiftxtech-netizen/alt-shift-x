@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Bot, X, Send, Loader2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import useAgentStream from "@/hooks/useAgentStream";
+import StopButton from "@/components/StopButton";
 
 /**
  * BuilderTestBot — floating chat widget available ONLY to builder-role users.
@@ -13,7 +15,8 @@ export default function BuilderTestBot() {
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [convId, setConvId] = useState(null);
+  const { messages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(convId, []);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [isBuilder, setIsBuilder] = useState(false);
@@ -42,11 +45,7 @@ export default function BuilderTestBot() {
         metadata: { name: "BOT-X Demo Session" },
       });
       setConversation(conv);
-      setMessages(conv.messages || []);
-
-      base44.agents.subscribeToConversation(conv.id, (data) => {
-        setMessages(data.messages || []);
-      });
+      setConvId(conv.id);
     }
   };
 
@@ -56,6 +55,7 @@ export default function BuilderTestBot() {
     setInput("");
     setSending(true);
     await base44.agents.addMessage(conversation, { role: "user", content: text });
+    onSent();
     setSending(false);
   };
 

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Send, Loader2, Mic } from "lucide-react";
 import VoiceButton from "@/components/VoiceButton";
+import useAgentStream from "@/hooks/useAgentStream";
+import StopButton from "@/components/StopButton";
 
 export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsumed }) {
   const [query, setQuery] = useState("");
@@ -83,16 +85,9 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
 
 function ChatInterface({ conversation, onClose }) {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(conversation.messages || []);
+  const { messages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(conversation.id, conversation.messages || []);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
-
-  useEffect(() => {
-    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages);
-    });
-    return () => unsubscribe();
-  }, [conversation.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,6 +98,7 @@ function ChatInterface({ conversation, onClose }) {
     setSending(true);
     try {
       await base44.agents.addMessage(conversation, { role: "user", content: input });
+      onSent();
       setInput("");
     } catch (err) {
       alert("Failed to send: " + err.message);
@@ -144,9 +140,13 @@ function ChatInterface({ conversation, onClose }) {
           disabled={sending}
         />
         <VoiceButton size="sm" onTranscript={(t) => setInput((p) => (p ? p + " " : "") + t)} />
-        <Button onClick={handleSend} disabled={sending || !input.trim()} size="sm" className="bg-violet-600 hover:bg-violet-700">
-          {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-        </Button>
+        {(sending || isGenerating) ? (
+          <StopButton onStop={stopGenerating} variant="light" size="sm" />
+        ) : (
+          <Button onClick={handleSend} disabled={!input.trim()} size="sm" className="bg-violet-600 hover:bg-violet-700">
+            <Send className="w-3 h-3" />
+          </Button>
+        )}
       </div>
     </Card>
   );

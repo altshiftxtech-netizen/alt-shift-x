@@ -14,6 +14,8 @@ import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import EsiUnlockModal from "@/components/bob/EsiUnlockModal";
 import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
+import useAgentStream from "@/hooks/useAgentStream";
+import StopButton from "@/components/StopButton";
 import { Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -82,7 +84,7 @@ export default function BobBuilder() {
   const [activeTab, setActiveTab] = useState("chat");
   const [conv, setConv] = useState(null);
   const [convId, setConvId] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const { messages, setMessages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(convId, []);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showCodePanel, setShowCodePanel] = useState(false);
@@ -136,23 +138,19 @@ export default function BobBuilder() {
     })().catch(() => {});
   }, []);
 
+  // Auto-scroll to the bottom as streaming messages arrive, unless the user has
+  // scrolled up to read earlier content.
   useEffect(() => {
-    if (!convId) return;
-    const unsub = base44.agents.subscribeToConversation(convId, (data) => {
-      // Capture whether the user is near the bottom BEFORE the messages update,
-      // so streaming tokens don't fight the user's scroll position.
-      const el = scrollContainerRef.current;
-      const nearBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 120 : true;
-      setMessages(data.messages || []);
-      if (nearBottom) {
-        setTimeout(() => {
-          const c = scrollContainerRef.current;
-          if (c) c.scrollTop = c.scrollHeight;
-        }, 60);
-      }
-    });
-    return unsub;
-  }, [convId]);
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (nearBottom) {
+      setTimeout(() => {
+        const c = scrollContainerRef.current;
+        if (c) c.scrollTop = c.scrollHeight;
+      }, 60);
+    }
+  }, [messages]);
 
   const initConv = async () => {
     const c = await base44.agents.createConversation({
@@ -181,6 +179,7 @@ export default function BobBuilder() {
     if (seedText?.trim()) {
       setSending(true);
       await base44.agents.addMessage(c, { role: "user", content: seedText });
+      onSent();
       setSending(false);
     }
   };
@@ -249,6 +248,7 @@ export default function BobBuilder() {
       content: seed,
       ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
     });
+    onSent();
     setSending(false);
   };
 
@@ -259,6 +259,7 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
+    onSent();
     setSending(false);
   };
 
@@ -318,6 +319,7 @@ export default function BobBuilder() {
       content: fullMsg,
       file_urls: uploadedFiles.map(f => f.url)
     });
+    onSent();
     setUploadedFiles([]);
     setSending(false);
   };
@@ -641,7 +643,7 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {sending && (
+                  {(sending || isGenerating) && (
                     <div className="flex items-start gap-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
@@ -704,10 +706,14 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    <button onClick={sendWithFiles} disabled={sending || (!input.trim() && uploadedFiles.length === 0)}
-                      className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
-                      <Send className="w-3.5 h-3.5" /> Send
-                    </button>
+                    {(sending || isGenerating) ? (
+                      <StopButton onStop={stopGenerating} />
+                    ) : (
+                      <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
+                        className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                        <Send className="w-3.5 h-3.5" /> Send
+                      </button>
+                    )}
                   </div>
                 </div>
               </Card>

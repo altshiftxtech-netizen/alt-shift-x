@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Bot, X, ChevronRight, Send, Loader2, GripHorizontal, Minimize2, Maximize2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import useAgentStream from "@/hooks/useAgentStream";
+import StopButton from "@/components/StopButton";
 
 export default function BobAdvisorWidget() {
   const [open, setOpen] = useState(false);
   const [conv, setConv] = useState(null);
   const [convId, setConvId] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const { messages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(convId, []);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -20,13 +22,8 @@ export default function BobAdvisorWidget() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (!convId) return;
-    const unsub = base44.agents.subscribeToConversation(convId, (data) => {
-      setMessages(data.messages || []);
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    });
-    return unsub;
-  }, [convId]);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  }, [messages]);
 
   const openChat = async () => {
     setOpen(true);
@@ -50,6 +47,7 @@ export default function BobAdvisorWidget() {
     setSending(true);
     setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
+    onSent();
     setSending(false);
   };
 
@@ -185,7 +183,7 @@ export default function BobAdvisorWidget() {
                     </div>
                   </div>
                 ))}
-                {sending && (
+                {(sending || isGenerating) && (
                   <div className="flex items-start gap-2">
                     <div className="w-6 h-6 bg-violet-600 rounded-md flex items-center justify-center flex-shrink-0">
                       <Bot className="w-3.5 h-3.5 text-white" />
@@ -210,13 +208,17 @@ export default function BobAdvisorWidget() {
                   placeholder="Ask BOB anything..."
                   className="flex-1 bg-slate-800 text-white text-xs px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-violet-500 placeholder:text-slate-500"
                 />
-                <button
-                  onClick={() => sendMessage()}
-                  disabled={sending || !input.trim()}
-                  className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-3 py-2 rounded-lg transition-colors"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </button>
+                {(sending || isGenerating) ? (
+                  <StopButton onStop={stopGenerating} size="sm" />
+                ) : (
+                  <button
+                    onClick={() => sendMessage()}
+                    disabled={!input.trim()}
+                    className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-3 py-2 rounded-lg transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </>
           )}
