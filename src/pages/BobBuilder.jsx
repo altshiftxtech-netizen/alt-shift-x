@@ -738,7 +738,6 @@ export default function BobBuilder() {
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything... Enter = new line · Ctrl+Enter = send"}
                     minHeight={80}
                     maxHeight={260}
-                    disabled={sending}
                   />
                   <div className="flex items-center gap-2">
                     {/* Hidden file input */}
