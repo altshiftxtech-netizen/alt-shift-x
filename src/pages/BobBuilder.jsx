@@ -15,6 +15,7 @@ import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
+import { buildDocContext } from "@/lib/extractDocText";
 import { Lock, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -353,16 +354,19 @@ export default function BobBuilder() {
     if (!msg && uploadedFiles.length === 0) return;
     setSending(true);
     setInput("");
-    const fileList = uploadedFiles.map(f => f.name).join(", ");
-    const fullMsg = uploadedFiles.length > 0
-      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.`
+    const filesToSend = uploadedFiles;
+    const fileList = filesToSend.map(f => f.name).join(", ");
+    // Extract text from document files (incl. Word) so BOB always reads them.
+    const docContext = await buildDocContext(filesToSend);
+    const fullMsg = filesToSend.length > 0
+      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
       : msg;
     // Lazily create the project conversation on first send.
     const c = conv || await initConv();
     await base44.agents.addMessage(c, {
       role: "user",
       content: fullMsg,
-      file_urls: uploadedFiles.map(f => f.url)
+      file_urls: filesToSend.map(f => f.url)
     });
     await titleProject(c, msg || fileList);
     onSent();

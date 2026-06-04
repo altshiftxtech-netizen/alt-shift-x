@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
+import { buildDocContext } from "@/lib/extractDocText";
 import UpKeeperMessage from "@/components/upkeeper/UpKeeperMessage";
 import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
@@ -102,11 +103,13 @@ export default function UpKeeper() {
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
     setSending(true); setInput("");
-    const fileList = uploadedFiles.map((f) => f.name).join(", ");
-    const fullMsg = uploadedFiles.length > 0
-      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.`
+    const filesToSend = uploadedFiles;
+    const fileList = filesToSend.map((f) => f.name).join(", ");
+    const docContext = await buildDocContext(filesToSend);
+    const fullMsg = filesToSend.length > 0
+      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.${docContext}`
       : msg;
-    await base44.agents.addMessage(c, { role: "user", content: fullMsg, file_urls: uploadedFiles.map((f) => f.url) });
+    await base44.agents.addMessage(c, { role: "user", content: fullMsg, file_urls: filesToSend.map((f) => f.url) });
     onSent();
     setUploadedFiles([]); setSending(false);
   };
@@ -181,11 +184,13 @@ export default function UpKeeper() {
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
     setSending(true); setInput("");
-    const fileList = uploadedFiles.map((f) => f.name).join(", ");
-    const fullMsg = uploadedFiles.length > 0
-      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.`
+    const filesToSend = uploadedFiles;
+    const fileList = filesToSend.map((f) => f.name).join(", ");
+    const docContext = await buildDocContext(filesToSend);
+    const fullMsg = filesToSend.length > 0
+      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.${docContext}`
       : msg;
-    await base44.agents.addMessage(conv, { role: "user", content: fullMsg, file_urls: uploadedFiles.map((f) => f.url) });
+    await base44.agents.addMessage(conv, { role: "user", content: fullMsg, file_urls: filesToSend.map((f) => f.url) });
     onSent();
     setUploadedFiles([]); setSending(false);
   };
