@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Component.update(component.id, { paypal_plan_id: planIdStored });
       }
       planId = planIdStored;
-      returnPath = "/success/install?paypal=1";
+      returnPath = `/success/install?paypal=1&component=${encodeURIComponent(component.name)}&id=${component.id}`;
       metadata = { user_id: user.id, component_id: component.id, component_name: component.name, plan: "component" };
     }
     // ── Route B: Builder subscription plan ──────────────────────────────────────
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       const plan = BUILDER_PLANS[planKey];
       if (!plan) return Response.json({ error: "Invalid plan" }, { status: 400 });
       planId = await ensurePlan(token, { name: plan.name, price: plan.price, refId: planKey });
-      returnPath = "/success/subscription?subscribed=true&paypal=1";
+      returnPath = `/success/subscription?subscribed=true&paypal=1&plan=${planKey}`;
       metadata = { user_id: user.id, plan: planKey };
     } else {
       return Response.json({ error: "Provide either componentId or planKey" }, { status: 400 });

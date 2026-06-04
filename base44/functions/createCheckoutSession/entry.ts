@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 
     const baseParams = {
       mode: "subscription",
-      success_url: successUrl || `${origin}/success/subscription?subscribed=true`,
+      success_url: successUrl || `${origin}/success/subscription?subscribed=true${planKey ? `&plan=${planKey}` : ""}`,
       cancel_url: cancelUrl || `${origin}/pricing`,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
@@ -135,6 +135,7 @@ Deno.serve(async (req) => {
 
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
+        success_url: successUrl || `${origin}/success/install?component=${encodeURIComponent(component.name)}&id=${component.id}`,
         line_items: [{ price: stripePriceId, quantity: 1 }],
         ...(inActiveKit ? {} : { allow_promotion_codes: true }),
         metadata: {

@@ -6,27 +6,38 @@ import SharedNav from "@/components/SharedNav";
 import { setSEOMeta } from "@/lib/seoHelpers";
 
 const PLAN_DETAILS = {
-  starter: {
-    name: "Starter",
-    price: "$29.99/month",
-    limit: "1,000 API calls/month"
+  free_builder: {
+    name: "Free Builder",
+    price: "Free",
+    limit: "70% revenue share · 1 published component"
   },
-  pro: {
-    name: "Pro",
-    price: "$99.99/month",
-    limit: "10,000 API calls/month"
+  base_operator: {
+    name: "Base Operator",
+    price: "$49/month",
+    limit: "Up to 72% revenue share · unlimited publishing"
   },
-  enterprise: {
-    name: "Enterprise",
-    price: "$299.99/month",
-    limit: "Unlimited API calls"
+  strategic_architect: {
+    name: "Strategic Architect",
+    price: "$199/month",
+    limit: "Up to 77.5% revenue share · 14-day grace period"
+  },
+  sovereign_commander: {
+    name: "Sovereign Commander",
+    price: "$599/month",
+    limit: "Up to 85% revenue share · Platform Intelligence"
   }
+};
+
+const FALLBACK_DETAILS = {
+  name: "Your Plan",
+  price: "Active",
+  limit: "Your subscription is active"
 };
 
 export default function SubscriptionSuccess() {
   const [searchParams] = useSearchParams();
-  const plan = searchParams.get("plan") || "starter";
-  const details = PLAN_DETAILS[plan];
+  const plan = searchParams.get("plan") || "";
+  const details = PLAN_DETAILS[plan] || FALLBACK_DETAILS;
 
   useEffect(() => {
     setSEOMeta({

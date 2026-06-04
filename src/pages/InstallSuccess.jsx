@@ -67,7 +67,7 @@ export default function InstallSuccess() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
             Need help getting started?
           </p>
-          <Link to="/dashboard/setup" className="text-sm text-violet-700 dark:text-violet-400 hover:underline font-medium">
+          <Link to="/dashboard/installed" className="text-sm text-violet-700 dark:text-violet-400 hover:underline font-medium">
             View Setup Guide &rarr;
           </Link>
         </div>
