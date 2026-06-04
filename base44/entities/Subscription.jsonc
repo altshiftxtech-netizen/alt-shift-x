@@ -14,6 +14,19 @@
       "type": "string",
       "description": "Stripe subscription ID"
     },
+    "paypal_subscription_id": {
+      "type": "string",
+      "description": "PayPal subscription ID (when the subscription was paid via PayPal)"
+    },
+    "payment_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "paypal"
+      ],
+      "default": "stripe",
+      "description": "Which provider is billing this subscription"
+    },
     "plan": {
       "type": "string",
       "enum": [

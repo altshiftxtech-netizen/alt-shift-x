@@ -37,11 +37,20 @@
     "trust_score": {
       "type": "number"
     },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription that provisioned this install"
+    },
+    "paypal_subscription_id": {
+      "type": "string",
+      "description": "PayPal subscription that provisioned this install"
+    },
     "status": {
       "type": "string",
       "enum": [
         "active",
-        "suspended"
+        "suspended",
+        "cancelled"
       ],
       "default": "active"
     }

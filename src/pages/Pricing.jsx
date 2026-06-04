@@ -162,7 +162,7 @@ function ComponentTypeCard({ tier }) {
   );
 }
 
-function PlanCard({ plan, onSubscribe, loading }) {
+function PlanCard({ plan, onSubscribe, onPaypal, loading }) {
   const Icon = plan.icon;
   const isHighlight = plan.highlight;
   const isFree = plan.free;
@@ -219,10 +219,17 @@ function PlanCard({ plan, onSubscribe, loading }) {
         <>
           <Button
             onClick={() => onSubscribe(plan.key)}
-            disabled={loading === plan.key}
+            disabled={loading === plan.key || loading === `pp_${plan.key}`}
             className={`w-full font-semibold ${isHighlight ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white"}`}
           >
-            {loading === plan.key ? "Redirecting..." : plan.cta}
+            {loading === plan.key ? "Redirecting..." : `${plan.cta} (Card)`}
+          </Button>
+          <Button
+            onClick={() => onPaypal(plan.key)}
+            disabled={loading === plan.key || loading === `pp_${plan.key}`}
+            className="w-full font-semibold mt-2 bg-[#ffc439] hover:bg-[#f0b72e] text-[#003087]"
+          >
+            {loading === `pp_${plan.key}` ? "Redirecting..." : "Pay with PayPal"}
           </Button>
           {plan.graceDays && (
             <p className={`text-[10px] text-center mt-2 ${isHighlight ? "text-slate-400" : "text-slate-400"}`}>
@@ -250,6 +257,21 @@ export default function Pricing() {
       window.location.href = res.data.url;
     } else {
       alert("Something went wrong. Please try again.");
+    }
+    setLoading(null);
+  };
+
+  const handleBuilderPaypal = async (planKey) => {
+    if (isInIframe()) {
+      alert("Checkout is only available from the published app. Please open the live URL to subscribe.");
+      return;
+    }
+    setLoading(`pp_${planKey}`);
+    const res = await base44.functions.invoke("createPaypalCheckout", { planKey });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      alert("Something went wrong with PayPal. Please try again.");
     }
     setLoading(null);
   };
@@ -358,7 +380,7 @@ export default function Pricing() {
           {/* Builder plans */}
           <div className="max-w-7xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {BUILDER_PLANS.map(plan => (
-              <PlanCard key={plan.key} plan={plan} onSubscribe={handleBuilderSubscribe} loading={loading} />
+              <PlanCard key={plan.key} plan={plan} onSubscribe={handleBuilderSubscribe} onPaypal={handleBuilderPaypal} loading={loading} />
             ))}
           </div>
 

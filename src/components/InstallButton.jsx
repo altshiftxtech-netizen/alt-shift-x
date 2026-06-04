@@ -32,6 +32,21 @@ export default function InstallButton({ component, userId, installedRecord, onUn
     }
   };
 
+  const handlePaypalInstall = async () => {
+    if (window.self !== window.top) {
+      alert("Checkout is only available from the published app. Please open the live URL.");
+      return;
+    }
+    setLoading(true);
+    const res = await base44.functions.invoke("createPaypalCheckout", { componentId: component.id });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      alert("Could not start PayPal checkout. Please try again.");
+      setLoading(false);
+    }
+  };
+
   const handleUninstall = async () => {
     setLoading(true);
     await base44.entities.InstalledComponent.delete(localRecord.id);
@@ -58,9 +73,15 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   }
 
   return (
-    <Button size={size} onClick={handleInstall}
-      className="gap-2 bg-violet-700 hover:bg-violet-800 text-white">
-      <Download className="w-4 h-4" /> Install
-    </Button>
+    <div className="flex flex-col gap-2">
+      <Button size={size} onClick={handleInstall}
+        className="gap-2 bg-violet-700 hover:bg-violet-800 text-white">
+        <Download className="w-4 h-4" /> Install (Card)
+      </Button>
+      <Button size={size} onClick={handlePaypalInstall}
+        className="gap-2 bg-[#ffc439] hover:bg-[#f0b72e] text-[#003087] font-semibold">
+        Pay with PayPal
+      </Button>
+    </div>
   );
 }
