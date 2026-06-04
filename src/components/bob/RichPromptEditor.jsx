@@ -262,10 +262,13 @@ export default function RichPromptEditor({
         )}
       </div>
 
-      {/* Editable area */}
-      <div className="relative flex-1">
+      {/* Editable area — clicking anywhere in this region focuses the editor */}
+      <div
+        className="relative flex-1 cursor-text"
+        onMouseDown={() => { if (!disabled) editorRef.current?.focus(); }}
+      >
         {isEmpty && (
-          <div className="absolute top-0 left-0 px-4 py-3.5 text-slate-500 text-sm pointer-events-none select-none leading-relaxed">
+          <div className="absolute top-0 left-0 right-0 px-4 py-3.5 text-slate-500 text-sm pointer-events-none select-none leading-relaxed">
             {placeholder}
           </div>
         )}
