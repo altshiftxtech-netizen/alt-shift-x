@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2 } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
 
@@ -41,12 +41,15 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   };
 
   // Soft-delete → move to Trash (recoverable). Auto-opens the Trash drawer so
-  // the builder can see where the project went.
+  // the builder can see where the project went. Also auto-emails the ESI legal
+  // record to the builder so they keep a copy of the wiped project.
   const trashProject = async (c) => {
     setBusy(c.id);
     await base44.agents.updateConversation(c.id, {
       metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
     });
+    // Fire-and-forget: email the ESI record to the builder's own address.
+    base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
     setConfirmTrash(null);
     await load();
     setShowTrash(true);
@@ -182,6 +185,9 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                       >
                         Cancel
                       </button>
+                      <span className="text-[9px] text-slate-500 w-full mt-0.5 flex items-center gap-1">
+                        <Mail className="w-2.5 h-2.5" /> ESI record will be emailed to you
+                      </span>
                     </div>
                   ) : (
                     <button

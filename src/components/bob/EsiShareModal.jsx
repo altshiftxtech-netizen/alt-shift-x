@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Copy, Check, Mail, Share2, FileText, ExternalLink } from "lucide-react";
+import { X, Loader2, Copy, Check, Mail, Share2, FileText, ExternalLink, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // Generates a shareable public URL for a project's ESI legal record and surfaces
@@ -12,7 +12,16 @@ export default function EsiShareModal({ conversation, onClose }) {
   const [fileName, setFileName] = useState("ESI_Record.pdf");
   const [copied, setCopied] = useState(false);
 
+  // Email-delivery state
+  const [showEmail, setShowEmail] = useState(false);
+  const [emailAddr, setEmailAddr] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
   useEffect(() => {
+    // Pre-fill the email field with the signed-in user's address
+    base44.auth.me().then((u) => setEmailAddr(u?.email || "")).catch(() => {});
     (async () => {
       try {
         const res = await base44.functions.invoke("shareEsiRecord", { conversationId: conversation.id });
@@ -70,10 +79,29 @@ export default function EsiShareModal({ conversation, onClose }) {
     window.open(d.href, "_blank", "noopener");
   };
 
-  const emailLink = () => {
-    const subject = encodeURIComponent(`ESI Legal Record — ${fileName}`);
-    const body = encodeURIComponent(`Here is the ESI legal record:\n\n${fileUrl}`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  // Submit an email address to receive the ESI record directly from the platform.
+  const sendEmail = async () => {
+    setEmailError("");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr.trim())) {
+      setEmailError("Enter a valid email address.");
+      return;
+    }
+    setEmailSending(true);
+    try {
+      const res = await base44.functions.invoke("emailEsiRecord", {
+        conversationId: conversation.id,
+        email: emailAddr.trim(),
+      });
+      if (res.data?.success) {
+        setEmailSent(true);
+        setTimeout(() => { setShowEmail(false); setEmailSent(false); }, 2500);
+      } else {
+        setEmailError(res.data?.error || "Could not send the email.");
+      }
+    } catch (e) {
+      setEmailError(e?.response?.data?.error || "Could not send the email.");
+    }
+    setEmailSending(false);
   };
 
   const nativeShare = async () => {
@@ -148,7 +176,7 @@ export default function EsiShareModal({ conversation, onClose }) {
               {/* Email + native share */}
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={emailLink}
+                  onClick={() => setShowEmail((v) => !v)}
                   className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-2.5 transition-colors"
                 >
                   <Mail className="w-4 h-4" /> Email
@@ -160,6 +188,39 @@ export default function EsiShareModal({ conversation, onClose }) {
                   <Share2 className="w-4 h-4" /> More…
                 </button>
               </div>
+
+              {/* Inline email submit — sends the record from the platform */}
+              {showEmail && (
+                <div className="mt-3 bg-slate-800 border border-slate-700 rounded-lg p-3">
+                  {emailSent ? (
+                    <p className="text-xs text-emerald-400 flex items-center gap-1.5 justify-center py-1">
+                      <Check className="w-4 h-4" /> Sent to {emailAddr}
+                    </p>
+                  ) : (
+                    <>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Email the record to</label>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <input
+                          type="email"
+                          value={emailAddr}
+                          onChange={(e) => setEmailAddr(e.target.value)}
+                          placeholder="you@company.com"
+                          className="flex-1 bg-slate-900 text-slate-200 text-xs px-2.5 py-2 rounded-md border border-slate-600 outline-none focus:border-emerald-500"
+                        />
+                        <button
+                          onClick={sendEmail}
+                          disabled={emailSending}
+                          className="flex items-center gap-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-2 rounded-md transition-colors"
+                        >
+                          {emailSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                          Send
+                        </button>
+                      </div>
+                      {emailError && <p className="text-[10px] text-red-400 mt-1.5">{emailError}</p>}
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
