@@ -22,7 +22,7 @@ const BUILDER_NAV = [
   { to: "/builder/components", label: "Components", icon: Package },
   { to: "/builder/analytics", label: "Analytics", icon: BarChart2 },
   { to: "/builder/revenue", label: "Revenue", icon: BarChart2 },
-  { to: "/builder/bob", label: "BOB Builder", icon: null, isBob: true },
+  { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
 const BUILDER_NAV_MORE = [
@@ -30,7 +30,7 @@ const BUILDER_NAV_MORE = [
   { to: "/builder/governance", label: "Governance", icon: ShieldCheck },
   { to: "/builder/test-lab", label: "Test Lab", icon: BarChart2 },
   { to: "/builder/analytics-suite", label: "Analytics Suite", icon: TrendingUp },
-  { to: "/builder/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/builder/bob", label: "BOB Builder", icon: Bot },
   { to: "/builder/payout-settings", label: "Payouts", icon: DollarSign },
   { to: "/builder/social", label: "Social", icon: Share2 },
   { to: "/builder/kit-pairing", label: "Kit Pairing", icon: Share2 },
@@ -79,21 +79,13 @@ export default function SharedNav({ mode = "user", theme }) {
 
         {/* Desktop nav links — primary tabs inline + a "More" dropdown so the bar never overflows */}
         <div className="hidden md:flex items-center gap-1 flex-1 min-w-0 [&>a]:shrink-0">
-          {navItems.map(({ to, label, isBob }) => (
-            isBob ? (
-              <Link key={to} to={to}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${isActive(to) ? "bg-violet-600 text-white" : isDev ? "bg-violet-500/15 text-violet-300 hover:bg-violet-500/25 border border-violet-500/30" : "bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"}`}>
-                <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-5 h-5 rounded-full object-cover" alt="BOB" />
-                {label}
-              </Link>
-            ) : (
-              <Link key={to} to={to}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-all ${isDev
-                  ? `font-mono ${isActive(to) ? "text-[#3fb950] bg-[#161b22]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#161b22]"}`
-                  : `font-medium ${isActive(to) ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}`}>
-                {isDev && <span className="text-[#484f58]">/</span>}{label}
-              </Link>
-            )
+          {navItems.map(({ to, label }) => (
+            <Link key={to} to={to}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-all ${isDev
+                ? `font-mono ${isActive(to) ? "text-[#3fb950] bg-[#161b22]" : "text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#161b22]"}`
+                : `font-medium ${isActive(to) ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}`}>
+              {isDev && <span className="text-[#484f58]">/</span>}{label}
+            </Link>
           ))}
 
           {/* More dropdown — holds secondary builder tabs */}
