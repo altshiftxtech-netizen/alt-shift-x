@@ -48,6 +48,30 @@ const DEFAULT_FRAMEWORK = {
 
 function MessageBubble({ m }) {
   const isUser = m.role === "user";
+  const hasText = typeof m.content === "string" && m.content.trim().length > 0;
+  const runningTools = (m.tool_calls || []).filter(
+    (t) => !t.status || ["pending", "in_progress", "running"].includes(t.status)
+  );
+
+  // Assistant message mid-work (running a tool, no text yet) — show a working
+  // indicator instead of a blank empty bubble that looks like a hang.
+  if (!isUser && !hasText) {
+    if (runningTools.length === 0) return null;
+    return (
+      <div className="flex items-start gap-2.5">
+        <img
+          src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
+          className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5"
+          alt="BOB"
+        />
+        <div className="bg-slate-800 text-slate-400 px-4 py-3 rounded-2xl rounded-tl-sm text-xs flex items-center gap-2">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+          Working… searching & analyzing
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (

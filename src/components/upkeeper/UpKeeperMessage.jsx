@@ -1,6 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Loader2 } from "lucide-react";
+import MessageActions from "@/components/upkeeper/MessageActions";
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -47,6 +48,7 @@ export default function UpKeeperMessage({ m }) {
             }}
           >{m.content}</ReactMarkdown>
         )}
+        {!isUser && hasText && <MessageActions text={m.content} />}
       </div>
     </div>
   );
