@@ -1,4 +1,4 @@
-import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck } from "lucide-react";
+import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck, Bot, FileText, GitBranch, Sparkles, Trophy, DollarSign, Share2 } from "lucide-react";
 
 // Each tutorial has sections; each section has step-by-step instructions and an optional video URL.
 export const TUTORIALS = [
@@ -225,6 +225,205 @@ export const TUTORIALS = [
         steps: [
           "Review the forecast panel for projected usage.",
           "Use trends to plan plan upgrades ahead of time.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "bob-builder",
+    title: "Building with BOB",
+    description: "Design, analyze, and deploy components with the BOB AI agent",
+    icon: Bot,
+    video: null,
+    sections: [
+      {
+        title: "Starting a project",
+        steps: [
+          "Open Builder Portal → BOB Builder.",
+          "Click 'Wipe Board' on the splash screen to start a fresh project.",
+          "Describe what you want to build in plain language — BOB guides you from there.",
+          "Use the Builder Dashboard button anytime to jump back to your portal.",
+        ],
+      },
+      {
+        title: "Using the Wipe Board (project history)",
+        steps: [
+          "Every BOB conversation is saved as a project in the Wipe Board panel.",
+          "Click any past project to reopen and continue where you left off.",
+          "Hit 'Wipe Board' to start a brand-new project without losing the old ones.",
+        ],
+      },
+      {
+        title: "Spinning off a project",
+        steps: [
+          "Find a project in the Wipe Board and click 'Spin Off'.",
+          "BOB forks it into a ready-to-go copy you can take in a new direction.",
+          "The original stays untouched so you can branch ideas freely.",
+        ],
+      },
+      {
+        title: "Configuring the framework & deploying",
+        steps: [
+          "Switch to the Framework tab to set component metadata, compliance, and branding.",
+          "Use the Deploy tab to finalize and publish your component.",
+          "Paid plans unlock document exports and advanced deployment tools.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "esi-records",
+    title: "ESI Legal Records",
+    description: "Download, email, and share verifiable records of your projects",
+    icon: FileText,
+    video: null,
+    sections: [
+      {
+        title: "What an ESI record is",
+        steps: [
+          "An ESI (Electronically Stored Information) record is a cryptographically verifiable PDF of your project.",
+          "It includes your full conversation history, metadata, and a chain-of-custody attestation.",
+          "Each record carries a SHA-256 integrity hash so it can be verified later.",
+        ],
+      },
+      {
+        title: "Downloading an ESI record",
+        steps: [
+          "In the Wipe Board, click 'ESI Record' on any project.",
+          "Paid subscribers download instantly; others complete a one-time $10 unlock.",
+          "The PDF saves directly to your device.",
+        ],
+      },
+      {
+        title: "Sharing & auto-email on delete",
+        steps: [
+          "Click 'Share' on a project to send the ESI record to Google Drive, Dropbox, OneDrive, email, and more.",
+          "When you move a project to Trash, its ESI record is automatically emailed to you so you always keep a copy.",
+          "Trashed projects can be restored, or permanently deleted with a two-step confirmation.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "kit-pairing",
+    title: "Kit Pairing & Discounts",
+    description: "Pair components with other builders and create promo codes",
+    icon: GitBranch,
+    video: null,
+    sections: [
+      {
+        title: "Requesting a pairing",
+        steps: [
+          "Open Builder Portal → Kit Pairing.",
+          "Request a pairing with another builder's component — like sending a friend request.",
+          "BOB generates an IP-protected pairing statement both sides must acknowledge.",
+        ],
+      },
+      {
+        title: "Accepting & revenue split",
+        steps: [
+          "The partner reviews and accepts or declines the request.",
+          "On acceptance, a proportional revenue split is locked in based on each component's price.",
+          "Either builder can revoke a pairing with a notice period.",
+        ],
+      },
+      {
+        title: "Creating discount codes",
+        steps: [
+          "From Kit Pairing, create a shareable promo code for your component.",
+          "Set the percent off and optional redemption limits or expiry.",
+          "Share the code — redemptions are tracked automatically.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "leaderboard-payouts",
+    title: "Leaderboard & Payouts",
+    description: "Climb the builder ranks and get paid",
+    icon: Trophy,
+    video: null,
+    sections: [
+      {
+        title: "Builder leaderboard",
+        steps: [
+          "Open Builder Portal → More → Leaderboard.",
+          "See your rank, tier badge, installs, ratings, and momentum score.",
+          "Higher activity and ratings boost your leaderboard score.",
+        ],
+      },
+      {
+        title: "Setting up payouts",
+        steps: [
+          "Go to Builder Portal → More → Payouts.",
+          "Connect your Stripe account to receive earnings.",
+          "Review your revenue share and approved splits before payout.",
+        ],
+      },
+      {
+        title: "Referrals",
+        steps: [
+          "Share your unique referral code from the Payouts page.",
+          "Earn credit when referred builders join and publish.",
+          "Track referral counts and earnings in your dashboard.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "social-sharing",
+    title: "Social Sharing",
+    description: "Promote your components and stats across social platforms",
+    icon: Share2,
+    video: null,
+    sections: [
+      {
+        title: "Sharing components",
+        steps: [
+          "Open Builder Portal → More → Social.",
+          "Pick a component and share it to Twitter, LinkedIn, Instagram, Facebook, or TikTok.",
+          "Copy a direct link to share anywhere else.",
+        ],
+      },
+      {
+        title: "Bragging your stats",
+        steps: [
+          "Use the stats share panel to post your install and rating milestones.",
+          "Download the promo video to attach to your posts.",
+          "Every share is tracked so you can see what drives traffic.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "speakeasy",
+    title: "The Speakeasy",
+    description: "The members-only lounge for paying builders",
+    icon: Sparkles,
+    video: null,
+    sections: [
+      {
+        title: "Getting access",
+        steps: [
+          "The Speakeasy is exclusive to paying builders and developers (Platinum perk).",
+          "Once you're on a paid plan, find 'The Speakeasy' highlighted in the portal switcher.",
+          "Free-tier users won't see it until they upgrade.",
+        ],
+      },
+      {
+        title: "Posting & the Front Man",
+        steps: [
+          "Share posts, videos, and memes with the community.",
+          "@mention the AI Host (The Front Man) to ask questions or get help.",
+          "React to posts and reply in threads.",
+        ],
+      },
+      {
+        title: "Inviting others",
+        steps: [
+          "Send Speakeasy invites to colleagues from inside the lounge.",
+          "Invitees join once they sign up with your invite code.",
+          "Help grow the inner circle of trusted builders.",
         ],
       },
     ],
