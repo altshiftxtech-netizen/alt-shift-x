@@ -196,16 +196,22 @@ export default function BobBuilder() {
     }
   };
 
-  // Launch from splash — optionally with a seed message
+  // Launch from splash — only create a conversation if there's a seed message.
+  // An empty launch just opens the workspace (no empty "New Project" is spawned).
   const launch = async (seedText) => {
     setLaunched(true);
-    const c = await initConv();
     if (seedText?.trim()) {
       setSending(true);
+      const c = await initConv();
       await base44.agents.addMessage(c, { role: "user", content: seedText });
       await titleProject(c, seedText);
       onSent();
       setSending(false);
+    } else {
+      // No seed → blank slate, conversation is created lazily on first send.
+      setConv(null);
+      setConvId(null);
+      setMessages([]);
     }
   };
 
@@ -215,18 +221,23 @@ export default function BobBuilder() {
     else launch();
   };
 
-  // Open the workspace straight into the Wipe Board history (no new conversation seeded).
+  // Open the workspace straight into the Wipe Board history. Does NOT create a
+  // conversation — that happens lazily when the builder sends their first message.
   const openHistory = async () => {
     setLaunched(true);
     setActiveTab("chat");
-    await initConv();
+    setConv(null);
+    setConvId(null);
+    setMessages([]);
   };
 
-  // Wipe Board — start a brand-new project conversation, keeping the workspace open.
+  // Wipe Board — clear the board to a fresh blank slate. A new conversation is
+  // created lazily on first send, so we never pile up empty "New Project" entries.
   const wipeBoard = async () => {
-    setMessages([]);
     setActiveTab("chat");
-    await initConv();
+    setConv(null);
+    setConvId(null);
+    setMessages([]);
   };
 
   // Open an existing project from the Wipe Board history.
@@ -281,13 +292,16 @@ export default function BobBuilder() {
   };
 
   const sendMessage = async (text) => {
-    if (!conv || sending) return;
+    if (sending) return;
     const msg = text || input;
     if (!msg.trim()) return;
     setSending(true);
     setInput("");
-    await base44.agents.addMessage(conv, { role: "user", content: msg });
-    await titleProject(conv, msg);
+    // Lazily create the project conversation on first send so empty boards
+    // never produce stray "New Project" entries.
+    const c = conv || await initConv();
+    await base44.agents.addMessage(c, { role: "user", content: msg });
+    await titleProject(c, msg);
     onSent();
     setSending(false);
   };
@@ -334,7 +348,7 @@ export default function BobBuilder() {
   };
 
   const sendWithFiles = async () => {
-    if (!conv || sending) return;
+    if (sending) return;
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
     setSending(true);
@@ -343,12 +357,14 @@ export default function BobBuilder() {
     const fullMsg = uploadedFiles.length > 0
       ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.`
       : msg;
-    await base44.agents.addMessage(conv, {
+    // Lazily create the project conversation on first send.
+    const c = conv || await initConv();
+    await base44.agents.addMessage(c, {
       role: "user",
       content: fullMsg,
       file_urls: uploadedFiles.map(f => f.url)
     });
-    await titleProject(conv, msg || fileList);
+    await titleProject(c, msg || fileList);
     onSent();
     setUploadedFiles([]);
     setSending(false);

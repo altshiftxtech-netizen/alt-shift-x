@@ -35,7 +35,16 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   useEffect(() => { load(); }, [activeConvId]);
 
   const isTrashed = (c) => !!c.metadata?.trashed;
-  const active = convos.filter((c) => !isTrashed(c)).slice(0, 25);
+  // Hide stale, never-used projects: conversations still named "New Project" are
+  // empty shells (a real project gets auto-titled from its first message). They
+  // only clutter the board, so we filter them out — except the active one.
+  const isNamed = (c) => {
+    const n = c.metadata?.name;
+    return n && n !== "New Project";
+  };
+  const active = convos
+    .filter((c) => !isTrashed(c) && (isNamed(c) || c.id === activeConvId))
+    .slice(0, 25);
   const trashed = convos.filter(isTrashed);
 
   const handleSpinOff = async (c) => {
