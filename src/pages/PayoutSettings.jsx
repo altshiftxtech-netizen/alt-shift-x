@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TierBadge, AchievementBadge } from "@/components/BuilderTierBadge";
 import StripeConnectSection from "@/components/payout/StripeConnectSection";
+import PaypalPayoutSection from "@/components/payout/PaypalPayoutSection";
 import EarningSummary from "@/components/payout/EarningSummary";
 import ApprovedSplitsTable from "@/components/payout/ApprovedSplitsTable";
 import ReferralPortal from "@/components/payout/ReferralPortal";
@@ -61,6 +62,11 @@ export default function PayoutSettings() {
     }
   };
 
+  const payoutMethod = data?.badge?.payout_method || "stripe";
+  const paypalReady = !!data?.badge?.paypal_payout_email;
+  const stripeReady = !!data?.stripe_status?.payouts_enabled;
+  const payoutReady = payoutMethod === "paypal" ? paypalReady : stripeReady;
+
   const handlePayout = async (splitIds) => {
     if (isInIframe()) {
       alert("Payouts only work from the published app URL.");
@@ -68,10 +74,16 @@ export default function PayoutSettings() {
     }
     setPayoutLoading(true);
     setPayoutResult(null);
-    const res = await base44.functions.invoke("initiateBuilderPayout", splitIds ? { split_ids: splitIds } : {});
+    const fn = payoutMethod === "paypal" ? "paypalBuilderPayout" : "initiateBuilderPayout";
+    const res = await base44.functions.invoke(fn, splitIds ? { split_ids: splitIds } : {});
     setPayoutResult(res.data);
     if (!res.data?.error) await load();
     setPayoutLoading(false);
+  };
+
+  const handleSelectMethod = async (method) => {
+    await base44.functions.invoke("savePaypalPayoutEmail", { payout_method: method });
+    await load();
   };
 
   if (loading) return (
@@ -117,15 +129,40 @@ export default function PayoutSettings() {
           </div>
         )}
 
+        {/* Payout method selector */}
+        <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-slate-600 mr-1">Payout method:</span>
+          {[
+            { key: "stripe", label: "Stripe (Bank)" },
+            { key: "paypal", label: "PayPal" },
+          ].map((m) => (
+            <button
+              key={m.key}
+              onClick={() => handleSelectMethod(m.key)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                payoutMethod === m.key
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
         {/* Top section: Connect + Earnings */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
-            <StripeConnectSection
-              stripeStatus={data?.stripe_status}
-              badge={data?.badge}
-              loading={connectLoading}
-              onConnect={handleConnectStripe}
-            />
+            {payoutMethod === "paypal" ? (
+              <PaypalPayoutSection badge={data?.badge} onSaved={load} />
+            ) : (
+              <StripeConnectSection
+                stripeStatus={data?.stripe_status}
+                badge={data?.badge}
+                loading={connectLoading}
+                onConnect={handleConnectStripe}
+              />
+            )}
           </div>
           <div className="lg:col-span-2">
             <EarningSummary summary={data?.summary} badge={data?.badge} />
@@ -135,7 +172,8 @@ export default function PayoutSettings() {
         {/* Approved splits ready for payout */}
         <ApprovedSplitsTable
           splits={data?.splits || []}
-          stripeReady={data?.stripe_status?.payouts_enabled}
+          stripeReady={payoutReady}
+          payoutMethod={payoutMethod}
           payoutLoading={payoutLoading}
           onPayout={handlePayout}
         />

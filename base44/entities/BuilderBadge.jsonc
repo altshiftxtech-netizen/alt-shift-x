@@ -82,6 +82,19 @@
         "disabled"
       ]
     },
+    "payout_method": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "paypal"
+      ],
+      "default": "stripe",
+      "description": "Which payout rail the builder uses to receive earnings"
+    },
+    "paypal_payout_email": {
+      "type": "string",
+      "description": "PayPal account email where builder payouts are sent"
+    },
     "display_name": {
       "type": "string"
     },

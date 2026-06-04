@@ -58,6 +58,18 @@
     "stripe_transfer_id": {
       "type": "string"
     },
+    "paypal_payout_batch_id": {
+      "type": "string",
+      "description": "PayPal Payouts batch ID when paid via PayPal"
+    },
+    "payout_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "paypal"
+      ],
+      "description": "Which rail processed this payout"
+    },
     "processed_at": {
       "type": "string",
       "format": "date-time"

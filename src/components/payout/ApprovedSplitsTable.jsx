@@ -9,7 +9,7 @@ const STATUS_STYLE = {
   paid:     "bg-blue-100 text-blue-700",
 };
 
-export default function ApprovedSplitsTable({ splits, stripeReady, payoutLoading, onPayout }) {
+export default function ApprovedSplitsTable({ splits, stripeReady, payoutMethod = "stripe", payoutLoading, onPayout }) {
   const [selected, setSelected] = useState(new Set());
   const [expandedPaid, setExpandedPaid] = useState(false);
 
@@ -46,7 +46,8 @@ export default function ApprovedSplitsTable({ splits, stripeReady, payoutLoading
             <div className="flex items-center gap-2">
               {!stripeReady && (
                 <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-                  <AlertTriangle className="w-3 h-3 inline mr-1" />Connect Stripe to enable payouts
+                  <AlertTriangle className="w-3 h-3 inline mr-1" />
+                  {payoutMethod === "paypal" ? "Add your PayPal email to enable payouts" : "Connect Stripe to enable payouts"}
                 </span>
               )}
               <Button
