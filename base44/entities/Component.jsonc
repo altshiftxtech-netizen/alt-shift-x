@@ -38,7 +38,8 @@
         "Legal & Compliance",
         "Operational Engineering",
         "Human Capital",
-        "Strategic Growth"
+        "Strategic Growth",
+        "Knowledge Book Tiles"
       ]
     },
     "description": {
@@ -133,6 +134,33 @@
       "type": "string",
       "format": "date-time",
       "description": "When a low-rating alert was last sent to the builder"
+    },
+    "book_meta": {
+      "type": "object",
+      "description": "Metadata for Knowledge Book Tile components (books turned into knowledge components). Only Magna Dev creates these.",
+      "properties": {
+        "book_title": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "publication_year": {
+          "type": "number"
+        },
+        "isbn": {
+          "type": "string"
+        },
+        "key_concepts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "knowledge_domain": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [

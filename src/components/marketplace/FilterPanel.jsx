@@ -10,9 +10,9 @@ const TYPE_LABELS = {
   X5: "X5 · Complete Agents",
 };
 
-export default function FilterPanel({ types, type, onType, onClose }) {
+export default function FilterPanel({ types, type, onType, categories = [], category, onCategory, onClose }) {
   return (
-    <div className="absolute z-50 mt-2 right-0 w-64 bg-slate-900 border border-white/20 rounded-xl shadow-2xl p-4">
+    <div className="absolute z-50 mt-2 right-0 w-64 bg-slate-900 border border-white/20 rounded-xl shadow-2xl p-4 max-h-[70vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Filter by Type</p>
         <button onClick={onClose} className="text-white/40 hover:text-white">
@@ -33,6 +33,25 @@ export default function FilterPanel({ types, type, onType, onClose }) {
           </button>
         ))}
       </div>
+
+      {categories.length > 0 && onCategory && (
+        <>
+          <p className="text-xs font-bold text-white/70 uppercase tracking-wider mt-4 mb-3">Filter by Category</p>
+          <div className="space-y-1">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => onCategory(c)}
+                className={`block w-full text-left text-xs px-2.5 py-2 rounded-md transition-all ${
+                  category === c ? "bg-violet-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {c === "All" ? "All Categories" : c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

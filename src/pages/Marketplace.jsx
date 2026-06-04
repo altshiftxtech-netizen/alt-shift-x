@@ -25,6 +25,7 @@ const CATEGORIES = [
   "Operational Engineering",
   "Human Capital",
   "Strategic Growth",
+  "Knowledge Book Tiles",
 ];
 const TYPES = ["All", "X1", "X2", "X3", "X4", "X5"];
 const TYPE_LABELS = {
@@ -219,13 +220,13 @@ export default function Marketplace() {
               <button
                 onClick={() => setShowFilters(v => !v)}
                 title="Filters"
-                className={`flex items-center gap-1.5 text-xs h-full px-3 py-2 rounded-md border transition-all ${showFilters || type !== "All" ? "bg-violet-600 border-violet-500 text-white" : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"}`}
+                className={`flex items-center gap-1.5 text-xs h-full px-3 py-2 rounded-md border transition-all ${showFilters || type !== "All" || category !== "All" ? "bg-violet-600 border-violet-500 text-white" : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"}`}
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span className="hidden sm:inline">Filters</span>
-                {type !== "All" && (
+                {(type !== "All" ? 1 : 0) + (category !== "All" ? 1 : 0) > 0 && (
                   <span className="bg-white text-violet-700 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    1
+                    {(type !== "All" ? 1 : 0) + (category !== "All" ? 1 : 0)}
                   </span>
                 )}
               </button>
@@ -234,6 +235,9 @@ export default function Marketplace() {
                   types={TYPES}
                   type={type}
                   onType={(t) => { setType(t); }}
+                  categories={CATEGORIES}
+                  category={category}
+                  onCategory={(c) => { setCategory(c); }}
                   onClose={() => setShowFilters(false)}
                 />
               )}
