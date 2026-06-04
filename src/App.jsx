@@ -66,6 +66,7 @@ import UserOnboarding from './pages/UserOnboarding';
 import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
+import UpKeeper from './pages/UpKeeper';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -148,6 +149,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/upkeeper" element={<UpKeeper />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />
         <Route path="/admin/health" element={<SystemHealth />} />

@@ -1,0 +1,157 @@
+{
+  "name": "SocialPost",
+  "type": "object",
+  "properties": {
+    "created_by_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "staff"
+      ],
+      "description": "Role of the staff/admin who composed the post"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "User ID who composed/queued the post"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "linkedin",
+        "facebook",
+        "x",
+        "tiktok",
+        "discord"
+      ],
+      "description": "Target social platform"
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "video",
+        "reel",
+        "text"
+      ],
+      "default": "text"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Post caption / body text"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "URL of the generated/attached image or video"
+    },
+    "media_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple media URLs for carousel posts"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "approved",
+        "rejected",
+        "published",
+        "failed",
+        "queued_manual"
+      ],
+      "default": "draft",
+      "description": "draft \u2192 pending_approval (staff submits) \u2192 approved (admin) \u2192 published. queued_manual for unsupported platforms (FB/X/TikTok)."
+    },
+    "approval_required": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether admin approval is required before publishing (false if staff is preauthorized for this platform)"
+    },
+    "approved_by_id": {
+      "type": "string"
+    },
+    "approved_by_name": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rejection_reason": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "external_post_id": {
+      "type": "string",
+      "description": "ID returned by the social platform after publishing"
+    },
+    "publish_error": {
+      "type": "string",
+      "description": "Error message if publishing failed"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "UpKeeper conversation this post was generated in"
+    }
+  },
+  "required": [
+    "platform",
+    "caption"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.author_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

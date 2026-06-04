@@ -1,0 +1,88 @@
+{
+  "name": "StaffPermission",
+  "type": "object",
+  "properties": {
+    "staff_id": {
+      "type": "string",
+      "description": "User ID of the staff member these permissions apply to"
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "staff_email": {
+      "type": "string"
+    },
+    "can_publish_social": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preauthorized to publish social posts WITHOUT per-post admin approval"
+    },
+    "preauthorized_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "instagram",
+          "linkedin",
+          "facebook",
+          "x",
+          "tiktok",
+          "discord"
+        ]
+      },
+      "description": "Platforms this staff member may publish to without approval"
+    },
+    "can_make_site_changes": {
+      "type": "boolean",
+      "default": true,
+      "description": "May use UpKeeper to propose/make site changes (always subject to admin approval unless preauthorized)"
+    },
+    "can_apply_changes_directly": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preauthorized to apply UpKeeper site changes without admin sign-off"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "granted_by_id": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "staff_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.staff_id": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

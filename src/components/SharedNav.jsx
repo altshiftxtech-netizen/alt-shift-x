@@ -164,6 +164,10 @@ export default function SharedNav({ mode = "user", theme }) {
                   Tutorials
                 </Link>
                 <div className="border-t border-slate-100 my-1" />
+                <Link to="/admin/upkeeper" onClick={() => setPortalOpen(false)}
+                  className="flex items-center gap-2 mx-1 my-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-orange-200 to-orange-400 hover:opacity-90 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5" /> The UpKeeper
+                </Link>
                 <Link to="/admin" onClick={() => setPortalOpen(false)}
                   className="flex items-center gap-2 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
                   Admin Panel
