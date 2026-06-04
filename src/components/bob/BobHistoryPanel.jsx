@@ -6,7 +6,7 @@ import EsiShareModal from "@/components/bob/EsiShareModal";
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
 // record, soft-delete to Trash, restore, or permanently delete (two-step).
-export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onSpinOff, isPaying, onRequestEsi }) {
+export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onSpinOff }) {
   const [convos, setConvos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(null);
@@ -91,7 +91,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      onRequestEsi?.(c);
+      // ESI export is free — nothing to fall back to.
     }
     setEsiBusy(null);
   };
@@ -113,8 +113,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      // Likely payment_required for non-payers — fall back to single-project unlock flow.
-      if (active[0]) onRequestEsi?.(active[0]);
+      // ESI export is free — nothing to fall back to.
     }
     setZipBusy(false);
   };

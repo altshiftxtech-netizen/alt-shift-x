@@ -150,13 +150,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const requestedIds = Array.isArray(body.conversationIds) ? body.conversationIds : null;
 
-    // Access tier
-    let isPaying = user.role === "admin";
-    if (!isPaying) {
-      const subs = await base44.entities.Subscription.filter({ user_id: user.id });
-      const sub = subs[0];
-      isPaying = !!(sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status));
-    }
+    // ESI export is free for all signed-in users.
 
     // Resolve which conversations to include
     let conversations = await base44.agents.listConversations({ agent_name: "bob_builder" });
@@ -170,20 +164,9 @@ Deno.serve(async (req) => {
     const zip = new JSZip();
     const usedNames = {};
     let included = 0;
-    let skipped = 0;
-    const consumeQueue = [];
+    const skipped = 0;
 
     for (const convStub of conversations) {
-      // Non-payers: only include projects with an unconsumed unlock
-      let unlockToConsume = null;
-      if (!isPaying) {
-        const unlocks = await base44.entities.EsiUnlock.filter({
-          user_id: user.id, conversation_id: convStub.id, consumed: false,
-        });
-        if (unlocks.length === 0) { skipped++; continue; }
-        unlockToConsume = unlocks[0];
-      }
-
       const full = await base44.agents.getConversation(convStub.id);
       const { bytes, projectName } = await buildEsiPdf(full, user);
 
@@ -192,20 +175,10 @@ Deno.serve(async (req) => {
       if (usedNames[base] > 1) base += `_${usedNames[base]}`;
       zip.file(`${base}.pdf`, bytes);
       included++;
-      if (unlockToConsume) consumeQueue.push(unlockToConsume.id);
-    }
-
-    if (included === 0) {
-      return Response.json({ error: "payment_required", message: "No unlocked projects to export. Upgrade or unlock projects first." }, { status: 402 });
-    }
-
-    // Consume unlocks only after PDFs built successfully
-    for (const id of consumeQueue) {
-      await base44.asServiceRole.entities.EsiUnlock.update(id, { consumed: true });
     }
 
     const zipBytes = await zip.generateAsync({ type: "uint8array" });
-    console.log(`[exportAllEsiRecords] user=${user.id} included=${included} skipped=${skipped}`);
+    console.log(`[exportAllEsiRecords] user=${user.id} included=${included}`);
 
     const stamp = new Date().toISOString().slice(0, 10);
     return new Response(zipBytes, {

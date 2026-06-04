@@ -33,26 +33,7 @@ Deno.serve(async (req) => {
     const { conversationId } = await req.json();
     if (!conversationId) return Response.json({ error: "Missing conversationId" }, { status: 400 });
 
-    // ── Access check ──────────────────────────────────────────────────────────
-    let isPaying = user.role === "admin";
-    if (!isPaying) {
-      const subs = await base44.entities.Subscription.filter({ user_id: user.id });
-      const sub = subs[0];
-      isPaying = !!(sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status));
-    }
-
-    let unlockToConsume = null;
-    if (!isPaying) {
-      const unlocks = await base44.entities.EsiUnlock.filter({
-        user_id: user.id,
-        conversation_id: conversationId,
-        consumed: false,
-      });
-      if (unlocks.length === 0) {
-        return Response.json({ error: "payment_required", message: "An ESI export unlock is required for this project." }, { status: 402 });
-      }
-      unlockToConsume = unlocks[0];
-    }
+    // ESI export is free for all signed-in users.
 
     // ── Fetch conversation ──────────────────────────────────────────────────────
     const conversation = await base44.agents.getConversation(conversationId);
@@ -181,12 +162,6 @@ Deno.serve(async (req) => {
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
       doc.text(`ESI Legal Record · ${projectName} · Hash ${integrityHash.slice(0, 16)}… · Page ${p}/${pageCount}`, M, 290);
-    }
-
-    // Consume the one-time unlock (non-payers only)
-    if (unlockToConsume) {
-      await base44.asServiceRole.entities.EsiUnlock.update(unlockToConsume.id, { consumed: true });
-      console.log(`[exportEsiRecord] Consumed unlock ${unlockToConsume.id} for conversation ${conversationId}`);
     }
 
     const pdfBytes = doc.output("arraybuffer");

@@ -11,7 +11,6 @@ import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
 import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
-import EsiUnlockModal from "@/components/bob/EsiUnlockModal";
 import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
@@ -108,35 +107,11 @@ export default function BobBuilder() {
   const [deployStatus, setDeployStatus] = useState(null);
   const [exporting, setExporting] = useState(false);
 
-  // ESI unlock modal — { id, metadata } of the project pending a $10 unlock
-  const [esiTarget, setEsiTarget] = useState(null);
-
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const splashInputRef = useRef(null);
 
   useEffect(() => { loadFrameworks(); }, []);
-
-  // After a successful $10 ESI checkout, Stripe returns ?esi_unlocked=<conversationId>.
-  // Auto-download the now-unlocked record and open the workspace to history.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const cid = params.get("esi_unlocked");
-    if (!cid) return;
-    window.history.replaceState({}, "", "/builder/bob");
-    setLaunched(true);
-    setActiveTab("chat");
-    (async () => {
-      const res = await base44.functions.invoke("exportEsiRecord", { conversationId: cid });
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ESI_Record_${cid}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    })().catch(() => {});
-  }, []);
 
   // Auto-scroll to the bottom as streaming messages arrive, unless the user has
   // scrolled up to read earlier content.
@@ -616,8 +591,6 @@ export default function BobBuilder() {
                 onOpen={openProject}
                 onWipeBoard={wipeBoard}
                 onSpinOff={spinOff}
-                isPaying={isPaying}
-                onRequestEsi={(c) => setEsiTarget(c)}
               />
 
               <Card className="bg-slate-800 border-slate-700">
@@ -911,9 +884,6 @@ export default function BobBuilder() {
         )}
       </div>
 
-      {esiTarget && (
-        <EsiUnlockModal conversation={esiTarget} onClose={() => setEsiTarget(null)} />
-      )}
     </div>
   );
 }
