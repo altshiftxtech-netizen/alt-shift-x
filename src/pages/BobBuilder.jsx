@@ -137,7 +137,32 @@ export default function BobBuilder() {
   const scrollContainerRef = useRef(null);
   const splashInputRef = useRef(null);
 
-  useEffect(() => { loadFrameworks(); }, []);
+  useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
+
+  // Persist the active conversation id so the chat stays loaded across sessions
+  // (e.g. leaving to "New Session" / navigating away and coming back) until the
+  // builder explicitly wipes the board.
+  useEffect(() => {
+    if (convId) localStorage.setItem("bob_active_conv", convId);
+  }, [convId]);
+
+  // On mount, reopen the last active conversation so the chat persists until wiped.
+  const restoreActiveConversation = async () => {
+    const saved = localStorage.getItem("bob_active_conv");
+    if (!saved) return;
+    try {
+      const full = await base44.agents.getConversation(saved);
+      if (full && (full.messages || []).length > 0) {
+        setConv(full);
+        setConvId(full.id);
+        setMessages(full.messages || []);
+        setLaunched(true);
+        setActiveTab("chat");
+      }
+    } catch {
+      localStorage.removeItem("bob_active_conv");
+    }
+  };
 
   // Auto-scroll to the bottom as streaming messages arrive, unless the user has
   // scrolled up to read earlier content.
@@ -242,6 +267,7 @@ export default function BobBuilder() {
     setConv(null);
     setConvId(null);
     setMessages([]);
+    localStorage.removeItem("bob_active_conv");
   };
 
   // Open an existing project from the Wipe Board history.
@@ -715,11 +741,15 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {isGenerating && (
+                  {(isGenerating || sending) && (
                     <div className="flex items-start gap-2">
-                      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="BOB" />
-                      <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
-                        {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+                      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
+                      <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+                        <span className="text-xs text-slate-400">BOB is working…</span>
+                        <span className="flex gap-1 ml-0.5">
+                          {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+                        </span>
                       </div>
                     </div>
                   )}
