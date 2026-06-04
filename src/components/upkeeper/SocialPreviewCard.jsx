@@ -2,7 +2,7 @@ import React from "react";
 import { Instagram, Linkedin, Facebook, Twitter, Music2, MessageCircle, CheckCircle2, Clock, XCircle, Download, Send, Loader2, ShieldCheck } from "lucide-react";
 
 const PLATFORM_META = {
-  instagram: { label: "Instagram", icon: Instagram, color: "from-pink-500 to-orange-400", live: true },
+  instagram: { label: "Instagram", icon: Instagram, color: "from-pink-500 to-orange-400", live: false },
   linkedin: { label: "LinkedIn", icon: Linkedin, color: "from-sky-600 to-blue-700", live: true },
   facebook: { label: "Facebook", icon: Facebook, color: "from-blue-600 to-blue-800", live: false },
   x: { label: "X", icon: Twitter, color: "from-slate-700 to-black", live: false },

@@ -4,7 +4,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //  - admins can publish directly
 //  - staff can only publish if preauthorized for that platform (StaffPermission),
 //    otherwise the post is moved to pending_approval and NOT published.
-// Live OAuth publishing is supported for Instagram & LinkedIn. Facebook/X/TikTok
+// Live OAuth publishing is supported for LinkedIn. Instagram/Facebook/X/TikTok
 // are queued as queued_manual for manual posting.
 Deno.serve(async (req) => {
   try {
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Platforms without live publishing → queue for manual posting ─────────
-    if (['facebook', 'x', 'tiktok'].includes(post.platform)) {
+    if (['instagram', 'facebook', 'x', 'tiktok'].includes(post.platform)) {
       await base44.asServiceRole.entities.SocialPost.update(postId, {
         status: 'queued_manual',
         approved_by_id: user.id,
@@ -60,33 +60,7 @@ Deno.serve(async (req) => {
     // ── Live OAuth publishing ────────────────────────────────────────────────
     let externalId = null;
 
-    if (post.platform === 'instagram') {
-      const { accessToken } = await base44.asServiceRole.connectors.getConnection('instagram');
-      // 1) get IG user id
-      const meRes = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`);
-      const me = await meRes.json();
-      if (!me.id) throw new Error('Could not resolve Instagram account');
-      const isVideo = post.media_type === 'video' || post.media_type === 'reel';
-      // 2) create media container
-      const params = new URLSearchParams();
-      if (isVideo) {
-        params.set('media_type', 'REELS');
-        params.set('video_url', post.media_url || '');
-      } else {
-        params.set('image_url', post.media_url || '');
-      }
-      params.set('caption', post.caption || '');
-      params.set('access_token', accessToken);
-      const createRes = await fetch(`https://graph.instagram.com/${me.id}/media`, { method: 'POST', body: params });
-      const container = await createRes.json();
-      if (!container.id) throw new Error(container?.error?.message || 'Instagram media container failed');
-      // 3) publish
-      const pubParams = new URLSearchParams({ creation_id: container.id, access_token: accessToken });
-      const pubRes = await fetch(`https://graph.instagram.com/${me.id}/media_publish`, { method: 'POST', body: pubParams });
-      const published = await pubRes.json();
-      if (!published.id) throw new Error(published?.error?.message || 'Instagram publish failed');
-      externalId = published.id;
-    } else if (post.platform === 'linkedin') {
+    if (post.platform === 'linkedin') {
       const { accessToken } = await base44.asServiceRole.connectors.getConnection('linkedin');
       // resolve member URN
       const meRes = await fetch('https://api.linkedin.com/v2/userinfo', {
