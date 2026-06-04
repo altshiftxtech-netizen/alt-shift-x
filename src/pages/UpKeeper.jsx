@@ -10,6 +10,7 @@ import StopButton from "@/components/StopButton";
 import UpKeeperMessage from "@/components/upkeeper/UpKeeperMessage";
 import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
+import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -91,6 +92,42 @@ export default function UpKeeper() {
     }
   };
 
+  // Launch from splash carrying any attached files into the first message.
+  const launchWithFiles = async () => {
+    setLaunched(true);
+    const c = await initConv();
+    const msg = input.trim();
+    if (!msg && uploadedFiles.length === 0) return;
+    setSending(true); setInput("");
+    const fileList = uploadedFiles.map((f) => f.name).join(", ");
+    const fullMsg = uploadedFiles.length > 0
+      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.`
+      : msg;
+    await base44.agents.addMessage(c, { role: "user", content: fullMsg, file_urls: uploadedFiles.map((f) => f.url) });
+    onSent();
+    setUploadedFiles([]); setSending(false);
+  };
+
+  // Open the workspace straight into Session History.
+  const openHistory = async () => {
+    setLaunched(true); setActiveTab("chat");
+    await initConv();
+  };
+
+  // Wipe Board — start a brand-new session, keeping the workspace open.
+  const wipeBoard = async () => {
+    setMessages([]); setActiveTab("chat");
+    await initConv();
+  };
+
+  // Reopen an existing session from history.
+  const openSession = async (c) => {
+    const full = await base44.agents.getConversation(c.id);
+    setConv(full); setConvId(full.id);
+    setMessages(full.messages || []);
+    setActiveTab("chat");
+  };
+
   const sendMessage = async (text) => {
     if (!conv || sending) return;
     const msg = text || input;
@@ -170,18 +207,39 @@ export default function UpKeeper() {
           </div>
         </div>
 
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-2xl space-y-2">
+          {uploadedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-1">
+              {uploadedFiles.map((f, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-orange-900/60 border border-orange-700 text-orange-300 text-[11px] px-2.5 py-1 rounded-full">
+                  <Paperclip className="w-3 h-3" />
+                  <span className="max-w-[120px] truncate">{f.name}</span>
+                  <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-orange-400 hover:text-white ml-0.5"><X className="w-3 h-3" /></button>
+                </div>
+              ))}
+            </div>
+          )}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); launch(input); } }}
-            placeholder="What do you need the UpKeeper to do? (Ctrl+Enter to start)"
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); launchWithFiles(); } }}
+            placeholder={isRecording ? "🎙 Listening — speak your request…" : "What do you need the UpKeeper to do? (Ctrl+Enter to start)"}
             rows={3}
             className="w-full bg-[#241812] text-orange-50 text-sm px-4 py-3 rounded-2xl border border-orange-900/40 outline-none focus:border-orange-500 resize-none"
             autoFocus
           />
-          <div className="flex justify-end mt-2">
-            <button onClick={() => launch(input)} disabled={!input.trim()}
+          <div className="flex items-center gap-2">
+            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileUpload} />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files"
+              className="flex items-center gap-1.5 text-orange-200/60 hover:text-orange-400 border border-orange-900/40 hover:border-orange-500 px-3 py-2 rounded-xl text-xs transition-all">
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
+            </button>
+            <button type="button" onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"}
+              className={`flex items-center gap-1.5 border px-3 py-2 rounded-xl text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-orange-200/60 hover:text-orange-400 border-orange-900/40 hover:border-orange-500"}`}>
+              {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />} {isRecording ? "Stop" : "Voice"}
+            </button>
+            <div className="flex-1" />
+            <button onClick={launchWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
               className="bg-orange-600 hover:bg-orange-700 disabled:opacity-40 text-white px-5 py-2 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm">
               <Sparkles className="w-4 h-4" /> Start
             </button>
@@ -207,6 +265,18 @@ export default function UpKeeper() {
           <div className="flex-1">
             <p className="font-semibold">Open Social Studio</p>
             <p className="text-[11px] text-orange-200/50">Create photos, reels & videos and publish to linked accounts</p>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-400" />
+        </button>
+
+        <button onClick={openHistory}
+          className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-orange-900/30 hover:bg-orange-800/40 border border-orange-700/50 hover:border-orange-500 text-orange-200/80 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
+          <span className="w-8 h-8 rounded-lg bg-orange-800/60 flex items-center justify-center flex-shrink-0">
+            <History className="w-4 h-4 text-orange-300" />
+          </span>
+          <div className="flex-1">
+            <p className="font-semibold">View Session History</p>
+            <p className="text-[11px] text-orange-200/50">Reopen a session or email its Maintenance Event Log (ESI)</p>
           </div>
           <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-400" />
         </button>
@@ -253,6 +323,11 @@ export default function UpKeeper() {
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
+              <UpKeeperHistoryPanel
+                activeConvId={convId}
+                onOpen={openSession}
+                onWipeBoard={wipeBoard}
+              />
               <div className="bg-[#241812] border border-orange-900/40 rounded-xl p-3">
                 <p className="text-xs font-bold text-orange-200 flex items-center gap-1.5 mb-2"><Activity className="w-3.5 h-3.5 text-orange-400" /> Quick Ops</p>
                 <div className="space-y-1">
