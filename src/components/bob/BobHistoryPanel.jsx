@@ -274,8 +274,23 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                     <Share2 className="w-3 h-3" />
                     Share
                   </button>
-                  {confirmTrash === c.id ? (
-                    <div className="flex items-center gap-1.5 ml-auto">
+                  {confirmTrash !== c.id && (
+                    <button
+                      onClick={() => setConfirmTrash(c.id)}
+                      title="Move to Trash (recoverable)"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Delete
+                    </button>
+                  )}
+                </div>
+
+                {/* Move-to-Trash confirm — its own full-width row so it never
+                    collides with the action buttons or the next project card. */}
+                {confirmTrash === c.id && (
+                  <div className="mt-2 bg-red-950/40 border border-red-800/40 rounded-md p-2 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => trashProject(c)}
                         disabled={busy === c.id}
@@ -291,21 +306,12 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                       >
                         Cancel
                       </button>
-                      <span className="text-[9px] text-slate-500 w-full mt-0.5 flex items-center gap-1">
-                        <Mail className="w-2.5 h-2.5" /> ESI record will be emailed to you
-                      </span>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmTrash(c.id)}
-                      title="Move to Trash (recoverable)"
-                      className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Delete
-                    </button>
-                  )}
-                </div>
+                    <span className="text-[9px] text-slate-500 flex items-center gap-1">
+                      <Mail className="w-2.5 h-2.5" /> ESI record will be emailed to you
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>

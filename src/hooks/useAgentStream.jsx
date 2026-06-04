@@ -17,7 +17,7 @@ import { base44 } from "@/api/base44Client";
 // If no new streaming update arrives within this window, we assume the agent
 // finished (or the stream died) and clear the "generating" indicator so the
 // Stop button reverts to Send.
-const IDLE_TIMEOUT_MS = 8000;
+const IDLE_TIMEOUT_MS = 4000;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
@@ -42,15 +42,20 @@ export default function useAgentStream(convId, initialMessages = []) {
   const detectGenerating = (msgs) => {
     if (!msgs || msgs.length === 0) return false;
     const last = msgs[msgs.length - 1];
-    // A completed assistant message (no active status, no running tool calls)
-    // means the reply is done — regardless of streaming quirks.
     if (last.role === "assistant") {
-      const status = last.status;
-      if (status && ["pending", "in_progress", "running"].includes(status)) return true;
       const tcRunning = (last.tool_calls || []).some(
         (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
       );
-      return tcRunning;
+      // A tool is actively running → still generating.
+      if (tcRunning) return true;
+      // If the assistant has already produced text and no tool is running, the
+      // reply is DONE — ignore a lingering message-level status flag that some
+      // streams leave set after the final token (the cause of the "stuck" Stop).
+      const hasText = typeof last.content === "string" && last.content.trim().length > 0;
+      if (hasText) return false;
+      // No text yet and no running tool, but status says it's still working.
+      const status = last.status;
+      return !!(status && ["pending", "in_progress", "running"].includes(status));
     }
     // Last message is from the user → a reply is incoming.
     return last.role === "user";
