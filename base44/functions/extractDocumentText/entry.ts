@@ -1,14 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { unzip } from 'npm:fflate@0.8.2';
+import { unzipSync } from 'npm:fflate@0.8.2';
 
 // Parse a .docx (which is a ZIP of XML) into plain text, server-side. This
 // avoids the platform limitation where .docx is served as a protected binary
-// that browser/LLM readers can't parse.
-function unzipAsync(uint8) {
-  return new Promise((resolve, reject) => {
-    unzip(uint8, (err, files) => (err ? reject(err) : resolve(files)));
-  });
-}
+// that browser/LLM readers can't parse. We use unzipSync — the async variant
+// relies on Web Workers which are not supported in the Deno function runtime.
 
 function xmlToText(xml) {
   return xml
@@ -33,7 +29,7 @@ async function extractDocx(fileUrl) {
   const res = await fetch(fileUrl);
   if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
   const buf = new Uint8Array(await res.arrayBuffer());
-  const files = await unzipAsync(buf);
+  const files = unzipSync(buf);
   const decoder = new TextDecoder("utf-8");
 
   // Main body + headers/footers, in order.
