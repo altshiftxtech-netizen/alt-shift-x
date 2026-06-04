@@ -188,8 +188,8 @@ export default function SharedNav({ mode = "user", theme }) {
             )}
           </div>
 
-          {/* Avatar */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer ${isDev ? "bg-[#161b22] border border-[#30363d] text-[#3fb950] font-mono" : "bg-slate-200 text-slate-600"}`}>U</div>
+          {/* Avatar — static, non-interactive (no dead hover button) */}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isDev ? "bg-[#161b22] border border-[#30363d] text-[#3fb950] font-mono" : "bg-slate-200 text-slate-600"}`}>U</div>
 
           {/* Mobile menu button */}
           <button className={`md:hidden p-1.5 rounded-lg ${isDev ? "text-[#8b949e] hover:bg-[#161b22]" : "hover:bg-slate-100"}`} onClick={() => setMobileOpen(!mobileOpen)}>
