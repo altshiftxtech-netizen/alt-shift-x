@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
 
@@ -16,6 +16,9 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [showTrash, setShowTrash] = useState(false);
   const [esiBusy, setEsiBusy] = useState(null);
   const [shareConv, setShareConv] = useState(null); // conversation whose ESI is being shared
+  const [zipBusy, setZipBusy] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false); // clear-history confirm state
+  const [clearing, setClearing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -92,6 +95,45 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setEsiBusy(null);
   };
 
+  // Download every active project's ESI record as a single ZIP.
+  const downloadAllZip = async () => {
+    setZipBusy(true);
+    try {
+      const res = await base44.functions.invoke(
+        "exportAllEsiRecords",
+        { conversationIds: active.map((c) => c.id) },
+        { responseType: "blob" }
+      );
+      const blob = res.data instanceof Blob ? res.data : new Blob([res.data], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ESI_Records_${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Likely payment_required for non-payers — fall back to single-project unlock flow.
+      if (active[0]) onRequestEsi?.(active[0]);
+    }
+    setZipBusy(false);
+  };
+
+  // Clear History — move ALL active projects to Trash (recoverable). Also emails
+  // each project's ESI record to the builder so nothing is lost.
+  const clearHistory = async () => {
+    setClearing(true);
+    for (const c of active) {
+      await base44.agents.updateConversation(c.id, {
+        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
+      });
+      base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
+    }
+    setConfirmClear(false);
+    await load();
+    setShowTrash(true);
+    setClearing(false);
+  };
+
   const titleFor = (c) => {
     const n = c.metadata?.name;
     if (!n || n === "New Project") return "New Project";
@@ -108,17 +150,61 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-        <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-          <History className="w-3.5 h-3.5 text-violet-400" /> Wipe Board · History
-        </span>
-        <button
-          onClick={onWipeBoard}
-          title="Start a fresh project"
-          className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-violet-300 to-violet-500 hover:opacity-90 px-2 py-1 rounded-lg"
-        >
-          <Plus className="w-3 h-3" /> Wipe Board
-        </button>
+      <div className="px-4 py-3 border-b border-slate-700 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+            <History className="w-3.5 h-3.5 text-violet-400" /> Wipe Board · History
+          </span>
+          <button
+            onClick={onWipeBoard}
+            title="Start a fresh project"
+            className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-violet-300 to-violet-500 hover:opacity-90 px-2 py-1 rounded-lg"
+          >
+            <Plus className="w-3 h-3" /> Wipe Board
+          </button>
+        </div>
+        {active.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={downloadAllZip}
+              disabled={zipBusy}
+              title="Download all ESI records as one ZIP file"
+              className="flex items-center gap-1 text-[10px] font-semibold text-emerald-300 hover:text-white bg-emerald-900/30 hover:bg-emerald-800 border border-emerald-700/50 px-2 py-1 rounded-md transition-colors"
+            >
+              {zipBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Archive className="w-3 h-3" />}
+              Download All (ZIP)
+            </button>
+            {confirmClear ? (
+              <div className="flex items-center gap-1.5 ml-auto">
+                <button
+                  onClick={clearHistory}
+                  disabled={clearing}
+                  title="Move all projects to Trash"
+                  className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2 py-1 rounded-md transition-colors"
+                >
+                  {clearing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eraser className="w-3 h-3" />}
+                  Clear All
+                </button>
+                <button onClick={() => setConfirmClear(false)} className="text-[10px] font-semibold text-slate-400 hover:text-white px-1.5 py-1 rounded-md">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmClear(true)}
+                title="Move all projects to Trash (recoverable)"
+                className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
+              >
+                <Eraser className="w-3 h-3" /> Clear History
+              </button>
+            )}
+          </div>
+        )}
+        {confirmClear && (
+          <p className="text-[9px] text-slate-500 flex items-center gap-1">
+            <Mail className="w-2.5 h-2.5" /> All projects move to Trash; each ESI record is emailed to you.
+          </p>
+        )}
       </div>
 
       <div className="max-h-[340px] overflow-y-auto">
