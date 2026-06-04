@@ -19,6 +19,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [zipBusy, setZipBusy] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false); // clear-history confirm state
   const [clearing, setClearing] = useState(false);
+  const [confirmWipe, setConfirmWipe] = useState(false); // wipe-board confirm state
 
   const load = async () => {
     setLoading(true);
@@ -155,13 +156,28 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
             <History className="w-3.5 h-3.5 text-violet-400" /> Wipe Board · History
           </span>
-          <button
-            onClick={onWipeBoard}
-            title="Start a fresh project"
-            className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-violet-300 to-violet-500 hover:opacity-90 px-2 py-1 rounded-lg"
-          >
-            <Plus className="w-3 h-3" /> Wipe Board
-          </button>
+          {confirmWipe ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => { setConfirmWipe(false); onWipeBoard(); }}
+                title="Start a fresh project"
+                className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-violet-300 to-violet-500 hover:opacity-90 px-2 py-1 rounded-lg"
+              >
+                <Plus className="w-3 h-3" /> Confirm Wipe
+              </button>
+              <button onClick={() => setConfirmWipe(false)} className="text-[10px] font-semibold text-slate-400 hover:text-white px-1.5 py-1 rounded-md">
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmWipe(true)}
+              title="Start a fresh project"
+              className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-violet-300 to-violet-500 hover:opacity-90 px-2 py-1 rounded-lg"
+            >
+              <Plus className="w-3 h-3" /> Wipe Board
+            </button>
+          )}
         </div>
         {active.length > 0 && (
           <div className="flex items-center gap-1.5">
