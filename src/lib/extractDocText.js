@@ -10,18 +10,18 @@ const extOf = (name = "") => name.split(".").pop().toLowerCase();
 export const isDocFile = (name = "") => DOC_EXTENSIONS.includes(extOf(name));
 
 /**
- * Extract readable text from an uploaded document via the LLM (which can read
- * Word, PDF, etc.). Returns a plain-text string, or "" if extraction fails.
+ * Extract readable text from an uploaded document. Uses a backend function that
+ * parses .docx server-side (Word files are served as protected binaries that
+ * browser/LLM readers can't parse) and falls back to the LLM for other formats.
+ * Returns a plain-text string, or "" if extraction fails.
  */
 export async function extractDocText(fileUrl, fileName = "document") {
   try {
-    const text = await base44.integrations.Core.InvokeLLM({
-      prompt:
-        `Extract and return the COMPLETE raw text content of the attached document "${fileName}". ` +
-        `Preserve headings, lists, tables (as readable text), and ordering. ` +
-        `Do not summarize, omit, or add commentary — output only the document's text content verbatim.`,
-      file_urls: [fileUrl],
+    const res = await base44.functions.invoke("extractDocumentText", {
+      file_url: fileUrl,
+      file_name: fileName,
     });
+    const text = res?.data?.text;
     return typeof text === "string" ? text.trim() : "";
   } catch {
     return "";
