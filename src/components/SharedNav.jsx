@@ -70,7 +70,7 @@ export default function SharedNav({ mode = "user", theme }) {
   const isMoreActive = moreItems.some((m) => isActive(m.to));
 
   const navInner = (
-    <nav className={`px-4 sm:px-6 py-3 flex items-center gap-2 sticky top-0 z-40 w-full max-w-full overflow-hidden ${isDev ? "bg-[#0d1117]" : "bg-white border-b border-slate-100"}`}>
+    <nav className={`px-4 sm:px-6 py-3 flex items-center gap-2 sticky top-0 z-50 w-full max-w-full ${isDev ? "bg-[#0d1117]" : "bg-white border-b border-slate-100"}`}>
         {/* Logo */}
         <div className="shrink-0 flex items-center gap-2">
           <Logo className="h-8 w-auto" variant={isDev ? "purple" : "white"} />
@@ -107,8 +107,8 @@ export default function SharedNav({ mode = "user", theme }) {
               </button>
               {moreOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} />
-                  <div className={`absolute left-0 mt-1 w-52 rounded-xl shadow-lg py-1 z-50 ${isDev ? "bg-[#161b22] border border-[#30363d] font-mono" : "bg-white border border-slate-200"}`}>
+                  <div className="fixed inset-0 z-[55]" onClick={() => setMoreOpen(false)} />
+                  <div className={`absolute left-0 mt-1 w-52 rounded-xl shadow-lg py-1 z-[60] ${isDev ? "bg-[#161b22] border border-[#30363d] font-mono" : "bg-white border border-slate-200"}`}>
                     {moreItems.map(({ to, label, icon: Icon }) => (
                       <Link key={to} to={to} onClick={() => setMoreOpen(false)}
                         className={`flex items-center gap-2 px-3 py-2 text-xs transition-colors ${isDev
@@ -137,7 +137,7 @@ export default function SharedNav({ mode = "user", theme }) {
               <ChevronDown className="w-3 h-3" />
             </button>
             {portalOpen && (
-              <div className={`absolute right-0 mt-1 w-44 rounded-xl shadow-lg py-1 z-50 ${isDev ? "bg-[#161b22] border border-[#30363d] [&_a]:!text-[#8b949e] [&_a:hover]:!bg-[#0d1117] [&_a:hover]:!text-[#c9d1d9] font-mono" : "bg-white border border-slate-200"}`}>
+              <div className={`absolute right-0 mt-1 w-44 rounded-xl shadow-lg py-1 z-[60] ${isDev ? "bg-[#161b22] border border-[#30363d] [&_a]:!text-[#8b949e] [&_a:hover]:!bg-[#0d1117] [&_a:hover]:!text-[#c9d1d9] font-mono" : "bg-white border border-slate-200"}`}>
                 {/* Highlighted Speakeasy — paying members only */}
                 {canSpeakeasy && (
                   <Link to="/speakeasy" onClick={() => setPortalOpen(false)}
