@@ -155,11 +155,36 @@ export default function BobBuilder() {
   const initConv = async () => {
     const c = await base44.agents.createConversation({
       agent_name: "bob_builder",
-      metadata: { name: "BOB Session " + new Date().toLocaleTimeString() }
+      metadata: { name: "New Project" }
     });
     setConv(c);
     setConvId(c.id);
     return c;
+  };
+
+  // Build a clean, human-readable project title from the first prompt so the
+  // Wipe Board history is easily identifiable (e.g. "Build a bid estimator...").
+  const deriveTitle = (text) => {
+    if (!text) return null;
+    let t = text
+      .replace(/\[Attached files:[^\]]*\]/gi, " ")
+      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!t) return null;
+    if (t.length > 60) t = t.slice(0, 60).trim() + "…";
+    return t;
+  };
+
+  // Set the project title from the first prompt — only if it hasn't been named yet.
+  const titleProject = async (c, text) => {
+    const current = c?.metadata?.name;
+    if (current && current !== "New Project") return; // already has a real title
+    const title = deriveTitle(text);
+    if (!title) return;
+    await base44.agents.updateConversation(c.id, {
+      metadata: { ...(c.metadata || {}), name: title },
+    });
   };
 
   const loadFrameworks = async () => {
@@ -179,6 +204,7 @@ export default function BobBuilder() {
     if (seedText?.trim()) {
       setSending(true);
       await base44.agents.addMessage(c, { role: "user", content: seedText });
+      await titleProject(c, seedText);
       onSent();
       setSending(false);
     }
@@ -223,9 +249,12 @@ export default function BobBuilder() {
     const sourceUrls = [...new Set(history.flatMap(m => m.file_urls || []))];
     const originalBrief = firstUser?.content || "the original component";
 
+    const originalTitle = c.metadata?.name && c.metadata.name !== "New Project"
+      ? c.metadata.name.replace(/^Spin-Off · /, "")
+      : deriveTitle(originalBrief) || "project";
     const newConv = await base44.agents.createConversation({
       agent_name: "bob_builder",
-      metadata: { name: "BOB Session Spin-Off " + new Date().toLocaleTimeString() }
+      metadata: { name: "Spin-Off · " + originalTitle }
     });
     setConv(newConv);
     setConvId(newConv.id);
@@ -259,6 +288,7 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
+    await titleProject(conv, msg);
     onSent();
     setSending(false);
   };
@@ -319,6 +349,7 @@ export default function BobBuilder() {
       content: fullMsg,
       file_urls: uploadedFiles.map(f => f.url)
     });
+    await titleProject(conv, msg || fileList);
     onSent();
     setUploadedFiles([]);
     setSending(false);

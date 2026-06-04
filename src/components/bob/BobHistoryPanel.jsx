@@ -92,8 +92,13 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setEsiBusy(null);
   };
 
-  const titleFor = (c) =>
-    c.metadata?.name?.replace(/^BOB Session /, "Project · ") || "Untitled Project";
+  const titleFor = (c) => {
+    const n = c.metadata?.name;
+    if (!n || n === "New Project") return "New Project";
+    // Legacy sessions used a "BOB Session <time>" name — show them cleanly.
+    if (/^BOB Session/.test(n)) return n.replace(/^BOB Session Spin-Off /, "Spin-Off · ").replace(/^BOB Session /, "Project · ");
+    return n;
+  };
 
   const timeFor = (c) => {
     const d = c.updated_date || c.created_date;
