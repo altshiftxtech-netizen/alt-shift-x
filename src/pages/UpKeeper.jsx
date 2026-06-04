@@ -13,6 +13,7 @@ import SocialStudio from "@/components/upkeeper/SocialStudio";
 import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
 import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
+import UpKeeperProfileMenu from "@/components/upkeeper/UpKeeperProfileMenu";
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -192,7 +193,10 @@ export default function UpKeeper() {
   // ── SPLASH ─────────────────────────────────────────────────────────────────
   if (!launched) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a120d] via-[#3a2418] to-[#1a120d] flex flex-col items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-[#1a120d] via-[#3a2418] to-[#1a120d] flex flex-col items-center justify-center px-4 py-12 relative">
+        <div className="absolute top-4 right-4 z-10">
+          <UpKeeperProfileMenu user={user} />
+        </div>
         <div className="flex flex-col items-center mb-8">
           <img src={AVATAR} alt="The UpKeeper" className="w-28 h-28 rounded-full object-cover shadow-2xl shadow-orange-500/40 mb-6 ring-4 ring-orange-400/30" />
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight text-center">
@@ -319,6 +323,7 @@ export default function UpKeeper() {
             <button onClick={() => setLaunched(false)} className="text-xs text-orange-200/50 hover:text-orange-200 px-2 py-1 rounded-lg hover:bg-[#2a1d16] transition-colors">
               ← New Session
             </button>
+            <UpKeeperProfileMenu user={user} />
           </div>
         </div>
 

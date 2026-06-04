@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, Loader2, MessageSquare, Clock, Trash2, FileText, CheckCircle2, Mail } from "lucide-react";
+import { History, Plus, Loader2, MessageSquare, Clock, Trash2, FileText, CheckCircle2, Mail, Archive, AlertTriangle, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // The UpKeeper's session history — mirrors BOB's Wipe Board. Each maintenance
-// session can be reopened, wiped (new session), or exported as a Maintenance
-// Event Log (ESI) that's emailed to the platform maintenance inbox.
+// session can be reopened, emailed as a Maintenance Event Log (ESI), or deleted
+// (two-step trash confirm). The whole history can be downloaded as a ZIP of PDFs
+// or cleared entirely (two-step confirm).
 export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard }) {
   const [convos, setConvos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,9 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
   const [reportDone, setReportDone] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [busy, setBusy] = useState(null);
+  const [zipBusy, setZipBusy] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -42,12 +46,45 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
     setTimeout(() => setReportDone(null), 4000);
   };
 
+  // Download every session's Maintenance Event Log as a single ZIP of PDFs.
+  const downloadAll = async () => {
+    if (zipBusy || convos.length === 0) return;
+    setZipBusy(true);
+    try {
+      const res = await base44.functions.invoke("exportAllMaintenanceLogs", {}, { responseType: "blob" });
+      const blob = res.data instanceof Blob ? res.data : new Blob([res.data], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Maintenance_Logs_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("download all failed", e);
+    }
+    setZipBusy(false);
+  };
+
   const deleteSession = async (c) => {
     setBusy(c.id);
     await base44.agents.deleteConversation(c.id);
     setConfirmDelete(null);
     await load();
     setBusy(null);
+  };
+
+  // Two-step clear: deletes every session in the history.
+  const clearHistory = async () => {
+    setClearing(true);
+    for (const c of convos) {
+      await base44.agents.deleteConversation(c.id);
+    }
+    setConfirmClear(false);
+    await load();
+    setClearing(false);
+    onWipeBoard();
   };
 
   return (
@@ -60,6 +97,31 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
           className="flex items-center gap-1 text-[10px] font-bold text-[#0A0A0C] bg-gradient-to-r from-orange-200 to-orange-400 hover:opacity-90 px-2 py-1 rounded-lg">
           <Plus className="w-3 h-3" /> Wipe Board
         </button>
+      </div>
+
+      {/* History-wide actions: Download all (ZIP) + Clear history (two-step) */}
+      <div className="px-3 py-2 border-b border-orange-900/40 flex items-center gap-1.5">
+        <button onClick={downloadAll} disabled={zipBusy || convos.length === 0}
+          title="Download all sessions as a ZIP of Maintenance Event Logs (PDF)"
+          className="flex items-center gap-1.5 text-[10px] font-semibold text-orange-100 bg-[#3a2a24] hover:bg-[#4a352c] border border-orange-900/40 hover:border-orange-500 px-2.5 py-1.5 rounded-md transition-colors disabled:opacity-50">
+          {zipBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+          {zipBusy ? "Zipping…" : "Download All (ZIP)"}
+        </button>
+        {confirmClear ? (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button onClick={clearHistory} disabled={clearing}
+              className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2 py-1.5 rounded-md transition-colors">
+              {clearing ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />} Confirm Clear
+            </button>
+            <button onClick={() => setConfirmClear(false)} className="text-[10px] font-semibold text-orange-200/60 hover:text-white px-1.5 py-1.5">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setConfirmClear(true)} disabled={convos.length === 0}
+            title="Permanently delete all sessions"
+            className="flex items-center gap-1.5 text-[10px] font-semibold text-red-300 hover:text-white bg-red-900/20 hover:bg-red-800 border border-red-800/40 px-2.5 py-1.5 rounded-md transition-colors ml-auto disabled:opacity-50">
+            <Archive className="w-3 h-3" /> Clear History
+          </button>
+        )}
       </div>
 
       <div className="max-h-[340px] overflow-y-auto">
@@ -93,14 +155,14 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
                     <div className="flex items-center gap-1.5 ml-auto">
                       <button onClick={() => deleteSession(c)} disabled={busy === c.id}
                         className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2 py-1 rounded-md transition-colors">
-                        {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Confirm
+                        {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />} Confirm Delete
                       </button>
                       <button onClick={() => setConfirmDelete(null)} className="text-[10px] font-semibold text-orange-200/60 hover:text-white px-1.5 py-1 rounded-md">Cancel</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDelete(c.id)} title="Delete session"
-                      className="flex items-center gap-1 text-[10px] font-semibold text-orange-200/50 hover:text-white bg-[#3a2a24] hover:bg-[#4a352c] border border-orange-900/40 px-2 py-1 rounded-md transition-colors ml-auto">
-                      <Trash2 className="w-3 h-3" /> Delete
+                    <button onClick={() => setConfirmDelete(c.id)} title="Move session to trash (delete)"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-orange-200/50 hover:text-white bg-[#3a2a24] hover:bg-red-800 border border-orange-900/40 px-2 py-1 rounded-md transition-colors ml-auto">
+                      <Trash2 className="w-3 h-3" /> Trash
                     </button>
                   )}
                   {reportDone === c.id && (
