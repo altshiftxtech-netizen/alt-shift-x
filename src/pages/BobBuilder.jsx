@@ -422,6 +422,14 @@ export default function BobBuilder() {
     setActiveTab("chat");
   };
 
+  // Stop must clear BOTH the hook's generating state AND this page's local
+  // `sending` flag — otherwise the loading bubble (shown on `sending || isGenerating`)
+  // stays up and the button appears unresponsive.
+  const handleStop = () => {
+    stopGenerating();
+    setSending(false);
+  };
+
   const TAB_CONFIG = [
     { id: "chat", label: "BOB Chat", icon: Bot },
     { id: "framework", label: "Component Framework", icon: LayoutTemplate },
@@ -758,7 +766,7 @@ export default function BobBuilder() {
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
                     {(sending || isGenerating) ? (
-                      <StopButton onStop={stopGenerating} />
+                      <StopButton onStop={handleStop} />
                     ) : (
                       <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
                         className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
