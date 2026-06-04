@@ -110,6 +110,7 @@ export default function BobBuilder() {
   const [convId, setConvId] = useState(null);
   const { messages, setMessages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(convId, []);
   const [input, setInput] = useState("");
+  const [clearSignal, setClearSignal] = useState(0);
   const [sending, setSending] = useState(false);
   const [showCodePanel, setShowCodePanel] = useState(false);
   const [codeInput, setCodeInput] = useState("");
@@ -298,6 +299,10 @@ export default function BobBuilder() {
     if (!msg.trim()) return;
     setSending(true);
     setInput("");
+    setClearSignal(s => s + 1);
+    // Show the user's message immediately so the chat never looks empty while
+    // BOB spins up — the stream subscription reconciles it shortly after.
+    setMessages(prev => [...prev, { role: "user", content: msg }]);
     // Lazily create the project conversation on first send so empty boards
     // never produce stray "New Project" entries.
     const c = conv || await initConv();
@@ -354,6 +359,7 @@ export default function BobBuilder() {
     if (!msg && uploadedFiles.length === 0) return;
     setSending(true);
     setInput("");
+    setClearSignal(s => s + 1);
     const filesToSend = uploadedFiles;
     const fileList = filesToSend.map(f => f.name).join(", ");
     // Extract text from document files (incl. Word) so BOB always reads them.
@@ -361,6 +367,8 @@ export default function BobBuilder() {
     const fullMsg = filesToSend.length > 0
       ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
       : msg;
+    // Optimistically show the user's message right away.
+    setMessages(prev => [...prev, { role: "user", content: fullMsg, file_urls: filesToSend.map(f => f.url) }]);
     // Lazily create the project conversation on first send.
     const c = conv || await initConv();
     await base44.agents.addMessage(c, {
@@ -491,6 +499,7 @@ export default function BobBuilder() {
               value={input}
               onChange={(text) => setInput(text)}
               onSubmit={handleSplashSubmit}
+              clearSignal={clearSignal}
               placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "What would you like to build today? Use Enter for new lines, Ctrl+Enter to launch..."}
               minHeight={120}
               maxHeight={320}
@@ -735,6 +744,7 @@ export default function BobBuilder() {
                     value={input}
                     onChange={(text) => setInput(text)}
                     onSubmit={sendWithFiles}
+                    clearSignal={clearSignal}
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything... Enter = new line · Ctrl+Enter = send"}
                     minHeight={80}
                     maxHeight={260}
@@ -768,7 +778,7 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    {isGenerating ? (
+                    {(isGenerating || sending) ? (
                       <StopButton onStop={handleStop} />
                     ) : (
                       <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}

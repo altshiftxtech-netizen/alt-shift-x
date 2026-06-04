@@ -43,6 +43,7 @@ export default function RichPromptEditor({
   maxHeight = 400,
   autoFocus = false,
   disabled = false,
+  clearSignal = 0,
 }) {
   const editorRef = useRef(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -51,22 +52,19 @@ export default function RichPromptEditor({
   const [charCount, setCharCount] = useState(0);
   const [activeFormats, setActiveFormats] = useState({});
 
-  // Sync external value → innerHTML on first mount or when cleared externally.
-  // When the parent clears the prompt (e.g. right after a send), wipe the
-  // contenteditable AND restore focus so the cursor stays in the box and the
-  // user can immediately keep typing.
   const lastSyncedValue = useRef(null);
+
+  // Explicit clear — the parent bumps `clearSignal` after a successful send.
+  // This reliably wipes the contenteditable (the `value` prop can't clear a
+  // contenteditable on its own) and restores focus so the cursor stays put.
   useEffect(() => {
-    if (!editorRef.current) return;
-    if (value === "" && editorRef.current.innerHTML !== "") {
-      editorRef.current.innerHTML = "";
-      lastSyncedValue.current = "";
-      if (!disabled) {
-        // Defer focus until after the DOM clears so the caret reappears.
-        requestAnimationFrame(() => editorRef.current?.focus());
-      }
-    }
-  }, [value, disabled]);
+    if (clearSignal === 0 || !editorRef.current) return;
+    editorRef.current.innerHTML = "";
+    lastSyncedValue.current = "";
+    setCharCount(0);
+    setWordCount(0);
+    requestAnimationFrame(() => editorRef.current?.focus());
+  }, [clearSignal]);
 
   useEffect(() => {
     if (autoFocus && editorRef.current) {
