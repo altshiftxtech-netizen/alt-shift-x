@@ -4,88 +4,114 @@ import { base44 } from "@/api/base44Client";
 /**
  * useAgentStream — shared streaming + stop control for any platform bot.
  *
- * Subscribes to an agent conversation and exposes:
+ * Exposes:
  *  - messages: live message list
  *  - isGenerating: true while the agent is actively producing a reply
- *  - stop(): halts the local stream — unsubscribes so incoming tokens are
- *    ignored, freezes the last assistant message as-is, and clears the
- *    generating indicator. A fresh subscription is re-armed on the next
- *    conversation change / user send.
- *  - onSent(): call right after you addMessage() so the hook knows a reply
- *    is incoming and re-arms the subscription if it was stopped.
+ *  - stop(): halts the local stream — freezes the last assistant message,
+ *    clears the generating indicator, and latches "done" so no late update
+ *    can re-raise the indicator until the next user send.
+ *  - onSent(): call right after you addMessage() so the hook knows a reply is
+ *    incoming and resets state for a fresh turn.
+ *
+ * Design notes (why this is robust against "stuck bubble" / "bubble returns"):
+ *  - A `doneRef` latch is set the moment we see a complete assistant reply
+ *    (has text, no running tools). Once latched, isGenerating stays false until
+ *    the next onSent(), so a trailing/stray stream update can't flip it back on.
+ *  - A watchdog ALWAYS force-clears generating after inactivity, regardless of
+ *    what the stream reports — so a dead/stalled stream can never hang the UI.
  */
-// If no new streaming update arrives within this window, we assume the agent
-// finished (or the stream died) and clear the "generating" indicator so the
-// Stop button reverts to Send.
 const IDLE_TIMEOUT_MS = 4000;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
   const [isGenerating, setIsGenerating] = useState(false);
   const unsubRef = useRef(null);
-  const stoppedRef = useRef(false);
   const idleTimerRef = useRef(null);
   const lastSnapshotRef = useRef("");
+  const doneRef = useRef(true); // latched "this turn is finished"
 
   const clearIdleTimer = () => {
     if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
   };
 
-  // Arm a watchdog: if no further update comes in, force-stop the generating state.
+  // Watchdog: if no further update comes in, force-stop the generating state.
   const armIdleTimer = useCallback(() => {
     clearIdleTimer();
     idleTimerRef.current = setTimeout(() => {
+      doneRef.current = true;
       setIsGenerating(false);
     }, IDLE_TIMEOUT_MS);
   }, []);
 
+  // Is the agent still actively producing a reply for the current turn?
   const detectGenerating = (msgs) => {
     if (!msgs || msgs.length === 0) return false;
     const last = msgs[msgs.length - 1];
+
     if (last.role === "assistant") {
       const tcRunning = (last.tool_calls || []).some(
         (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
       );
-      // A tool is actively running → still generating.
-      if (tcRunning) return true;
-      // If the assistant has already produced text and no tool is running, the
-      // reply is DONE — ignore a lingering message-level status flag that some
-      // streams leave set after the final token (the cause of the "stuck" Stop).
+      if (tcRunning) return true; // a tool is actively running → still working
+
+      // Assistant has produced text and nothing is running → reply is DONE.
       const hasText = typeof last.content === "string" && last.content.trim().length > 0;
       if (hasText) return false;
-      // No text yet and no running tool, but status says it's still working.
+
+      // No text yet, no running tool — only "working" if status explicitly says so.
       const status = last.status;
       return !!(status && ["pending", "in_progress", "running"].includes(status));
     }
+
     // Last message is from the user → a reply is incoming.
     return last.role === "user";
   };
 
+  const handleUpdate = useCallback((data) => {
+    const msgs = data.messages || [];
+    setMessages(msgs);
+
+    // Once a turn is latched done, ignore generating signals until next send.
+    if (doneRef.current) {
+      setIsGenerating(false);
+      clearIdleTimer();
+      return;
+    }
+
+    const generating = detectGenerating(msgs);
+
+    if (!generating) {
+      // Reply finished (or nothing in flight) — latch done so stray late
+      // updates for this turn can't bring the bubble back.
+      doneRef.current = true;
+      setIsGenerating(false);
+      clearIdleTimer();
+      return;
+    }
+
+    setIsGenerating(true);
+    // Re-arm watchdog only when content actually changed, so a stalled stream
+    // (no new tokens) still times out and clears the indicator.
+    const snapshot = JSON.stringify(msgs[msgs.length - 1] || {});
+    if (snapshot !== lastSnapshotRef.current) {
+      lastSnapshotRef.current = snapshot;
+      armIdleTimer();
+    }
+  }, [armIdleTimer]);
+
   const subscribe = useCallback(() => {
     if (!convId) return;
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
-    stoppedRef.current = false;
-    unsubRef.current = base44.agents.subscribeToConversation(convId, (data) => {
-      if (stoppedRef.current) return; // ignore tokens after Stop
-      const msgs = data.messages || [];
-      setMessages(msgs);
-      const generating = detectGenerating(msgs);
-      setIsGenerating(generating);
-      if (generating) {
-        // Reset the watchdog only when content actually changed, so a stalled
-        // stream (no new tokens) still times out.
-        const snapshot = JSON.stringify(msgs[msgs.length - 1] || {});
-        if (snapshot !== lastSnapshotRef.current) {
-          lastSnapshotRef.current = snapshot;
-          armIdleTimer();
-        }
-      } else {
-        clearIdleTimer();
-      }
-    });
-  }, [convId, armIdleTimer]);
+    unsubRef.current = base44.agents.subscribeToConversation(convId, handleUpdate);
+  }, [convId, handleUpdate]);
 
+  // (Re)subscribe whenever the conversation changes. Reset turn state for the
+  // new conversation so we don't carry a stale generating indicator.
   useEffect(() => {
+    doneRef.current = true;
+    setIsGenerating(false);
+    clearIdleTimer();
+    lastSnapshotRef.current = "";
     subscribe();
     return () => {
       if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
@@ -94,18 +120,18 @@ export default function useAgentStream(convId, initialMessages = []) {
   }, [subscribe]);
 
   const stop = useCallback(() => {
-    stoppedRef.current = true;
-    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    doneRef.current = true;
     clearIdleTimer();
     setIsGenerating(false);
   }, []);
 
-  // Re-arm the subscription after the user sends a new message.
+  // Call right after the user sends a message — opens a fresh turn.
   const onSent = useCallback(() => {
-    setIsGenerating(true);
+    doneRef.current = false;
     lastSnapshotRef.current = "";
+    setIsGenerating(true);
     armIdleTimer();
-    if (stoppedRef.current || !unsubRef.current) subscribe();
+    if (!unsubRef.current) subscribe();
   }, [subscribe, armIdleTimer]);
 
   return { messages, setMessages, isGenerating, stop, onSent };

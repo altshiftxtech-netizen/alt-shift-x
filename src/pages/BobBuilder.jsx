@@ -702,7 +702,7 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {(sending || isGenerating) && (
+                  {isGenerating && (
                     <div className="flex items-start gap-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1">
@@ -765,7 +765,7 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    {(sending || isGenerating) ? (
+                    {isGenerating ? (
                       <StopButton onStop={handleStop} />
                     ) : (
                       <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
