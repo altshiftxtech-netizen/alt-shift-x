@@ -71,7 +71,6 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   };
 
   const handleEsi = async (c) => {
-    if (!isPaying) { onRequestEsi?.(c); return; }
     setEsiBusy(c.id);
     try {
       const res = await base44.functions.invoke("exportEsiRecord", { conversationId: c.id });
@@ -150,10 +149,10 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                   <button
                     onClick={() => handleEsi(c)}
                     disabled={esiBusy === c.id}
-                    title={isPaying ? "Download ESI legal record (PDF)" : "Unlock ESI legal record — $10 one-time"}
+                    title="Download ESI legal record (PDF)"
                     className="flex items-center gap-1 text-[10px] font-semibold text-emerald-300 hover:text-white bg-emerald-900/30 hover:bg-emerald-800 border border-emerald-700/50 px-2 py-1 rounded-md transition-colors"
                   >
-                    {esiBusy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaying ? <FileText className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                    {esiBusy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
                     ESI Record
                   </button>
                   {confirmTrash === c.id ? (
