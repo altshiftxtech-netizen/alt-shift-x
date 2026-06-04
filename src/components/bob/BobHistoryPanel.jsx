@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import EsiShareModal from "@/components/bob/EsiShareModal";
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
@@ -14,6 +15,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [confirmTrash, setConfirmTrash] = useState(null); // id pending move-to-trash confirm
   const [showTrash, setShowTrash] = useState(false);
   const [esiBusy, setEsiBusy] = useState(null);
+  const [shareConv, setShareConv] = useState(null); // conversation whose ESI is being shared
 
   const load = async () => {
     setLoading(true);
@@ -155,6 +157,14 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                     {esiBusy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
                     ESI Record
                   </button>
+                  <button
+                    onClick={() => setShareConv(c)}
+                    title="Share ESI record to Google Drive, Dropbox, OneDrive & more"
+                    className="flex items-center gap-1 text-[10px] font-semibold text-sky-300 hover:text-white bg-sky-900/30 hover:bg-sky-800 border border-sky-700/50 px-2 py-1 rounded-md transition-colors"
+                  >
+                    <Share2 className="w-3 h-3" />
+                    Share
+                  </button>
                   {confirmTrash === c.id ? (
                     <div className="flex items-center gap-1.5 ml-auto">
                       <button
@@ -253,6 +263,8 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           )}
         </div>
       )}
+
+      {shareConv && <EsiShareModal conversation={shareConv} onClose={() => setShareConv(null)} />}
     </div>
   );
 }
