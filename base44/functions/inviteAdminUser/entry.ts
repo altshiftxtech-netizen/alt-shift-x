@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const email = body.email;
     if (!email) return Response.json({ error: "email is required" }, { status: 400 });
 
-    await base44.asServiceRole.users.inviteUser(email, "admin");
+    await base44.auth.inviteUser(email, "admin");
     return Response.json({ success: true, email, role: "admin" });
   } catch (error) {
     console.error("inviteAdminUser error:", error.message);
