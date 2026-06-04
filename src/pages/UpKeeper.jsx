@@ -12,6 +12,7 @@ import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
 import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
+import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -274,6 +275,12 @@ export default function UpKeeper() {
           <ApproveComponentsButton variant="splash" />
         </div>
 
+        {isAdmin && (
+          <div className="mt-3 w-full max-w-2xl">
+            <InviteAdminButton variant="splash" />
+          </div>
+        )}
+
         <button onClick={openHistory}
           className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-orange-900/30 hover:bg-orange-800/40 border border-orange-700/50 hover:border-orange-500 text-orange-200/80 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
           <span className="w-8 h-8 rounded-lg bg-orange-800/60 flex items-center justify-center flex-shrink-0">
@@ -343,8 +350,9 @@ export default function UpKeeper() {
                     </button>
                   ))}
                 </div>
-                <div className="mt-2 pt-2 border-t border-orange-900/40">
+                <div className="mt-2 pt-2 border-t border-orange-900/40 space-y-1.5">
                   <ApproveComponentsButton variant="chat" />
+                  {isAdmin && <InviteAdminButton variant="chat" />}
                 </div>
               </div>
               {!isAdmin && (
