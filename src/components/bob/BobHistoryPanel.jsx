@@ -11,6 +11,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [spinning, setSpinning] = useState(null);
   const [busy, setBusy] = useState(null); // conversation id under a delete/restore op
   const [confirmDelete, setConfirmDelete] = useState(null); // id pending final delete confirm
+  const [confirmTrash, setConfirmTrash] = useState(null); // id pending move-to-trash confirm
   const [showTrash, setShowTrash] = useState(false);
   const [esiBusy, setEsiBusy] = useState(null);
 
@@ -37,13 +38,16 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setSpinning(null);
   };
 
-  // Soft-delete → move to Trash (recoverable)
+  // Soft-delete → move to Trash (recoverable). Auto-opens the Trash drawer so
+  // the builder can see where the project went.
   const trashProject = async (c) => {
     setBusy(c.id);
     await base44.agents.updateConversation(c.id, {
       metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
     });
+    setConfirmTrash(null);
     await load();
+    setShowTrash(true);
     setBusy(null);
   };
 
@@ -152,15 +156,34 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                     {esiBusy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : isPaying ? <FileText className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                     ESI Record
                   </button>
-                  <button
-                    onClick={() => trashProject(c)}
-                    disabled={busy === c.id}
-                    title="Move to Trash (recoverable)"
-                    className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
-                  >
-                    {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                    Delete
-                  </button>
+                  {confirmTrash === c.id ? (
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <button
+                        onClick={() => trashProject(c)}
+                        disabled={busy === c.id}
+                        title="Move to Trash (recoverable)"
+                        className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2 py-1 rounded-md transition-colors"
+                      >
+                        {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                        Move to Trash
+                      </button>
+                      <button
+                        onClick={() => setConfirmTrash(null)}
+                        className="text-[10px] font-semibold text-slate-400 hover:text-white px-2 py-1 rounded-md"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmTrash(c.id)}
+                      title="Move to Trash (recoverable)"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
