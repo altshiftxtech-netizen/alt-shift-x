@@ -204,10 +204,12 @@ export default function BobBuilder() {
     setLaunched(true);
     if (seedText?.trim()) {
       setSending(true);
+      setInput("");
+      setClearSignal(s => s + 1);
       const c = await initConv();
       await base44.agents.addMessage(c, { role: "user", content: seedText });
       await titleProject(c, seedText);
-      onSent();
+      onSent({ content: seedText });
       setSending(false);
     } else {
       // No seed → blank slate, conversation is created lazily on first send.
@@ -289,7 +291,7 @@ export default function BobBuilder() {
       content: seed,
       ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
     });
-    onSent();
+    onSent({ content: seed, ...(sourceUrls.length ? { file_urls: sourceUrls } : {}) });
     setSending(false);
   };
 
@@ -300,15 +302,13 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     setClearSignal(s => s + 1);
-    // Show the user's message immediately so the chat never looks empty while
-    // BOB spins up — the stream subscription reconciles it shortly after.
-    setMessages(prev => [...prev, { role: "user", content: msg }]);
     // Lazily create the project conversation on first send so empty boards
     // never produce stray "New Project" entries.
     const c = conv || await initConv();
     await base44.agents.addMessage(c, { role: "user", content: msg });
     await titleProject(c, msg);
-    onSent();
+    // Show the user's message instantly (hook keeps it until the stream confirms).
+    onSent({ content: msg });
     setSending(false);
   };
 
@@ -367,17 +367,17 @@ export default function BobBuilder() {
     const fullMsg = filesToSend.length > 0
       ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
       : msg;
-    // Optimistically show the user's message right away.
-    setMessages(prev => [...prev, { role: "user", content: fullMsg, file_urls: filesToSend.map(f => f.url) }]);
+    const fileUrls = filesToSend.map(f => f.url);
     // Lazily create the project conversation on first send.
     const c = conv || await initConv();
     await base44.agents.addMessage(c, {
       role: "user",
       content: fullMsg,
-      file_urls: filesToSend.map(f => f.url)
+      file_urls: fileUrls
     });
     await titleProject(c, msg || fileList);
-    onSent();
+    // Show the user's message instantly (hook keeps it until the stream confirms).
+    onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
     setUploadedFiles([]);
     setSending(false);
   };

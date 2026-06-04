@@ -29,6 +29,9 @@ export default function useAgentStream(convId, initialMessages = []) {
   const idleTimerRef = useRef(null);
   const lastSnapshotRef = useRef("");
   const doneRef = useRef(true); // latched "this turn is finished"
+  // Optimistic user message shown instantly on send. Kept until the server's
+  // message list actually contains it, so the stream can't wipe it mid-race.
+  const pendingUserRef = useRef(null);
 
   const clearIdleTimer = () => {
     if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
@@ -68,7 +71,20 @@ export default function useAgentStream(convId, initialMessages = []) {
   };
 
   const handleUpdate = useCallback((data) => {
-    const msgs = data.messages || [];
+    let msgs = data.messages || [];
+
+    // Keep the optimistic user bubble visible until the server list includes it.
+    const pending = pendingUserRef.current;
+    if (pending) {
+      const serverHasIt = msgs.some(
+        (m) => m.role === "user" && (m.content || "") === pending.content
+      );
+      if (serverHasIt) {
+        pendingUserRef.current = null; // reconciled — drop the optimistic copy
+      } else {
+        msgs = [...msgs, pending]; // not there yet — append so it doesn't vanish
+      }
+    }
     setMessages(msgs);
 
     // Once a turn is latched done, ignore generating signals until next send.
@@ -112,6 +128,7 @@ export default function useAgentStream(convId, initialMessages = []) {
     setIsGenerating(false);
     clearIdleTimer();
     lastSnapshotRef.current = "";
+    pendingUserRef.current = null;
     subscribe();
     return () => {
       if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
@@ -126,9 +143,15 @@ export default function useAgentStream(convId, initialMessages = []) {
   }, []);
 
   // Call right after the user sends a message — opens a fresh turn.
-  const onSent = useCallback(() => {
+  // Optionally pass the user message to show it instantly (optimistic), shown
+  // until the server's stream confirms it.
+  const onSent = useCallback((userMessage) => {
     doneRef.current = false;
     lastSnapshotRef.current = "";
+    if (userMessage && (userMessage.content || "").trim()) {
+      pendingUserRef.current = { role: "user", ...userMessage };
+      setMessages((prev) => [...prev, pendingUserRef.current]);
+    }
     setIsGenerating(true);
     armIdleTimer();
     if (!unsubRef.current) subscribe();
