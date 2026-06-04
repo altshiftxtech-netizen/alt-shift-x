@@ -68,6 +68,10 @@
       "type": "string",
       "description": "Stripe recurring price ID for this component \u2014 auto-created on first checkout"
     },
+    "paypal_plan_id": {
+      "type": "string",
+      "description": "PayPal recurring billing plan ID for this component \u2014 auto-created on first PayPal checkout"
+    },
     "status": {
       "type": "string",
       "enum": [
