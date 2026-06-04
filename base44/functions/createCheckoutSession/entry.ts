@@ -9,6 +9,27 @@ const BUILDER_PLANS = {
   sovereign_commander: "price_1TdpP5JpBWpVB4VLMKPm0vPI",  // $599/mo — Sovereign Commander (LIVE)
 };
 
+// Plan → name + monthly amount, used to mint ephemeral TEST prices (the live
+// price IDs above don't exist in the Stripe test account).
+const BUILDER_PLAN_INFO = {
+  base_operator: { name: "Base Operator", amount: 4900 },
+  strategic_architect: { name: "Strategic Architect", amount: 19900 },
+  sovereign_commander: { name: "Sovereign Commander", amount: 59900 },
+};
+
+// In test mode, create a throwaway recurring price for the plan.
+async function testPriceForPlan(stripe, planKey) {
+  const info = BUILDER_PLAN_INFO[planKey];
+  const product = await stripe.products.create({ name: `${info.name} (TEST)` });
+  const price = await stripe.prices.create({
+    product: product.id,
+    unit_amount: info.amount,
+    currency: "usd",
+    recurring: { interval: "month" },
+  });
+  return price.id;
+}
+
 // ── Grace period (trial) for higher-commitment tiers ──────────────────────────
 // Mid + top tiers get a 14-day grace window: builders start producing immediately
 // and aren't charged for 14 days, while the card is collected upfront to protect
@@ -37,13 +58,23 @@ function trustedIp(req) {
 
 Deno.serve(async (req) => {
   try {
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // ── Admin-controlled TEST mode ───────────────────────────────────────────
+    // When an admin has flipped PaymentMode.test_mode ON, use Stripe TEST keys
+    // so a full sandbox transaction can be validated before going live.
+    const modeRows = await base44.asServiceRole.entities.PaymentMode.list("-updated_date", 1);
+    const testMode = modeRows.length > 0 && modeRows[0].test_mode === true;
+    const stripeKey = testMode
+      ? Deno.env.get("STRIPE_TEST_SECRET_KEY")
+      : Deno.env.get("STRIPE_SECRET_KEY");
+    const stripe = new Stripe(stripeKey);
+    if (testMode) console.log("[createCheckoutSession] TEST MODE active — using Stripe test keys");
 
     // Rate-limit by IP — silent for normal use, blocks rapid-fire abuse
     const ip = trustedIp(req);
@@ -92,9 +123,9 @@ Deno.serve(async (req) => {
       const component = components[0];
 
       // Use stored Stripe price ID if available, otherwise create a price on the fly.
-      // A stored price may be stale (e.g. created in a different/test Stripe account),
-      // so we verify it still exists and regenerate it if not.
-      let stripePriceId = component.stripe_price_id;
+      // In TEST mode we never reuse/overwrite the live stripe_price_id — we always
+      // mint an ephemeral test price so the live price stays intact.
+      let stripePriceId = testMode ? null : component.stripe_price_id;
 
       if (stripePriceId) {
         try {
@@ -121,10 +152,13 @@ Deno.serve(async (req) => {
         });
         stripePriceId = price.id;
 
-        // Save the price ID back to the component for future reuse
-        await base44.asServiceRole.entities.Component.update(component.id, {
-          stripe_price_id: stripePriceId,
-        });
+        // Only persist the price back to the component in LIVE mode — never store
+        // a throwaway test price as the component's canonical price.
+        if (!testMode) {
+          await base44.asServiceRole.entities.Component.update(component.id, {
+            stripe_price_id: stripePriceId,
+          });
+        }
       }
 
       // POLICY: builder promo codes apply ONLY to standalone components — NOT paired kits.
@@ -158,6 +192,11 @@ Deno.serve(async (req) => {
 
       const trialDays = TRIAL_DAYS_BY_PLAN[planKey];
 
+      // Resolve the plan price: live ID in live mode, ephemeral test price in test mode.
+      const planPriceId = testMode
+        ? await testPriceForPlan(stripe, planKey)
+        : BUILDER_PLANS[planKey];
+
       // ── Vested100 Beta: auto-apply 50%-off to the first 100 paid builder subs ──
       const vestedCount = await base44.asServiceRole.entities.Subscription.filter({ vested100: true });
       let vestedEligible = vestedCount.length < VESTED100_LIMIT;
@@ -177,7 +216,7 @@ Deno.serve(async (req) => {
 
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
-        line_items: [{ price: BUILDER_PLANS[planKey], quantity: 1 }],
+        line_items: [{ price: planPriceId, quantity: 1 }],
         ...(trialDays
           ? { subscription_data: { trial_period_days: trialDays } }
           : {}),

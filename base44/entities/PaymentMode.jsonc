@@ -1,0 +1,34 @@
+{
+  "name": "PaymentMode",
+  "type": "object",
+  "properties": {
+    "test_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, checkout uses Stripe TEST keys and PayPal SANDBOX. When false, real live payments are processed."
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email/name of the admin who last changed the mode"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -6,7 +6,8 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 // PayPal approval URL the buyer is redirected to. Provisioning happens in
 // paypalWebhook on BILLING.SUBSCRIPTION.ACTIVATED.
 
-const PAYPAL_API = "https://api-m.paypal.com"; // LIVE
+const PAYPAL_LIVE = "https://api-m.paypal.com";
+const PAYPAL_SANDBOX = "https://api-m.sandbox.paypal.com";
 
 // Builder subscription plan → monthly price (USD) + display name
 const BUILDER_PLANS = {
@@ -15,11 +16,11 @@ const BUILDER_PLANS = {
   sovereign_commander: { name: "Sovereign Commander", price: 599 },
 };
 
-async function paypalToken() {
-  const id = Deno.env.get("PAYPAL_CLIENT_ID");
-  const secret = Deno.env.get("PAYPAL_SECRET");
+async function paypalToken(api, testMode) {
+  const id = testMode ? Deno.env.get("PAYPAL_SANDBOX_CLIENT_ID") : Deno.env.get("PAYPAL_CLIENT_ID");
+  const secret = testMode ? Deno.env.get("PAYPAL_SANDBOX_SECRET") : Deno.env.get("PAYPAL_SECRET");
   const auth = btoa(`${id}:${secret}`);
-  const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+  const res = await fetch(`${api}/v1/oauth2/token`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,
@@ -35,8 +36,8 @@ async function paypalToken() {
   return data.access_token;
 }
 
-async function pp(token, path, body) {
-  const res = await fetch(`${PAYPAL_API}${path}`, {
+async function pp(api, token, path, body) {
+  const res = await fetch(`${api}${path}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -52,14 +53,14 @@ async function pp(token, path, body) {
 }
 
 // Create a PayPal catalog product + monthly billing plan, return the plan id.
-async function ensurePlan(token, { name, price, refId }) {
-  const product = await pp(token, "/v1/catalogs/products", {
+async function ensurePlan(api, token, { name, price, refId }) {
+  const product = await pp(api, token, "/v1/catalogs/products", {
     name,
     type: "SERVICE",
     category: "SOFTWARE",
   });
 
-  const plan = await pp(token, "/v1/billing/plans", {
+  const plan = await pp(api, token, "/v1/billing/plans", {
     product_id: product.id,
     name: `${name} — Monthly`,
     billing_cycles: [
@@ -93,7 +94,13 @@ Deno.serve(async (req) => {
     const { planKey, componentId } = body;
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://app.altshiftx.com";
 
-    const token = await paypalToken();
+    // ── Admin-controlled TEST mode → PayPal Sandbox ──────────────────────────
+    const modeRows = await base44.asServiceRole.entities.PaymentMode.list("-updated_date", 1);
+    const testMode = modeRows.length > 0 && modeRows[0].test_mode === true;
+    const api = testMode ? PAYPAL_SANDBOX : PAYPAL_LIVE;
+    if (testMode) console.log("[createPaypalCheckout] TEST MODE active — using PayPal Sandbox");
+
+    const token = await paypalToken(api, testMode);
 
     let planId, metadata, returnPath;
 
@@ -103,14 +110,18 @@ Deno.serve(async (req) => {
       if (!components.length) return Response.json({ error: "Component not found" }, { status: 404 });
       const component = components[0];
 
-      let planIdStored = component.paypal_plan_id;
+      // In test mode always mint an ephemeral sandbox plan — never reuse/overwrite
+      // the stored live paypal_plan_id.
+      let planIdStored = testMode ? null : component.paypal_plan_id;
       if (!planIdStored) {
-        planIdStored = await ensurePlan(token, {
+        planIdStored = await ensurePlan(api, token, {
           name: component.name,
           price: component.price || 49,
           refId: component.id,
         });
-        await base44.asServiceRole.entities.Component.update(component.id, { paypal_plan_id: planIdStored });
+        if (!testMode) {
+          await base44.asServiceRole.entities.Component.update(component.id, { paypal_plan_id: planIdStored });
+        }
       }
       planId = planIdStored;
       returnPath = `/success/install?paypal=1&component=${encodeURIComponent(component.name)}&id=${component.id}`;
@@ -120,7 +131,7 @@ Deno.serve(async (req) => {
     else if (planKey) {
       const plan = BUILDER_PLANS[planKey];
       if (!plan) return Response.json({ error: "Invalid plan" }, { status: 400 });
-      planId = await ensurePlan(token, { name: plan.name, price: plan.price, refId: planKey });
+      planId = await ensurePlan(api, token, { name: plan.name, price: plan.price, refId: planKey });
       returnPath = `/success/subscription?subscribed=true&paypal=1&plan=${planKey}`;
       metadata = { user_id: user.id, plan: planKey };
     } else {
@@ -130,7 +141,7 @@ Deno.serve(async (req) => {
     // custom_id carries our metadata back through the webhook (max 127 chars).
     const customId = btoa(JSON.stringify(metadata)).slice(0, 127);
 
-    const sub = await pp(token, "/v1/billing/subscriptions", {
+    const sub = await pp(api, token, "/v1/billing/subscriptions", {
       plan_id: planId,
       custom_id: customId,
       subscriber: { email_address: user.email },
