@@ -14,24 +14,46 @@ import { base44 } from "@/api/base44Client";
  *  - onSent(): call right after you addMessage() so the hook knows a reply
  *    is incoming and re-arms the subscription if it was stopped.
  */
+// If no new streaming update arrives within this window, we assume the agent
+// finished (or the stream died) and clear the "generating" indicator so the
+// Stop button reverts to Send.
+const IDLE_TIMEOUT_MS = 8000;
+
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
   const [isGenerating, setIsGenerating] = useState(false);
   const unsubRef = useRef(null);
   const stoppedRef = useRef(false);
+  const idleTimerRef = useRef(null);
+  const lastSnapshotRef = useRef("");
+
+  const clearIdleTimer = () => {
+    if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
+  };
+
+  // Arm a watchdog: if no further update comes in, force-stop the generating state.
+  const armIdleTimer = useCallback(() => {
+    clearIdleTimer();
+    idleTimerRef.current = setTimeout(() => {
+      setIsGenerating(false);
+    }, IDLE_TIMEOUT_MS);
+  }, []);
 
   const detectGenerating = (msgs) => {
     if (!msgs || msgs.length === 0) return false;
     const last = msgs[msgs.length - 1];
-    // Agent is mid-reply if the last message is an assistant message that's
-    // still streaming (status pending/in_progress) or has pending tool calls.
-    if (last.role !== "assistant") return last.role === "user"; // user just sent → awaiting reply
-    const status = last.status;
-    if (status && ["pending", "in_progress", "running"].includes(status)) return true;
-    const tcRunning = (last.tool_calls || []).some(
-      (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
-    );
-    return tcRunning;
+    // A completed assistant message (no active status, no running tool calls)
+    // means the reply is done — regardless of streaming quirks.
+    if (last.role === "assistant") {
+      const status = last.status;
+      if (status && ["pending", "in_progress", "running"].includes(status)) return true;
+      const tcRunning = (last.tool_calls || []).some(
+        (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
+      );
+      return tcRunning;
+    }
+    // Last message is from the user → a reply is incoming.
+    return last.role === "user";
   };
 
   const subscribe = useCallback(() => {
@@ -40,27 +62,46 @@ export default function useAgentStream(convId, initialMessages = []) {
     stoppedRef.current = false;
     unsubRef.current = base44.agents.subscribeToConversation(convId, (data) => {
       if (stoppedRef.current) return; // ignore tokens after Stop
-      setMessages(data.messages || []);
-      setIsGenerating(detectGenerating(data.messages || []));
+      const msgs = data.messages || [];
+      setMessages(msgs);
+      const generating = detectGenerating(msgs);
+      setIsGenerating(generating);
+      if (generating) {
+        // Reset the watchdog only when content actually changed, so a stalled
+        // stream (no new tokens) still times out.
+        const snapshot = JSON.stringify(msgs[msgs.length - 1] || {});
+        if (snapshot !== lastSnapshotRef.current) {
+          lastSnapshotRef.current = snapshot;
+          armIdleTimer();
+        }
+      } else {
+        clearIdleTimer();
+      }
     });
-  }, [convId]);
+  }, [convId, armIdleTimer]);
 
   useEffect(() => {
     subscribe();
-    return () => { if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; } };
+    return () => {
+      if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+      clearIdleTimer();
+    };
   }, [subscribe]);
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    clearIdleTimer();
     setIsGenerating(false);
   }, []);
 
   // Re-arm the subscription after the user sends a new message.
   const onSent = useCallback(() => {
     setIsGenerating(true);
+    lastSnapshotRef.current = "";
+    armIdleTimer();
     if (stoppedRef.current || !unsubRef.current) subscribe();
-  }, [subscribe]);
+  }, [subscribe, armIdleTimer]);
 
   return { messages, setMessages, isGenerating, stop, onSent };
 }
