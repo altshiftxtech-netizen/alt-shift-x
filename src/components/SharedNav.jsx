@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import DevNavChrome from "@/components/nav/DevNavChrome";
 import { base44 } from "@/api/base44Client";
 
@@ -120,6 +121,9 @@ export default function SharedNav({ mode = "user", theme }) {
         <div className="flex items-center gap-1 shrink-0">
           {/* Theme toggle */}
           <ThemeToggle />
+
+          {/* Notifications */}
+          <NotificationBell isDev={isDev} />
 
           {/* Portal switcher */}
           <div className="relative hidden sm:block">
