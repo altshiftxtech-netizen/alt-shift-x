@@ -32,6 +32,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: "No Stripe Connect account linked. Please set up payouts first." }, { status: 400 });
     }
 
+    // Tax compliance gate: a completed W-9 is required before any payout can be released.
+    const w9s = await base44.entities.TaxForm1099.filter({ builder_id: user.id });
+    if (!w9s.some((f) => f.w9_completed)) {
+      return Response.json({
+        error: "Payout blocked: you must complete your W-9 tax form before receiving earnings.",
+        code: "w9_required",
+      }, { status: 400 });
+    }
+
     // Verify Stripe account status
     let account;
     try {
