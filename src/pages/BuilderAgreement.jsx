@@ -257,7 +257,12 @@ export function AgreementModal({ onClose, onAccepted }) {
           </div>
 
           <div>
-            <h3 className="font-bold text-white mb-2">9. Governing Law</h3>
+            <h3 className="font-bold text-white mb-2">9. Tax Compliance — W-9 & 1099-NEC</h3>
+            <p>As an independent contractor receiving payments through the platform, you are responsible for your own taxes. Before any payout is released, you must submit a valid IRS Form W-9 (legal name, tax classification, and Taxpayer Identification Number). <strong className="text-white">Payouts are blocked until your W-9 is on file.</strong> If you are paid $600 or more in a calendar year, the platform will prepare a 1099-NEC and deliver the compiled filing package to its CPA / authorized filing agent for IRS submission. You are responsible for keeping your W-9 information accurate.</p>
+          </div>
+
+          <div>
+            <h3 className="font-bold text-white mb-2">10. Governing Law</h3>
             <p>This Agreement is governed by the laws of the State of Delaware, USA. Disputes resolved through binding arbitration per American Arbitration Association rules.</p>
           </div>
 
@@ -465,6 +470,7 @@ export default function BuilderAgreement() {
             { icon: Eye, color: "text-amber-400", bg: "bg-amber-900/20 border-amber-800/40", title: "Certification & Adversarial Testing", summary: "Privacy audits, 95%+ adversarial test pass rate, and continuous Trust Engine monitoring required for Certified (◇) or Official (◆) status." },
             { icon: AlertTriangle, color: "text-red-400", bg: "bg-red-900/20 border-red-800/40", title: "Enforcement & Legal Penalties", summary: "Material breach: immediate delisting, revenue forfeiture, legal liability, permanent platform ban for intentional violations." },
             { icon: Star, color: "text-emerald-400", bg: "bg-emerald-900/20 border-emerald-800/40", title: "Builder Rights (Law 6)", summary: "Builders own their IP. No platform cloning. Acquisition path at 5,000+ installs / 95+ Trust Score at 24–36× monthly revenue." },
+            { icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-900/20 border-emerald-800/40", title: "Tax Compliance — W-9 & 1099-NEC", summary: "A valid IRS Form W-9 is required before any payout is released — payouts are blocked until it's on file. Builders paid $600+ in a calendar year receive a 1099-NEC, filed via the platform's CPA / authorized filing agent." },
             { icon: ShieldCheck, color: "text-violet-400", bg: "bg-violet-900/20 border-violet-800/40", title: "IP & Proprietary Masking Clause", summary: "Any IP, trade secrets, or proprietary information is automatically masked, redacted, or tokenized in all platform-generated statements and reports. Enforced for every user — free or paid — under our standing protection practices, with no raw proprietary data exposed in shared outputs." },
           ].map(({ icon: Icon, color, bg, title, summary }) => (
             <div key={title} className={`border rounded-xl p-4 flex items-start gap-3 ${bg}`}>

@@ -164,7 +164,8 @@ export default function TermsOfService() {
           <ul className="space-y-2 pl-4">
             <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>Cancellation takes effect at the end of the current billing period. No partial-period refunds are issued.</span></li>
             <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>All payment processing is handled by Stripe. Alt+Shift+X does not store card details.</span></li>
-            <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>Builder revenue payouts are processed monthly, subject to a minimum payout threshold and verification of a connected Stripe account.</span></li>
+            <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>Builder revenue payouts are processed monthly, subject to a minimum payout threshold and verification of a connected Stripe account or PayPal payout email.</span></li>
+            <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>Tax compliance: U.S. builders must complete an IRS Form W-9 before any payout is released. Payouts are withheld until a valid W-9 is on file. Builders paid $600 or more in a calendar year will have a 1099-NEC prepared and filed in accordance with applicable law.</span></li>
             <li className="flex items-start gap-2"><span className="text-slate-400 mt-1">—</span><span>Enterprise pricing is negotiated directly and governed by a separate Order Form.</span></li>
           </ul>
         </Section>

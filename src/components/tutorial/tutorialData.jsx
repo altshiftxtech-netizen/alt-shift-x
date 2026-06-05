@@ -1,4 +1,4 @@
-import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck, Bot, FileText, GitBranch, Sparkles, Trophy, DollarSign, Share2 } from "lucide-react";
+import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck, Bot, FileText, GitBranch, Sparkles, Trophy, DollarSign, Share2, Receipt } from "lucide-react";
 
 // Each tutorial has sections; each section has step-by-step instructions and an optional video URL.
 export const TUTORIALS = [
@@ -356,7 +356,8 @@ export const TUTORIALS = [
         title: "Setting up payouts",
         steps: [
           "Go to Builder Portal → More → Payouts.",
-          "Connect your Stripe account to receive earnings.",
+          "Connect your Stripe account (or add a PayPal payout email) to receive earnings.",
+          "Complete your W-9 tax form first — payouts are blocked until it's on file.",
           "Review your revenue share and approved splits before payout.",
         ],
       },
@@ -424,6 +425,41 @@ export const TUTORIALS = [
           "Send Speakeasy invites to colleagues from inside the lounge.",
           "Invitees join once they sign up with your invite code.",
           "Help grow the inner circle of trusted builders.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "tax-compliance",
+    title: "Tax Compliance & W-9",
+    description: "Complete your W-9 and understand annual 1099-NEC filing",
+    icon: Receipt,
+    video: null,
+    sections: [
+      {
+        title: "Why a W-9 is required",
+        steps: [
+          "U.S. tax law requires us to collect a W-9 from every contractor/builder we pay.",
+          "Your W-9 captures your legal name, tax classification, and Taxpayer Identification Number (SSN or EIN).",
+          "Until your W-9 is on file, all payouts (Stripe and PayPal) are blocked.",
+        ],
+      },
+      {
+        title: "Completing your W-9",
+        steps: [
+          "Open Builder Portal → More → Payouts, or go to Builder Portal → Tax Compliance.",
+          "Fill in your legal name, business name (if any), tax classification, and TIN.",
+          "Submit — a green confirmation appears once your W-9 is recorded.",
+          "You can return anytime to update your information if it changes.",
+        ],
+      },
+      {
+        title: "Annual 1099-NEC filing",
+        steps: [
+          "Each January, we audit your total earnings for the prior calendar year.",
+          "If you were paid $600 or more, a 1099-NEC is prepared for you.",
+          "The compiled filing package is delivered to our CPA / filing agent, who files with the IRS.",
+          "Keep your W-9 details accurate so your 1099 is correct and audit-ready.",
         ],
       },
     ],
