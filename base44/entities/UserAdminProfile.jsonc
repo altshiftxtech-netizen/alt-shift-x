@@ -1,0 +1,130 @@
+{
+  "name": "UserAdminProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID this admin profile augments"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "resident_developer": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, this user is deemed a Resident Developer \u2014 a badge appears on their public webpage (not on their products)."
+    },
+    "resident_since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the resident developer toggle was last turned on"
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "locked"
+      ],
+      "default": "active",
+      "description": "Admin-controlled account status. 'locked' is used for login-issue lockouts."
+    },
+    "privileges": {
+      "type": "object",
+      "description": "Admin-toggleable privilege flags shown in the User Management hub",
+      "properties": {
+        "can_sell": {
+          "type": "boolean",
+          "default": true
+        },
+        "can_publish": {
+          "type": "boolean",
+          "default": true
+        },
+        "can_payout": {
+          "type": "boolean",
+          "default": true
+        },
+        "speakeasy_access": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "beneficiary_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed required beneficiary information"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal admin/staff notes about this user"
+    },
+    "last_served_by": {
+      "type": "string",
+      "description": "Name of the admin/staff member who last serviced this account"
+    },
+    "last_served_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

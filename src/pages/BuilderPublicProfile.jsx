@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShieldCheck, Star, Download, CheckCircle2, Globe, ExternalLink } from "lucide-react";
 import SocialSharePanel from "@/components/social/SocialSharePanel";
+import ResidentDeveloperBadge from "@/components/ResidentDeveloperBadge";
 
 const BUILDERS = {
   "buildright-ai": {
@@ -73,6 +75,24 @@ export default function BuilderPublicProfile() {
   const { id } = useParams();
   const builder = BUILDERS[id] || DEFAULT;
   const tier = tierConfig[builder.tier];
+  const [isResident, setIsResident] = useState(false);
+
+  // Show the Resident Developer badge when a UserAdminProfile flagged as resident
+  // matches this builder (by display name or slug). Driven by real user data.
+  useEffect(() => {
+    let active = true;
+    base44.entities.UserAdminProfile.filter({ resident_developer: true })
+      .then((profiles) => {
+        if (!active) return;
+        const match = (profiles || []).some((p) => {
+          const n = (p.user_name || "").toLowerCase();
+          return n && (n === builder.name.toLowerCase() || n.replace(/\s+/g, "-") === id);
+        });
+        setIsResident(match);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [id, builder.name]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -99,6 +119,7 @@ export default function BuilderPublicProfile() {
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${tier.className}`}>
                     <CheckCircle2 className="w-3 h-3" />{tier.label}
                   </span>
+                  {isResident && <ResidentDeveloperBadge size="sm" />}
                 </div>
                 <p className="text-sm text-slate-500 mb-3">{builder.tagline}</p>
                 <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
