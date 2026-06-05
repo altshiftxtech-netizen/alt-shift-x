@@ -1,0 +1,61 @@
+{
+  "name": "TaxFilingConfig",
+  "type": "object",
+  "properties": {
+    "irs_filing_email": {
+      "type": "string",
+      "description": "Email address where the compiled annual 1099 filing package is delivered each Jan 31 (IRS-authorized e-file provider / filing agent / compliance records inbox). The IRS does not accept 1099s via raw email."
+    },
+    "payer_name": {
+      "type": "string",
+      "description": "Legal name of the paying entity (the platform) shown on the 1099 forms"
+    },
+    "payer_tin": {
+      "type": "string",
+      "description": "Payer's federal EIN"
+    },
+    "payer_address": {
+      "type": "string",
+      "description": "Payer mailing address shown on the 1099 forms"
+    },
+    "reporting_threshold": {
+      "type": "number",
+      "default": 600,
+      "description": "Minimum reportable amount that triggers a 1099-NEC filing"
+    },
+    "last_filed_year": {
+      "type": "number",
+      "description": "The tax year that was last filed by the annual job"
+    },
+    "last_filed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_by": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

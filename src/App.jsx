@@ -67,6 +67,7 @@ import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
 import UpKeeper from './pages/UpKeeper';
+import TaxCompliance from './pages/TaxCompliance';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -146,6 +147,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/analytics-suite" element={<BuilderAnalyticsSuite />} />
         <Route path="/builder/leaderboard" element={<BuilderLeaderboard />} />
         <Route path="/builder/payout-settings" element={<PayoutSettings />} />
+        <Route path="/builder/tax-compliance" element={<TaxCompliance />} />
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />

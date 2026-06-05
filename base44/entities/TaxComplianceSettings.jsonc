@@ -1,0 +1,59 @@
+{
+  "name": "TaxComplianceSettings",
+  "type": "object",
+  "properties": {
+    "cpa_email": {
+      "type": "string",
+      "description": "Email address of the CPA / filing agent who receives the compiled annual 1099 package each Jan 31"
+    },
+    "cpa_name": {
+      "type": "string",
+      "description": "Name of the CPA or accounting firm"
+    },
+    "filing_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "When false, the annual 1099 delivery is skipped"
+    },
+    "reporting_threshold": {
+      "type": "number",
+      "default": 600,
+      "description": "Minimum annual earnings (USD) that require a 1099 to be filed for a contractor"
+    },
+    "last_filed_year": {
+      "type": "number",
+      "description": "Tax year of the most recent successful 1099 package delivery"
+    },
+    "last_filed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email/name of the admin who last updated these settings"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ import DashboardQuickLinks from "@/components/builder-dashboard/DashboardQuickLi
 import ComponentExportButton from "@/components/builder-dashboard/ComponentExportButton";
 import BobAdvisorWidget from "@/components/BobAdvisorWidget";
 import BuilderTestBot from "@/components/BuilderTestBot";
+import W9RequiredBanner from "@/components/tax/W9RequiredBanner";
 import { Loader2, Package } from "lucide-react";
 
 // Builds the dashboard's stat row from the builder's REAL components only.
@@ -70,6 +71,7 @@ export default function BuilderDashboard() {
       <SharedNav mode="builder" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <BobAdvisorWidget />
+        <W9RequiredBanner />
 
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <DashboardHeader builderName={builderName} tier="certified" />

@@ -1,0 +1,184 @@
+{
+  "name": "TaxForm1099",
+  "type": "object",
+  "properties": {
+    "builder_id": {
+      "type": "string",
+      "description": "Base44 user ID of the contractor/builder this 1099 record belongs to"
+    },
+    "builder_email": {
+      "type": "string"
+    },
+    "builder_name": {
+      "type": "string"
+    },
+    "tax_year": {
+      "type": "number",
+      "description": "Calendar tax year this record covers (e.g. 2025)"
+    },
+    "w9_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the contractor has submitted required W-9 information"
+    },
+    "w9_completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "legal_name": {
+      "type": "string",
+      "description": "Legal name as shown on the contractor's income tax return (W-9 line 1)"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business/disregarded entity name, if different (W-9 line 2)"
+    },
+    "tax_classification": {
+      "type": "string",
+      "enum": [
+        "individual_sole_proprietor",
+        "c_corporation",
+        "s_corporation",
+        "partnership",
+        "trust_estate",
+        "llc",
+        "other"
+      ],
+      "default": "individual_sole_proprietor",
+      "description": "Federal tax classification (W-9 line 3)"
+    },
+    "tin_type": {
+      "type": "string",
+      "enum": [
+        "ssn",
+        "ein"
+      ],
+      "default": "ssn",
+      "description": "Whether the TIN is a Social Security Number or Employer Identification Number"
+    },
+    "tin": {
+      "type": "string",
+      "description": "Taxpayer Identification Number (SSN or EIN). Sensitive."
+    },
+    "address_line1": {
+      "type": "string"
+    },
+    "address_line2": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "zip": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "USA"
+    },
+    "backup_withholding": {
+      "type": "boolean",
+      "default": false,
+      "description": "Subject to backup withholding (failed W-9 certification)"
+    },
+    "gross_earnings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total nonemployee compensation paid in the tax year (Box 1, 1099-NEC), computed during the annual audit"
+    },
+    "adjustments": {
+      "type": "number",
+      "default": 0,
+      "description": "Manual financial audit adjustments applied before filing (positive or negative)"
+    },
+    "reportable_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Final reportable amount after adjustments = gross_earnings + adjustments"
+    },
+    "requires_filing": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when reportable_amount >= $600 threshold for the year"
+    },
+    "audit_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "audited",
+        "adjusted",
+        "ready"
+      ],
+      "default": "pending",
+      "description": "Financial audit stage before the deliverable is sent"
+    },
+    "audited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "filing_status": {
+      "type": "string",
+      "enum": [
+        "not_filed",
+        "queued",
+        "filed",
+        "delivery_failed"
+      ],
+      "default": "not_filed"
+    },
+    "filed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "builder_id",
+    "tax_year"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
