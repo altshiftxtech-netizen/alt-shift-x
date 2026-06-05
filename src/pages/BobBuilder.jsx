@@ -3,7 +3,7 @@ import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
   FileText, FileDown, Rocket, LayoutTemplate, X, Save,
   CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight,
-  Mic, MicOff, Paperclip, Upload, History
+  Mic, MicOff, Paperclip, Upload, History, Camera
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,7 @@ export default function BobBuilder() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   // Framework state
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
@@ -543,6 +544,15 @@ export default function BobBuilder() {
                 className="hidden"
                 onChange={handleFileUpload}
               />
+              {/* Camera capture — opens device camera on mobile */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -552,6 +562,15 @@ export default function BobBuilder() {
               >
                 {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
                 Attach
+              </button>
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={uploading}
+                title="Take a photo"
+                className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all"
+              >
+                <Camera className="w-3.5 h-3.5" /> Photo
               </button>
               <button
                 type="button"
@@ -789,6 +808,15 @@ export default function BobBuilder() {
                       className="hidden"
                       onChange={handleFileUpload}
                     />
+                    {/* Camera capture — opens device camera on mobile */}
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
@@ -797,6 +825,14 @@ export default function BobBuilder() {
                     >
                       {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
                       Attach
+                    </button>
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      disabled={uploading}
+                      title="Take a photo"
+                      className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                    >
+                      <Camera className="w-3.5 h-3.5" /> Photo
                     </button>
                     <button
                       onClick={toggleRecording}

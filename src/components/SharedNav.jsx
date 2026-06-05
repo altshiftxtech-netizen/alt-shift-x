@@ -205,9 +205,16 @@ export default function SharedNav({ mode = "user", theme }) {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-30 bg-black/20" onClick={() => setMobileOpen(false)}>
-          <div className="absolute top-14 left-0 right-0 bg-white border-b border-slate-100 py-2 px-4 space-y-1" onClick={e => e.stopPropagation()}>
+        <div className="md:hidden fixed inset-0 z-[70] bg-black/20" onClick={() => setMobileOpen(false)}>
+          <div className="absolute top-14 left-0 right-0 max-h-[calc(100vh-3.5rem)] overflow-y-auto bg-white border-b border-slate-100 py-2 px-4 space-y-1 shadow-xl" onClick={e => e.stopPropagation()}>
             {navItems.map(({ to, label, icon: Icon }) => (
+              <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${isActive(to) ? "bg-slate-100 text-slate-900 font-semibold" : "text-slate-600"}`}>
+                <Icon className="w-4 h-4" />{label}
+              </Link>
+            ))}
+            {/* Secondary builder tabs (the desktop "More" dropdown) — must appear in the mobile drawer too, otherwise BOB Builder & others are unreachable on phones */}
+            {moreItems.map(({ to, label, icon: Icon }) => (
               <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${isActive(to) ? "bg-slate-100 text-slate-900 font-semibold" : "text-slate-600"}`}>
                 <Icon className="w-4 h-4" />{label}

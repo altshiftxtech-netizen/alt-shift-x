@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Bot, X, ChevronRight, Send, Loader2, GripHorizontal, Minimize2, Maximize2 } from "lucide-react";
+import { Bot, X, ChevronRight, Send, Loader2, GripHorizontal, Minimize2, Maximize2, Camera } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
@@ -13,6 +13,8 @@ export default function BobAdvisorWidget() {
   const [sending, setSending] = useState(false);
   const [initializing, setInitializing] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const cameraInputRef = useRef(null);
 
   // Dragging state
   const [pos, setPos] = useState(null); // null = use default bottom-right
@@ -47,6 +49,35 @@ export default function BobAdvisorWidget() {
     setSending(true);
     setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
+    onSent();
+    setSending(false);
+  };
+
+  // Take/upload a photo and send it straight to BOB.
+  const handlePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const c = conv || (await (async () => {
+      const newConv = await base44.agents.createConversation({
+        agent_name: "bob_builder",
+        metadata: { name: "BOB Advisor Session" }
+      });
+      setConv(newConv);
+      setConvId(newConv.id);
+      return newConv;
+    })());
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setUploading(false);
+    setSending(true);
+    const text = input.trim();
+    await base44.agents.addMessage(c, {
+      role: "user",
+      content: (text ? text + "\n\n" : "") + "[Photo attached] Please analyze this image.",
+      file_urls: [file_url],
+    });
+    setInput("");
     onSent();
     setSending(false);
   };
@@ -200,6 +231,23 @@ export default function BobAdvisorWidget() {
 
               {/* Input */}
               <div className="border-t border-slate-700 p-3 flex gap-2">
+                {/* Camera capture — opens the device camera on mobile, file picker on desktop */}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handlePhoto}
+                />
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  disabled={uploading || sending}
+                  title="Take a photo"
+                  className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-violet-300 px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+                >
+                  {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                </button>
                 <input
                   type="text"
                   value={input}
