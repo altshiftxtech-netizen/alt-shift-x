@@ -1,7 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { Download, Loader2, Trash2 } from "lucide-react";
+import NonMagnaReminderDialog from "@/components/install/NonMagnaReminderDialog";
+
+// Accounts that are only provisioned with Magna Dev components.
+const RESTRICTED_ROLES = ["staff", "builder"];
+const isMagnaDev = (component) =>
+  (component?.builder_name || "").trim().toLowerCase() === "magna dev";
 
 /**
  * InstallButton — expects pre-fetched data from parent to avoid N+1 auth/DB calls.
@@ -16,8 +22,46 @@ import { Download, Loader2, Trash2 } from "lucide-react";
 export default function InstallButton({ component, userId, installedRecord, onUninstalled, size = "default" }) {
   const [loading, setLoading] = useState(false);
   const [localRecord, setLocalRecord] = useState(installedRecord);
+  const [showReminder, setShowReminder] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  // Figure out if this is a restricted (staff/builder) account.
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        setUserRole(me?.role || null);
+      } catch {
+        setUserRole(null);
+      }
+    })();
+  }, []);
+
+  const isRestricted = RESTRICTED_ROLES.includes(userRole);
+  const needsReminder = isRestricted && !isMagnaDev(component);
+
+  const proceedToCardCheckout = async () => {
+    setShowReminder(false);
+    if (window.self !== window.top) {
+      alert("Checkout is only available from the published app. Please open the live URL.");
+      return;
+    }
+    setLoading(true);
+    const res = await base44.functions.invoke("createCheckoutSession", { componentId: component.id });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      alert("Could not start checkout. Please try again.");
+      setLoading(false);
+    }
+  };
 
   const handleInstall = async () => {
+    // Staff/builder accounts get a friendly reminder before any non-Magna purchase.
+    if (needsReminder) {
+      setShowReminder(true);
+      return;
+    }
     if (window.self !== window.top) {
       alert("Checkout is only available from the published app. Please open the live URL.");
       return;
@@ -33,6 +77,10 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   };
 
   const handlePaypalInstall = async () => {
+    if (needsReminder) {
+      setShowReminder(true);
+      return;
+    }
     if (window.self !== window.top) {
       alert("Checkout is only available from the published app. Please open the live URL.");
       return;
@@ -82,6 +130,13 @@ export default function InstallButton({ component, userId, installedRecord, onUn
         className="gap-2 bg-[#ffc439] hover:bg-[#f0b72e] text-[#003087] font-semibold">
         Pay with PayPal
       </Button>
+
+      <NonMagnaReminderDialog
+        open={showReminder}
+        onOpenChange={setShowReminder}
+        componentName={component?.name}
+        onProceed={proceedToCardCheckout}
+      />
     </div>
   );
 }
