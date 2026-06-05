@@ -15,9 +15,9 @@ import Vested100Tab from "@/components/admin/Vested100Tab";
 import AffiliateTab from "@/components/admin/AffiliateTab";
 import PaymentModeTab from "@/components/admin/PaymentModeTab";
 import UserManagementTab from "@/components/admin/users/UserManagementTab";
-import TaxComplianceTab from "@/components/admin/TaxComplianceTab";
+import TaxFilingTab from "@/components/admin/TaxFilingTab";
 
-const TABS = ["User Management", "Tax Compliance", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Platform Intelligence"];
+const TABS = ["User Management", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Platform Intelligence"];
 
 const PENDING = [
   { id: "p1", name: "Claim Sentinel 2.0", code: "RP-CLAIMS-2.0", builder: "ClaimAI", type: "X1", submitted: "May 27, 2026", trustScore: 76, category: "Risk & Compliance", issues: [] },
@@ -269,7 +269,7 @@ export default function AdminPanel() {
 
   const tabContent = {
     "User Management": <UserManagementTab />,
-    "Tax Compliance": <TaxComplianceTab />,
+    "Tax Filing": <TaxFilingTab />,
     "Invoices": <InvoiceApprovalPanel />,
     "Pending Review": <PendingTab />,
     "Published": <PublishedTab />,
