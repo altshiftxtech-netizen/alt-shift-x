@@ -126,9 +126,13 @@ function ChatInterface({ conversation, onClose }) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((msg, i) => (
+        {messages
+          // Never render empty/ghost bubbles (e.g. an assistant message that
+          // only holds a running tool_call and no text yet).
+          .filter((msg) => typeof msg.content === "string" && msg.content.trim().length > 0)
+          .map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-xs px-3 py-2 rounded-xl text-xs leading-relaxed ${
+            <div className={`max-w-xs px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
               msg.role === "user" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900"
             }`}>
               {msg.content}
