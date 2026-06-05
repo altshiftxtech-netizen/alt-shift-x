@@ -155,7 +155,7 @@ function ChatInterface({ conversation, onClose }) {
           disabled={sending}
         />
         <VoiceButton size="sm" onTranscript={(t) => setInput((p) => (p ? p + " " : "") + t)} />
-        {(sending || isGenerating) ? (
+        {isGenerating ? (
           <StopButton onStop={stopGenerating} variant="light" size="sm" />
         ) : (
           <Button onClick={handleSend} disabled={!input.trim()} size="sm" className="bg-violet-600 hover:bg-violet-700">

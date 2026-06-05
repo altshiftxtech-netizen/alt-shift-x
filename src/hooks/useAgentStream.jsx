@@ -20,7 +20,7 @@ import { base44 } from "@/api/base44Client";
  *  - A watchdog ALWAYS force-clears generating after inactivity, regardless of
  *    what the stream reports — so a dead/stalled stream can never hang the UI.
  */
-const IDLE_TIMEOUT_MS = 4000;
+const IDLE_TIMEOUT_MS = 2500;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
@@ -52,14 +52,16 @@ export default function useAgentStream(convId, initialMessages = []) {
     const last = msgs[msgs.length - 1];
 
     if (last.role === "assistant") {
+      // A finished assistant reply with text means the turn is DONE — even if a
+      // stale tool_call status lingers as "in_progress". This prevents the Stop
+      // button / indicator from hanging after the reply has fully arrived.
+      const hasText = typeof last.content === "string" && last.content.trim().length > 0;
+      if (hasText) return false;
+
       const tcRunning = (last.tool_calls || []).some(
         (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
       );
-      if (tcRunning) return true; // a tool is actively running → still working
-
-      // Assistant has produced text and nothing is running → reply is DONE.
-      const hasText = typeof last.content === "string" && last.content.trim().length > 0;
-      if (hasText) return false;
+      if (tcRunning) return true; // a tool is actively running, no text yet → working
 
       // No text yet, no running tool — only "working" if status explicitly says so.
       const status = last.status;
