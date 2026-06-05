@@ -39,12 +39,13 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
   };
 
-  // Watchdog: clears the "thinking" indicator after a long silence so a truly
-  // dead/stalled stream can't hang the UI forever. It does NOT latch the turn
-  // done — if more tokens arrive afterward, they still render normally.
+  // Watchdog: after a long silence with no new tokens, force the turn done so a
+  // dead/stalled stream can't hang the Stop button forever. It latches done so
+  // the indicator can't flip back on from a stray late update.
   const armIdleTimer = useCallback(() => {
     clearIdleTimer();
     idleTimerRef.current = setTimeout(() => {
+      doneRef.current = true;
       setIsGenerating(false);
     }, IDLE_TIMEOUT_MS);
   }, []);
@@ -52,27 +53,43 @@ export default function useAgentStream(convId, initialMessages = []) {
   // Is the agent still actively producing a reply for the current turn?
   const detectGenerating = (msgs) => {
     if (!msgs || msgs.length === 0) return false;
+
+    // A tool actively running anywhere in the tail means we're still working.
+    const RUNNING = ["pending", "in_progress", "running"];
+    const anyToolRunning = msgs.some(
+      (m) =>
+        m.role === "assistant" &&
+        (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
+    );
+    if (anyToolRunning) return true;
+
     const last = msgs[msgs.length - 1];
+
+    // If the last message is from the user, a reply is incoming.
+    if (last.role === "user") return true;
 
     if (last.role === "assistant") {
       // A finished assistant reply with text means the turn is DONE — even if a
-      // stale tool_call status lingers as "in_progress". This prevents the Stop
-      // button / indicator from hanging after the reply has fully arrived.
+      // stale tool_call status lingers. Prevents the Stop button / indicator
+      // from hanging after the reply has fully arrived.
       const hasText = typeof last.content === "string" && last.content.trim().length > 0;
       if (hasText) return false;
 
-      const tcRunning = (last.tool_calls || []).some(
-        (t) => t.status && ["pending", "in_progress", "running"].includes(t.status)
+      // No text and no running tool on the last message. If ANY earlier
+      // assistant message in this turn already produced text, the agent has
+      // effectively replied — treat as done so a trailing tool-only message
+      // can't hang the indicator forever.
+      const anAssistantSpoke = msgs.some(
+        (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
       );
-      if (tcRunning) return true; // a tool is actively running, no text yet → working
+      if (anAssistantSpoke) return false;
 
-      // No text yet, no running tool — only "working" if status explicitly says so.
+      // No text anywhere yet — only "working" if status explicitly says so.
       const status = last.status;
-      return !!(status && ["pending", "in_progress", "running"].includes(status));
+      return !!(status && RUNNING.includes(status));
     }
 
-    // Last message is from the user → a reply is incoming.
-    return last.role === "user";
+    return false;
   };
 
   const handleUpdate = useCallback((data) => {
