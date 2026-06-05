@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
 
 function scoreColor(s) {
   if (s >= 90) return "text-emerald-600";

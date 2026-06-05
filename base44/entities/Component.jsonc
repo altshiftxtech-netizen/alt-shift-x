@@ -17,6 +17,10 @@
       "type": "string",
       "description": "Unique component code (e.g., RP-CONSTRUCTION-1.0)"
     },
+    "sku": {
+      "type": "string",
+      "description": "Sequential stock-keeping unit for inventory/record-keeping, e.g. ASX-00001"
+    },
     "type": {
       "type": "string",
       "enum": [

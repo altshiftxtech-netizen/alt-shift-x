@@ -134,6 +134,8 @@ export default function SharedNav({ mode = "user", theme }) {
               <ChevronDown className="w-3 h-3" />
             </button>
             {portalOpen && (
+              <>
+              <div className="fixed inset-0 z-[55]" onClick={() => setPortalOpen(false)} />
               <div className={`absolute right-0 mt-1 w-44 rounded-xl shadow-lg py-1 z-[60] ${isDev ? "bg-[#161b22] border border-[#30363d] [&_a]:!text-[#8b949e] [&_a:hover]:!bg-[#0d1117] [&_a:hover]:!text-[#c9d1d9] font-mono" : "bg-white border border-slate-200"}`}>
                 {/* Highlighted Speakeasy — paying members only */}
                 {canSpeakeasy && (
@@ -186,6 +188,7 @@ export default function SharedNav({ mode = "user", theme }) {
                   Gamification Admin
                 </Link>
               </div>
+              </>
             )}
           </div>
 

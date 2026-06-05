@@ -3,10 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Download, ShieldCheck } from "lucide-react";
 
 const stats = (s) => [
-  { label: "Total Installs", value: s.totalInstalls.toLocaleString(), sub: `+${s.installsDelta}% this month`, icon: Download, color: "text-blue-600", bg: "bg-blue-50" },
-  { label: "Monthly Revenue", value: `$${s.currentMonthRevenue.toLocaleString()}`, sub: `+${s.revenueDelta}% vs last month`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
-  { label: "Lifetime Revenue", value: `$${s.lifetimeRevenue.toLocaleString()}`, sub: `${s.activeComponents} active components`, icon: TrendingUp, color: "text-violet-600", bg: "bg-violet-50" },
-  { label: "Avg Trust Score", value: `${s.avgTrustScore} / 100`, sub: "Across all components", icon: ShieldCheck, color: "text-amber-600", bg: "bg-amber-50" },
+  { label: "Total Installs", value: s.totalInstalls.toLocaleString(), sub: "Across all components", icon: Download, color: "text-blue-600", bg: "bg-blue-50" },
+  { label: "Monthly Recurring", value: `$${Math.round(s.currentMonthRevenue).toLocaleString()}`, sub: "price × active installs", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { label: "Published", value: `${s.activeComponents}`, sub: "live components", icon: TrendingUp, color: "text-violet-600", bg: "bg-violet-50" },
+  { label: "Avg Trust Score", value: `${s.avgTrustScore} / 100`, sub: "Across scored components", icon: ShieldCheck, color: "text-amber-600", bg: "bg-amber-50" },
 ];
 
 export default function DashboardStatRow({ stats: s }) {
