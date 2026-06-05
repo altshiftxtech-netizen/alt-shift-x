@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Bot, X, ChevronRight, Send, Loader2, GripHorizontal, Minimize2, Maximize2, Camera } from "lucide-react";
+import { Bot, X, ChevronRight, Send, Loader2, GripHorizontal, Minimize2, Maximize2, Camera, Paperclip, Mic, MicOff } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import useAgentStream from "@/hooks/useAgentStream";
+import useVoiceInput from "@/hooks/useVoiceInput";
 import StopButton from "@/components/StopButton";
 
 export default function BobAdvisorWidget() {
@@ -15,6 +16,11 @@ export default function BobAdvisorWidget() {
   const [minimized, setMinimized] = useState(false);
   const [uploading, setUploading] = useState(false);
   const cameraInputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const inputRef = useRef(null);
+  const { recording, transcribing, toggle: toggleVoice } = useVoiceInput({
+    onTranscript: (t) => setInput((prev) => (prev ? prev + " " : "") + t),
+  });
 
   // Dragging state
   const [pos, setPos] = useState(null); // null = use default bottom-right
@@ -26,6 +32,40 @@ export default function BobAdvisorWidget() {
   useEffect(() => {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }, [messages]);
+
+  // Auto-focus the cursor into the input whenever the panel is open & expanded
+  useEffect(() => {
+    if (open && !minimized) setTimeout(() => inputRef.current?.focus(), 150);
+  }, [open, minimized, initializing]);
+
+  // Generic file attachment (documents, images, etc.)
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const c = conv || (await (async () => {
+      const newConv = await base44.agents.createConversation({
+        agent_name: "bob_builder",
+        metadata: { name: "BOB Advisor Session" }
+      });
+      setConv(newConv);
+      setConvId(newConv.id);
+      return newConv;
+    })());
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setUploading(false);
+    setSending(true);
+    const text = input.trim();
+    await base44.agents.addMessage(c, {
+      role: "user",
+      content: (text ? text + "\n\n" : "") + `[Attached: ${file.name}] Please review this file.`,
+      file_urls: [file_url],
+    });
+    setInput("");
+    onSent();
+    setSending(false);
+  };
 
   const openChat = async () => {
     setOpen(true);
@@ -248,7 +288,27 @@ export default function BobAdvisorWidget() {
                 >
                   {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
                 </button>
+                {/* Generic file upload */}
+                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFile} />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || sending}
+                  title="Attach a file"
+                  className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-violet-300 px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                </button>
+                {/* Voice command */}
+                <button
+                  onClick={toggleVoice}
+                  disabled={transcribing}
+                  title={recording ? "Stop recording" : "Speak your message"}
+                  className={`disabled:opacity-40 px-3 py-2 rounded-lg transition-colors flex-shrink-0 ${recording ? "bg-red-600 text-white animate-pulse" : "bg-slate-800 hover:bg-slate-700 text-violet-300"}`}
+                >
+                  {transcribing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : recording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </button>
                 <input
+                  ref={inputRef}
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}

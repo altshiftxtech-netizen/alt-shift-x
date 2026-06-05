@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, RefreshCw, Loader2, Lightbulb, TrendingUp, DollarSign, FileText, ChevronRight, Send } from "lucide-react";
+import { Bot, RefreshCw, Loader2, Lightbulb, TrendingUp, DollarSign, FileText, ChevronRight, Send, Mic, MicOff, Paperclip } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import useVoiceInput from "@/hooks/useVoiceInput";
 
 const ICON_MAP = { pricing: DollarSign, description: FileText, conversion: TrendingUp, general: Lightbulb };
 
@@ -26,7 +27,36 @@ export default function BobRecommendationsPanel() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [chatMode, setChatMode] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const { recording, transcribing, toggle: toggleVoice } = useVoiceInput({
+    onTranscript: (t) => setInput((prev) => (prev ? prev + " " : "") + t),
+  });
+
+  // Auto-focus the cursor into the input as soon as chat opens
+  useEffect(() => {
+    if (chatMode) setTimeout(() => inputRef.current?.focus(), 100);
+  }, [chatMode]);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !conv) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.agents.addMessage(conv, {
+        role: "user",
+        content: (input.trim() ? input.trim() + "\n\n" : "") + `[Attached: ${file.name}] Please review this file.`,
+        file_urls: [file_url],
+      });
+      setInput("");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     fetchRecommendations();
@@ -153,7 +183,19 @@ Provide exactly 5 specific, actionable recommendations to optimize pricing, desc
               <div ref={messagesEndRef} />
             </div>
             <div className="flex gap-2">
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleUpload} />
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploading || sending}
+                title="Attach a file"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg disabled:opacity-40 flex-shrink-0">
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={toggleVoice} disabled={transcribing}
+                title={recording ? "Stop recording" : "Speak your message"}
+                className={`px-2.5 py-1.5 rounded-lg disabled:opacity-40 flex-shrink-0 ${recording ? "bg-red-600 text-white animate-pulse" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}>
+                {transcribing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : recording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}

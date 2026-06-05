@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Bot, X, Send, Loader2, ExternalLink } from "lucide-react";
+import { Bot, X, Send, Loader2, ExternalLink, Paperclip, Mic, MicOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import useAgentStream from "@/hooks/useAgentStream";
+import useVoiceInput from "@/hooks/useVoiceInput";
 import StopButton from "@/components/StopButton";
 
 /**
@@ -20,7 +21,37 @@ export default function BuilderTestBot() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [isBuilder, setIsBuilder] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const { recording, transcribing, toggle: toggleVoice } = useVoiceInput({
+    onTranscript: (t) => setInput((prev) => (prev ? prev + " " : "") + t),
+  });
+
+  // Auto-focus the cursor into the input when the chat opens
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 150);
+  }, [open]);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !conversation) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.agents.addMessage(conversation, {
+        role: "user",
+        content: (input.trim() ? input.trim() + "\n\n" : "") + `[Attached: ${file.name}] Please review this file.`,
+        file_urls: [file_url],
+      });
+      setInput("");
+      onSent();
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -137,7 +168,25 @@ export default function BuilderTestBot() {
             </div>
           )}
           <div className="bg-white border-t border-slate-100 px-3 py-2 flex items-center gap-2">
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFile} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || sending}
+              title="Attach a file"
+              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg disabled:opacity-50 transition-colors flex-shrink-0"
+            >
+              {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Paperclip className="w-3 h-3" />}
+            </button>
+            <button
+              onClick={toggleVoice}
+              disabled={transcribing}
+              title={recording ? "Stop recording" : "Speak your message"}
+              className={`p-2 rounded-lg disabled:opacity-50 transition-colors flex-shrink-0 ${recording ? "bg-red-600 text-white animate-pulse" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}
+            >
+              {transcribing ? <Loader2 className="w-3 h-3 animate-spin" /> : recording ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
+            </button>
             <input
+              ref={inputRef}
               className="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-violet-400"
               placeholder="Ask about revenue share, components..."
               value={input}
