@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Lock, Bell, CreditCard, CheckCircle2, Zap } from "lucide-react";
+import { User, Lock, Bell, CreditCard, CheckCircle2, Zap, Banknote, ArrowRight } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import CommandPromptToggle from "@/components/CommandPromptToggle";
 import TestModeSelector from "@/components/TestModeSelector";
@@ -141,7 +141,17 @@ function BillingTab() {
           <p className="text-sm text-slate-700">•••• •••• •••• 4242</p>
           <span className="text-xs text-slate-400 ml-auto">Expires 12/27</span>
         </div>
-        <ManageBillingButton>Update Card</ManageBillingButton>
+        <ManageBillingButton>Update Payment Card</ManageBillingButton>
+        <p className="text-[11px] text-slate-400 mt-2">This is the card you pay us with. To update the bank account you get <span className="font-semibold">paid into</span>, use Builder Payouts below.</p>
+      </CardContent></Card>
+      <Card><CardContent className="pt-5">
+        <p className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2"><Banknote className="w-4 h-4 text-violet-600" /> Builder Payouts</p>
+        <p className="text-xs text-slate-500 mb-4">Add or update the bank account you receive earnings into via Stripe Connect.</p>
+        <Link to="/builder/payout-settings">
+          <Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2">
+            Manage Payout Account <ArrowRight className="w-4 h-4" />
+          </Button>
+        </Link>
       </CardContent></Card>
       <Card><CardContent className="pt-5">
         <p className="text-sm font-bold text-slate-900 mb-3">Recent Invoices</p>
