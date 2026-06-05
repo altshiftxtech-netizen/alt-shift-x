@@ -38,7 +38,9 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
         metadata: { name: "Consultation", description: `Query: ${q}` }
       });
       await base44.agents.addMessage(conv, { role: "user", content: q });
-      setConversation(conv);
+      // Seed the chat with the user's first message so it shows instantly and
+      // the streaming hook knows a reply is incoming.
+      setConversation({ ...conv, messages: [...(conv.messages || []), { role: "user", content: q }] });
       setShowChat(true);
       setQuery("");
     } catch (err) {
@@ -89,6 +91,12 @@ function ChatInterface({ conversation, onClose }) {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
 
+  // The first user message was already added before this view mounted — open a
+  // turn so the pending indicator shows and we wait for the agent's reply.
+  useEffect(() => {
+    onSent();
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -127,6 +135,13 @@ function ChatInterface({ conversation, onClose }) {
             </div>
           </div>
         ))}
+        {isGenerating && (
+          <div className="flex justify-start">
+            <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-xl text-xs flex items-center gap-1.5">
+              <Loader2 className="w-3 h-3 animate-spin" /> Consultant is thinking…
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
