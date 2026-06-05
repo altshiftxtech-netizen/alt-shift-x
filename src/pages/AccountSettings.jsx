@@ -8,6 +8,7 @@ import SharedNav from "@/components/SharedNav";
 import CommandPromptToggle from "@/components/CommandPromptToggle";
 import TestModeSelector from "@/components/TestModeSelector";
 import TwoFactorPanel from "@/components/auth/TwoFactorPanel";
+import ManageBillingButton from "@/components/billing/ManageBillingButton";
 import { useAuth } from "@/lib/AuthContext";
 
 const ALL_TABS = [
@@ -140,7 +141,7 @@ function BillingTab() {
           <p className="text-sm text-slate-700">•••• •••• •••• 4242</p>
           <span className="text-xs text-slate-400 ml-auto">Expires 12/27</span>
         </div>
-        <Button variant="outline" className="text-sm">Update Card</Button>
+        <ManageBillingButton>Update Card</ManageBillingButton>
       </CardContent></Card>
       <Card><CardContent className="pt-5">
         <p className="text-sm font-bold text-slate-900 mb-3">Recent Invoices</p>

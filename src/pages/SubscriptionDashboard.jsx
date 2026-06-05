@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
+import ManageBillingButton from "@/components/billing/ManageBillingButton";
 import {
   Zap, Shield, Building2, CheckCircle2, CreditCard,
   ArrowRight, Calendar, Download, AlertTriangle, RefreshCw, Loader2
@@ -199,7 +200,9 @@ export default function SubscriptionDashboard() {
                 <CardContent className="pt-5">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm font-bold text-slate-900">Payment Method</p>
-                    <Button variant="ghost" size="sm" className="text-xs text-violet-700 h-7 gap-1"><RefreshCw className="w-3 h-3" /> Update</Button>
+                    <ManageBillingButton variant="ghost" size="sm" className="text-xs text-violet-700 h-7 px-2">
+                      <RefreshCw className="w-3 h-3" /> Update
+                    </ManageBillingButton>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <div className="w-10 h-6 bg-slate-800 rounded flex items-center justify-center text-[8px] text-white font-bold">VISA</div>
