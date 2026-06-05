@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus, Zap, Package, CheckCircle2 } from "lucide-react";
+import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, Loader2, LogIn, UserPlus, Zap, Package, CheckCircle2, LogOut } from "lucide-react";
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
@@ -73,7 +73,7 @@ function ScoreBadge({ score }) {
 }
 
 export default function Marketplace() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -194,6 +194,9 @@ export default function Marketplace() {
              <>
                <Link to="/dashboard"><Button variant="outline" className="text-sm h-8 bg-white/10 border-white/20 text-white hover:bg-white/20">My Dashboard</Button></Link>
                <Link to="/builder"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700">Builder Portal</Button></Link>
+               <Button className="text-sm h-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white gap-1.5" onClick={() => logout()}>
+                 <LogOut className="w-3.5 h-3.5" /> Sign out
+               </Button>
              </>
            ) : (
              <>

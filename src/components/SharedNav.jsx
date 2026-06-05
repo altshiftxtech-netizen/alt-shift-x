@@ -5,6 +5,7 @@ import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import DevNavChrome from "@/components/nav/DevNavChrome";
+import UserMenu from "@/components/nav/UserMenu";
 import { base44 } from "@/api/base44Client";
 
 const USER_NAV = [
@@ -188,8 +189,8 @@ export default function SharedNav({ mode = "user", theme }) {
             )}
           </div>
 
-          {/* Avatar — static, non-interactive (no dead hover button) */}
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isDev ? "bg-[#161b22] border border-[#30363d] text-[#3fb950] font-mono" : "bg-slate-200 text-slate-600"}`}>U</div>
+          {/* Avatar dropdown — always has a Log out option */}
+          <UserMenu isDev={isDev} />
 
           {/* Mobile menu button */}
           <button className={`md:hidden p-1.5 rounded-lg ${isDev ? "text-[#8b949e] hover:bg-[#161b22]" : "hover:bg-slate-100"}`} onClick={() => setMobileOpen(!mobileOpen)}>
