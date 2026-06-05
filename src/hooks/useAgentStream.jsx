@@ -20,7 +20,9 @@ import { base44 } from "@/api/base44Client";
  *  - A watchdog ALWAYS force-clears generating after inactivity, regardless of
  *    what the stream reports — so a dead/stalled stream can never hang the UI.
  */
-const IDLE_TIMEOUT_MS = 2500;
+// Long enough to survive natural pauses between streamed tokens / model
+// "thinking" gaps. A shorter value can kill a still-streaming reply.
+const IDLE_TIMEOUT_MS = 15000;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
@@ -37,11 +39,12 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
   };
 
-  // Watchdog: if no further update comes in, force-stop the generating state.
+  // Watchdog: clears the "thinking" indicator after a long silence so a truly
+  // dead/stalled stream can't hang the UI forever. It does NOT latch the turn
+  // done — if more tokens arrive afterward, they still render normally.
   const armIdleTimer = useCallback(() => {
     clearIdleTimer();
     idleTimerRef.current = setTimeout(() => {
-      doneRef.current = true;
       setIsGenerating(false);
     }, IDLE_TIMEOUT_MS);
   }, []);
