@@ -13,25 +13,43 @@ export default function Pipelines() {
   const [loading, setLoading] = useState(true);
   const [pipelines, setPipelines] = useState([]);
   const [poolCount, setPoolCount] = useState(0);
+  const [residentCount, setResidentCount] = useState(0);
   const [buying, setBuying] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [pl, optedIn] = await Promise.all([
+        const [pl, optedIn, residentProfiles] = await Promise.all([
           base44.entities.Pipeline.filter({ active: true }, "-featured"),
           base44.entities.Component.filter({ include_in_pipelines: true, status: "published" }),
+          base44.entities.UserAdminProfile.filter({ resident_developer: true }),
         ]);
         setPipelines(pl || []);
         setPoolCount((optedIn || []).length);
+
+        // Resident Developer pipelines (e.g. Alt+Shift+X Exclusive) auto-include every
+        // published component built by any Resident Developer — currently Magna Dev.
+        const residentIds = (residentProfiles || []).map((p) => p.user_id);
+        const residentComps = (
+          await Promise.all(
+            residentIds.map((id) =>
+              base44.entities.Component.filter({ builder_id: id, status: "published" })
+            )
+          )
+        ).flat();
+        setResidentCount(residentComps.length);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const countFor = (p) =>
-    p.pipeline_type === "best_of_pool" ? poolCount : (p.component_codes || []).length;
+  const countFor = (p) => {
+    if (p.pipeline_type === "best_of_pool") return poolCount;
+    const explicit = (p.component_codes || []).length;
+    // Resident-developer-ready curated pipelines expand to include all resident dev components.
+    return p.resident_developer_ready ? explicit + residentCount : explicit;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900">
