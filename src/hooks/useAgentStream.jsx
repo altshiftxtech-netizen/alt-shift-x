@@ -151,6 +151,24 @@ export default function useAgentStream(convId, initialMessages = []) {
     unsubRef.current = base44.agents.subscribeToConversation(convId, handleUpdate);
   }, [convId, handleUpdate]);
 
+  // Mobile browsers (Chrome/Safari on iOS & Android) suspend timers, sockets and
+  // SSE connections when the tab is backgrounded, the screen locks, or the
+  // network blips. When that happens the realtime subscription silently dies and
+  // the chat appears to "freeze" until a manual refresh. To keep the chat alive
+  // WITHOUT a page refresh, whenever the page becomes visible / regains focus /
+  // the network comes back online, we re-fetch the latest conversation snapshot
+  // and re-open the subscription.
+  const resync = useCallback(async () => {
+    if (!convId) return;
+    try {
+      const full = await base44.agents.getConversation(convId);
+      if (full?.messages) handleUpdate({ messages: full.messages });
+    } catch {
+      // best-effort — the resubscribe below will catch up anyway
+    }
+    subscribe();
+  }, [convId, handleUpdate, subscribe]);
+
   // (Re)subscribe whenever the conversation changes. Reset turn state for the
   // new conversation so we don't carry a stale generating indicator.
   useEffect(() => {
@@ -160,11 +178,23 @@ export default function useAgentStream(convId, initialMessages = []) {
     lastSnapshotRef.current = "";
     pendingUserRef.current = null;
     subscribe();
+
+    // Keep the live chat alive across mobile tab-suspend / lock / network drops.
+    const onVisible = () => { if (document.visibilityState === "visible") resync(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", resync);
+    window.addEventListener("online", resync);
+    window.addEventListener("pageshow", resync); // iOS Safari bfcache restore
+
     return () => {
       if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
       clearIdleTimer();
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", resync);
+      window.removeEventListener("online", resync);
+      window.removeEventListener("pageshow", resync);
     };
-  }, [subscribe]);
+  }, [subscribe, resync]);
 
   const stop = useCallback(() => {
     doneRef.current = true;
