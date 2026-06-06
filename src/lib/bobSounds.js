@@ -214,15 +214,22 @@ export function sayHi() {
   speak(pick(PHRASES.greeting));
 }
 
-// Thinking line plays immediately on send (cancels stale speech) so it lands
-// before / while BOB types. If BOB replies before "On it" has even started
-// speaking, the queued copy could otherwise fire LATE — right before the
-// completion line. So completion lines do NOT queue: they cancel anything still
-// pending (including an un-started "On it") and speak right away. This is what
-// the user wants: "On it" → typing → completion, with no stray "On it" at the end.
-// Thinking line disabled by request — BOB no longer says "On it" on send.
-// It only speaks when finished (sayReady / sayTiles / saySubmitted).
-export const sayThinking = () => {};
+// "On it" — spoken THE INSTANT the user sends, directly inside the click/Enter
+// gesture so the browser always allows it. We cancel any lingering speech and
+// speak synchronously (no setTimeout, no queue) so it starts immediately.
+export const sayThinking = () => {
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
+  const s = getVoiceSettings();
+  u.pitch = s.pitch;
+  u.rate = s.rate;
+  u.volume = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
+  if (chosen) u.voice = chosen;
+  window.speechSynthesis.speak(u);
+};
 export const sayQuestion = () => speak(pick(PHRASES.question));
 export const sayReady = () => speak(pick(PHRASES.ready));
 export const sayTiles = () => speak(pick(PHRASES.tile));
