@@ -23,7 +23,7 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
   const [form, setForm] = useState(() => ({
     legal_name: record?.legal_name || "",
     business_name: record?.business_name || "",
-    federal_tax_classification: record?.federal_tax_classification || "individual_sole_proprietor",
+    tax_classification: record?.tax_classification || "individual_sole_proprietor",
     tin_type: record?.tin_type || "ssn",
     tin: record?.tin || "",
     address_line1: record?.address_line1 || "",
@@ -46,20 +46,26 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
     setSaving(true);
     const payload = {
       ...form,
-      user_id: userId,
-      user_email: userEmail || "",
-      w9_signed: true,
-      w9_signed_at: new Date().toISOString(),
-      status: "completed",
+      builder_id: userId,
+      builder_email: userEmail || "",
+      tax_year: record?.tax_year || new Date().getFullYear(),
+      w9_completed: true,
+      w9_completed_at: new Date().toISOString(),
     };
-    if (record?.id) {
-      await base44.entities.TaxForm1099.update(record.id, payload);
-    } else {
-      await base44.entities.TaxForm1099.create(payload);
+    try {
+      if (record?.id) {
+        await base44.entities.TaxForm1099.update(record.id, payload);
+      } else {
+        await base44.entities.TaxForm1099.create(payload);
+      }
+      toast.success("W-9 submitted — 1099 compliance complete");
+      onSaved?.();
+    } catch (err) {
+      toast.error("Could not submit W-9. Please try again.");
+      console.error("W-9 submit failed:", err);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    toast.success("W-9 submitted — 1099 compliance complete");
-    onSaved?.();
   };
 
   return (
@@ -79,7 +85,7 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
         <div>
           <label className="text-xs font-semibold text-slate-600 mb-1 block">Tax classification *</label>
           <select className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-            value={form.federal_tax_classification} onChange={(e) => set("federal_tax_classification", e.target.value)}>
+            value={form.tax_classification} onChange={(e) => set("tax_classification", e.target.value)}>
             {CLASSES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
           </select>
         </div>
