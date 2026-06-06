@@ -16,7 +16,7 @@ import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 import { buildDocContext } from "@/lib/extractDocText";
-import { playTileDrop, playChime, playCashIn, sayHi } from "@/lib/bobSounds";
+import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -186,15 +186,22 @@ export default function BobBuilder() {
       /create|bulkcreate/i.test(t.name || "")
     );
 
+    // Does BOB's reply end by asking the user something / awaiting feedback?
+    const isAskingQuestion = /\?\s*$/.test((last.content || "").trim()) ||
+      /\b(let me know|how (would|do) you|which|would you like|should i|tell me|what.s next|say "?go"?)\b/i.test(text);
+
     if (isTile && (submittedSomething || usedCreateTool)) {
-      // Tiles dropping into place.
+      // Tiles dropping into place — then BOB speaks.
       playTileDrop();
+      setTimeout(sayTiles, 500);
     } else if (submittedSomething || usedCreateTool) {
-      // A major / non-tile component was submitted — cash it in.
+      // A major / non-tile component was submitted — cash it in, then speak.
       playCashIn();
+      setTimeout(saySubmitted, 500);
     } else {
       // Just finished / asking a question / awaiting feedback.
       playChime();
+      setTimeout(isAskingQuestion ? sayQuestion : sayReady, 450);
     }
 
     // Offline / large-job notify — if the builder opted in for this job, alert
@@ -424,6 +431,7 @@ export default function BobBuilder() {
     await base44.agents.addMessage(c, { role: "user", content: msg });
     await titleProject(c, msg);
     if (notifyWhenDone) notifyPendingRef.current = true;
+    sayThinking(); // BOB acknowledges out loud
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: msg });
     setSending(false);
@@ -494,6 +502,7 @@ export default function BobBuilder() {
     });
     await titleProject(c, msg || fileList);
     if (notifyWhenDone) notifyPendingRef.current = true;
+    sayThinking(); // BOB acknowledges out loud
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
     setUploadedFiles([]);
