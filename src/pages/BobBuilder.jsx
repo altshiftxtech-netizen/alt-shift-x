@@ -141,8 +141,32 @@ export default function BobBuilder() {
 
   // Sound-cue tracking refs
   const greetedRef = useRef(false);       // robotic "hi" played once per chat open
-  const wasGeneratingRef = useRef(false); // detect the generating → idle transition
   const lastSoundMsgRef = useRef(null);   // dedupe sound for the same final message
+
+  // ── BULLETPROOF "BOB is working" state ─────────────────────────────────────
+  // This is the SINGLE source of truth for the loading indicator + Stop button.
+  // It is NOT derived from the hook's isGenerating flag (which can get stuck).
+  // We set it true the instant the user sends, and clear it the instant BOB's
+  // last message has spoken text — plus a hard watchdog that always clears it.
+  const [awaitingReply, setAwaitingReply] = useState(false);
+  const watchdogRef = useRef(null);
+  const replyBaselineRef = useRef(0); // assistant-with-text count at send time
+
+  // Count assistant messages that already have spoken text.
+  const countAssistantText = (msgs) =>
+    (msgs || []).filter(
+      (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
+    ).length;
+
+  // Called on every user send — opens a fresh "awaiting reply" turn and arms a
+  // hard watchdog so the indicator can never hang forever.
+  const beginAwaitingReply = () => {
+    replyBaselineRef.current = countAssistantText(messages);
+    setAwaitingReply(true);
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    // Absolute ceiling — even a totally dead stream clears after this.
+    watchdogRef.current = setTimeout(() => setAwaitingReply(false), 90000);
+  };
 
   // Offline / large-job notify: when on, BOB notifies (bell + optional email) the
   // moment the running job finishes, so the builder can leave the page/device and
@@ -162,15 +186,24 @@ export default function BobBuilder() {
     if (!launched) greetedRef.current = false; // re-greet on next session open
   }, [launched]);
 
-  // When BOB stops generating (finished / asking a question / awaiting feedback),
-  // play a chime — and if its final reply submitted tiles, play the tile-drop.
-  useEffect(() => {
-    const justFinished = wasGeneratingRef.current && !isGenerating && !sending;
-    wasGeneratingRef.current = isGenerating || sending;
-    if (!justFinished || messages.length === 0) return;
+  // The loading indicator + Stop button are driven SOLELY by this.
+  const isBobWorking = awaitingReply;
 
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== "assistant") return;
+  // Watch the messages stream. The instant a NEW assistant message with spoken
+  // text arrives (beyond the baseline captured at send time), the turn is done:
+  // clear the working state, kill the watchdog, and fire the chime/speech.
+  useEffect(() => {
+    if (!awaitingReply) return;
+    if (countAssistantText(messages) <= replyBaselineRef.current) return; // no new reply yet
+
+    // New settled reply has landed — close out the turn.
+    setAwaitingReply(false);
+    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+
+    const last = [...messages].reverse().find(
+      (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
+    );
+    if (!last) return;
 
     // Dedupe: don't replay for the same settled message.
     const key = `${messages.length}:${(last.content || "").slice(0, 40)}`;
@@ -210,7 +243,7 @@ export default function BobBuilder() {
       notifyPendingRef.current = false;
       notifyJobComplete(last);
     }
-  }, [isGenerating, sending, messages]);
+  }, [awaitingReply, messages]);
 
   // Fire an in-app bell notification (and optional email) that the BOB job
   // finished, with a deep link straight back to the BOB chat.
@@ -331,6 +364,7 @@ export default function BobBuilder() {
       const c = await initConv();
       await base44.agents.addMessage(c, { role: "user", content: seedText });
       await titleProject(c, seedText);
+      beginAwaitingReply();
       onSent({ content: seedText });
       setSending(false);
     } else {
@@ -414,6 +448,7 @@ export default function BobBuilder() {
       content: seed,
       ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
     });
+    beginAwaitingReply();
     onSent({ content: seed, ...(sourceUrls.length ? { file_urls: sourceUrls } : {}) });
     setSending(false);
   };
@@ -432,6 +467,7 @@ export default function BobBuilder() {
     await titleProject(c, msg);
     if (notifyWhenDone) notifyPendingRef.current = true;
     sayThinking(); // BOB acknowledges out loud
+    beginAwaitingReply();
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: msg });
     setSending(false);
@@ -503,6 +539,7 @@ export default function BobBuilder() {
     await titleProject(c, msg || fileList);
     if (notifyWhenDone) notifyPendingRef.current = true;
     sayThinking(); // BOB acknowledges out loud
+    beginAwaitingReply();
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
     setUploadedFiles([]);
@@ -561,10 +598,12 @@ export default function BobBuilder() {
     setActiveTab("chat");
   };
 
-  // Stop must clear BOTH the hook's generating state AND this page's local
-  // `sending` flag — otherwise the loading bubble (shown on `sending || isGenerating`)
-  // stays up and the button appears unresponsive.
+  // Stop instantly tears down the working state from every angle: the local
+  // awaiting-reply flag (drives the UI), the watchdog, the hook's stream, and
+  // the legacy sending flag. Nothing can keep the indicator up after this.
   const handleStop = () => {
+    setAwaitingReply(false);
+    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
     stopGenerating();
     setSending(false);
   };
@@ -860,7 +899,7 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {(isGenerating || sending) && (
+                  {isBobWorking && (
                     <div className="flex items-start gap-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
@@ -967,7 +1006,7 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    {(isGenerating || sending) ? (
+                    {isBobWorking ? (
                       <StopButton onStop={handleStop} />
                     ) : (
                       <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
