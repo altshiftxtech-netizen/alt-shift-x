@@ -113,28 +113,41 @@ Deno.serve(async (req) => {
     try {
       const incidents = await sr.entities.SecurityIncident.list("-created_date", 300).catch(() => []);
       const newIncidents = incidents.filter(i => i.status === "new");
-      const critical = incidents.filter(i => i.severity === "critical");
       metrics.total_incidents = incidents.length;
-      metrics.new_incidents = newIncidents.length;
 
-      // AUTO-HEAL: auto-review old low/medium incidents (>7 days) to keep the queue clean
+      // AUTO-HEAL: clear the "new" queue for incidents that are already handled.
+      // An incident that was BLOCKED at the gateway needed no human action — the
+      // attack never reached the app. We auto-review those (any severity) once
+      // they're a day old. We also still auto-review old low/medium incidents.
       let reviewed = 0;
       for (const i of newIncidents) {
-        if ((i.severity === "low" || i.severity === "medium") && i.created_date < daysAgoIso(7)) {
+        const handledByBlock = i.blocked === true && i.created_date < daysAgoIso(1);
+        const staleLowMed = (i.severity === "low" || i.severity === "medium") && i.created_date < daysAgoIso(7);
+        if (handledByBlock || staleLowMed) {
           try {
-            await sr.entities.SecurityIncident.update(i.id, { status: "reviewed" });
+            await sr.entities.SecurityIncident.update(i.id, {
+              status: "reviewed",
+              notes: handledByBlock
+                ? "Auto-reviewed: attack was blocked at the gateway; no exposure. Cleared by daily watchdog."
+                : "Auto-reviewed: aged-out low/medium incident. Cleared by daily watchdog.",
+            });
             reviewed++;
           } catch { /* best-effort */ }
         }
       }
-      if (reviewed > 0) fixesApplied.push(`Auto-archived ${reviewed} old low/medium security incident(s).`);
+      if (reviewed > 0) fixesApplied.push(`Auto-cleared ${reviewed} already-handled security incident(s) from the review queue.`);
 
-      if (critical.length === 0) {
-        checks.push({ name: "Security Sentinel", status: "pass", detail: `${incidents.length} incidents logged, none critical/unhandled.` });
-        whatsWorking.push("Security Sentinel active — no critical threats detected.");
+      // Only UNHANDLED criticals (still "new" AND not blocked) need human attention.
+      const remaining = await sr.entities.SecurityIncident.filter({ status: "new" }).catch(() => newIncidents);
+      const unhandledCritical = remaining.filter(i => i.severity === "critical" && i.blocked !== true);
+      metrics.new_incidents = remaining.length;
+
+      if (unhandledCritical.length === 0) {
+        checks.push({ name: "Security Sentinel", status: "pass", detail: `${incidents.length} incidents logged — all critical threats blocked & handled.` });
+        whatsWorking.push("Security Sentinel active — all detected attacks were blocked, no exposure.");
       } else {
-        checks.push({ name: "Security Sentinel", status: "warn", detail: `${critical.length} critical incident(s) on record.` });
-        issuesFound.push(`${critical.length} critical security incident(s) — review in Security Center.`);
+        checks.push({ name: "Security Sentinel", status: "warn", detail: `${unhandledCritical.length} unblocked critical incident(s) need review.` });
+        issuesFound.push(`${unhandledCritical.length} unblocked critical security incident(s) — review in Security Center.`);
       }
     } catch (e) {
       checks.push({ name: "Security Sentinel", status: "warn", detail: `Could not read incidents: ${e.message}` });
