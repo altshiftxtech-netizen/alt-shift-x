@@ -170,12 +170,13 @@ export default function BobBuilder() {
   useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
 
   // Robotic "hi" — spoken ONCE per page mount, and only when entering a fresh,
-  // empty board. Never re-fires on restore, open-project, spin-off, or
-  // "New Session", so BOB never says "hi" in the middle of an active chat.
+  // empty board with no user action yet. The moment the user sends anything
+  // (userActedRef), the greeting is permanently suppressed — so launching with
+  // a seed prompt plays "On it" only, never "On it" followed by the greeting.
   useEffect(() => {
     if (!launched || greetedRef.current) return;
-    if (convId || messages.length > 0) { greetedRef.current = true; return; } // existing chat → no greeting
     greetedRef.current = true;
+    if (userActedRef.current || convId || messages.length > 0) return; // active/seeded chat → no greeting
     sayHi();
   }, [launched, convId, messages.length]);
 
@@ -296,7 +297,9 @@ export default function BobBuilder() {
 
   // ── Splash / session controls ───────────────────────────────────────────────
   const launch = async (seedText) => {
-    userActedRef.current = true;
+    // Suppress the greeting up-front when launching WITH a seed prompt, so the
+    // greeting effect (which runs on setLaunched) never fires before dispatch.
+    if (seedText?.trim()) { userActedRef.current = true; greetedRef.current = true; }
     setLaunched(true);
     setActiveTab("chat");
     if (seedText?.trim()) {
