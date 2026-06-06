@@ -16,6 +16,7 @@ import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 import { buildDocContext } from "@/lib/extractDocText";
+import { playTileDrop, playChime, sayHi } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -138,7 +139,49 @@ export default function BobBuilder() {
   const scrollContainerRef = useRef(null);
   const splashInputRef = useRef(null);
 
+  // Sound-cue tracking refs
+  const greetedRef = useRef(false);       // robotic "hi" played once per chat open
+  const wasGeneratingRef = useRef(false); // detect the generating → idle transition
+  const lastSoundMsgRef = useRef(null);   // dedupe sound for the same final message
+
   useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
+
+  // Robotic unisex "hi" the moment the BOB chat workspace is initiated.
+  useEffect(() => {
+    if (launched && !greetedRef.current) {
+      greetedRef.current = true;
+      sayHi();
+    }
+    if (!launched) greetedRef.current = false; // re-greet on next session open
+  }, [launched]);
+
+  // When BOB stops generating (finished / asking a question / awaiting feedback),
+  // play a chime — and if its final reply submitted tiles, play the tile-drop.
+  useEffect(() => {
+    const justFinished = wasGeneratingRef.current && !isGenerating && !sending;
+    wasGeneratingRef.current = isGenerating || sending;
+    if (!justFinished || messages.length === 0) return;
+
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+
+    // Dedupe: don't replay for the same settled message.
+    const key = `${messages.length}:${(last.content || "").slice(0, 40)}`;
+    if (lastSoundMsgRef.current === key) return;
+    lastSoundMsgRef.current = key;
+
+    // Did BOB just submit/create tiles? Detect from the reply text or tool calls.
+    const text = (last.content || "").toLowerCase();
+    const submittedTiles =
+      /\btile/.test(text) &&
+      /(creat|submit|publish|bulk|added|pending[_ ]review|priced|book tile)/.test(text);
+    const usedCreateTool = (last.tool_calls || []).some((t) =>
+      /create|bulkcreate/i.test(t.name || "")
+    );
+
+    if (submittedTiles || usedCreateTool) playTileDrop();
+    else playChime();
+  }, [isGenerating, sending, messages]);
 
   // Persist the active conversation id so the chat stays loaded across sessions
   // (e.g. leaving to "New Session" / navigating away and coming back) until the
