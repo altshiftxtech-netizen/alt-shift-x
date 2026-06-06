@@ -177,8 +177,9 @@ export default function BobBuilder() {
     turnStartLenRef.current = messages.length;
     setAwaitingReply(true);
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    // Absolute ceiling — even a totally dead stream clears after this.
-    watchdogRef.current = setTimeout(() => setAwaitingReply(false), 90000);
+    // Absolute ceiling — even a totally dead stream clears after this so the
+    // working indicator can never hang for long.
+    watchdogRef.current = setTimeout(() => setAwaitingReply(false), 45000);
   };
 
   // Whenever BOB has settled (no longer generating) but the local awaiting latch

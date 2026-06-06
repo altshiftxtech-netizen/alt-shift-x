@@ -1,30 +1,27 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import { Bold, Italic, Underline, List, ListOrdered, Strikethrough } from "lucide-react";
 
 /**
- * Rich prompt editor for BOB.
+ * Prompt editor for BOB.
  *
- * A contentEditable surface with a formatting toolbar (bold, italic, underline,
- * strikethrough, bullet & numbered lists). The parent still receives PLAIN TEXT
- * via onChange (BOB consumes plain text), so nothing downstream changes.
+ * A plain controlled <textarea> for rock-solid reliability — it never freezes,
+ * never drops the caret, and handles very large text without lag (a previous
+ * contentEditable version stuttered and mis-synced on big pastes/replies).
  *
- * Reliability rules that keep it from ever "freezing":
- *  - It is NEVER disabled. The editor stays interactive even while BOB replies,
- *    so the builder can always type/queue the next prompt.
- *  - We only push the parent's `value` into the DOM when they genuinely differ
- *    (e.g. external clear / voice transcript), so typing is never interrupted
- *    by a re-render wiping the caret.
+ * The formatting toolbar wraps the current selection with lightweight markdown
+ * markers (**bold**, *italic*, etc.), which BOB reads natively as plain text —
+ * so the parent still receives plain text and nothing downstream changes.
  *
  * Public API unchanged: value, onChange(text), onSubmit, placeholder,
  * minHeight, maxHeight, autoFocus, clearSignal.
  */
 const TOOLS = [
-  { cmd: "bold", icon: Bold, title: "Bold (Ctrl+B)" },
-  { cmd: "italic", icon: Italic, title: "Italic (Ctrl+I)" },
-  { cmd: "underline", icon: Underline, title: "Underline (Ctrl+U)" },
-  { cmd: "strikeThrough", icon: Strikethrough, title: "Strikethrough" },
-  { cmd: "insertUnorderedList", icon: List, title: "Bullet list" },
-  { cmd: "insertOrderedList", icon: ListOrdered, title: "Numbered list" },
+  { key: "bold", icon: Bold, title: "Bold", wrap: ["**", "**"] },
+  { key: "italic", icon: Italic, title: "Italic", wrap: ["*", "*"] },
+  { key: "underline", icon: Underline, title: "Underline", wrap: ["__", "__"] },
+  { key: "strike", icon: Strikethrough, title: "Strikethrough", wrap: ["~~", "~~"] },
+  { key: "ul", icon: List, title: "Bullet list", line: "- " },
+  { key: "ol", icon: ListOrdered, title: "Numbered list", line: "1. " },
 ];
 
 export default function RichPromptEditor({
@@ -39,22 +36,6 @@ export default function RichPromptEditor({
 }) {
   const ref = useRef(null);
 
-  // Emit the editor's plain text up to the parent.
-  const emit = useCallback(() => {
-    if (!ref.current) return;
-    onChange?.(ref.current.innerText || "");
-  }, [onChange]);
-
-  // Sync the parent value into the DOM ONLY when they actually differ, so normal
-  // typing isn't disrupted (which would drop the caret and feel "frozen").
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if ((el.innerText || "") !== (value || "")) {
-      el.innerText = value || "";
-    }
-  }, [value]);
-
   useEffect(() => {
     if (autoFocus && ref.current) ref.current.focus();
   }, [autoFocus]);
@@ -65,12 +46,6 @@ export default function RichPromptEditor({
     requestAnimationFrame(() => ref.current?.focus());
   }, [clearSignal]);
 
-  const exec = (cmd) => {
-    ref.current?.focus();
-    document.execCommand(cmd, false, null);
-    emit();
-  };
-
   const handleKeyDown = (e) => {
     // Ctrl+Enter / Cmd+Enter → send. Enter alone = new line.
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -79,12 +54,42 @@ export default function RichPromptEditor({
     }
   };
 
-  const handlePaste = (e) => {
-    // Paste as plain text so external rich formatting doesn't break the box.
-    e.preventDefault();
-    const text = e.clipboardData.getData("text/plain");
-    document.execCommand("insertText", false, text);
-    emit();
+  // Apply a formatting tool to the current textarea selection.
+  const applyTool = (tool) => {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const v = value || "";
+
+    let next;
+    let caretStart;
+    let caretEnd;
+
+    if (tool.wrap) {
+      const [open, close] = tool.wrap;
+      const selected = v.slice(start, end) || "text";
+      next = v.slice(0, start) + open + selected + close + v.slice(end);
+      caretStart = start + open.length;
+      caretEnd = caretStart + selected.length;
+    } else if (tool.line) {
+      // Prefix the start of each selected line (or the current line).
+      const lineStart = v.lastIndexOf("\n", start - 1) + 1;
+      const before = v.slice(0, lineStart);
+      const block = v.slice(lineStart, end);
+      const prefixed = block.length
+        ? block.split("\n").map((ln) => tool.line + ln).join("\n")
+        : tool.line;
+      next = before + prefixed + v.slice(end);
+      caretStart = lineStart + prefixed.length;
+      caretEnd = caretStart;
+    }
+
+    onChange?.(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      try { el.setSelectionRange(caretStart, caretEnd); } catch {}
+    });
   };
 
   const text = value || "";
@@ -97,24 +102,27 @@ export default function RichPromptEditor({
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-700 bg-slate-900/60">
         <div className="flex items-center gap-0.5">
-          {TOOLS.map(({ cmd, icon: Icon, title }) => (
-            <button
-              key={cmd}
-              type="button"
-              title={title}
-              onMouseDown={(e) => { e.preventDefault(); exec(cmd); }}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
-            >
-              <Icon className="w-3.5 h-3.5" />
-            </button>
-          ))}
+          {TOOLS.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <button
+                key={tool.key}
+                type="button"
+                title={tool.title}
+                onMouseDown={(e) => { e.preventDefault(); applyTool(tool); }}
+                className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+              >
+                <Icon className="w-3.5 h-3.5" />
+              </button>
+            );
+          })}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] text-slate-500">{wordCount}w · {charCount}c</span>
           {!isEmpty && (
             <button
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); onChange?.(""); if (ref.current) ref.current.innerText = ""; ref.current?.focus(); }}
+              onMouseDown={(e) => { e.preventDefault(); onChange?.(""); ref.current?.focus(); }}
               className="text-[10px] text-rose-400 hover:text-rose-300 font-medium"
             >
               Clear
@@ -123,17 +131,15 @@ export default function RichPromptEditor({
         </div>
       </div>
 
-      {/* Editable surface */}
-      <div
+      {/* Textarea */}
+      <textarea
         ref={ref}
-        contentEditable
-        suppressContentEditableWarning
+        value={text}
         spellCheck
-        onInput={emit}
+        onChange={(e) => onChange?.(e.target.value)}
         onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        data-placeholder={placeholder}
-        className="w-full bg-transparent outline-none text-slate-100 text-sm leading-relaxed px-4 py-3.5 overflow-y-auto whitespace-pre-wrap break-words rpe-editable"
+        placeholder={placeholder}
+        className="w-full bg-transparent outline-none text-slate-100 placeholder:text-slate-500 text-sm leading-relaxed px-4 py-3.5 resize-none"
         style={{ minHeight, maxHeight, caretColor: "#a78bfa" }}
       />
 
@@ -142,17 +148,6 @@ export default function RichPromptEditor({
         <span className="text-[10px] text-slate-600">Enter = new line &nbsp;·&nbsp; Ctrl+Enter = send</span>
         <span className="text-[10px] text-slate-600">Bold · Italic · Lists</span>
       </div>
-
-      {/* Placeholder styling for the empty contentEditable */}
-      <style>{`
-        .rpe-editable:empty:before {
-          content: attr(data-placeholder);
-          color: #64748b;
-          pointer-events: none;
-        }
-        .rpe-editable ul { list-style: disc; margin-left: 1.25rem; }
-        .rpe-editable ol { list-style: decimal; margin-left: 1.25rem; }
-      `}</style>
     </div>
   );
 }
