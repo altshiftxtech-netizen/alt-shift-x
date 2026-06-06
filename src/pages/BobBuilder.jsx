@@ -16,6 +16,7 @@ import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 import TurnCompleteMarker from "@/components/bob/TurnCompleteMarker";
+import NextStepActions from "@/components/bob/NextStepActions";
 import { buildDocContext } from "@/lib/extractDocText";
 import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
@@ -937,14 +938,16 @@ export default function BobBuilder() {
                   </div>
                 )}
                 <div className="border-t border-slate-700 p-3 space-y-2">
+                  {/* Quick "what's next" actions — answer BOB's next-step questions in one tap */}
+                  <NextStepActions onPick={(p) => sendMessage(p)} disabled={isBobWorking} />
                   <RichPromptEditor
                     value={input}
                     onChange={(text) => setInput(text)}
                     onSubmit={sendWithFiles}
                     clearSignal={clearSignal}
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything... Enter = new line · Ctrl+Enter = send"}
-                    minHeight={80}
-                    maxHeight={260}
+                    minHeight={140}
+                    maxHeight={360}
                   />
                   {/* Offline / large-job notify — fire it off, leave, get pinged when done */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-0.5">
