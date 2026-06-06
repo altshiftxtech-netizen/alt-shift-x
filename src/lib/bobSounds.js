@@ -62,9 +62,71 @@ export function playCashIn() {
   blip(2000, t + 0.18, 0.4, { type: "sine", gain: 0.14 });      // sparkle harmonic
 }
 
-// Core robotic-voice speak helper — flat pitch + slowed rate reads as a neutral,
-// unisex robotic voice. Used for the greeting and every spoken status line so
-// BOB feels like it's actually talking to the user.
+// ── User-adjustable voice settings ─────────────────────────────────────────
+// Persisted in localStorage so the user can tell BOB what to sound like and it
+// sticks across sessions. Defaults to the deep, gender-neutral robotic voice.
+const VOICE_KEY = "bob_voice_settings";
+const DEFAULT_VOICE = { voiceName: "", pitch: 0.1, rate: 0.82 };
+
+export function getVoiceSettings() {
+  if (typeof window === "undefined") return { ...DEFAULT_VOICE };
+  try {
+    const raw = localStorage.getItem(VOICE_KEY);
+    return raw ? { ...DEFAULT_VOICE, ...JSON.parse(raw) } : { ...DEFAULT_VOICE };
+  } catch {
+    return { ...DEFAULT_VOICE };
+  }
+}
+
+export function saveVoiceSettings(settings) {
+  if (typeof window === "undefined") return;
+  const merged = { ...getVoiceSettings(), ...settings };
+  localStorage.setItem(VOICE_KEY, JSON.stringify(merged));
+}
+
+// List the speech voices available in this browser.
+export function listVoices() {
+  if (typeof window === "undefined" || !window.speechSynthesis) return [];
+  return window.speechSynthesis.getVoices();
+}
+
+// Interpret a plain-English description (e.g. "deeper and slower", "robotic",
+// "higher and faster", "more feminine") into pitch/rate/voice tweaks applied on
+// top of the current settings. Returns the new settings object.
+export function applyVoiceDescription(text) {
+  const t = (text || "").toLowerCase();
+  const cur = getVoiceSettings();
+  let { pitch, rate, voiceName } = cur;
+  const clampP = (v) => Math.max(0, Math.min(2, v));
+  const clampR = (v) => Math.max(0.5, Math.min(2, v));
+
+  // Pitch
+  if (/(deep|deeper|low|lower|bass|masculine|manly|gruff)/.test(t)) pitch = clampP(pitch - 0.3);
+  if (/(high|higher|bright|feminine|softer|soft)/.test(t)) pitch = clampP(pitch + 0.3);
+  if (/(much|very|way) (deep|deeper|low|lower)/.test(t)) pitch = clampP(pitch - 0.3);
+  if (/(much|very|way) (high|higher)/.test(t)) pitch = clampP(pitch + 0.3);
+
+  // Rate
+  if (/(slow|slower|calm|relaxed)/.test(t)) rate = clampR(rate - 0.15);
+  if (/(fast|faster|quick|quicker|snappy|energetic)/.test(t)) rate = clampR(rate + 0.15);
+
+  // Voice family hints — pick a matching available voice by name.
+  const voices = listVoices();
+  const findV = (re) => voices.find((v) => re.test(v.name));
+  let match = null;
+  if (/(robot|robotic|machine|synth)/.test(t)) match = findV(/robot|zarvox|cellos|trinoids|fred|albert|ralph/i);
+  else if (/(british|uk|english accent)/.test(t)) match = findV(/uk english|daniel|google uk/i);
+  else if (/(male|man|masculine|guy|deep voice)/.test(t)) match = findV(/\bmale\b|daniel|alex|fred|albert/i);
+  else if (/(female|woman|feminine|lady)/.test(t)) match = findV(/\bfemale\b|samantha|victoria|karen|zira|fiona/i);
+  if (match) voiceName = match.name;
+
+  const next = { pitch, rate, voiceName };
+  saveVoiceSettings(next);
+  return next;
+}
+
+// Core robotic-voice speak helper. Reads the user's saved voice settings so the
+// pitch, rate, and chosen voice reflect what they've configured / described.
 // speak(text, { queue }) — when queue is true the utterance is appended behind
 // anything currently speaking instead of cancelling it. This guarantees the
 // "On it" thinking line (spoken on send, while BOB types) always finishes
@@ -72,25 +134,28 @@ export function playCashIn() {
 export function speak(text, { queue = false } = {}) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   const say = () => {
+    const settings = getVoiceSettings();
     const u = new SpeechSynthesisUtterance(text);
-    // Very low pitch + slightly slow rate reads as a deep, gender-neutral
-    // machine voice rather than anything feminine.
-    u.pitch = 0.1;
-    u.rate = 0.82;
+    u.pitch = settings.pitch;
+    u.rate = settings.rate;
     u.volume = 1;
     const voices = window.speechSynthesis.getVoices();
-    // Prefer deeper / robotic neutral voices; explicitly avoid the common
-    // feminine defaults (Samantha, Victoria, Karen, Tessa, Zira, Susan).
-    const robotic = voices.find((v) =>
-      /robot|fred|albert|ralph|cellos|zarvox|trinoids|google uk english male|daniel|alex|rocko|grandpa/i.test(v.name)
-    );
-    const maleish = voices.find((v) =>
-      /\bmale\b/i.test(v.name) && !/female/i.test(v.name)
-    );
-    const neutral = voices.find(
-      (v) => !/samantha|victoria|karen|tessa|zira|susan|female|fiona|moira|veena|female/i.test(v.name)
-    );
-    u.voice = robotic || maleish || neutral || voices[0];
+    // Honor an explicitly chosen / described voice first.
+    let chosen = settings.voiceName ? voices.find((v) => v.name === settings.voiceName) : null;
+    if (!chosen) {
+      // Fall back to deeper / robotic neutral voices; avoid feminine defaults.
+      const robotic = voices.find((v) =>
+        /robot|fred|albert|ralph|cellos|zarvox|trinoids|google uk english male|daniel|alex|rocko|grandpa/i.test(v.name)
+      );
+      const maleish = voices.find((v) =>
+        /\bmale\b/i.test(v.name) && !/female/i.test(v.name)
+      );
+      const neutral = voices.find(
+        (v) => !/samantha|victoria|karen|tessa|zira|susan|female|fiona|moira|veena|female/i.test(v.name)
+      );
+      chosen = robotic || maleish || neutral || voices[0];
+    }
+    u.voice = chosen;
     // Completion lines queue behind the in-progress "On it"; thinking/greeting
     // lines cancel stale speech so they play immediately on send.
     if (!queue) window.speechSynthesis.cancel();

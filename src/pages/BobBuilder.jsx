@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
 import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
+import BobVoiceSettings from "@/components/bob/BobVoiceSettings";
 import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
@@ -921,6 +922,8 @@ export default function BobBuilder() {
                 onWipeBoard={wipeBoard}
                 onSpinOff={spinOff}
               />
+
+              <BobVoiceSettings />
 
               <Card className="bg-slate-800 border-slate-700">
                 <CardHeader className="pb-2 pt-4 px-4">
