@@ -169,11 +169,15 @@ export default function BobBuilder() {
 
   useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
 
-  // Robotic "hi" when the workspace opens.
+  // Robotic "hi" — spoken ONCE per page mount, and only when entering a fresh,
+  // empty board. Never re-fires on restore, open-project, spin-off, or
+  // "New Session", so BOB never says "hi" in the middle of an active chat.
   useEffect(() => {
-    if (launched && !greetedRef.current) { greetedRef.current = true; sayHi(); }
-    if (!launched) greetedRef.current = false;
-  }, [launched]);
+    if (!launched || greetedRef.current) return;
+    if (convId || messages.length > 0) { greetedRef.current = true; return; } // existing chat → no greeting
+    greetedRef.current = true;
+    sayHi();
+  }, [launched, convId, messages.length]);
 
   // Persist active conversation id for cross-session restore.
   useEffect(() => {
