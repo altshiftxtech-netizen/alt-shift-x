@@ -220,7 +220,15 @@ export function sayHi() {
 // completion line. So completion lines do NOT queue: they cancel anything still
 // pending (including an un-started "On it") and speak right away. This is what
 // the user wants: "On it" → typing → completion, with no stray "On it" at the end.
-export const sayThinking = () => speak(pick(PHRASES.thinking));
+// "On it" must fire instantly on every send (including typing "continue").
+// Some browsers need a beat after cancel() before a fresh utterance starts, so
+// we cancel first, then speak on the next tick to guarantee it actually plays.
+export const sayThinking = () => {
+  if (typeof window !== "undefined" && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  setTimeout(() => speak(pick(PHRASES.thinking)), 30);
+};
 export const sayQuestion = () => speak(pick(PHRASES.question));
 export const sayReady = () => speak(pick(PHRASES.ready));
 export const sayTiles = () => speak(pick(PHRASES.tile));
