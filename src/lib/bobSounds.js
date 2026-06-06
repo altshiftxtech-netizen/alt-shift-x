@@ -103,9 +103,9 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // Spoken phrase pools for each moment. Short, natural, and fitting the context.
 const PHRASES = {
   greeting: [
-    "Hi. BOB online. What are we building?",
-    "Hey there. BOB online and ready.",
-    "BOB online. Let's build something.",
+    "Hi. Builder Operated Bot online. What are we building?",
+    "Hello. Builder Operated Bot online and ready.",
+    "Hey. Builder Operated Bot online. Let's build something.",
   ],
   thinking: [
     "On it.",
