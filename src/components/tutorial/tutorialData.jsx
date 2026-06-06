@@ -272,6 +272,42 @@ export const TUTORIALS = [
     ],
   },
   {
+    id: "tiles-bob-look",
+    title: "Tiles, BOB Look & Heritage Experiences",
+    description: "Capture the world with your camera and let BOB turn it into living knowledge tiles",
+    icon: Sparkles,
+    video: null,
+    sections: [
+      {
+        title: "What Tiles are",
+        steps: [
+          "Tiles are bite-sized intelligence modules — distilled knowledge made callable by AI agents.",
+          "Knowledge Book Tiles turn a book's frameworks and mental models into deployable agent cognition.",
+          "Once a tile is created it can be installed, paired with other components, and reused across projects.",
+        ],
+      },
+      {
+        title: "Using BOB Look (camera capture)",
+        steps: [
+          "In BOB Builder, tap the 'BOB Look' button (splash screen or chat input) to open your camera.",
+          "Snap a photo of anything — a book cover, a shelf of books, a document, a product, or a site.",
+          "The photo is sent straight to BOB — no extra step. He reads every visible title and label, including books and items in the background.",
+          "BOB then tells you what he sees and what you can build or do with it.",
+        ],
+      },
+      {
+        title: "Heritage Markers → Experience Tiles",
+        steps: [
+          "Out exploring? Point BOB Look at a historical marker, heritage sign, monument plaque, or interpretive panel.",
+          "BOB reads the sign, then researches the site deeply — using web sources the way a curious human would, with the speed and recall of AI.",
+          "He builds an Experience Tile: an agent that brings the place to life — its history, the people, the events, and the surrounding context.",
+          "The tile can recreate the experience from multiple perspectives — historical figures present at the site, or your own first-person walkthrough.",
+          "Visit a new place, capture the marker, and let BOB grow a living, explorable experience you can revisit or share.",
+        ],
+      },
+    ],
+  },
+  {
     id: "esi-records",
     title: "ESI Legal Records",
     description: "Download, email, and share verifiable records of your projects",
