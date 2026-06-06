@@ -152,6 +152,9 @@ export default function BobBuilder() {
   // last message has spoken text — plus a hard watchdog that always clears it.
   const [awaitingReply, setAwaitingReply] = useState(false);
   const watchdogRef = useRef(null);
+  // Re-entrancy guard for sends — a ref so a stuck React state can never
+  // permanently block the Send button / Ctrl+Enter.
+  const inFlightRef = useRef(false);
   // Marks the user message index that opened the current turn. Completion fires
   // once an assistant message WITH TEXT appears AFTER this index.
   const turnStartLenRef = useRef(0);
@@ -459,9 +462,10 @@ export default function BobBuilder() {
   };
 
   const sendMessage = async (text) => {
-    if (sending) return;
+    if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
     const msg = text || input;
     if (!msg.trim()) return;
+    inFlightRef.current = true;
     setSending(true);
     setInput("");
     setClearSignal(s => s + 1);
@@ -476,6 +480,7 @@ export default function BobBuilder() {
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: msg });
     setSending(false);
+    inFlightRef.current = false;
   };
 
   // ── Voice recording ───────────────────────────────────────────────────────
@@ -520,9 +525,10 @@ export default function BobBuilder() {
   };
 
   const sendWithFiles = async () => {
-    if (sending) return;
+    if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
+    inFlightRef.current = true;
     setSending(true);
     setInput("");
     setClearSignal(s => s + 1);
@@ -549,6 +555,7 @@ export default function BobBuilder() {
     onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
     setUploadedFiles([]);
     setSending(false);
+    inFlightRef.current = false;
   };
 
   const submitCode = async () => {
@@ -1018,14 +1025,13 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    {isBobWorking ? (
-                      <StopButton onStop={handleStop} />
-                    ) : (
-                      <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
-                        className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
-                        <Send className="w-3.5 h-3.5" /> Send
-                      </button>
-                    )}
+                    {/* Stop is shown while BOB is working, but Send stays available
+                        too so the builder can always queue a follow-up reply. */}
+                    {isBobWorking && <StopButton onStop={handleStop} />}
+                    <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
+                      className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                      <Send className="w-3.5 h-3.5" /> Send
+                    </button>
                   </div>
                 </div>
               </Card>
