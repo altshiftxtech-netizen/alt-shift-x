@@ -1,0 +1,87 @@
+{
+  "name": "CatalogSnapshot",
+  "type": "object",
+  "properties": {
+    "snapshot_key": {
+      "type": "string",
+      "description": "Stable key for the single live snapshot row, always 'live'"
+    },
+    "refreshed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this snapshot was last rebuilt from the marketplace"
+    },
+    "component_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of published components captured"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Distinct categories present in the published catalog"
+    },
+    "components": {
+      "type": "array",
+      "description": "Lightweight projection of every published component for the consultant to train on",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "builder_name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "trust_score": {
+            "type": "number"
+          },
+          "certified": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "snapshot_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

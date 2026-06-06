@@ -24,7 +24,16 @@ Deno.serve(async (req) => {
     try { body = await req.json(); } catch { body = {}; }
     const search = (body.search || "").toString().toLowerCase().trim();
 
-    const all = await base44.asServiceRole.entities.Component.filter({ status: "published" });
+    // Train on the regularly-refreshed marketplace snapshot (rebuilt every 15
+    // minutes by refreshCatalogSnapshot). Fall back to a live query if the
+    // snapshot hasn't been built yet, so the consultant is never empty-handed.
+    let all = [];
+    const snap = await base44.asServiceRole.entities.CatalogSnapshot.filter({ snapshot_key: "live" });
+    if (snap[0]?.components?.length) {
+      all = snap[0].components;
+    } else {
+      all = await base44.asServiceRole.entities.Component.filter({ status: "published" });
+    }
 
     const matchesSearch = (c) => {
       if (!search) return true;
