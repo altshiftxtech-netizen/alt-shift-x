@@ -134,7 +134,15 @@ export default function useAgentStream(convId, initialMessages = []) {
       if (serverHasIt) {
         pendingUserRef.current = null; // reconciled — drop the optimistic copy
       } else {
-        msgs = [...msgs, pending]; // not there yet — append so it doesn't vanish
+        // Not on the server list yet. The server may have ALREADY started
+        // streaming BOB's assistant reply for this turn — if we blindly append
+        // the pending user bubble to the end, it wrongly renders BELOW BOB's
+        // reply ("BOB replies first, then your query pops in"). Instead, insert
+        // the pending user message BEFORE any trailing assistant reply, so the
+        // order is always: …prior history → your message → BOB's reply.
+        let insertAt = msgs.length;
+        while (insertAt > 0 && msgs[insertAt - 1].role === "assistant") insertAt--;
+        msgs = [...msgs.slice(0, insertAt), pending, ...msgs.slice(insertAt)];
       }
     }
     setMessages(msgs);
