@@ -16,7 +16,7 @@ import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 import { buildDocContext } from "@/lib/extractDocText";
-import { playTileDrop, playChime, sayHi } from "@/lib/bobSounds";
+import { playTileDrop, playChime, playCashIn, sayHi } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -170,17 +170,25 @@ export default function BobBuilder() {
     if (lastSoundMsgRef.current === key) return;
     lastSoundMsgRef.current = key;
 
-    // Did BOB just submit/create tiles? Detect from the reply text or tool calls.
+    // Classify what BOB just submitted from the reply text + tool calls.
     const text = (last.content || "").toLowerCase();
-    const submittedTiles =
-      /\btile/.test(text) &&
-      /(creat|submit|publish|bulk|added|pending[_ ]review|priced|book tile)/.test(text);
+    const isTile = /\btile\b|book tile/.test(text);
+    const submittedSomething =
+      /(creat|submit|publish|bulk|added|pending[_ ]review|priced|deploy[- ]?ready)/.test(text);
     const usedCreateTool = (last.tool_calls || []).some((t) =>
       /create|bulkcreate/i.test(t.name || "")
     );
 
-    if (submittedTiles || usedCreateTool) playTileDrop();
-    else playChime();
+    if (isTile && (submittedSomething || usedCreateTool)) {
+      // Tiles dropping into place.
+      playTileDrop();
+    } else if (submittedSomething || usedCreateTool) {
+      // A major / non-tile component was submitted — cash it in.
+      playCashIn();
+    } else {
+      // Just finished / asking a question / awaiting feedback.
+      playChime();
+    }
   }, [isGenerating, sending, messages]);
 
   // Persist the active conversation id so the chat stays loaded across sessions

@@ -51,6 +51,17 @@ export function playChime() {
   blip(1320, t + 0.14, 0.6, { type: "sine", gain: 0.18 }); // E6
 }
 
+// Cash-in — a bright "cha-ching" register sound for a major/non-tile component
+// submission. Two quick bell dings plus a sparkle for the money feel.
+export function playCashIn() {
+  const ac = audioCtx();
+  if (!ac) return;
+  const t = ac.currentTime;
+  blip(1200, t, 0.12, { type: "square", gain: 0.16 });          // register "cha"
+  blip(1600, t + 0.1, 0.45, { type: "triangle", gain: 0.2 });   // bright "ching"
+  blip(2000, t + 0.18, 0.4, { type: "sine", gain: 0.14 });      // sparkle harmonic
+}
+
 // Robotic unisex "hi" greeting via speech synthesis.
 export function sayHi() {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
