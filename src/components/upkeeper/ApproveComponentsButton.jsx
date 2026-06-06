@@ -24,7 +24,14 @@ export default function ApproveComponentsButton({ variant = "splash" }) {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // Live-refresh the pending count whenever components change — so when the
+    // UpKeeper agent approves/publishes components through chat, this badge
+    // reverts to 0 (or the new pending total) without a manual refresh.
+    const unsubscribe = base44.entities.Component.subscribe(() => load());
+    return () => unsubscribe?.();
+  }, []);
 
   const approveAll = async () => {
     if (!pending.length || working) return;
