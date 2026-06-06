@@ -147,13 +147,11 @@ export default function BobBuilder() {
   const greetedRef = useRef(false);       // robotic "hi" played once per chat open
   const lastSoundMsgRef = useRef(null);   // dedupe sound for the same final message
 
-  // ── BULLETPROOF "BOB is working" state ─────────────────────────────────────
-  // This is the SINGLE source of truth for the loading indicator + Stop button.
-  // It is NOT derived from the hook's isGenerating flag (which can get stuck).
-  // We set it true the instant the user sends, and clear it the instant BOB's
-  // last message has spoken text — plus a hard watchdog that always clears it.
-  const [awaitingReply, setAwaitingReply] = useState(false);
-  const watchdogRef = useRef(null);
+  // ── "BOB is working" — SINGLE source of truth = the hook's isGenerating ─────
+  // The useAgentStream hook already owns a robust generating/settle/watchdog
+  // state machine. We deliberately DON'T keep a second parallel latch here
+  // (that caused the racy flicker / stuck-indicator bugs). The page just reads
+  // the hook flag and reacts to its true→false transition for sound cues.
   // Re-entrancy guard for sends — a ref so a stuck React state can never
   // permanently block the Send button / Ctrl+Enter.
   const inFlightRef = useRef(false);
@@ -162,38 +160,16 @@ export default function BobBuilder() {
   // async — if the user acted while restore's getConversation/list calls were
   // in flight, restore must NOT overwrite their fresh session with old history.
   const userActedRef = useRef(false);
-  // Marks the user message index that opened the current turn. Completion fires
-  // once an assistant message WITH TEXT appears AFTER this index.
-  const turnStartLenRef = useRef(0);
+  // True between a user send and the moment we've consumed the completion sound
+  // for that turn — guards the sound cue from firing on restored/streamed
+  // history rather than a fresh reply.
+  const turnActiveRef = useRef(false);
 
   const isAssistantText = (m) =>
     m && m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0;
 
-  // Called on every user send — opens a fresh "awaiting reply" turn and arms a
-  // hard watchdog so the indicator can never hang forever.
-  const beginAwaitingReply = () => {
-    // Snapshot the conversation length at send time. Any assistant-with-text
-    // message that lands beyond this point is THIS turn's reply.
-    turnStartLenRef.current = messages.length;
-    setAwaitingReply(true);
-    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    // Absolute ceiling — even a totally dead stream clears after this so the
-    // working indicator can never hang for long.
-    watchdogRef.current = setTimeout(() => setAwaitingReply(false), 45000);
-  };
-
-  // Whenever BOB has settled (no longer generating) but the local awaiting latch
-  // is somehow still up with a real reply already on screen, clear it. This is a
-  // safety net so the input area / Stop button can never stay "stuck working"
-  // after a reply has actually landed.
-  useEffect(() => {
-    if (!awaitingReply || isGenerating) return;
-    const last = messages[messages.length - 1];
-    if (isAssistantText(last) && messages.length > turnStartLenRef.current) {
-      const t = setTimeout(() => setAwaitingReply(false), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [awaitingReply, isGenerating, messages]);
+  // Marks that a fresh turn has begun (the hook drives the actual indicator).
+  const beginAwaitingReply = () => { turnActiveRef.current = true; };
 
   // Offline / large-job notify: when on, BOB notifies (bell + optional email) the
   // moment the running job finishes, so the builder can leave the page/device and
@@ -213,37 +189,28 @@ export default function BobBuilder() {
     if (!launched) greetedRef.current = false; // re-greet on next session open
   }, [launched]);
 
-  // The loading indicator + Stop button are shown whenever EITHER our local
-  // awaiting-reply latch OR the stream hook reports it's still generating. This
-  // guarantees the "BOB is working…" indicator is NEVER blank during the gap
-  // between sending and the first streamed token, and stays up through the
-  // hook's settle window so the screen is never stagnant / ambiguous.
-  const isBobWorking = awaitingReply || isGenerating;
+  // The loading indicator + Stop button are driven SOLELY by the hook's
+  // isGenerating — the hook owns the send→stream→settle→done lifecycle, so there
+  // is exactly one source of truth and no racy second latch to get out of sync.
+  const isBobWorking = isGenerating;
 
-  // Watch the messages stream. The instant an assistant message WITH TEXT exists
-  // at/after the turn-start index, the turn is done: clear the working state,
-  // kill the watchdog, and fire the chime/speech. Checking "the last message has
-  // text" (rather than counting) reliably handles multi-message turns where a
-  // tool-call message precedes the final spoken reply.
+  // Fire BOB's completion sound/speech on the isGenerating true→false edge,
+  // but only for a turn the user actually started this session (turnActiveRef) —
+  // never on restored history or a mid-stream blip.
+  const wasGeneratingRef = useRef(false);
   useEffect(() => {
-    if (!awaitingReply) return;
+    const was = wasGeneratingRef.current;
+    wasGeneratingRef.current = isGenerating;
+
+    // Only act on the falling edge of a real, user-initiated turn.
+    if (!(was && !isGenerating)) return;
+    if (!turnActiveRef.current) return;
 
     const last = messages[messages.length - 1];
-    // Done only when the conversation grew past the user message that opened the
-    // turn AND the final message is BOB speaking real text.
-    const grew = messages.length > turnStartLenRef.current;
-    if (!grew || !isAssistantText(last)) return; // reply not settled yet
+    if (!isAssistantText(last)) return; // no spoken reply to celebrate
 
-    // CRITICAL: wait for the stream hook to ALSO settle (its 1.8s text-stable
-    // window) before declaring the turn done. Without this, awaitingReply clears
-    // the instant the first chunk of text arrives — flashing "your turn" while
-    // BOB is still streaming. While the hook is generating, keep waiting; the
-    // working indicator stays up via isBobWorking (awaitingReply || isGenerating).
-    if (isGenerating) return;
-
-    // Settled reply has landed — close out the turn.
-    setAwaitingReply(false);
-    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+    // This turn is consumed.
+    turnActiveRef.current = false;
 
     // Dedupe: don't replay for the same settled message.
     const key = `${messages.length}:${(last.content || "").slice(0, 40)}`;
@@ -283,7 +250,7 @@ export default function BobBuilder() {
       notifyPendingRef.current = false;
       notifyJobComplete(last);
     }
-  }, [awaitingReply, messages, isGenerating]);
+  }, [isGenerating, messages]);
 
   // Fire an in-app bell notification (and optional email) that the BOB job
   // finished, with a deep link straight back to the BOB chat.
@@ -735,12 +702,10 @@ export default function BobBuilder() {
     setActiveTab("chat");
   };
 
-  // Stop instantly tears down the working state from every angle: the local
-  // awaiting-reply flag (drives the UI), the watchdog, the hook's stream, and
-  // the legacy sending flag. Nothing can keep the indicator up after this.
+  // Stop tells the hook to halt its stream (the single source of truth) and
+  // closes out the current turn so no completion sound fires after a manual stop.
   const handleStop = () => {
-    setAwaitingReply(false);
-    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+    turnActiveRef.current = false;
     stopGenerating();
     setSending(false);
   };
