@@ -8,7 +8,7 @@ import {
   speak,
 } from "@/lib/bobSounds";
 
-const DEFAULTS = { voiceName: "", pitch: 0.1, rate: 0.82 };
+const DEFAULTS = { voiceName: "", pitch: 1.15, rate: 1.1 };
 
 // Lets the user tell BOB what to sound like — either by typing a plain-English
 // description ("deeper and slower", "robotic", "more feminine") or by fine-tuning

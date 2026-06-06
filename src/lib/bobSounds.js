@@ -66,7 +66,8 @@ export function playCashIn() {
 // Persisted in localStorage so the user can tell BOB what to sound like and it
 // sticks across sessions. Defaults to the deep, gender-neutral robotic voice.
 const VOICE_KEY = "bob_voice_settings";
-const DEFAULT_VOICE = { voiceName: "", pitch: 0.1, rate: 0.82 };
+// Higher pitch + faster rate reads as a lively, human-like-but-synthesized voice.
+const DEFAULT_VOICE = { voiceName: "", pitch: 1.15, rate: 1.1 };
 
 export function getVoiceSettings() {
   if (typeof window === "undefined") return { ...DEFAULT_VOICE };
