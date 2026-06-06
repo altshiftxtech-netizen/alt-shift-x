@@ -197,10 +197,17 @@ export default function useAgentStream(convId, initialMessages = []) {
     }
   }, [armIdleTimer, finishTurn]);
 
-  const subscribe = useCallback(() => {
-    if (!convId) return;
+  // Tracks the conversation id we're actually subscribed to. Lets onSent target
+  // a brand-new conversation immediately (e.g. right after Wipe Board creates
+  // one), instead of waiting for the convId prop/state to propagate.
+  const subscribedIdRef = useRef(null);
+
+  const subscribe = useCallback((idOverride) => {
+    const id = idOverride || convId;
+    if (!id) return;
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
-    unsubRef.current = base44.agents.subscribeToConversation(convId, handleUpdate);
+    subscribedIdRef.current = id;
+    unsubRef.current = base44.agents.subscribeToConversation(id, handleUpdate);
   }, [convId, handleUpdate]);
 
   // Mobile browsers (Chrome/Safari on iOS & Android) suspend timers, sockets and
@@ -261,7 +268,11 @@ export default function useAgentStream(convId, initialMessages = []) {
   // Call right after the user sends a message — opens a fresh turn.
   // Optionally pass the user message to show it instantly (optimistic), shown
   // until the server's stream confirms it.
-  const onSent = useCallback((userMessage) => {
+  // `convIdOverride` — pass the conversation id the message was sent to. After a
+  // Wipe Board the page lazily creates a NEW conversation; its id may not have
+  // propagated to this hook's convId yet, so we subscribe to the override id
+  // directly. Without this, sends after a wipe never stream a reply back.
+  const onSent = useCallback((userMessage, convIdOverride) => {
     doneRef.current = false;
     lastSnapshotRef.current = "";
     lastAssistantTextRef.current = "";
@@ -272,8 +283,13 @@ export default function useAgentStream(convId, initialMessages = []) {
     }
     setIsGenerating(true);
     armIdleTimer();
-    if (!unsubRef.current) subscribe();
-  }, [subscribe, armIdleTimer]);
+    // (Re)subscribe to the target conversation if we're not already attached to
+    // exactly that one — covers fresh post-wipe conversations.
+    const targetId = convIdOverride || convId;
+    if (!unsubRef.current || (targetId && subscribedIdRef.current !== targetId)) {
+      subscribe(targetId);
+    }
+  }, [subscribe, armIdleTimer, convId]);
 
   return { messages, setMessages, isGenerating, stop, onSent };
 }

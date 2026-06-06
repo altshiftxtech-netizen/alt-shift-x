@@ -413,7 +413,7 @@ export default function BobBuilder() {
       await base44.agents.addMessage(c, { role: "user", content: seedText });
       await titleProject(c, seedText);
       beginAwaitingReply();
-      onSent({ content: seedText });
+      onSent({ content: seedText }, c.id);
       setSending(false);
     } else {
       // No seed → blank slate, conversation is created lazily on first send.
@@ -497,7 +497,7 @@ export default function BobBuilder() {
       ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
     });
     beginAwaitingReply();
-    onSent({ content: seed, ...(sourceUrls.length ? { file_urls: sourceUrls } : {}) });
+    onSent({ content: seed, ...(sourceUrls.length ? { file_urls: sourceUrls } : {}) }, newConv.id);
     setSending(false);
   };
 
@@ -518,7 +518,7 @@ export default function BobBuilder() {
     sayThinking(); // BOB acknowledges out loud
     beginAwaitingReply();
     // Show the user's message instantly (hook keeps it until the stream confirms).
-    onSent({ content: msg });
+    onSent({ content: msg }, c.id);
     setSending(false);
     inFlightRef.current = false;
   };
@@ -594,7 +594,7 @@ export default function BobBuilder() {
     if (notifyWhenDone) notifyPendingRef.current = true;
     sayThinking();
     beginAwaitingReply();
-    onSent({ content: lookMsg, file_urls: [file_url] });
+    onSent({ content: lookMsg, file_urls: [file_url] }, c.id);
     inFlightRef.current = false;
   };
 
@@ -626,7 +626,7 @@ export default function BobBuilder() {
     sayThinking(); // BOB acknowledges out loud
     beginAwaitingReply();
     // Show the user's message instantly (hook keeps it until the stream confirms).
-    onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
+    onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) }, c.id);
     setUploadedFiles([]);
     setSending(false);
     inFlightRef.current = false;
