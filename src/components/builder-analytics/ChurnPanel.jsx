@@ -17,7 +17,13 @@ export default function ChurnPanel({ reasons, totalChurned }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {reasons.map((r, i) => (
+        {(!reasons || reasons.length === 0) && (
+          <div className="py-8 flex flex-col items-center justify-center text-center text-slate-400">
+            <TrendingDown className="w-7 h-7 mb-2 opacity-40" />
+            <p className="text-xs">{totalChurned > 0 ? `${totalChurned} cancelled installs. Reason data isn't collected yet.` : "No churn yet."}</p>
+          </div>
+        )}
+        {(reasons || []).map((r, i) => (
           <div key={r.reason}>
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs text-slate-600">{r.reason}</span>

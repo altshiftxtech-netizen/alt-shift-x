@@ -12,7 +12,13 @@ export default function GeographicBreakdown({ geo }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {geo.map(g => (
+        {(!geo || geo.length === 0) && (
+          <div className="py-8 flex flex-col items-center justify-center text-center text-slate-400">
+            <MapPin className="w-7 h-7 mb-2 opacity-40" />
+            <p className="text-xs">Geographic data isn't tracked for installs yet.</p>
+          </div>
+        )}
+        {(geo || []).map(g => (
           <div key={g.country}>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">

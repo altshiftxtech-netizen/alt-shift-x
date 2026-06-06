@@ -4,12 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Users, Plus, Mail, Check, X, Loader2, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-const COMPONENTS = [
-  { id: "rp-1", name: "Ironclad Protocol" },
-  { id: "pm-1", name: "Estimator's Eye" },
-  { id: "rc-1", name: "The Site Board" },
-];
-
 const ROLE_COLORS = {
   editor: "bg-blue-100 text-blue-700",
   reviewer: "bg-amber-100 text-amber-700",
@@ -18,24 +12,36 @@ const ROLE_COLORS = {
 
 export default function CollaborationPanel() {
   const [collabs, setCollabs] = useState([]);
+  const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("reviewer");
-  const [inviteComponent, setInviteComponent] = useState(COMPONENTS[0].id);
+  const [inviteComponent, setInviteComponent] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    base44.entities.ComponentCollaboration.list("-created_date", 10)
-      .then(data => { setCollabs(data); setLoading(false); })
-      .catch(() => setLoading(false));
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        const [collabData, comps] = await Promise.all([
+          base44.entities.ComponentCollaboration.list("-created_date", 10),
+          base44.entities.Component.filter({ builder_id: me.id }),
+        ]);
+        const opts = comps.map((c) => ({ id: c.id, name: c.name }));
+        setCollabs(collabData);
+        setComponents(opts);
+        if (opts[0]) setInviteComponent(opts[0].id);
+      } catch { /* ignore */ }
+      setLoading(false);
+    })();
   }, []);
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
     setSaving(true);
-    const comp = COMPONENTS.find(c => c.id === inviteComponent);
+    const comp = components.find(c => c.id === inviteComponent);
     try {
       const existing = collabs.find(c => c.component_id === inviteComponent);
       if (existing) {
@@ -89,7 +95,7 @@ export default function CollaborationPanel() {
             <div className="flex gap-2">
               <select value={inviteComponent} onChange={e => setInviteComponent(e.target.value)}
                 className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-2 outline-none bg-white">
-                {COMPONENTS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {components.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
                 className="text-xs border border-slate-200 rounded-lg px-2 py-2 outline-none bg-white">

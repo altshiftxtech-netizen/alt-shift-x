@@ -74,27 +74,31 @@ export default function BobRecommendationsPanel() {
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
+      const me = await base44.auth.me();
+      const components = await base44.entities.Component.filter({ builder_id: me.id });
+
+      if (!components.length) {
+        setRecommendations([]);
+        setLoading(false);
+        return;
+      }
+
+      // Build a REAL summary of the builder's actual catalog — no invented stats.
+      const summary = components.slice(0, 25).map((c) =>
+        `- ${c.name} (${c.type}, ${c.category}) — $${c.price}/mo, status: ${c.status}, ${c.installs_count || 0} installs, rating ${c.rating || 0}, trust ${c.trust_score || 0}`
+      ).join("\n");
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are BOB (BotOperatedBuilder), an expert AI advisor for construction software component builders on the Alt+Shift+X marketplace.
+        prompt: `You are BOB, an expert AI advisor for component builders on the Alt+Shift+X marketplace.
 
-A builder has these components:
-- Ironclad Protocol (X1 Risk & Compliance) — 2341 installs, $149/mo, 94% retention, trust score 91
-- The Site Board (X4 Site Reporting) — 612 installs, $89/mo, 91% retention, trust score 93
-- Estimator's Eye (X2 Cost Estimation) — 890 installs, $129/mo, 82% retention, trust score 87
+This builder's ACTUAL catalog (${components.length} components):
+${summary}
 
-Churn reasons: 34% switched to competitor, 22% price too high, 19% bugs/accuracy, 15% project ended.
-
-Provide exactly 5 specific, actionable recommendations to optimize pricing, descriptions, and conversions. Be direct and data-driven. Number each recommendation 1-5.`,
+Based ONLY on this real data, give exactly 5 specific, actionable recommendations to optimize pricing, descriptions, publishing, and conversions. Do not invent metrics that aren't shown. Number each recommendation 1-5.`,
       });
       setRecommendations(parseRecommendations(typeof result === "string" ? result : JSON.stringify(result)));
     } catch (e) {
-      setRecommendations([
-        { id: 0, text: "Consider a freemium tier for Estimator's Eye to reduce the 22% price-driven churn", type: "pricing" },
-        { id: 1, text: "Add ROI calculator in The Site Board description to improve enterprise conversion", type: "description" },
-        { id: 2, text: "Ironclad Protocol's 94% retention is exceptional — highlight this in marketing copy", type: "conversion" },
-        { id: 3, text: "Bundle pricing for all 3 components could increase average revenue per user by ~30%", type: "pricing" },
-        { id: 4, text: "Add video walkthrough to components — listings with demos convert 2.4x higher", type: "conversion" },
-      ]);
+      setRecommendations([]);
     }
     setLoading(false);
   };
@@ -147,6 +151,12 @@ Provide exactly 5 specific, actionable recommendations to optimize pricing, desc
           </div>
         ) : !chatMode ? (
           <div className="space-y-2">
+            {recommendations.length === 0 && (
+              <div className="text-center py-6 text-slate-400 text-xs">
+                <Bot className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                Publish components to get tailored optimization tips from BOB.
+              </div>
+            )}
             {recommendations.map((rec) => {
               const Icon = ICON_MAP[rec.type] || Lightbulb;
               return (
