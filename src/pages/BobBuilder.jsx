@@ -192,8 +192,12 @@ export default function BobBuilder() {
     if (!launched) greetedRef.current = false; // re-greet on next session open
   }, [launched]);
 
-  // The loading indicator + Stop button are driven SOLELY by this.
-  const isBobWorking = awaitingReply;
+  // The loading indicator + Stop button are shown whenever EITHER our local
+  // awaiting-reply latch OR the stream hook reports it's still generating. This
+  // guarantees the "BOB is working…" indicator is NEVER blank during the gap
+  // between sending and the first streamed token, and stays up through the
+  // hook's settle window so the screen is never stagnant / ambiguous.
+  const isBobWorking = awaitingReply || isGenerating;
 
   // Watch the messages stream. The instant an assistant message WITH TEXT exists
   // at/after the turn-start index, the turn is done: clear the working state,
@@ -208,6 +212,13 @@ export default function BobBuilder() {
     // turn AND the final message is BOB speaking real text.
     const grew = messages.length > turnStartLenRef.current;
     if (!grew || !isAssistantText(last)) return; // reply not settled yet
+
+    // CRITICAL: wait for the stream hook to ALSO settle (its 1.8s text-stable
+    // window) before declaring the turn done. Without this, awaitingReply clears
+    // the instant the first chunk of text arrives — flashing "your turn" while
+    // BOB is still streaming. While the hook is generating, keep waiting; the
+    // working indicator stays up via isBobWorking (awaitingReply || isGenerating).
+    if (isGenerating) return;
 
     // Settled reply has landed — close out the turn.
     setAwaitingReply(false);
@@ -251,7 +262,7 @@ export default function BobBuilder() {
       notifyPendingRef.current = false;
       notifyJobComplete(last);
     }
-  }, [awaitingReply, messages]);
+  }, [awaitingReply, messages, isGenerating]);
 
   // Fire an in-app bell notification (and optional email) that the BOB job
   // finished, with a deep link straight back to the BOB chat.
@@ -782,7 +793,7 @@ export default function BobBuilder() {
                 title="Take a photo and send it straight to BOB"
                 className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all"
               >
-                <Camera className="w-3.5 h-3.5" /> Bob Look
+                <Camera className="w-3.5 h-3.5" /> BOB Look
               </button>
               <button
                 type="button"
@@ -1075,7 +1086,7 @@ export default function BobBuilder() {
                       title="Take a photo and send it straight to BOB"
                       className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all"
                     >
-                      <Camera className="w-3.5 h-3.5" /> Bob Look
+                      <Camera className="w-3.5 h-3.5" /> BOB Look
                     </button>
                     <button
                       onClick={toggleRecording}
