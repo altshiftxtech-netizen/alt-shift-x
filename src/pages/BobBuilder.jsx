@@ -524,6 +524,40 @@ export default function BobBuilder() {
     e.target.value = "";
   };
 
+  // ── Bob Look ──────────────────────────────────────────────────────────────
+  // A photo captured from the camera is sent STRAIGHT to BOB (no manual send) so
+  // he can read it instantly — multiple book titles, books on surrounding
+  // shelves, documents, site photos, etc.
+  const handleBobLook = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setUploading(false);
+
+    const lookMsg =
+      "Bob Look — analyze this photo. Read every visible title/label in the image, " +
+      "including the focused item AND any books, products, or documents on the " +
+      "surrounding shelves or background. List what you see, then tell me what we " +
+      "can build or do with it.";
+
+    const c = conv || await initConv();
+    await base44.agents.addMessage(c, {
+      role: "user",
+      content: lookMsg,
+      file_urls: [file_url],
+    });
+    await titleProject(c, "Bob Look");
+    if (notifyWhenDone) notifyPendingRef.current = true;
+    sayThinking();
+    beginAwaitingReply();
+    onSent({ content: lookMsg, file_urls: [file_url] });
+    inFlightRef.current = false;
+  };
+
   const sendWithFiles = async () => {
     if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
     const msg = input.trim();
@@ -695,14 +729,14 @@ export default function BobBuilder() {
                 className="hidden"
                 onChange={handleFileUpload}
               />
-              {/* Camera capture — opens device camera on mobile */}
+              {/* Bob Look — camera capture sent straight to BOB */}
               <input
                 ref={cameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
                 className="hidden"
-                onChange={handleFileUpload}
+                onChange={handleBobLook}
               />
               <button
                 type="button"
@@ -718,10 +752,10 @@ export default function BobBuilder() {
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
                 disabled={uploading}
-                title="Take a photo"
-                className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all"
+                title="Take a photo and send it straight to BOB"
+                className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all"
               >
-                <Camera className="w-3.5 h-3.5" /> Photo
+                <Camera className="w-3.5 h-3.5" /> Bob Look
               </button>
               <button
                 type="button"
@@ -923,9 +957,10 @@ export default function BobBuilder() {
                       </div>
                     </div>
                   )}
-                  {/* Clear, always-visible "turn finished / your turn" marker so
-                      the user is never unsure whether BOB is done. */}
-                  {!isBobWorking && isAssistantText(messages[messages.length - 1]) && (
+                  {/* Clear "turn finished / your turn" marker — only when BOB is
+                      truly idle (not awaiting a reply AND not streaming) and the
+                      last message is settled assistant text. */}
+                  {!isBobWorking && !isGenerating && isAssistantText(messages[messages.length - 1]) && (
                     <TurnCompleteMarker lastMessage={messages[messages.length - 1]} />
                   )}
                   <div ref={messagesEndRef} />
@@ -989,14 +1024,14 @@ export default function BobBuilder() {
                       className="hidden"
                       onChange={handleFileUpload}
                     />
-                    {/* Camera capture — opens device camera on mobile */}
+                    {/* Bob Look — camera capture sent straight to BOB */}
                     <input
                       ref={cameraInputRef}
                       type="file"
                       accept="image/*"
                       capture="environment"
                       className="hidden"
-                      onChange={handleFileUpload}
+                      onChange={handleBobLook}
                     />
                     <button
                       onClick={() => fileInputRef.current?.click()}
@@ -1010,10 +1045,10 @@ export default function BobBuilder() {
                     <button
                       onClick={() => cameraInputRef.current?.click()}
                       disabled={uploading}
-                      title="Take a photo"
-                      className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                      title="Take a photo and send it straight to BOB"
+                      className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all"
                     >
-                      <Camera className="w-3.5 h-3.5" /> Photo
+                      <Camera className="w-3.5 h-3.5" /> Bob Look
                     </button>
                     <button
                       onClick={toggleRecording}

@@ -8,6 +8,14 @@ export default function TurnCompleteMarker({ lastMessage }) {
   const text = (lastMessage?.content || "").trim();
   if (!text) return null;
 
+  // Never show "your turn" if BOB's last message still has a running/pending
+  // tool call — that means BOB hasn't actually finished yet.
+  const RUNNING = ["pending", "in_progress", "running"];
+  const hasRunningTool = (lastMessage?.tool_calls || []).some(
+    (t) => t.status && RUNNING.includes(t.status)
+  );
+  if (hasRunningTool) return null;
+
   const lower = text.toLowerCase();
   const isAsking =
     /\?\s*$/.test(text) ||
