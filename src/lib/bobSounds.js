@@ -239,23 +239,23 @@ export function unlockSpeech() {
 export const sayThinking = () => {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   unlockSpeech();
-  window.speechSynthesis.resume();
   window.speechSynthesis.cancel();
-  const speakNow = () => {
-    const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
-    const s = getVoiceSettings();
-    u.pitch = s.pitch;
-    u.rate = s.rate;
-    u.volume = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
-    if (chosen) u.voice = chosen;
-    window.speechSynthesis.speak(u);
-  };
-  // cancel() needs a tick to settle before the next speak() is accepted.
-  setTimeout(speakNow, 60);
+  window.speechSynthesis.resume();
+  const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
+  const s = getVoiceSettings();
+  u.pitch = s.pitch;
+  u.rate = s.rate;
+  u.volume = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
+  if (chosen) u.voice = chosen;
+  // Speak immediately AND keep the engine alive — Chrome can pause a queued
+  // utterance after ~15s of inactivity, so a resume tick keeps it flowing.
+  window.speechSynthesis.speak(u);
+  window.speechSynthesis.resume();
 };
-export const sayQuestion = () => speak(pick(PHRASES.question));
-export const sayReady = () => speak(pick(PHRASES.ready));
-export const sayTiles = () => speak(pick(PHRASES.tile));
-export const saySubmitted = () => speak(pick(PHRASES.submitted));
+// Completion lines QUEUE behind an in-progress "On it" so they never cut it off.
+export const sayQuestion = () => speak(pick(PHRASES.question), { queue: true });
+export const sayReady = () => speak(pick(PHRASES.ready), { queue: true });
+export const sayTiles = () => speak(pick(PHRASES.tile), { queue: true });
+export const saySubmitted = () => speak(pick(PHRASES.submitted), { queue: true });
