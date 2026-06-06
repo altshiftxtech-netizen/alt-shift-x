@@ -793,7 +793,7 @@ export default function BobBuilder() {
                 title="Take a photo and send it straight to BOB"
                 className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all"
               >
-                <Camera className="w-3.5 h-3.5" /> BOB Look
+                <Camera className="w-3.5 h-3.5" /> BOB Look {/* splash */}
               </button>
               <button
                 type="button"
@@ -1069,7 +1069,7 @@ export default function BobBuilder() {
                       title="Take a photo and send it straight to BOB"
                       className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all"
                     >
-                      <Camera className="w-3.5 h-3.5" /> BOB Look
+                      <Camera className="w-3.5 h-3.5" /> BOB Look {/* chat */}
                     </button>
                     <button
                       onClick={toggleRecording}
