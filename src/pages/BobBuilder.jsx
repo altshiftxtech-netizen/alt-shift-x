@@ -635,7 +635,7 @@ export default function BobBuilder() {
                     clearSignal={clearSignal}
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything…  Enter = send · Shift+Enter = new line"}
                     minHeight={52}
-                    maxHeight={200}
+                    maxHeight={500}
                     showToolbar
                   />
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-0.5">
