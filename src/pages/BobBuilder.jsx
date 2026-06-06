@@ -529,18 +529,23 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     setClearSignal(s => s + 1);
-    // Lazily create the project conversation on first send so empty boards
-    // never produce stray "New Project" entries.
-    const c = conv || await initConv();
-    await base44.agents.addMessage(c, { role: "user", content: msg });
-    await titleProject(c, msg);
-    if (notifyWhenDone) notifyPendingRef.current = true;
-    sayThinking(); // BOB acknowledges out loud
-    beginAwaitingReply();
-    // Show the user's message instantly (hook keeps it until the stream confirms).
-    onSent({ content: msg }, c.id);
-    setSending(false);
-    inFlightRef.current = false;
+    try {
+      // Lazily create the project conversation on first send so empty boards
+      // never produce stray "New Project" entries.
+      const c = conv || await initConv();
+      await base44.agents.addMessage(c, { role: "user", content: msg });
+      await titleProject(c, msg);
+      if (notifyWhenDone) notifyPendingRef.current = true;
+      sayThinking(); // BOB acknowledges out loud
+      beginAwaitingReply();
+      // Show the user's message instantly (hook keeps it until the stream confirms).
+      onSent({ content: msg }, c.id);
+    } finally {
+      // ALWAYS release the guard + sending flag, even if a step above threw —
+      // otherwise the Send button stays frozen for the rest of the session.
+      setSending(false);
+      inFlightRef.current = false;
+    }
   };
 
   // ── Voice recording ───────────────────────────────────────────────────────
@@ -596,27 +601,32 @@ export default function BobBuilder() {
     userActedRef.current = true; // lock out the on-mount restore race
     inFlightRef.current = true;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setUploading(false);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setUploading(false);
 
-    const lookMsg =
-      "Bob Look — analyze this photo. Read every visible title/label in the image, " +
-      "including the focused item AND any books, products, or documents on the " +
-      "surrounding shelves or background. List what you see, then tell me what we " +
-      "can build or do with it.";
+      const lookMsg =
+        "Bob Look — analyze this photo. Read every visible title/label in the image, " +
+        "including the focused item AND any books, products, or documents on the " +
+        "surrounding shelves or background. List what you see, then tell me what we " +
+        "can build or do with it.";
 
-    const c = conv || await initConv();
-    await base44.agents.addMessage(c, {
-      role: "user",
-      content: lookMsg,
-      file_urls: [file_url],
-    });
-    await titleProject(c, "Bob Look");
-    if (notifyWhenDone) notifyPendingRef.current = true;
-    sayThinking();
-    beginAwaitingReply();
-    onSent({ content: lookMsg, file_urls: [file_url] }, c.id);
-    inFlightRef.current = false;
+      const c = conv || await initConv();
+      await base44.agents.addMessage(c, {
+        role: "user",
+        content: lookMsg,
+        file_urls: [file_url],
+      });
+      await titleProject(c, "Bob Look");
+      if (notifyWhenDone) notifyPendingRef.current = true;
+      sayThinking();
+      beginAwaitingReply();
+      onSent({ content: lookMsg, file_urls: [file_url] }, c.id);
+    } finally {
+      // ALWAYS release the guard + uploading flag, even on failure.
+      setUploading(false);
+      inFlightRef.current = false;
+    }
   };
 
   const sendWithFiles = async () => {
@@ -628,30 +638,35 @@ export default function BobBuilder() {
     setSending(true);
     setInput("");
     setClearSignal(s => s + 1);
-    const filesToSend = uploadedFiles;
-    const fileList = filesToSend.map(f => f.name).join(", ");
-    // Extract text from document files (incl. Word) so BOB always reads them.
-    const docContext = await buildDocContext(filesToSend);
-    const fullMsg = filesToSend.length > 0
-      ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
-      : msg;
-    const fileUrls = filesToSend.map(f => f.url);
-    // Lazily create the project conversation on first send.
-    const c = conv || await initConv();
-    await base44.agents.addMessage(c, {
-      role: "user",
-      content: fullMsg,
-      file_urls: fileUrls
-    });
-    await titleProject(c, msg || fileList);
-    if (notifyWhenDone) notifyPendingRef.current = true;
-    sayThinking(); // BOB acknowledges out loud
-    beginAwaitingReply();
-    // Show the user's message instantly (hook keeps it until the stream confirms).
-    onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) }, c.id);
-    setUploadedFiles([]);
-    setSending(false);
-    inFlightRef.current = false;
+    try {
+      const filesToSend = uploadedFiles;
+      const fileList = filesToSend.map(f => f.name).join(", ");
+      // Extract text from document files (incl. Word) so BOB always reads them.
+      const docContext = await buildDocContext(filesToSend);
+      const fullMsg = filesToSend.length > 0
+        ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
+        : msg;
+      const fileUrls = filesToSend.map(f => f.url);
+      // Lazily create the project conversation on first send.
+      const c = conv || await initConv();
+      await base44.agents.addMessage(c, {
+        role: "user",
+        content: fullMsg,
+        file_urls: fileUrls
+      });
+      await titleProject(c, msg || fileList);
+      if (notifyWhenDone) notifyPendingRef.current = true;
+      sayThinking(); // BOB acknowledges out loud
+      beginAwaitingReply();
+      // Show the user's message instantly (hook keeps it until the stream confirms).
+      onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) }, c.id);
+      setUploadedFiles([]);
+    } finally {
+      // ALWAYS release the guard + sending flag, even if a step above threw —
+      // otherwise the Send button stays frozen for the rest of the session.
+      setSending(false);
+      inFlightRef.current = false;
+    }
   };
 
   const submitCode = async () => {
