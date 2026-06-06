@@ -253,6 +253,23 @@ export default function Marketplace() {
           </div>
         </div>
 
+        {/* Enterprise Pipelines promo — for big companies */}
+        <Link to="/pipelines" className="block mb-6 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-900/40 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-amber-400/70 transition-colors group">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0">
+              <Package className="w-5 h-5 text-amber-300" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black text-white">Enterprise Pipelines</h3>
+                <span className="text-[9px] font-bold uppercase tracking-wider bg-amber-400 text-black px-1.5 py-0.5 rounded-full">For Companies</span>
+              </div>
+              <p className="text-xs text-white/60 mt-0.5">License curated component bundles behind one secure key — Alt+Shift+X Exclusive (Magna Dev) + best-of pipelines. Full payment, instant key.</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-amber-300 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+
         <div className="flex gap-6">
           {/* Results grid */}
           <div className="flex-1">
