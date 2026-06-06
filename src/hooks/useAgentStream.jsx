@@ -23,12 +23,19 @@ import { base44 } from "@/api/base44Client";
 // Long enough to survive natural pauses between streamed tokens / model
 // "thinking" gaps. A shorter value can kill a still-streaming reply.
 const IDLE_TIMEOUT_MS = 8000;
+// After BOB's reply text STOPS changing, wait this long before declaring the
+// turn finished. This prevents the "BOB finished — your turn" marker from
+// flashing on a half-streamed sentence (e.g. "...that the i"). If a new token
+// arrives within this window, the settle timer resets and the turn stays live.
+const SETTLE_MS = 1800;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
   const [isGenerating, setIsGenerating] = useState(false);
   const unsubRef = useRef(null);
   const idleTimerRef = useRef(null);
+  const settleTimerRef = useRef(null);     // fires when reply text stops changing
+  const lastAssistantTextRef = useRef("");  // last seen assistant content (settle tracking)
   const lastSnapshotRef = useRef("");
   const doneRef = useRef(true); // latched "this turn is finished"
   // Optimistic user message shown instantly on send. Kept until the server's
@@ -38,6 +45,17 @@ export default function useAgentStream(convId, initialMessages = []) {
   const clearIdleTimer = () => {
     if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; }
   };
+  const clearSettleTimer = () => {
+    if (settleTimerRef.current) { clearTimeout(settleTimerRef.current); settleTimerRef.current = null; }
+  };
+
+  // Latch the current turn as finished and clear all working indicators/timers.
+  const finishTurn = useCallback(() => {
+    doneRef.current = true;
+    setIsGenerating(false);
+    clearIdleTimer();
+    clearSettleTimer();
+  }, []);
 
   // Watchdog: after a long silence with no new tokens, force the turn done so a
   // dead/stalled stream can't hang the Stop button forever. It latches done so
@@ -61,10 +79,14 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (last.role === "user") return true;
 
     if (last.role === "assistant") {
-      // DONE the moment BOB's FINAL message has spoken text — a real answer OR a
-      // question awaiting feedback. Wins over any stale tool status in the tail.
+      // NOTE: We intentionally do NOT declare "done" the instant the final
+      // assistant message has text. During streaming the text arrives in chunks,
+      // so a half-streamed sentence would wrongly look finished. The settle
+      // logic in handleUpdate handles "text present" → waits for it to stop
+      // changing before finishing. Here we only report whether BOB is clearly
+      // still working (tools running, nothing settled).
       const hasText = typeof last.content === "string" && last.content.trim().length > 0;
-      if (hasText) return false;
+      if (hasText) return true; // text is in flight — let the settle timer finish it
 
       // CRITICAL (awaiting-feedback fix): if ANY assistant message this turn has
       // already produced spoken text, BOB has effectively replied — treat the
@@ -121,6 +143,7 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (doneRef.current) {
       setIsGenerating(false);
       clearIdleTimer();
+      clearSettleTimer();
       return;
     }
 
@@ -129,13 +152,34 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (!generating) {
       // Reply finished (or nothing in flight) — latch done so stray late
       // updates for this turn can't bring the bubble back.
-      doneRef.current = true;
-      setIsGenerating(false);
-      clearIdleTimer();
+      finishTurn();
       return;
     }
 
+    // Still working. Keep the indicator up.
     setIsGenerating(true);
+
+    // SETTLE LOGIC: if BOB's final message has spoken text, we treat the turn as
+    // finished only once that text STOPS changing for SETTLE_MS. Every time the
+    // text grows (a new streamed chunk), we reset the settle timer — so the
+    // "BOB finished" marker never appears on a half-streamed sentence.
+    const last = msgs[msgs.length - 1];
+    const lastHasText =
+      last && last.role === "assistant" &&
+      typeof last.content === "string" && last.content.trim().length > 0;
+
+    if (lastHasText) {
+      const text = last.content;
+      if (text !== lastAssistantTextRef.current) {
+        // Text changed → still streaming. Reset the settle countdown.
+        lastAssistantTextRef.current = text;
+        clearSettleTimer();
+        settleTimerRef.current = setTimeout(() => finishTurn(), SETTLE_MS);
+      }
+      // If text is unchanged, the existing settle timer keeps running and will
+      // finish the turn when it elapses.
+    }
+
     // Re-arm watchdog only when content actually changed, so a stalled stream
     // (no new tokens) still times out and clears the indicator.
     const snapshot = JSON.stringify(msgs[msgs.length - 1] || {});
@@ -143,7 +187,7 @@ export default function useAgentStream(convId, initialMessages = []) {
       lastSnapshotRef.current = snapshot;
       armIdleTimer();
     }
-  }, [armIdleTimer]);
+  }, [armIdleTimer, finishTurn]);
 
   const subscribe = useCallback(() => {
     if (!convId) return;
@@ -175,7 +219,9 @@ export default function useAgentStream(convId, initialMessages = []) {
     doneRef.current = true;
     setIsGenerating(false);
     clearIdleTimer();
+    clearSettleTimer();
     lastSnapshotRef.current = "";
+    lastAssistantTextRef.current = "";
     pendingUserRef.current = null;
     subscribe();
 
@@ -189,6 +235,7 @@ export default function useAgentStream(convId, initialMessages = []) {
     return () => {
       if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
       clearIdleTimer();
+      clearSettleTimer();
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", resync);
       window.removeEventListener("online", resync);
@@ -199,6 +246,7 @@ export default function useAgentStream(convId, initialMessages = []) {
   const stop = useCallback(() => {
     doneRef.current = true;
     clearIdleTimer();
+    clearSettleTimer();
     setIsGenerating(false);
   }, []);
 
@@ -208,6 +256,8 @@ export default function useAgentStream(convId, initialMessages = []) {
   const onSent = useCallback((userMessage) => {
     doneRef.current = false;
     lastSnapshotRef.current = "";
+    lastAssistantTextRef.current = "";
+    clearSettleTimer();
     if (userMessage && (userMessage.content || "").trim()) {
       pendingUserRef.current = { role: "user", ...userMessage };
       setMessages((prev) => [...prev, pendingUserRef.current]);
