@@ -157,6 +157,11 @@ export default function BobBuilder() {
   // Re-entrancy guard for sends — a ref so a stuck React state can never
   // permanently block the Send button / Ctrl+Enter.
   const inFlightRef = useRef(false);
+  // Set the instant the user actively starts a session (launch with a seed,
+  // send, wipe, open history, open/spin a project). The on-mount restore is
+  // async — if the user acted while restore's getConversation/list calls were
+  // in flight, restore must NOT overwrite their fresh session with old history.
+  const userActedRef = useRef(false);
   // Marks the user message index that opened the current turn. Completion fires
   // once an assistant message WITH TEXT appears AFTER this index.
   const turnStartLenRef = useRef(0);
@@ -303,11 +308,16 @@ export default function BobBuilder() {
   // on the account — so signing in from a different browser, browser type, or the
   // app reopens exactly where you left off.
   const restoreActiveConversation = async () => {
+    // If the user has already acted (launched a query, opened history, etc.),
+    // don't restore at all — they've chosen their own starting point.
+    if (userActedRef.current) return;
+
     // 1) Try this browser's last-open conversation (fastest, no list call).
     const saved = localStorage.getItem("bob_active_conv");
     if (saved) {
       try {
         const full = await base44.agents.getConversation(saved);
+        if (userActedRef.current) return; // user acted while we were fetching
         if (full && (full.messages || []).length > 0) {
           openRestored(full);
           return;
@@ -321,20 +331,24 @@ export default function BobBuilder() {
     // recently updated non-trashed project from the account and resume it.
     try {
       const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
+      if (userActedRef.current) return; // user acted while listing
       const candidates = (list || [])
         .filter((c) => !c.metadata?.trashed && (c.metadata?.name && c.metadata.name !== "New Project"))
         .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
       const latest = candidates[0];
       if (!latest) return;
       const full = await base44.agents.getConversation(latest.id);
+      if (userActedRef.current) return; // user acted while fetching
       if (full && (full.messages || []).length > 0) openRestored(full);
     } catch {
       // best-effort — builder can still open any project from the Wipe Board
     }
   };
 
-  // Open a fetched conversation into the workspace chat.
+  // Open a fetched conversation into the workspace chat. Guarded so a late
+  // restore can never clobber a session the user has actively started.
   const openRestored = (full) => {
+    if (userActedRef.current) return;
     setConv(full);
     setConvId(full.id);
     setMessages(full.messages || []);
@@ -404,6 +418,7 @@ export default function BobBuilder() {
   // Launch from splash — only create a conversation if there's a seed message.
   // An empty launch just opens the workspace (no empty "New Project" is spawned).
   const launch = async (seedText) => {
+    userActedRef.current = true; // lock out the on-mount restore race
     setLaunched(true);
     if (seedText?.trim()) {
       setSending(true);
@@ -432,6 +447,7 @@ export default function BobBuilder() {
   // Open the workspace straight into the Wipe Board history. Does NOT create a
   // conversation — that happens lazily when the builder sends their first message.
   const openHistory = async () => {
+    userActedRef.current = true; // lock out the on-mount restore race
     setLaunched(true);
     setActiveTab("chat");
     setConv(null);
@@ -442,6 +458,7 @@ export default function BobBuilder() {
   // Wipe Board — clear the board to a fresh blank slate. A new conversation is
   // created lazily on first send, so we never pile up empty "New Project" entries.
   const wipeBoard = async () => {
+    userActedRef.current = true; // lock out the on-mount restore race
     setActiveTab("chat");
     setConv(null);
     setConvId(null);
@@ -451,6 +468,7 @@ export default function BobBuilder() {
 
   // Open an existing project from the Wipe Board history.
   const openProject = async (c) => {
+    userActedRef.current = true; // lock out the on-mount restore race
     const full = await base44.agents.getConversation(c.id);
     setConv(full);
     setConvId(full.id);
@@ -462,6 +480,7 @@ export default function BobBuilder() {
   // original component context + attached sources, plus a proposed spin-off
   // direction. The builder only has to say "go".
   const spinOff = async (c) => {
+    userActedRef.current = true; // lock out the on-mount restore race
     const full = await base44.agents.getConversation(c.id);
     const history = (full.messages || []);
     const firstUser = history.find(m => m.role === "user");
@@ -505,6 +524,7 @@ export default function BobBuilder() {
     if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
     const msg = text || input;
     if (!msg.trim()) return;
+    userActedRef.current = true; // lock out the on-mount restore race
     inFlightRef.current = true;
     setSending(true);
     setInput("");
@@ -573,6 +593,7 @@ export default function BobBuilder() {
     e.target.value = "";
     if (!file) return;
     if (inFlightRef.current) return;
+    userActedRef.current = true; // lock out the on-mount restore race
     inFlightRef.current = true;
     setUploading(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -602,6 +623,7 @@ export default function BobBuilder() {
     if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
+    userActedRef.current = true; // lock out the on-mount restore race
     inFlightRef.current = true;
     setSending(true);
     setInput("");
