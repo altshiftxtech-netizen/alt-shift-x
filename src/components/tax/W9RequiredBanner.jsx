@@ -20,7 +20,7 @@ export default function W9RequiredBanner() {
     try {
       const me = await base44.auth.me();
       setUser(me);
-      const mine = await base44.entities.TaxForm1099.filter({ user_id: me.id });
+      const mine = await base44.entities.TaxForm1099.filter({ builder_id: me.id });
       setRecord(mine?.[0] || null);
     } catch {
       setRecord(null);
@@ -31,7 +31,7 @@ export default function W9RequiredBanner() {
 
   if (!loaded || !user) return null;
 
-  const completed = record?.status === "completed" && record?.w9_signed;
+  const completed = !!record?.w9_completed;
 
   if (completed) {
     return (
