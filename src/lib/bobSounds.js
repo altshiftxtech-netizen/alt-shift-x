@@ -214,21 +214,46 @@ export function sayHi() {
   speak(pick(PHRASES.greeting));
 }
 
+// Many browsers (Chrome especially) silently drop the FIRST speechSynthesis
+// utterance unless the engine was unlocked inside a user gesture. The page-load
+// greeting runs without a gesture, so the engine stays "cold" and the first real
+// "On it" on send gets dropped. unlockSpeech() primes the engine once, inside a
+// gesture, by speaking an empty/near-silent utterance — after this every later
+// speak() is honored. Safe to call on every send; it only primes once.
+let speechUnlocked = false;
+export function unlockSpeech() {
+  if (typeof window === "undefined" || !window.speechSynthesis) return;
+  if (speechUnlocked) return;
+  speechUnlocked = true;
+  try {
+    window.speechSynthesis.resume();
+    const warm = new SpeechSynthesisUtterance(" ");
+    warm.volume = 0;
+    window.speechSynthesis.speak(warm);
+  } catch { /* no-op */ }
+}
+
 // "On it" — spoken THE INSTANT the user sends, directly inside the click/Enter
-// gesture so the browser always allows it. We cancel any lingering speech and
-// speak synchronously (no setTimeout, no queue) so it starts immediately.
+// gesture so the browser always allows it. We prime the engine (first time),
+// cancel any lingering speech, and speak synchronously so it starts immediately.
 export const sayThinking = () => {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
+  unlockSpeech();
+  window.speechSynthesis.resume();
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
-  const s = getVoiceSettings();
-  u.pitch = s.pitch;
-  u.rate = s.rate;
-  u.volume = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
-  if (chosen) u.voice = chosen;
-  window.speechSynthesis.speak(u);
+  const speakNow = () => {
+    const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
+    const s = getVoiceSettings();
+    u.pitch = s.pitch;
+    u.rate = s.rate;
+    u.volume = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
+    if (chosen) u.voice = chosen;
+    window.speechSynthesis.speak(u);
+  };
+  // cancel() needs a tick to settle before the next speak() is accepted.
+  setTimeout(speakNow, 60);
 };
 export const sayQuestion = () => speak(pick(PHRASES.question));
 export const sayReady = () => speak(pick(PHRASES.ready));
