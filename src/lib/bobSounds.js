@@ -69,12 +69,24 @@ export function speak(text) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   const say = () => {
     const u = new SpeechSynthesisUtterance(text);
-    u.pitch = 0.4;
-    u.rate = 0.9;
+    // Very low pitch + slightly slow rate reads as a deep, gender-neutral
+    // machine voice rather than anything feminine.
+    u.pitch = 0.1;
+    u.rate = 0.82;
     u.volume = 1;
     const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find((v) => /google|zira|daniel|fred|albert/i.test(v.name));
-    if (preferred) u.voice = preferred;
+    // Prefer deeper / robotic neutral voices; explicitly avoid the common
+    // feminine defaults (Samantha, Victoria, Karen, Tessa, Zira, Susan).
+    const robotic = voices.find((v) =>
+      /robot|fred|albert|ralph|cellos|zarvox|trinoids|google uk english male|daniel|alex|rocko|grandpa/i.test(v.name)
+    );
+    const maleish = voices.find((v) =>
+      /\bmale\b/i.test(v.name) && !/female/i.test(v.name)
+    );
+    const neutral = voices.find(
+      (v) => !/samantha|victoria|karen|tessa|zira|susan|female|fiona|moira|veena|female/i.test(v.name)
+    );
+    u.voice = robotic || maleish || neutral || voices[0];
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   };
