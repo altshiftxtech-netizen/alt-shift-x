@@ -1,47 +1,54 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Send, Loader2, Mic } from "lucide-react";
 import VoiceButton from "@/components/VoiceButton";
-import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 
+const AGENT = "sales_consultant";
+const RUNNING = ["pending", "in_progress", "running"];
+const SETTLE_MS = 1400;
+const WATCHDOG_MS = 45000;
+
+const hasText = (m) => m && typeof m.content === "string" && m.content.trim().length > 0;
+const isAssistantText = (m) => m && m.role === "assistant" && hasText(m);
+
+/**
+ * AiSearchConsultant — entry card + clean chat for the Sales Consultant agent.
+ * Uses ONE reliable send path with an optimistic user bubble, a subscription
+ * that reconciles streamed updates, plus a settle timer and watchdog so the
+ * "thinking" indicator can never hang and a reply always lands.
+ */
 export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsumed }) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState(null);
-  const [showChat, setShowChat] = useState(false);
   const voiceFiredRef = useRef("");
 
-  // Auto-fire when a voice command is injected — guard against double-fire
   useEffect(() => {
     if (voiceQuery && voiceQuery.trim() && voiceQuery !== voiceFiredRef.current) {
       voiceFiredRef.current = voiceQuery;
       setQuery(voiceQuery);
       const t = setTimeout(() => {
-        startConsultation(voiceQuery);
+        start(voiceQuery);
         onVoiceQueryConsumed && onVoiceQueryConsumed();
-      }, 450);
+      }, 400);
       return () => clearTimeout(t);
     }
   }, [voiceQuery]);
 
-  const startConsultation = async (text) => {
+  const start = async (text) => {
     const q = (text || query).trim();
     if (!q) return;
     setLoading(true);
     try {
       const conv = await base44.agents.createConversation({
-        agent_name: "sales_consultant",
-        metadata: { name: "Consultation", description: `Query: ${q}` }
+        agent_name: AGENT,
+        metadata: { name: "Consultation", description: `Query: ${q}` },
       });
-      await base44.agents.addMessage(conv, { role: "user", content: q });
-      // Seed the chat with the user's first message so it shows instantly and
-      // the streaming hook knows a reply is incoming.
-      setConversation({ ...conv, messages: [...(conv.messages || []), { role: "user", content: q }] });
-      setShowChat(true);
+      setConversation({ conv, firstMessage: q });
       setQuery("");
     } catch (err) {
       alert("Failed to start consultation: " + err.message);
@@ -50,8 +57,14 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
     }
   };
 
-  if (showChat && conversation) {
-    return <ChatInterface conversation={conversation} onClose={() => { setShowChat(false); setConversation(null); }} />;
+  if (conversation) {
+    return (
+      <ChatInterface
+        conv={conversation.conv}
+        firstMessage={conversation.firstMessage}
+        onClose={() => setConversation(null)}
+      />
+    );
   }
 
   return (
@@ -72,11 +85,11 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
             placeholder="Ask about components, analysis, or project needs…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && startConsultation()}
+            onKeyDown={(e) => e.key === "Enter" && start()}
             className="text-sm"
           />
           <VoiceButton onTranscript={(t) => setQuery((p) => (p ? p + " " : "") + t)} />
-          <Button onClick={() => startConsultation()} disabled={loading || !query.trim()} className="gap-2 bg-violet-600 hover:bg-violet-700">
+          <Button onClick={() => start()} disabled={loading || !query.trim()} className="gap-2 bg-violet-600 hover:bg-violet-700">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
@@ -85,34 +98,110 @@ export default function AiSearchConsultant({ voiceQuery = "", onVoiceQueryConsum
   );
 }
 
-function ChatInterface({ conversation, onClose }) {
+function ChatInterface({ conv, firstMessage, onClose }) {
+  const [messages, setMessages] = useState([]);
+  const [isWorking, setIsWorking] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(conversation.id, conversation.messages || []);
-  const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
 
-  // The first user message was already added before this view mounted — open a
-  // turn so the pending indicator shows and we wait for the agent's reply.
-  useEffect(() => {
-    onSent();
+  const unsubRef = useRef(null);
+  const settleRef = useRef(null);
+  const watchdogRef = useRef(null);
+  const pendingUserRef = useRef(null);
+  const turnOpenRef = useRef(false);
+  const lastTextRef = useRef("");
+  const sentFirstRef = useRef(false);
+
+  const clearTimers = () => {
+    if (settleRef.current) { clearTimeout(settleRef.current); settleRef.current = null; }
+    if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+  };
+
+  const finishTurn = useCallback(() => {
+    clearTimers();
+    turnOpenRef.current = false;
+    setIsWorking(false);
   }, []);
+
+  const detectWorking = (msgs) => {
+    if (!turnOpenRef.current) return false;
+    if (!msgs || msgs.length === 0) return true;
+    const last = msgs[msgs.length - 1];
+    if (last.role === "user") return true;
+    const anySpoke = msgs.some(isAssistantText);
+    const lastToolRunning = (last.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status));
+    if (lastToolRunning) return true;
+    if (last.status && RUNNING.includes(last.status)) return true;
+    if (anySpoke) return false;
+    const anyToolRunning = msgs.some(
+      (m) => m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
+    );
+    return anyToolRunning || !anySpoke;
+  };
+
+  const handleUpdate = useCallback((data) => {
+    let msgs = data.messages || [];
+    const pending = pendingUserRef.current;
+    if (pending) {
+      const serverHasIt = msgs.some((m) => m.role === "user" && (m.content || "") === pending.content);
+      if (serverHasIt) {
+        pendingUserRef.current = null;
+      } else {
+        let at = msgs.length;
+        while (at > 0 && msgs[at - 1].role === "assistant") at--;
+        msgs = [...msgs.slice(0, at), pending, ...msgs.slice(at)];
+      }
+    }
+    setMessages(msgs);
+
+    if (!turnOpenRef.current) { setIsWorking(false); return; }
+    if (!detectWorking(msgs)) { finishTurn(); return; }
+    setIsWorking(true);
+
+    const last = msgs[msgs.length - 1];
+    if (isAssistantText(last) && last.content !== lastTextRef.current) {
+      lastTextRef.current = last.content;
+      if (settleRef.current) clearTimeout(settleRef.current);
+      settleRef.current = setTimeout(finishTurn, SETTLE_MS);
+    }
+  }, [finishTurn]);
+
+  const sendMessage = useCallback(async (content) => {
+    const text = (content || "").trim();
+    if (!text) return;
+    turnOpenRef.current = true;
+    lastTextRef.current = "";
+    setIsWorking(true);
+    clearTimers();
+    watchdogRef.current = setTimeout(finishTurn, WATCHDOG_MS);
+
+    pendingUserRef.current = { role: "user", content: text };
+    setMessages((prev) => [...prev, pendingUserRef.current]);
+    await base44.agents.addMessage(conv, { role: "user", content: text });
+  }, [conv, finishTurn]);
+
+  // Subscribe once, then fire the seeded first message through the same path.
+  useEffect(() => {
+    unsubRef.current = base44.agents.subscribeToConversation(conv.id, handleUpdate);
+    if (firstMessage && !sentFirstRef.current) {
+      sentFirstRef.current = true;
+      sendMessage(firstMessage);
+    }
+    return () => {
+      if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+      clearTimers();
+    };
+  }, [conv.id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isWorking]);
 
   const handleSend = async () => {
-    if (!input.trim() || sending) return;
-    setSending(true);
-    try {
-      await base44.agents.addMessage(conversation, { role: "user", content: input });
-      onSent();
-      setInput("");
-    } catch (err) {
-      alert("Failed to send: " + err.message);
-    } finally {
-      setSending(false);
-    }
+    if (!input.trim()) return;
+    const text = input;
+    setInput("");
+    await sendMessage(text);
   };
 
   return (
@@ -127,19 +216,17 @@ function ChatInterface({ conversation, onClose }) {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages
-          // Never render empty/ghost bubbles (e.g. an assistant message that
-          // only holds a running tool_call and no text yet).
-          .filter((msg) => typeof msg.content === "string" && msg.content.trim().length > 0)
+          .filter((msg) => hasText(msg))
           .map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-xs px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
-              msg.role === "user" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900"
-            }`}>
-              {msg.content}
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-xs px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
+                msg.role === "user" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900"
+              }`}>
+                {msg.content}
+              </div>
             </div>
-          </div>
-        ))}
-        {isGenerating && (
+          ))}
+        {isWorking && (
           <div className="flex justify-start">
             <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-xl text-xs flex items-center gap-1.5">
               <Loader2 className="w-3 h-3 animate-spin" /> Consultant is thinking…
@@ -156,11 +243,10 @@ function ChatInterface({ conversation, onClose }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           className="text-xs"
-          disabled={sending}
         />
         <VoiceButton size="sm" onTranscript={(t) => setInput((p) => (p ? p + " " : "") + t)} />
-        {isGenerating ? (
-          <StopButton onStop={stopGenerating} variant="light" size="sm" />
+        {isWorking ? (
+          <StopButton onStop={finishTurn} variant="light" size="sm" />
         ) : (
           <Button onClick={handleSend} disabled={!input.trim()} size="sm" className="bg-violet-600 hover:bg-violet-700">
             <Send className="w-3 h-3" />
