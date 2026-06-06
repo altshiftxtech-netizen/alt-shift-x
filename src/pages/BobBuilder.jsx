@@ -15,7 +15,7 @@ import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
-import TurnCompleteMarker from "@/components/bob/TurnCompleteMarker";
+import BobPendingIndicator from "@/components/bob/BobPendingIndicator";
 import NextStepActions from "@/components/bob/NextStepActions";
 import { buildDocContext } from "@/lib/extractDocText";
 import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
@@ -983,24 +983,7 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {isBobWorking && (
-                    <div className="flex items-start gap-2">
-                      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-7 h-7 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
-                      <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
-                        <span className="text-xs text-slate-400">BOB is working…</span>
-                        <span className="flex gap-1 ml-0.5">
-                          {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {/* Clear "turn finished / your turn" marker — only when BOB is
-                      truly idle (not awaiting a reply AND not streaming) and the
-                      last message is settled assistant text. */}
-                  {!isBobWorking && !isGenerating && isAssistantText(messages[messages.length - 1]) && (
-                    <TurnCompleteMarker lastMessage={messages[messages.length - 1]} />
-                  )}
+                  {isBobWorking && <BobPendingIndicator />}
                   <div ref={messagesEndRef} />
                 </div>
                 {/* Uploaded file chips */}

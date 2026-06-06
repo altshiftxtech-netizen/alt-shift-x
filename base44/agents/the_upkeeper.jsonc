@@ -144,6 +144,10 @@
         "read",
         "create"
       ]
+    },
+    {
+      "function_name": "backfillAllStripePrices",
+      "description": "Create Stripe products + recurring monthly prices for every published component that is missing a stripe_price_id. Loops in rate-limit-safe batches until none remain. Use when components need Stripe IDs so they can be sold."
     }
   ],
   "context_files": [],
