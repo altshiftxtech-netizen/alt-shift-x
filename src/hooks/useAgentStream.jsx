@@ -22,7 +22,7 @@ import { base44 } from "@/api/base44Client";
  */
 // Long enough to survive natural pauses between streamed tokens / model
 // "thinking" gaps. A shorter value can kill a still-streaming reply.
-const IDLE_TIMEOUT_MS = 15000;
+const IDLE_TIMEOUT_MS = 8000;
 
 export default function useAgentStream(convId, initialMessages = []) {
   const [messages, setMessages] = useState(initialMessages);
@@ -61,30 +61,30 @@ export default function useAgentStream(convId, initialMessages = []) {
     if (last.role === "user") return true;
 
     if (last.role === "assistant") {
-      // The turn is DONE the moment BOB's FINAL message has spoken text —
-      // whether that's a real answer or a question awaiting feedback. This wins
-      // over any lingering/stale tool status elsewhere in the tail, so a stuck
-      // "in_progress" tool from an earlier step can never hang the Stop button
-      // after BOB has clearly replied. (This is the awaiting-feedback case.)
+      // DONE the moment BOB's FINAL message has spoken text — a real answer OR a
+      // question awaiting feedback. Wins over any stale tool status in the tail.
       const hasText = typeof last.content === "string" && last.content.trim().length > 0;
       if (hasText) return false;
 
-      // Last assistant message has NO text. Only now does a still-running tool
-      // matter — BOB is mid-tool with nothing said yet, so we're working.
-      const lastToolRunning = (last.tool_calls || []).some(
-        (t) => t.status && RUNNING.includes(t.status)
-      );
-      if (lastToolRunning) return true;
-
-      // No text on the last message and its tools are settled. If ANY earlier
-      // assistant message already produced text, BOB has effectively replied —
-      // treat as done so a trailing tool-only message can't hang the indicator.
+      // CRITICAL (awaiting-feedback fix): if ANY assistant message this turn has
+      // already produced spoken text, BOB has effectively replied — treat the
+      // turn as DONE even if a trailing tool-only / empty assistant message tails
+      // it. This is checked BEFORE the running-tool check so a lingering
+      // "in_progress" tool on the trailing message can't keep the Stop button up
+      // after BOB has clearly answered and asked a question.
       const anAssistantSpoke = msgs.some(
         (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
       );
       if (anAssistantSpoke) return false;
 
-      // Nothing said anywhere yet and last tools settled — only "working" if the
+      // Nothing said yet anywhere. Only now does a still-running tool on the last
+      // message matter — BOB is mid-tool with nothing said, so we're working.
+      const lastToolRunning = (last.tool_calls || []).some(
+        (t) => t.status && RUNNING.includes(t.status)
+      );
+      if (lastToolRunning) return true;
+
+      // Nothing said anywhere and last tools settled — only "working" if the
       // message status explicitly says so. A tool running on an EARLIER message
       // (but not the last) with no text yet also counts as still working.
       const status = last.status;
