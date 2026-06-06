@@ -181,6 +181,19 @@ export default function BobBuilder() {
     watchdogRef.current = setTimeout(() => setAwaitingReply(false), 90000);
   };
 
+  // Whenever BOB has settled (no longer generating) but the local awaiting latch
+  // is somehow still up with a real reply already on screen, clear it. This is a
+  // safety net so the input area / Stop button can never stay "stuck working"
+  // after a reply has actually landed.
+  useEffect(() => {
+    if (!awaitingReply || isGenerating) return;
+    const last = messages[messages.length - 1];
+    if (isAssistantText(last) && messages.length > turnStartLenRef.current) {
+      const t = setTimeout(() => setAwaitingReply(false), 2500);
+      return () => clearTimeout(t);
+    }
+  }, [awaitingReply, isGenerating, messages]);
+
   // Offline / large-job notify: when on, BOB notifies (bell + optional email) the
   // moment the running job finishes, so the builder can leave the page/device and
   // come back when alerted. The completed reply is already persisted in the thread.
