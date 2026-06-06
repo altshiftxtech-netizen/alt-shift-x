@@ -65,7 +65,11 @@ export function playCashIn() {
 // Core robotic-voice speak helper — flat pitch + slowed rate reads as a neutral,
 // unisex robotic voice. Used for the greeting and every spoken status line so
 // BOB feels like it's actually talking to the user.
-export function speak(text) {
+// speak(text, { queue }) — when queue is true the utterance is appended behind
+// anything currently speaking instead of cancelling it. This guarantees the
+// "On it" thinking line (spoken on send, while BOB types) always finishes
+// before a completion line like "Finished" plays.
+export function speak(text, { queue = false } = {}) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   const say = () => {
     const u = new SpeechSynthesisUtterance(text);
@@ -87,7 +91,9 @@ export function speak(text) {
       (v) => !/samantha|victoria|karen|tessa|zira|susan|female|fiona|moira|veena|female/i.test(v.name)
     );
     u.voice = robotic || maleish || neutral || voices[0];
-    window.speechSynthesis.cancel();
+    // Completion lines queue behind the in-progress "On it"; thinking/greeting
+    // lines cancel stale speech so they play immediately on send.
+    if (!queue) window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   };
   if (window.speechSynthesis.getVoices().length === 0) {
@@ -142,9 +148,11 @@ export function sayHi() {
   speak(pick(PHRASES.greeting));
 }
 
-// Spoken status lines for the different completion moments.
+// Thinking line plays immediately on send (cancels stale speech) so it lands
+// before / while BOB types. Completion lines queue so they wait for "On it" to
+// finish first instead of cutting it off.
 export const sayThinking = () => speak(pick(PHRASES.thinking));
-export const sayQuestion = () => speak(pick(PHRASES.question));
-export const sayReady = () => speak(pick(PHRASES.ready));
-export const sayTiles = () => speak(pick(PHRASES.tile));
-export const saySubmitted = () => speak(pick(PHRASES.submitted));
+export const sayQuestion = () => speak(pick(PHRASES.question), { queue: true });
+export const sayReady = () => speak(pick(PHRASES.ready), { queue: true });
+export const sayTiles = () => speak(pick(PHRASES.tile), { queue: true });
+export const saySubmitted = () => speak(pick(PHRASES.submitted), { queue: true });
