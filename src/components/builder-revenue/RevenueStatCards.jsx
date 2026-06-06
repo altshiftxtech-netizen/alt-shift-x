@@ -43,8 +43,12 @@ export default function RevenueStatCards({ stats, stripeConnected }) {
         iconColor="text-blue-600"
         label="Current Month"
         value={fmt(stats.currentMonthRevenue)}
-        sub={`+${stats.currentMonthChange}% from last month`}
-        subColor="text-emerald-600"
+        sub={
+          stats.currentMonthChange == null
+            ? "No prior month to compare"
+            : `${stats.currentMonthChange >= 0 ? "+" : ""}${stats.currentMonthChange}% from last month`
+        }
+        subColor={stats.currentMonthChange >= 0 ? "text-emerald-600" : "text-red-500"}
       />
       <StatCard
         icon={Calendar}

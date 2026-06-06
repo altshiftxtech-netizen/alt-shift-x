@@ -2,31 +2,16 @@ import React from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-export default function RevenueTrendChart({ platformMetrics, components }) {
-  // Build chart data from platform metric snapshots (newest last for chart)
+export default function RevenueTrendChart({ platformMetrics }) {
+  // Build chart data ONLY from real platform metric snapshots — never synthesize.
   const sorted = [...platformMetrics].sort((a, b) => a.period?.localeCompare(b.period || "") || 0);
-
-  // If we have real data, use it; otherwise synthesize 6-point ramp from component prices
-  let chartData;
-  if (sorted.length >= 2) {
-    chartData = sorted.slice(-12).map(m => ({
-      date: m.period ? m.period.slice(5) : "—",
-      revenue: Math.round(m.total_revenue_usd || 0),
-      payouts: Math.round(m.builder_payouts_usd || 0),
-      subs: m.total_subscribers || 0,
-    }));
-  } else {
-    const baseRevenue = components
-      .filter(c => c.status === "published")
-      .reduce((sum, c) => sum + (c.price || 0), 0);
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-    chartData = months.map((month, i) => ({
-      date: month,
-      revenue: Math.round(baseRevenue * (0.3 + i * 0.14)),
-      payouts: Math.round(baseRevenue * (0.3 + i * 0.14) * 0.7),
-      subs: Math.max(1, Math.round((i + 1) * 1.8)),
-    }));
-  }
+  const chartData = sorted.slice(-12).map(m => ({
+    date: m.period ? m.period.slice(5) : "—",
+    revenue: Math.round(m.total_revenue_usd || 0),
+    payouts: Math.round(m.builder_payouts_usd || 0),
+    subs: m.total_subscribers || 0,
+  }));
+  const hasData = chartData.length >= 2;
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6">
@@ -39,6 +24,12 @@ export default function RevenueTrendChart({ platformMetrics, components }) {
           <p className="text-[11px] text-slate-400">Builder payout vs gross revenue</p>
         </div>
       </div>
+      {!hasData ? (
+        <div className="flex flex-col items-center justify-center h-[220px] text-center text-slate-400">
+          <TrendingUp className="w-7 h-7 mb-2 opacity-40" />
+          <p className="text-xs">Revenue trends appear once monthly metric snapshots accumulate.</p>
+        </div>
+      ) : (
       <ResponsiveContainer width="100%" height={220}>
         <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
           <defs>
@@ -62,6 +53,7 @@ export default function RevenueTrendChart({ platformMetrics, components }) {
           <Area type="monotone" dataKey="payouts" stroke="#7c3aed" strokeWidth={2} fill="url(#payGrad)" />
         </AreaChart>
       </ResponsiveContainer>
+      )}
       <div className="flex items-center gap-4 mt-3">
         <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />Gross Revenue
