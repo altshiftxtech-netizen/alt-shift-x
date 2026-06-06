@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Bot, Code, AlertTriangle, Zap, ChevronRight, Send, Download,
-  FileText, FileDown, Rocket, LayoutTemplate, X, Save,
-  CheckCircle2, Loader2, Package, BookOpen, Sparkles, ArrowRight,
-  Mic, MicOff, Paperclip, Upload, History, Camera
+  Bot, Code, AlertTriangle, Zap, ChevronRight, Send, FileText, FileDown,
+  Rocket, LayoutTemplate, X, Save, CheckCircle2, Loader2, Package, BookOpen,
+  Sparkles, ArrowRight, Mic, MicOff, Paperclip, History, Camera, Lock, LayoutDashboard,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,16 +11,18 @@ import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
 import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import BobVoiceSettings from "@/components/bob/BobVoiceSettings";
-import RichPromptEditor from "@/components/bob/RichPromptEditor";
-import useBobAccess from "@/hooks/useBobAccess";
-import useAgentStream from "@/hooks/useAgentStream";
-import StopButton from "@/components/StopButton";
+import BobChatInput from "@/components/bob/BobChatInput";
 import BobPendingIndicator from "@/components/bob/BobPendingIndicator";
 import NextStepActions from "@/components/bob/NextStepActions";
 import BobTricks from "@/components/bob/BobTricks";
+import StopButton from "@/components/StopButton";
+import useBobAccess from "@/hooks/useBobAccess";
+import useBobChat from "@/hooks/useBobChat";
 import { buildDocContext } from "@/lib/extractDocText";
-import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
-import { Lock, LayoutDashboard } from "lucide-react";
+import {
+  playTileDrop, playChime, playCashIn, sayHi, sayThinking,
+  sayQuestion, sayReady, sayTiles, saySubmitted,
+} from "@/lib/bobSounds";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
@@ -52,6 +53,13 @@ const DEFAULT_FRAMEWORK = {
   branding_docs: { enabled: false },
 };
 
+const LICENSED = [
+  { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1" },
+  { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
+  { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
+  { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
+];
+
 function MessageBubble({ m }) {
   const isUser = m.role === "user";
   const hasText = typeof m.content === "string" && m.content.trim().length > 0;
@@ -59,17 +67,11 @@ function MessageBubble({ m }) {
     (t) => !t.status || ["pending", "in_progress", "running"].includes(t.status)
   );
 
-  // Assistant message mid-work (running a tool, no text yet) — show a working
-  // indicator instead of a blank empty bubble that looks like a hang.
   if (!isUser && !hasText) {
     if (runningTools.length === 0) return null;
     return (
       <div className="flex items-start gap-2.5">
-        <img
-          src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
-          className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5"
-          alt="BOB"
-        />
+        <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
         <div className="bg-slate-800 text-slate-400 px-4 py-3 rounded-2xl rounded-tl-sm text-xs flex items-center gap-2">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
           Working… searching & analyzing
@@ -81,14 +83,9 @@ function MessageBubble({ m }) {
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`}>
       {!isUser && (
-        <img
-          src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
-          className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5"
-          alt="BOB"
-        />
+        <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
       )}
-      <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed
-        ${isUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 rounded-tl-sm"}`}>
+      <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${isUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 rounded-tl-sm"}`}>
         {isUser ? (
           <p className="whitespace-pre-wrap">{m.content}</p>
         ) : (
@@ -109,25 +106,24 @@ function MessageBubble({ m }) {
 
 export default function BobBuilder() {
   const { isPaying } = useBobAccess();
-  const [launched, setLaunched] = useState(false); // splash → workspace
+  const {
+    convId, messages, isWorking,
+    send, stop, openConversation, resetBoard, initConv, setMessages, setOnDone,
+  } = useBobChat();
+
+  const [launched, setLaunched] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
-  const [conv, setConv] = useState(null);
-  const [convId, setConvId] = useState(null);
-  const { messages, setMessages, isGenerating, stop: stopGenerating, onSent } = useAgentStream(convId, []);
   const [input, setInput] = useState("");
   const [clearSignal, setClearSignal] = useState(0);
-  const [sending, setSending] = useState(false);
   const [showCodePanel, setShowCodePanel] = useState(false);
   const [codeInput, setCodeInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
+  const [notifyWhenDone, setNotifyWhenDone] = useState(false);
+  const [emailWhenDone, setEmailWhenDone] = useState(false);
 
-  // Framework state
+  // Framework
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
   const [frameworkName, setFrameworkName] = useState("My Component Framework");
   const [applyToAll, setApplyToAll] = useState(false);
@@ -135,255 +131,106 @@ export default function BobBuilder() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Deploy state
+  // Deploy
   const [deployStatus, setDeployStatus] = useState(null);
   const [exporting, setExporting] = useState(false);
 
-  const messagesEndRef = useRef(null);
-  const scrollContainerRef = useRef(null);
-  const splashInputRef = useRef(null);
+  const scrollRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const greetedRef = useRef(false);
+  const userActedRef = useRef(false);     // user started a session → block restore race
+  const notifyPendingRef = useRef(false);
+  const lastSoundKeyRef = useRef(null);
 
-  // Sound-cue tracking refs
-  const greetedRef = useRef(false);       // robotic "hi" played once per chat open
-  const lastSoundMsgRef = useRef(null);   // dedupe sound for the same final message
+  // ── Completion callback: sounds + optional notify, fired by the chat engine ──
+  useEffect(() => {
+    setOnDone((last, msgs) => {
+      const key = `${(msgs || []).length}:${(last.content || "").slice(0, 40)}`;
+      if (lastSoundKeyRef.current === key) return;
+      lastSoundKeyRef.current = key;
 
-  // ── "BOB is working" — SINGLE source of truth = the hook's isGenerating ─────
-  // The useAgentStream hook already owns a robust generating/settle/watchdog
-  // state machine. We deliberately DON'T keep a second parallel latch here
-  // (that caused the racy flicker / stuck-indicator bugs). The page just reads
-  // the hook flag and reacts to its true→false transition for sound cues.
-  // Re-entrancy guard for sends — a ref so a stuck React state can never
-  // permanently block the Send button / Ctrl+Enter.
-  const inFlightRef = useRef(false);
-  // Set the instant the user actively starts a session (launch with a seed,
-  // send, wipe, open history, open/spin a project). The on-mount restore is
-  // async — if the user acted while restore's getConversation/list calls were
-  // in flight, restore must NOT overwrite their fresh session with old history.
-  const userActedRef = useRef(false);
-  // True between a user send and the moment we've consumed the completion sound
-  // for that turn — guards the sound cue from firing on restored/streamed
-  // history rather than a fresh reply.
-  const turnActiveRef = useRef(false);
+      const text = (last.content || "").toLowerCase();
+      const isTile = /\btile\b|book tile/.test(text);
+      const submitted = /(creat|submit|publish|bulk|added|pending[_ ]review|priced|deploy[- ]?ready)/.test(text);
+      const usedCreate = (last.tool_calls || []).some((t) => /create|bulkcreate/i.test(t.name || ""));
+      const asking = /\?\s*$/.test((last.content || "").trim()) ||
+        /\b(let me know|how (would|do) you|which|would you like|should i|tell me|what.s next|say "?go"?)\b/i.test(text);
 
-  const isAssistantText = (m) =>
-    m && m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0;
+      if (isTile && (submitted || usedCreate)) { playTileDrop(); setTimeout(sayTiles, 500); }
+      else if (submitted || usedCreate) { playCashIn(); setTimeout(saySubmitted, 500); }
+      else { playChime(); setTimeout(asking ? sayQuestion : sayReady, 450); }
 
-  // Marks that a fresh turn has begun (the hook drives the actual indicator).
-  const beginAwaitingReply = () => { turnActiveRef.current = true; };
-
-  // Offline / large-job notify: when on, BOB notifies (bell + optional email) the
-  // moment the running job finishes, so the builder can leave the page/device and
-  // come back when alerted. The completed reply is already persisted in the thread.
-  const [notifyWhenDone, setNotifyWhenDone] = useState(false);
-  const [emailWhenDone, setEmailWhenDone] = useState(false);
-  const notifyPendingRef = useRef(false); // a job is running that the builder wants notified
+      if (notifyPendingRef.current) { notifyPendingRef.current = false; notifyJobComplete(last); }
+    });
+  }, [setOnDone, emailWhenDone, convId]);
 
   useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
 
-  // Robotic unisex "hi" the moment the BOB chat workspace is initiated.
+  // Robotic "hi" when the workspace opens.
   useEffect(() => {
-    if (launched && !greetedRef.current) {
-      greetedRef.current = true;
-      sayHi();
-    }
-    if (!launched) greetedRef.current = false; // re-greet on next session open
+    if (launched && !greetedRef.current) { greetedRef.current = true; sayHi(); }
+    if (!launched) greetedRef.current = false;
   }, [launched]);
 
-  // The loading indicator + Stop button are driven SOLELY by the hook's
-  // isGenerating — the hook owns the send→stream→settle→done lifecycle, so there
-  // is exactly one source of truth and no racy second latch to get out of sync.
-  const isBobWorking = isGenerating;
-
-  // Fire BOB's completion sound/speech on the isGenerating true→false edge,
-  // but only for a turn the user actually started this session (turnActiveRef) —
-  // never on restored history or a mid-stream blip.
-  const wasGeneratingRef = useRef(false);
-  useEffect(() => {
-    const was = wasGeneratingRef.current;
-    wasGeneratingRef.current = isGenerating;
-
-    // Only act on the falling edge of a real, user-initiated turn.
-    if (!(was && !isGenerating)) return;
-    if (!turnActiveRef.current) return;
-
-    const last = messages[messages.length - 1];
-    if (!isAssistantText(last)) return; // no spoken reply to celebrate
-
-    // This turn is consumed.
-    turnActiveRef.current = false;
-
-    // Dedupe: don't replay for the same settled message.
-    const key = `${messages.length}:${(last.content || "").slice(0, 40)}`;
-    if (lastSoundMsgRef.current === key) return;
-    lastSoundMsgRef.current = key;
-
-    // Classify what BOB just submitted from the reply text + tool calls.
-    const text = (last.content || "").toLowerCase();
-    const isTile = /\btile\b|book tile/.test(text);
-    const submittedSomething =
-      /(creat|submit|publish|bulk|added|pending[_ ]review|priced|deploy[- ]?ready)/.test(text);
-    const usedCreateTool = (last.tool_calls || []).some((t) =>
-      /create|bulkcreate/i.test(t.name || "")
-    );
-
-    // Does BOB's reply end by asking the user something / awaiting feedback?
-    const isAskingQuestion = /\?\s*$/.test((last.content || "").trim()) ||
-      /\b(let me know|how (would|do) you|which|would you like|should i|tell me|what.s next|say "?go"?)\b/i.test(text);
-
-    if (isTile && (submittedSomething || usedCreateTool)) {
-      // Tiles dropping into place — then BOB speaks.
-      playTileDrop();
-      setTimeout(sayTiles, 500);
-    } else if (submittedSomething || usedCreateTool) {
-      // A major / non-tile component was submitted — cash it in, then speak.
-      playCashIn();
-      setTimeout(saySubmitted, 500);
-    } else {
-      // Just finished / asking a question / awaiting feedback.
-      playChime();
-      setTimeout(isAskingQuestion ? sayQuestion : sayReady, 450);
-    }
-
-    // Offline / large-job notify — if the builder opted in for this job, alert
-    // them now that it's done (bell always; email if they're leaving the device).
-    if (notifyPendingRef.current) {
-      notifyPendingRef.current = false;
-      notifyJobComplete(last);
-    }
-  }, [isGenerating, messages]);
-
-  // Fire an in-app bell notification (and optional email) that the BOB job
-  // finished, with a deep link straight back to the BOB chat.
-  const notifyJobComplete = async (lastMsg) => {
-    try {
-      const user = await base44.auth.me();
-      if (!user?.id) return;
-      const preview = (lastMsg?.content || "Your BOB job is complete.")
-        .replace(/\s+/g, " ").trim().slice(0, 140);
-      await base44.functions.invoke("sendNotification", {
-        user_id: user.id,
-        type: "component_published",
-        severity: "info",
-        title: "BOB finished your job",
-        message: `BOB completed your request. ${preview}`,
-        action_url: "/builder/bob",
-        action_label: "Open in BOB",
-        force_email: emailWhenDone,
-        metadata: { conversation_id: convId },
-      });
-    } catch (e) {
-      console.error("BOB job-complete notify failed:", e);
-    }
-  };
-
-  // Persist the active conversation id so the chat stays loaded across sessions
-  // (e.g. leaving to "New Session" / navigating away and coming back) until the
-  // builder explicitly wipes the board.
+  // Persist active conversation id for cross-session restore.
   useEffect(() => {
     if (convId) localStorage.setItem("bob_active_conv", convId);
   }, [convId]);
 
-  // On mount, reopen the last active conversation so the chat persists across
-  // sessions AND syncs across browsers/devices. We prefer this browser's locally
-  // remembered conversation, but fall back to the most recently updated project
-  // on the account — so signing in from a different browser, browser type, or the
-  // app reopens exactly where you left off.
-  const restoreActiveConversation = async () => {
-    // If the user has already acted (launched a query, opened history, etc.),
-    // don't restore at all — they've chosen their own starting point.
-    if (userActedRef.current) return;
+  // Auto-scroll on new messages unless the user scrolled up.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (nearBottom) setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 60);
+  }, [messages, isWorking]);
 
-    // 1) Try this browser's last-open conversation (fastest, no list call).
+  const notifyJobComplete = async (lastMsg) => {
+    try {
+      const user = await base44.auth.me();
+      if (!user?.id) return;
+      const preview = (lastMsg?.content || "Your BOB job is complete.").replace(/\s+/g, " ").trim().slice(0, 140);
+      await base44.functions.invoke("sendNotification", {
+        user_id: user.id, type: "component_published", severity: "info",
+        title: "BOB finished your job", message: `BOB completed your request. ${preview}`,
+        action_url: "/builder/bob", action_label: "Open in BOB",
+        force_email: emailWhenDone, metadata: { conversation_id: convId },
+      });
+    } catch (e) { console.error("BOB notify failed:", e); }
+  };
+
+  // ── Conversation restore (cross-session / cross-device) ─────────────────────
+  const restoreActiveConversation = async () => {
+    if (userActedRef.current) return;
     const saved = localStorage.getItem("bob_active_conv");
     if (saved) {
       try {
         const full = await base44.agents.getConversation(saved);
-        if (userActedRef.current) return; // user acted while we were fetching
-        if (full && (full.messages || []).length > 0) {
-          openRestored(full);
-          return;
-        }
-      } catch {
-        localStorage.removeItem("bob_active_conv");
-      }
+        if (userActedRef.current) return;
+        if (full && (full.messages || []).length > 0) { enterRestored(full); return; }
+      } catch { localStorage.removeItem("bob_active_conv"); }
     }
-
-    // 2) Cross-device sync: no local pointer (or it was stale) → pull the most
-    // recently updated non-trashed project from the account and resume it.
     try {
       const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
-      if (userActedRef.current) return; // user acted while listing
-      const candidates = (list || [])
-        .filter((c) => !c.metadata?.trashed && (c.metadata?.name && c.metadata.name !== "New Project"))
-        .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
-      const latest = candidates[0];
+      if (userActedRef.current) return;
+      const latest = (list || [])
+        .filter((c) => !c.metadata?.trashed && c.metadata?.name && c.metadata.name !== "New Project")
+        .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0];
       if (!latest) return;
       const full = await base44.agents.getConversation(latest.id);
-      if (userActedRef.current) return; // user acted while fetching
-      if (full && (full.messages || []).length > 0) openRestored(full);
-    } catch {
-      // best-effort — builder can still open any project from the Wipe Board
-    }
+      if (userActedRef.current) return;
+      if (full && (full.messages || []).length > 0) enterRestored(full);
+    } catch { /* best-effort */ }
   };
 
-  // Open a fetched conversation into the workspace chat. Guarded so a late
-  // restore can never clobber a session the user has actively started.
-  const openRestored = (full) => {
+  const enterRestored = (full) => {
     if (userActedRef.current) return;
-    setConv(full);
-    setConvId(full.id);
-    setMessages(full.messages || []);
+    openConversation(full);
     setLaunched(true);
     setActiveTab("chat");
-  };
-
-  // Auto-scroll to the bottom as streaming messages arrive, unless the user has
-  // scrolled up to read earlier content.
-  useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    if (nearBottom) {
-      setTimeout(() => {
-        const c = scrollContainerRef.current;
-        if (c) c.scrollTop = c.scrollHeight;
-      }, 60);
-    }
-  }, [messages]);
-
-  const initConv = async () => {
-    const c = await base44.agents.createConversation({
-      agent_name: "bob_builder",
-      metadata: { name: "New Project" }
-    });
-    setConv(c);
-    setConvId(c.id);
-    return c;
-  };
-
-  // Build a clean, human-readable project title from the first prompt so the
-  // Wipe Board history is easily identifiable (e.g. "Build a bid estimator...").
-  const deriveTitle = (text) => {
-    if (!text) return null;
-    let t = text
-      .replace(/\[Attached files:[^\]]*\]/gi, " ")
-      .replace(/```[\s\S]*?```/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!t) return null;
-    if (t.length > 60) t = t.slice(0, 60).trim() + "…";
-    return t;
-  };
-
-  // Set the project title from the first prompt — only if it hasn't been named yet.
-  const titleProject = async (c, text) => {
-    const current = c?.metadata?.name;
-    if (current && current !== "New Project") return; // already has a real title
-    const title = deriveTitle(text);
-    if (!title) return;
-    await base44.agents.updateConversation(c.id, {
-      metadata: { ...(c.metadata || {}), name: title },
-    });
   };
 
   const loadFrameworks = async () => {
@@ -396,166 +243,121 @@ export default function BobBuilder() {
     }
   };
 
-  // Launch from splash — only create a conversation if there's a seed message.
-  // An empty launch just opens the workspace (no empty "New Project" is spawned).
-  const launch = async (seedText) => {
-    userActedRef.current = true; // lock out the on-mount restore race
-    setLaunched(true);
-    if (seedText?.trim()) {
-      setSending(true);
-      setInput("");
-      setClearSignal(s => s + 1);
-      const c = await initConv();
-      await base44.agents.addMessage(c, { role: "user", content: seedText });
-      await titleProject(c, seedText);
-      beginAwaitingReply();
-      onSent({ content: seedText }, c.id);
-      setSending(false);
-    } else {
-      // No seed → blank slate, conversation is created lazily on first send.
-      setConv(null);
-      setConvId(null);
-      setMessages([]);
-    }
+  // Title a conversation from the first prompt (only if still unnamed).
+  const deriveTitle = (text) => {
+    if (!text) return null;
+    let t = text.replace(/\[Attached files:[^\]]*\]/gi, " ").replace(/```[\s\S]*?```/g, " ").replace(/\s+/g, " ").trim();
+    if (!t) return null;
+    return t.length > 60 ? t.slice(0, 60).trim() + "…" : t;
+  };
+  const titleProject = async (c, text) => {
+    if (!c) return;
+    const current = c?.metadata?.name;
+    if (current && current !== "New Project") return;
+    const title = deriveTitle(text);
+    if (!title) return;
+    await base44.agents.updateConversation(c.id, { metadata: { ...(c.metadata || {}), name: title } });
   };
 
-  const handleSplashSubmit = (e) => {
-    e?.preventDefault();
-    if (input.trim()) launch(input);
-    else launch();
+  // ── THE single send pipeline for the chat ───────────────────────────────────
+  // Every entry point (typed send, quick prompt, framework, code, next-step,
+  // splash launch) funnels through here. No competing flags, no double sends.
+  const dispatch = async (content, file_urls) => {
+    const text = (content || "").trim();
+    if (!text && !(file_urls && file_urls.length)) return;
+    userActedRef.current = true;
+    if (notifyWhenDone) notifyPendingRef.current = true;
+    sayThinking();
+    const c = await send({ content, file_urls });
+    titleProject(c, text || (file_urls && "attachment")).catch(() => {});
   };
 
-  // Open the workspace straight into the Wipe Board history. Does NOT create a
-  // conversation — that happens lazily when the builder sends their first message.
-  const openHistory = async () => {
-    userActedRef.current = true; // lock out the on-mount restore race
-    setLaunched(true);
-    setActiveTab("chat");
-    setConv(null);
-    setConvId(null);
-    setMessages([]);
-  };
-
-  // Wipe Board — clear the board to a fresh blank slate. A new conversation is
-  // created lazily on first send, so we never pile up empty "New Project" entries.
-  const wipeBoard = async () => {
-    userActedRef.current = true; // lock out the on-mount restore race
-    setActiveTab("chat");
-    setConv(null);
-    setConvId(null);
-    setMessages([]);
-    localStorage.removeItem("bob_active_conv");
-  };
-
-  // Open an existing project from the Wipe Board history.
-  const openProject = async (c) => {
-    userActedRef.current = true; // lock out the on-mount restore race
-    const full = await base44.agents.getConversation(c.id);
-    setConv(full);
-    setConvId(full.id);
-    setMessages(full.messages || []);
-    setActiveTab("chat");
-  };
-
-  // Spin Off — fork a project into a NEW conversation that already carries the
-  // original component context + attached sources, plus a proposed spin-off
-  // direction. The builder only has to say "go".
-  const spinOff = async (c) => {
-    userActedRef.current = true; // lock out the on-mount restore race
-    const full = await base44.agents.getConversation(c.id);
-    const history = (full.messages || []);
-    const firstUser = history.find(m => m.role === "user");
-    const sourceUrls = [...new Set(history.flatMap(m => m.file_urls || []))];
-    const originalBrief = firstUser?.content || "the original component";
-
-    const originalTitle = c.metadata?.name && c.metadata.name !== "New Project"
-      ? c.metadata.name.replace(/^Spin-Off · /, "")
-      : deriveTitle(originalBrief) || "project";
-    const newConv = await base44.agents.createConversation({
-      agent_name: "bob_builder",
-      metadata: { name: "Spin-Off · " + originalTitle }
-    });
-    setConv(newConv);
-    setConvId(newConv.id);
-    setMessages([]);
-    setActiveTab("chat");
-
-    const seed =
-      `SPIN-OFF REQUEST — fork of a prior project.\n\n` +
-      `Original brief:\n"${originalBrief}"\n\n` +
-      (sourceUrls.length ? `Original source files are attached.\n\n` : ``) +
-      `Using all the context, codes, framework, and pricing from the original, ` +
-      `proactively propose ONE strong spin-off variant (a new version, a different vertical, ` +
-      `or an upmarket tier) that I can monetize. Pre-fill everything — name, type (X1/X2/X4), ` +
-      `description, pricing, and the marketplace listing — and lay out the full build plan. ` +
-      `Assume I approve unless I object. End by asking me to simply say "go" to generate it.`;
-
-    setSending(true);
-    await base44.agents.addMessage(newConv, {
-      role: "user",
-      content: seed,
-      ...(sourceUrls.length ? { file_urls: sourceUrls } : {})
-    });
-    beginAwaitingReply();
-    onSent({ content: seed, ...(sourceUrls.length ? { file_urls: sourceUrls } : {}) }, newConv.id);
-    setSending(false);
-  };
-
-  const sendMessage = async (text) => {
-    if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
-    const msg = text || input;
-    if (!msg.trim()) return;
-    userActedRef.current = true; // lock out the on-mount restore race
-    inFlightRef.current = true;
-    setSending(true);
+  // Typed message (with any staged uploads).
+  const handleSend = async () => {
+    const msg = input.trim();
+    if (!msg && uploadedFiles.length === 0) return;
     setInput("");
-    setClearSignal(s => s + 1);
-    try {
-      // Lazily create the project conversation on first send so empty boards
-      // never produce stray "New Project" entries.
-      const c = conv || await initConv();
-      await base44.agents.addMessage(c, { role: "user", content: msg });
-      await titleProject(c, msg);
-      if (notifyWhenDone) notifyPendingRef.current = true;
-      sayThinking(); // BOB acknowledges out loud
-      beginAwaitingReply();
-      // Show the user's message instantly (hook keeps it until the stream confirms).
-      onSent({ content: msg }, c.id);
-    } finally {
-      // ALWAYS release the guard + sending flag, even if a step above threw —
-      // otherwise the Send button stays frozen for the rest of the session.
-      setSending(false);
-      inFlightRef.current = false;
+    setClearSignal((s) => s + 1);
+    const files = uploadedFiles;
+    setUploadedFiles([]);
+    if (files.length > 0) {
+      const fileList = files.map((f) => f.name).join(", ");
+      const docContext = await buildDocContext(files);
+      const full = `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`;
+      await dispatch(full, files.map((f) => f.url));
+    } else {
+      await dispatch(msg);
     }
   };
 
-  // ── Voice recording ───────────────────────────────────────────────────────
-  const toggleRecording = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      setIsRecording(false);
-      return;
+  // ── Splash / session controls ───────────────────────────────────────────────
+  const launch = async (seedText) => {
+    userActedRef.current = true;
+    setLaunched(true);
+    setActiveTab("chat");
+    if (seedText?.trim()) {
+      setInput("");
+      setClearSignal((s) => s + 1);
+      await dispatch(seedText);
+    } else {
+      resetBoard();
     }
+  };
+  const handleSplashSubmit = (e) => { e?.preventDefault(); launch(input.trim() ? input : undefined); };
+
+  const openHistory = () => { userActedRef.current = true; setLaunched(true); setActiveTab("chat"); resetBoard(); };
+  const wipeBoard = () => { userActedRef.current = true; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); };
+  const openProject = async (c) => {
+    userActedRef.current = true;
+    const full = await base44.agents.getConversation(c.id);
+    openConversation(full);
+    setActiveTab("chat");
+  };
+
+  // Spin Off — fork into a new conversation pre-seeded for a one-word "go".
+  const spinOff = async (c) => {
+    userActedRef.current = true;
+    const full = await base44.agents.getConversation(c.id);
+    const history = full.messages || [];
+    const firstUser = history.find((m) => m.role === "user");
+    const sourceUrls = [...new Set(history.flatMap((m) => m.file_urls || []))];
+    const originalBrief = firstUser?.content || "the original component";
+    const originalTitle = c.metadata?.name && c.metadata.name !== "New Project"
+      ? c.metadata.name.replace(/^Spin-Off · /, "") : deriveTitle(originalBrief) || "project";
+
+    const newConv = await initConv("Spin-Off · " + originalTitle);
+    setMessages([]);
+    setActiveTab("chat");
+    const seed =
+      `SPIN-OFF REQUEST — fork of a prior project.\n\nOriginal brief:\n"${originalBrief}"\n\n` +
+      (sourceUrls.length ? `Original source files are attached.\n\n` : ``) +
+      `Using all the context, codes, framework, and pricing from the original, proactively propose ONE strong ` +
+      `spin-off variant (a new version, a different vertical, or an upmarket tier) that I can monetize. Pre-fill ` +
+      `everything — name, type (X1/X2/X4), description, pricing, and the marketplace listing — and lay out the full ` +
+      `build plan. Assume I approve unless I object. End by asking me to simply say "go" to generate it.`;
+    await dispatch(seed, sourceUrls.length ? sourceUrls : undefined);
+  };
+
+  // ── Voice ────────────────────────────────────────────────────────────────────
+  const toggleRecording = async () => {
+    if (isRecording) { mediaRecorderRef.current?.stop(); setIsRecording(false); return; }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
     audioChunksRef.current = [];
-    recorder.ondataavailable = e => audioChunksRef.current.push(e.data);
+    recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
     recorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-      const file = new File([blob], "voice.webm", { type: "audio/webm" });
-      setSending(true);
+      stream.getTracks().forEach((t) => t.stop());
+      const file = new File([new Blob(audioChunksRef.current, { type: "audio/webm" })], "voice.webm", { type: "audio/webm" });
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: file_url });
-      setInput(prev => (prev ? prev + " " : "") + transcript);
-      setSending(false);
+      setInput((prev) => (prev ? prev + " " : "") + transcript);
     };
     mediaRecorderRef.current = recorder;
     recorder.start();
     setIsRecording(true);
   };
 
-  // ── File upload ────────────────────────────────────────────────────────────
+  // ── Files ────────────────────────────────────────────────────────────────────
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -565,127 +367,60 @@ export default function BobBuilder() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       uploaded.push({ name: file.name, url: file_url });
     }
-    setUploadedFiles(prev => [...prev, ...uploaded]);
+    setUploadedFiles((prev) => [...prev, ...uploaded]);
     setUploading(false);
     e.target.value = "";
   };
 
-  // ── Bob Look ──────────────────────────────────────────────────────────────
-  // A photo captured from the camera is sent STRAIGHT to BOB (no manual send) so
-  // he can read it instantly — multiple book titles, books on surrounding
-  // shelves, documents, site photos, etc.
+  // Bob Look — camera photo sent straight to BOB.
   const handleBobLook = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (inFlightRef.current) return;
-    userActedRef.current = true; // lock out the on-mount restore race
-    inFlightRef.current = true;
     setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setUploading(false);
-
-      const lookMsg =
-        "Bob Look — analyze this photo. Read every visible title/label in the image, " +
-        "including the focused item AND any books, products, or documents on the " +
-        "surrounding shelves or background. List what you see, then tell me what we " +
-        "can build or do with it.";
-
-      const c = conv || await initConv();
-      await base44.agents.addMessage(c, {
-        role: "user",
-        content: lookMsg,
-        file_urls: [file_url],
-      });
-      await titleProject(c, "Bob Look");
-      if (notifyWhenDone) notifyPendingRef.current = true;
-      sayThinking();
-      beginAwaitingReply();
-      onSent({ content: lookMsg, file_urls: [file_url] }, c.id);
-    } finally {
-      // ALWAYS release the guard + uploading flag, even on failure.
-      setUploading(false);
-      inFlightRef.current = false;
-    }
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setUploading(false);
+    const lookMsg =
+      "Bob Look — analyze this photo. Read every visible title/label in the image, including the focused item AND any " +
+      "books, products, or documents on the surrounding shelves or background. List what you see, then tell me what we can build or do with it.";
+    await dispatch(lookMsg, [file_url]);
   };
 
-  const sendWithFiles = async () => {
-    if (inFlightRef.current) return; // re-entrancy guard (can't get stuck)
-    const msg = input.trim();
-    if (!msg && uploadedFiles.length === 0) return;
-    userActedRef.current = true; // lock out the on-mount restore race
-    inFlightRef.current = true;
-    setSending(true);
-    setInput("");
-    setClearSignal(s => s + 1);
-    try {
-      const filesToSend = uploadedFiles;
-      const fileList = filesToSend.map(f => f.name).join(", ");
-      // Extract text from document files (incl. Word) so BOB always reads them.
-      const docContext = await buildDocContext(filesToSend);
-      const fullMsg = filesToSend.length > 0
-        ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze and incorporate these documents into my component build.${docContext}`
-        : msg;
-      const fileUrls = filesToSend.map(f => f.url);
-      // Lazily create the project conversation on first send.
-      const c = conv || await initConv();
-      await base44.agents.addMessage(c, {
-        role: "user",
-        content: fullMsg,
-        file_urls: fileUrls
-      });
-      await titleProject(c, msg || fileList);
-      if (notifyWhenDone) notifyPendingRef.current = true;
-      sayThinking(); // BOB acknowledges out loud
-      beginAwaitingReply();
-      // Show the user's message instantly (hook keeps it until the stream confirms).
-      onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) }, c.id);
-      setUploadedFiles([]);
-    } finally {
-      // ALWAYS release the guard + sending flag, even if a step above threw —
-      // otherwise the Send button stays frozen for the rest of the session.
-      setSending(false);
-      inFlightRef.current = false;
-    }
-  };
-
+  // ── Other senders (all funnel into dispatch) ────────────────────────────────
   const submitCode = async () => {
     if (!codeInput.trim()) return;
     const msg = `Please analyze this component code:\n\`\`\`\n${codeInput}\n\`\`\`\n\nIdentify the type (X1/X2/X4), improvements, safety issues, and generate publish-ready metadata.`;
     setShowCodePanel(false);
     setActiveTab("chat");
-    await sendMessage(msg);
+    await dispatch(msg);
   };
-
   const sendFrameworkToChat = async () => {
-    const lines = [`Framework: ${frameworkName}`];
-    await sendMessage(`Here is my component framework:\n\n${lines.join("\n")}\n\nValidate it and create a starter component spec.`);
     setActiveTab("chat");
+    await dispatch(`Here is my component framework:\n\nFramework: ${frameworkName}\n\nValidate it and create a starter component spec.`);
+  };
+  const handleDeploy = async () => {
+    setDeployStatus("deploying");
+    setActiveTab("chat");
+    await dispatch(`I'm ready to deploy. Using my saved framework "${frameworkName}", please generate the final component specification including manifest JSON, API endpoint spec, trust score pre-check, and marketplace listing copy. Mark it DEPLOY-READY when complete.`);
+    setDeployStatus("done");
   };
 
   const saveFramework = async () => {
     setSaving(true);
     const user = await base44.auth.me();
     const data = { ...framework, framework_name: frameworkName, apply_to_all: applyToAll, builder_id: user?.id || "builder" };
-    if (framework.id) {
-      await base44.entities.ComponentFramework.update(framework.id, data);
-    } else {
-      const saved = await base44.entities.ComponentFramework.create(data);
-      setFramework(saved);
-    }
+    if (framework.id) await base44.entities.ComponentFramework.update(framework.id, data);
+    else { const saved = await base44.entities.ComponentFramework.create(data); setFramework(saved); }
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
     setSaving(false);
   };
 
   const handleExport = async (format) => {
-    if (!isPaying) return; // downloads are a paid benefit
+    if (!isPaying) return;
     setExporting(true);
     const response = await base44.functions.invoke("exportComponentDoc", { framework, format });
-    const blob = new Blob([response.data], {
-      type: format === "word" ? "application/msword" : "application/pdf"
-    });
+    const blob = new Blob([response.data], { type: format === "word" ? "application/msword" : "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -695,185 +430,92 @@ export default function BobBuilder() {
     setExporting(false);
   };
 
-  const handleDeploy = async () => {
-    setDeployStatus("deploying");
-    await sendMessage(`I'm ready to deploy. Using my saved framework "${frameworkName}", please generate the final component specification including manifest JSON, API endpoint spec, trust score pre-check, and marketplace listing copy. Mark it DEPLOY-READY when complete.`);
-    setDeployStatus("done");
-    setActiveTab("chat");
-  };
-
-  // Stop tells the hook to halt its stream (the single source of truth) and
-  // closes out the current turn so no completion sound fires after a manual stop.
-  const handleStop = () => {
-    turnActiveRef.current = false;
-    stopGenerating();
-    setSending(false);
-  };
-
   const TAB_CONFIG = [
     { id: "chat", label: "BOB Chat", icon: Bot },
     { id: "framework", label: "Component Framework", icon: LayoutTemplate },
     { id: "deploy", label: "Deploy & Export", icon: Rocket },
   ];
 
-  // ── SPLASH SCREEN ─────────────────────────────────────────────────────────
+  // ── SPLASH ───────────────────────────────────────────────────────────────────
   if (!launched) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900 flex flex-col">
         <SharedNav mode="builder" />
-
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-          {/* Logo */}
           <div className="flex flex-col items-center mb-10">
-            <img
-              src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
-              alt="BOB AI Advisor"
-              className="w-28 h-28 rounded-full object-cover shadow-2xl shadow-violet-500/40 mb-6 ring-4 ring-violet-500/30"
-            />
-            <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight text-center">
-              Meet <span className="text-violet-400">BOB</span>
-            </h1>
-            <p className="text-slate-400 text-lg mt-2 text-center max-w-md">
-              Your AI-powered component builder. Design, analyze, and publish world-class YottaJoule components.
-            </p>
+            <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" alt="BOB AI Advisor" className="w-28 h-28 rounded-full object-cover shadow-2xl shadow-violet-500/40 mb-6 ring-4 ring-violet-500/30" />
+            <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight text-center">Meet <span className="text-violet-400">BOB</span></h1>
+            <p className="text-slate-400 text-lg mt-2 text-center max-w-md">Your AI-powered component builder. Design, analyze, and publish world-class YottaJoule components.</p>
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
               <span className="text-[11px] bg-emerald-900/60 text-emerald-400 px-2.5 py-1 rounded-full font-semibold border border-emerald-700/40 animate-pulse">● LIVE</span>
               <span className="text-[11px] bg-violet-900/60 text-violet-300 px-2.5 py-1 rounded-full font-semibold border border-violet-700/40">Yotta Protocol · Backend Builder Platform</span>
-              <Link to="/builder"
-                className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-full transition-colors">
+              <Link to="/builder" className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-full transition-colors">
                 <LayoutDashboard className="w-3 h-3" /> Builder Dashboard
               </Link>
             </div>
           </div>
 
-          {/* Main input — rich doc-style prompt */}
           <div className="w-full max-w-2xl space-y-2">
-            {/* Uploaded file chips */}
             {uploadedFiles.length > 0 && (
               <div className="flex flex-wrap gap-1.5 px-1">
                 {uploadedFiles.map((f, i) => (
                   <div key={i} className="flex items-center gap-1.5 bg-violet-900/60 border border-violet-700 text-violet-300 text-[11px] px-2.5 py-1 rounded-full">
-                    <Paperclip className="w-3 h-3" />
-                    <span className="max-w-[120px] truncate">{f.name}</span>
-                    <button type="button" onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5">
-                      <X className="w-3 h-3" />
-                    </button>
+                    <Paperclip className="w-3 h-3" /><span className="max-w-[120px] truncate">{f.name}</span>
+                    <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5"><X className="w-3 h-3" /></button>
                   </div>
                 ))}
               </div>
             )}
 
-            <RichPromptEditor
+            <BobChatInput
               value={input}
-              onChange={(text) => setInput(text)}
+              onChange={setInput}
               onSubmit={handleSplashSubmit}
               clearSignal={clearSignal}
-              placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "What would you like to build today? Use Enter for new lines, Ctrl+Enter to launch..."}
-              minHeight={120}
-              maxHeight={320}
+              placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "What would you like to build today? Enter to launch, Shift+Enter for a new line…"}
+              minHeight={96}
+              maxHeight={260}
               autoFocus
             />
 
-            {/* Action row */}
             <div className="flex items-center gap-2">
-              {/* Hidden file input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-              {/* Bob Look — camera capture sent straight to BOB */}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleBobLook}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                title="Attach files"
-                className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all"
-              >
-                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
-                Attach
+              <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleBobLook} />
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all">
+                {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
               </button>
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                disabled={uploading}
-                title="Take a photo and send it straight to BOB"
-                className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all"
-              >
-                <Camera className="w-3.5 h-3.5" /> BOB Look {/* splash */}
+              <button type="button" onClick={() => cameraInputRef.current?.click()} disabled={uploading} title="Take a photo and send it straight to BOB" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all">
+                <Camera className="w-3.5 h-3.5" /> BOB Look
               </button>
-              <button
-                type="button"
-                onClick={toggleRecording}
-                title={isRecording ? "Stop recording" : "Voice to text"}
-                className={`flex items-center gap-1.5 border px-3 py-2 rounded-xl text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}
-              >
-                {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                {isRecording ? "Stop" : "Voice"}
+              <button type="button" onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"} className={`flex items-center gap-1.5 border px-3 py-2 rounded-xl text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}>
+                {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isRecording ? "Stop" : "Voice"}
               </button>
               <div className="flex-1" />
-              <button
-                type="button"
-                onClick={handleSplashSubmit}
-                disabled={!input.trim()}
-                className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-5 py-2 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm"
-              >
+              <button type="button" onClick={handleSplashSubmit} disabled={!input.trim() && uploadedFiles.length === 0} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-5 py-2 rounded-xl transition-colors flex items-center gap-2 font-semibold text-sm">
                 <Sparkles className="w-4 h-4" /> Start Building
               </button>
             </div>
           </div>
 
-          {/* Suggestion chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full max-w-2xl">
             {SPLASH_SUGGESTIONS.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => { setInput(s.label); launch(s.label); }}
-                className="flex items-center gap-3 bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group"
-              >
-                <span className="text-xl">{s.icon}</span>
-                <span className="flex-1">{s.label}</span>
+              <button key={i} onClick={() => launch(s.label)} className="flex items-center gap-3 bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
+                <span className="text-xl">{s.icon}</span><span className="flex-1">{s.label}</span>
                 <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-violet-400" />
               </button>
             ))}
           </div>
 
-          {/* View History placard — jumps into the workspace with the Wipe Board open */}
-          <button
-            onClick={openHistory}
-            className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-violet-900/30 hover:bg-violet-800/40 border border-violet-700/50 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group"
-          >
-            <span className="w-8 h-8 rounded-lg bg-violet-800/60 flex items-center justify-center flex-shrink-0">
-              <History className="w-4 h-4 text-violet-300" />
-            </span>
-            <div className="flex-1">
-              <p className="font-semibold">View Project History</p>
-              <p className="text-[11px] text-slate-500">Reopen, fork, or spin off a past project from the Wipe Board</p>
-            </div>
+          <button onClick={openHistory} className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-violet-900/30 hover:bg-violet-800/40 border border-violet-700/50 hover:border-violet-500 text-slate-300 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
+            <span className="w-8 h-8 rounded-lg bg-violet-800/60 flex items-center justify-center flex-shrink-0"><History className="w-4 h-4 text-violet-300" /></span>
+            <div className="flex-1"><p className="font-semibold">View Project History</p><p className="text-[11px] text-slate-500">Reopen, fork, or spin off a past project from the Wipe Board</p></div>
             <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-violet-400" />
           </button>
 
-          {/* Licensed components bar */}
           <div className="mt-10 w-full max-w-2xl">
             <p className="text-xs text-slate-500 text-center mb-3 font-semibold uppercase tracking-widest">Licensed Foundation Components</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {[
-                { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1" },
-                { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
-                { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
-                { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
-              ].map(c => (
+              {LICENSED.map((c) => (
                 <div key={c.code} className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2">
                   <span className="text-[10px] bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">{c.type}</span>
                   <span className="text-xs text-slate-300 font-medium">{c.name}</span>
@@ -887,20 +529,14 @@ export default function BobBuilder() {
     );
   }
 
-  // ── WORKSPACE ─────────────────────────────────────────────────────────────
+  // ── WORKSPACE ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900">
       <SharedNav mode="builder" />
-
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <img
-              src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png"
-              alt="BOB"
-              className="w-14 h-14 rounded-2xl object-cover shadow-lg shadow-violet-500/30 flex-shrink-0"
-            />
+            <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" alt="BOB" className="w-14 h-14 rounded-2xl object-cover shadow-lg shadow-violet-500/30 flex-shrink-0" />
             <div>
               <h1 className="text-2xl font-black text-white">BOB <span className="text-violet-400">Advanced Builder</span></h1>
               <p className="text-slate-400 text-xs mt-0.5">Magna Dev · Yotta Protocol · YottaJoule Licensed Components</p>
@@ -908,21 +544,16 @@ export default function BobBuilder() {
           </div>
           <div className="sm:ml-auto flex flex-wrap items-center gap-2">
             <span className="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded-full font-semibold animate-pulse">● LIVE</span>
-            <Link to="/builder"
-              className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-lg transition-colors">
+            <Link to="/builder" className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-lg transition-colors">
               <LayoutDashboard className="w-3.5 h-3.5" /> Builder Dashboard
             </Link>
-            <button onClick={() => setLaunched(false)} className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors">
-              ← New Session
-            </button>
+            <button onClick={() => setLaunched(false)} className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors">← New Session</button>
           </div>
         </div>
 
-        {/* Tab Bar */}
         <div className="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-xl p-1 mb-6">
           {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setActiveTab(id)}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === id ? "bg-violet-600 text-white shadow" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}>
+            <button key={id} onClick={() => setActiveTab(id)} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === id ? "bg-violet-600 text-white shadow" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}>
               <Icon className="w-3.5 h-3.5" />{label}
             </button>
           ))}
@@ -931,58 +562,36 @@ export default function BobBuilder() {
         {/* CHAT TAB */}
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
-            {/* Sidebar */}
             <div className="space-y-3">
-              <BobHistoryPanel
-                activeConvId={convId}
-                onOpen={openProject}
-                onWipeBoard={wipeBoard}
-                onSpinOff={spinOff}
-              />
-
+              <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} />
               <BobVoiceSettings />
-
               <Card className="bg-slate-800 border-slate-700">
-                <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle></CardHeader>
                 <CardContent className="px-3 pb-3 space-y-1">
                   {QUICK_PROMPTS.map((p, i) => (
-                    <button key={i} onClick={() => sendMessage(p)}
-                      className="w-full text-left text-[11px] text-slate-400 hover:text-white hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                    <button key={i} onClick={() => dispatch(p)} className="w-full text-left text-[11px] text-slate-400 hover:text-white hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
                       <ChevronRight className="w-2.5 h-2.5 text-violet-500 flex-shrink-0" />{p}
                     </button>
                   ))}
                 </CardContent>
               </Card>
-
-              <button onClick={() => setShowCodePanel(!showCodePanel)}
-                className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
+              <button onClick={() => setShowCodePanel(!showCodePanel)} className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
                 <Code className="w-3.5 h-3.5" /> Paste Component Code
               </button>
-
-              <button onClick={sendFrameworkToChat}
-                className="w-full flex items-center justify-center gap-2 bg-violet-900 hover:bg-violet-800 border border-violet-700 text-violet-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
+              <button onClick={sendFrameworkToChat} className="w-full flex items-center justify-center gap-2 bg-violet-900 hover:bg-violet-800 border border-violet-700 text-violet-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-colors">
                 <LayoutTemplate className="w-3.5 h-3.5" /> Send Framework to BOB
               </button>
-
               <div className="bg-slate-800 border border-amber-800/40 rounded-xl p-3">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-slate-400 leading-relaxed">BOB flags ill-intent indicators per the <strong className="text-slate-300">Sensitive Intelligence Policy</strong>.</p>
-                </div>
+                <div className="flex items-start gap-2"><AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" /><p className="text-[10px] text-slate-400 leading-relaxed">BOB flags ill-intent indicators per the <strong className="text-slate-300">Sensitive Intelligence Policy</strong>.</p></div>
               </div>
             </div>
 
-            {/* Chat Area */}
             <div className="md:col-span-3 flex flex-col gap-3">
               {showCodePanel && (
                 <Card className="bg-slate-800 border-violet-700">
                   <CardContent className="pt-4">
                     <p className="text-xs text-violet-400 font-semibold mb-2">Paste your component code:</p>
-                    <textarea value={codeInput} onChange={e => setCodeInput(e.target.value)}
-                      className="w-full h-44 bg-slate-950 text-green-400 font-mono text-xs p-3 rounded-lg border border-slate-600 outline-none focus:border-violet-500 resize-none"
-                      placeholder="// Paste component code here..." />
+                    <textarea value={codeInput} onChange={(e) => setCodeInput(e.target.value)} className="w-full h-44 bg-slate-950 text-green-400 font-mono text-xs p-3 rounded-lg border border-slate-600 outline-none focus:border-violet-500 resize-none" placeholder="// Paste component code here..." />
                     <div className="flex gap-2 mt-2">
                       <Button onClick={submitCode} size="sm" className="bg-violet-600 hover:bg-violet-700 text-xs">Analyze with BOB</Button>
                       <Button onClick={() => setShowCodePanel(false)} variant="ghost" size="sm" className="text-slate-400 text-xs">Cancel</Button>
@@ -992,8 +601,8 @@ export default function BobBuilder() {
               )}
 
               <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
-                <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
-                  {messages.length === 0 && !sending && (
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
+                  {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
@@ -1003,113 +612,61 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {isBobWorking && <BobPendingIndicator />}
-                  <div ref={messagesEndRef} />
+                  {isWorking && <BobPendingIndicator />}
                 </div>
-                {/* Uploaded file chips */}
+
                 {uploadedFiles.length > 0 && (
                   <div className="px-3 pt-2 flex flex-wrap gap-1.5">
                     {uploadedFiles.map((f, i) => (
                       <div key={i} className="flex items-center gap-1.5 bg-violet-900/60 border border-violet-700 text-violet-300 text-[11px] px-2.5 py-1 rounded-full">
-                        <Paperclip className="w-3 h-3" />
-                        <span className="max-w-[120px] truncate">{f.name}</span>
-                        <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5">
-                          <X className="w-3 h-3" />
-                        </button>
+                        <Paperclip className="w-3 h-3" /><span className="max-w-[120px] truncate">{f.name}</span>
+                        <button onClick={() => setUploadedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-violet-400 hover:text-white ml-0.5"><X className="w-3 h-3" /></button>
                       </div>
                     ))}
                   </div>
                 )}
+
                 <div className="border-t border-slate-700 p-3 space-y-2">
-                  {/* Quick "what's next" actions — answer BOB's next-step questions in one tap */}
-                  <NextStepActions onPick={(p) => sendMessage(p)} disabled={isBobWorking} />
-                  <RichPromptEditor
+                  <NextStepActions onPick={(p) => dispatch(p)} disabled={isWorking} />
+                  <BobChatInput
                     value={input}
-                    onChange={(text) => setInput(text)}
-                    onSubmit={sendWithFiles}
+                    onChange={setInput}
+                    onSubmit={handleSend}
                     clearSignal={clearSignal}
-                    placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything... Enter = new line · Ctrl+Enter = send"}
-                    minHeight={140}
-                    maxHeight={360}
+                    placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything…  Enter = send · Shift+Enter = new line"}
+                    minHeight={52}
+                    maxHeight={200}
                   />
-                  {/* Offline / large-job notify — fire it off, leave, get pinged when done */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-0.5">
                     <label className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={notifyWhenDone}
-                        onChange={(e) => { setNotifyWhenDone(e.target.checked); if (!e.target.checked) setEmailWhenDone(false); }}
-                        className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500"
-                      />
+                      <input type="checkbox" checked={notifyWhenDone} onChange={(e) => { setNotifyWhenDone(e.target.checked); if (!e.target.checked) setEmailWhenDone(false); }} className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500" />
                       Notify me when done <span className="text-slate-600">(leave the page — BOB keeps working)</span>
                     </label>
                     {notifyWhenDone && (
                       <label className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={emailWhenDone}
-                          onChange={(e) => setEmailWhenDone(e.target.checked)}
-                          className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500"
-                        />
+                        <input type="checkbox" checked={emailWhenDone} onChange={(e) => setEmailWhenDone(e.target.checked)} className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500" />
                         Email me too <span className="text-slate-600">(for when you leave the device)</span>
                       </label>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Hidden file input */}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                    {/* Bob Look — camera capture sent straight to BOB */}
-                    <input
-                      ref={cameraInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={handleBobLook}
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      title="Attach files"
-                      className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                    >
-                      {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
-                      Attach
+                    <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
+                    <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleBobLook} />
+                    <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all">
+                      {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
                     </button>
-                    <button
-                      onClick={() => cameraInputRef.current?.click()}
-                      disabled={uploading}
-                      title="Take a photo and send it straight to BOB"
-                      className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                    >
-                      <Camera className="w-3.5 h-3.5" /> BOB Look {/* chat */}
+                    <button onClick={() => cameraInputRef.current?.click()} disabled={uploading} title="Take a photo and send it straight to BOB" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all">
+                      <Camera className="w-3.5 h-3.5" /> BOB Look
                     </button>
-                    <button
-                      onClick={toggleRecording}
-                      title={isRecording ? "Stop recording" : "Voice to text"}
-                      className={`flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}
-                    >
-                      {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                      {isRecording ? "Stop" : "Voice"}
+                    <button onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"} className={`flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}>
+                      {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isRecording ? "Stop" : "Voice"}
                     </button>
                     <div className="flex-1" />
-                    <span className="text-[10px] text-slate-600 hidden sm:block">Ctrl+Enter to send</span>
-                    {/* Stop is shown while BOB is working, but Send stays available
-                        too so the builder can always queue a follow-up reply. */}
-                    {isBobWorking && <StopButton onStop={handleStop} />}
-                    <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
-                      className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                    {isWorking && <StopButton onStop={stop} />}
+                    <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
                       <Send className="w-3.5 h-3.5" /> Send
                     </button>
                   </div>
-                  {/* BOB Tricks — power-user tips & multipliers right under the box */}
                   <BobTricks />
                 </div>
               </Card>
@@ -1125,29 +682,22 @@ export default function BobBuilder() {
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                   <div className="flex-1">
                     <label className="text-xs text-slate-400 font-semibold block mb-1">Framework Name</label>
-                    <input value={frameworkName} onChange={e => setFrameworkName(e.target.value)}
-                      className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:ring-1 focus:ring-violet-500" />
+                    <input value={frameworkName} onChange={(e) => setFrameworkName(e.target.value)} className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:ring-1 focus:ring-violet-500" />
                   </div>
                   {savedFrameworks.length > 0 && (
                     <div className="flex-1">
                       <label className="text-xs text-slate-400 font-semibold block mb-1">Load Saved Framework</label>
-                      <select onChange={e => {
-                        const f = savedFrameworks.find(sf => sf.id === e.target.value);
-                        if (f) { setFramework(f); setFrameworkName(f.framework_name); setApplyToAll(f.apply_to_all); }
-                      }} className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none">
+                      <select onChange={(e) => { const f = savedFrameworks.find((sf) => sf.id === e.target.value); if (f) { setFramework(f); setFrameworkName(f.framework_name); setApplyToAll(f.apply_to_all); } }} className="w-full bg-slate-800 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none">
                         <option value="">Select saved...</option>
-                        {savedFrameworks.map(f => <option key={f.id} value={f.id}>{f.framework_name}</option>)}
+                        {savedFrameworks.map((f) => <option key={f.id} value={f.id}>{f.framework_name}</option>)}
                       </select>
                     </div>
                   )}
                   <div className="flex gap-2 sm:mt-5">
                     <Button onClick={saveFramework} disabled={saving} size="sm" className="bg-violet-600 hover:bg-violet-700 text-xs gap-1.5">
-                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saveSuccess ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-                      {saveSuccess ? "Saved!" : "Save"}
+                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saveSuccess ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}{saveSuccess ? "Saved!" : "Save"}
                     </Button>
-                    <Button onClick={sendFrameworkToChat} size="sm" variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 text-xs gap-1.5">
-                      <Bot className="w-3.5 h-3.5" /> Send to BOB
-                    </Button>
+                    <Button onClick={sendFrameworkToChat} size="sm" variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 text-xs gap-1.5"><Bot className="w-3.5 h-3.5" /> Send to BOB</Button>
                   </div>
                 </div>
               </CardContent>
@@ -1156,106 +706,70 @@ export default function BobBuilder() {
             <BobFrameworkForm framework={framework} onChange={setFramework} applyToAll={applyToAll} onToggleApplyAll={setApplyToAll} />
 
             <div className="flex gap-3 pt-2">
-              <Button onClick={saveFramework} disabled={saving} className="bg-violet-600 hover:bg-violet-700 gap-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Framework
-              </Button>
-              <Button onClick={sendFrameworkToChat} variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 gap-2">
-                <Bot className="w-4 h-4" /> Validate with BOB
-              </Button>
-              <Button onClick={() => setActiveTab("deploy")} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 gap-2">
-                <Rocket className="w-4 h-4" /> Go to Deploy
-              </Button>
+              <Button onClick={saveFramework} disabled={saving} className="bg-violet-600 hover:bg-violet-700 gap-2">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Framework</Button>
+              <Button onClick={sendFrameworkToChat} variant="outline" className="border-violet-600 text-violet-400 hover:bg-violet-900 gap-2"><Bot className="w-4 h-4" /> Validate with BOB</Button>
+              <Button onClick={() => setActiveTab("deploy")} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 gap-2"><Rocket className="w-4 h-4" /> Go to Deploy</Button>
             </div>
           </div>
         )}
 
-        {/* DEPLOY & EXPORT TAB */}
+        {/* DEPLOY TAB */}
         {activeTab === "deploy" && (
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <Card className="bg-slate-900 border-slate-700">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white flex items-center gap-2"><FileText className="w-4 h-4 text-blue-400" />Export Framework Document</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-3"><CardTitle className="text-sm text-white flex items-center gap-2"><FileText className="w-4 h-4 text-blue-400" />Export Framework Document</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-xs text-slate-400">Export your complete component framework as a downloadable document for team distribution, compliance records, or investor review.</p>
                   <div className="bg-slate-800 rounded-xl p-3 space-y-1">
                     <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">Current Framework</p>
                     <p className="text-sm font-bold text-white">{frameworkName}</p>
-                    <p className="text-[10px] text-slate-400">
-                      {Object.entries(framework).filter(([k, v]) => v?.enabled).length} sections enabled · Apply to all: {applyToAll ? "ON" : "Off"}
-                    </p>
+                    <p className="text-[10px] text-slate-400">{Object.entries(framework).filter(([, v]) => v?.enabled).length} sections enabled · Apply to all: {applyToAll ? "ON" : "Off"}</p>
                   </div>
                   {isPaying ? (
                     <div className="grid grid-cols-3 gap-2">
-                      <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">
-                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} PDF
-                      </Button>
-                      <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
-                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Word
-                      </Button>
-                      <Button onClick={() => handleExport("csv")} disabled={exporting} className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5">
-                        {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} CSV
-                      </Button>
+                      <Button onClick={() => handleExport("pdf")} disabled={exporting} className="bg-red-600 hover:bg-red-700 text-xs gap-1.5">{exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} PDF</Button>
+                      <Button onClick={() => handleExport("word")} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">{exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookOpen className="w-3.5 h-3.5" />} Word</Button>
+                      <Button onClick={() => handleExport("csv")} disabled={exporting} className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5">{exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />} CSV</Button>
                     </div>
                   ) : (
                     <div className="rounded-xl border border-violet-700/40 bg-violet-950/40 p-3 text-center">
                       <Lock className="w-4 h-4 text-violet-400 mx-auto mb-1.5" />
                       <p className="text-[11px] text-slate-300 font-semibold mb-0.5">Document downloads are a paid feature</p>
                       <p className="text-[10px] text-slate-500 mb-2.5">Upgrade to download your framework as PDF, Word, or CSV.</p>
-                      <Link to="/pricing">
-                        <Button size="sm" className="bg-gradient-to-r from-violet-500 to-violet-700 hover:opacity-90 text-xs gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" /> Upgrade to Unlock
-                        </Button>
-                      </Link>
+                      <Link to="/pricing"><Button size="sm" className="bg-gradient-to-r from-violet-500 to-violet-700 hover:opacity-90 text-xs gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Upgrade to Unlock</Button></Link>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               <Card className="bg-slate-900 border-slate-700">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-white flex items-center gap-2"><Rocket className="w-4 h-4 text-emerald-400" />Deploy to Marketplace</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-3"><CardTitle className="text-sm text-white flex items-center gap-2"><Rocket className="w-4 h-4 text-emerald-400" />Deploy to Marketplace</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-xs text-slate-400">BOB will generate a complete component specification and initiate the marketplace submission workflow.</p>
                   <div className="space-y-2 text-[11px] text-slate-400">
                     {["Framework validation & compliance check", "Component manifest JSON generation", "Trust score pre-assessment", "Marketplace listing copy", "Submit for admin review"].map((step, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${deployStatus === "done" ? "bg-emerald-600 text-white" : "bg-slate-700 text-slate-400"}`}>
-                          {deployStatus === "done" ? "✓" : i + 1}
-                        </div>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${deployStatus === "done" ? "bg-emerald-600 text-white" : "bg-slate-700 text-slate-400"}`}>{deployStatus === "done" ? "✓" : i + 1}</div>
                         {step}
                       </div>
                     ))}
                   </div>
                   <Button onClick={handleDeploy} disabled={deployStatus === "deploying"} className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2 text-xs mt-2">
-                    {deployStatus === "deploying" ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating...</>
-                      : deployStatus === "done" ? <><CheckCircle2 className="w-3.5 h-3.5" />View in Chat</>
-                        : <><Rocket className="w-3.5 h-3.5" />Deploy with BOB</>}
+                    {deployStatus === "deploying" ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating...</> : deployStatus === "done" ? <><CheckCircle2 className="w-3.5 h-3.5" />View in Chat</> : <><Rocket className="w-3.5 h-3.5" />Deploy with BOB</>}
                   </Button>
                 </CardContent>
               </Card>
             </div>
 
             <Card className="bg-slate-900 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-white flex items-center gap-2"><Package className="w-4 h-4 text-violet-400" />Licensed Base Components</CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-sm text-white flex items-center gap-2"><Package className="w-4 h-4 text-violet-400" />Licensed Base Components</CardTitle></CardHeader>
               <CardContent>
                 <p className="text-xs text-slate-400 mb-3">Your new component can extend these licensed YottaJoule components as a foundation:</p>
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {[
-                    { code: "RP-CONSTRUCTION-1.0", name: "Ironclad Protocol", type: "X1" },
-                    { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
-                    { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
-                    { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
-                  ].map(c => (
+                  {LICENSED.map((c) => (
                     <div key={c.code} className="flex items-center justify-between bg-slate-800 rounded-xl px-3 py-2.5">
-                      <div>
-                        <p className="text-xs font-bold text-white">{c.name}</p>
-                        <p className="text-[10px] font-mono text-slate-400">{c.code}</p>
-                      </div>
+                      <div><p className="text-xs font-bold text-white">{c.name}</p><p className="text-[10px] font-mono text-slate-400">{c.code}</p></div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-[9px] bg-violet-900 text-violet-300 px-1.5 py-0.5 rounded-full font-bold">{c.type}</span>
                         <span className="text-[9px] bg-emerald-900 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">✓ Licensed</span>
@@ -1268,7 +782,6 @@ export default function BobBuilder() {
           </div>
         )}
       </div>
-
     </div>
   );
 }

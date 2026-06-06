@@ -283,28 +283,29 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                     <Share2 className="w-3 h-3" />
                     Share
                   </button>
-                  {confirmTrash !== c.id && (
-                    <button
-                      onClick={() => setConfirmTrash(c.id)}
-                      title="Move to Trash (recoverable)"
-                      className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border border-slate-600/50 px-2 py-1 rounded-md transition-colors ml-auto"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Delete
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setConfirmTrash(confirmTrash === c.id ? null : c.id)}
+                    title="Move to Trash (recoverable)"
+                    className={`flex items-center gap-1 text-[10px] font-semibold border px-2 py-1 rounded-md transition-colors ml-auto ${confirmTrash === c.id ? "text-white bg-red-700 border-red-600" : "text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-600 border-slate-600/50"}`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    Delete
+                  </button>
                 </div>
 
-                {/* Move-to-Trash confirm — its own full-width row so it never
-                    collides with the action buttons or the next project card. */}
+                {/* Move-to-Trash confirm — its own full-width row below the
+                    actions so it never overlaps buttons or the next card. */}
                 {confirmTrash === c.id && (
-                  <div className="mt-2 bg-red-950/40 border border-red-800/40 rounded-md p-2 space-y-1.5">
+                  <div className="mt-2 bg-red-950/40 border border-red-800/40 rounded-md p-2.5 space-y-2">
+                    <p className="text-[10px] text-slate-300 font-semibold">Move this project to Trash?</p>
+                    <p className="text-[9px] text-slate-500 flex items-center gap-1">
+                      <Mail className="w-2.5 h-2.5" /> ESI record will be emailed to you. Recoverable from Trash.
+                    </p>
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => trashProject(c)}
                         disabled={busy === c.id}
-                        title="Move to Trash (recoverable)"
-                        className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2 py-1 rounded-md transition-colors"
+                        className="flex items-center gap-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-500 px-2.5 py-1 rounded-md transition-colors"
                       >
                         {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                         Move to Trash
@@ -316,9 +317,6 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                         Cancel
                       </button>
                     </div>
-                    <span className="text-[9px] text-slate-500 flex items-center gap-1">
-                      <Mail className="w-2.5 h-2.5" /> ESI record will be emailed to you
-                    </span>
                   </div>
                 )}
               </div>
