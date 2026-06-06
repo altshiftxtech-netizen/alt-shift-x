@@ -15,6 +15,7 @@ import RichPromptEditor from "@/components/bob/RichPromptEditor";
 import useBobAccess from "@/hooks/useBobAccess";
 import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
+import TurnCompleteMarker from "@/components/bob/TurnCompleteMarker";
 import { buildDocContext } from "@/lib/extractDocText";
 import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
@@ -150,18 +151,19 @@ export default function BobBuilder() {
   // last message has spoken text — plus a hard watchdog that always clears it.
   const [awaitingReply, setAwaitingReply] = useState(false);
   const watchdogRef = useRef(null);
-  const replyBaselineRef = useRef(0); // assistant-with-text count at send time
+  // Marks the user message index that opened the current turn. Completion fires
+  // once an assistant message WITH TEXT appears AFTER this index.
+  const turnStartLenRef = useRef(0);
 
-  // Count assistant messages that already have spoken text.
-  const countAssistantText = (msgs) =>
-    (msgs || []).filter(
-      (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
-    ).length;
+  const isAssistantText = (m) =>
+    m && m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0;
 
   // Called on every user send — opens a fresh "awaiting reply" turn and arms a
   // hard watchdog so the indicator can never hang forever.
   const beginAwaitingReply = () => {
-    replyBaselineRef.current = countAssistantText(messages);
+    // Snapshot the conversation length at send time. Any assistant-with-text
+    // message that lands beyond this point is THIS turn's reply.
+    turnStartLenRef.current = messages.length;
     setAwaitingReply(true);
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     // Absolute ceiling — even a totally dead stream clears after this.
@@ -189,21 +191,23 @@ export default function BobBuilder() {
   // The loading indicator + Stop button are driven SOLELY by this.
   const isBobWorking = awaitingReply;
 
-  // Watch the messages stream. The instant a NEW assistant message with spoken
-  // text arrives (beyond the baseline captured at send time), the turn is done:
-  // clear the working state, kill the watchdog, and fire the chime/speech.
+  // Watch the messages stream. The instant an assistant message WITH TEXT exists
+  // at/after the turn-start index, the turn is done: clear the working state,
+  // kill the watchdog, and fire the chime/speech. Checking "the last message has
+  // text" (rather than counting) reliably handles multi-message turns where a
+  // tool-call message precedes the final spoken reply.
   useEffect(() => {
     if (!awaitingReply) return;
-    if (countAssistantText(messages) <= replyBaselineRef.current) return; // no new reply yet
 
-    // New settled reply has landed — close out the turn.
+    const last = messages[messages.length - 1];
+    // Done only when the conversation grew past the user message that opened the
+    // turn AND the final message is BOB speaking real text.
+    const grew = messages.length > turnStartLenRef.current;
+    if (!grew || !isAssistantText(last)) return; // reply not settled yet
+
+    // Settled reply has landed — close out the turn.
     setAwaitingReply(false);
     if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
-
-    const last = [...messages].reverse().find(
-      (m) => m.role === "assistant" && typeof m.content === "string" && m.content.trim().length > 0
-    );
-    if (!last) return;
 
     // Dedupe: don't replay for the same settled message.
     const key = `${messages.length}:${(last.content || "").slice(0, 40)}`;
@@ -910,6 +914,11 @@ export default function BobBuilder() {
                         </span>
                       </div>
                     </div>
+                  )}
+                  {/* Clear, always-visible "turn finished / your turn" marker so
+                      the user is never unsure whether BOB is done. */}
+                  {!isBobWorking && isAssistantText(messages[messages.length - 1]) && (
+                    <TurnCompleteMarker lastMessage={messages[messages.length - 1]} />
                   )}
                   <div ref={messagesEndRef} />
                 </div>
