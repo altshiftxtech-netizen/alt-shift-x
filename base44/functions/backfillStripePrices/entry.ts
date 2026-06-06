@@ -25,12 +25,11 @@ Deno.serve(async (req) => {
       limit
     );
 
-    const results = [];
-    let created = 0;
-    let failed = 0;
-
-    for (const c of allMissing) {
-      try {
+    // SPEED PROTOCOL: process the whole batch CONCURRENTLY instead of one-at-a-time.
+    // Each component's create→price→link chain runs in parallel, so wall-clock time
+    // is ~the slowest single chain rather than the sum of all of them.
+    const settled = await Promise.allSettled(
+      allMissing.map(async (c) => {
         const dollars = Number(c.price) || 29;
         const unitAmount = Math.round(dollars * 100);
 
@@ -55,14 +54,25 @@ Deno.serve(async (req) => {
           stripe_price_id: price.id,
         });
 
+        return { code: c.code, name: c.name, price_id: price.id, product_id: product.id };
+      })
+    );
+
+    const results = [];
+    let created = 0;
+    let failed = 0;
+
+    settled.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
         created++;
-        results.push({ code: c.code, name: c.name, price_id: price.id, product_id: product.id });
-      } catch (err) {
+        results.push(r.value);
+      } else {
         failed++;
-        console.error(`Failed for ${c.code} (${c.id}):`, err.message);
-        results.push({ code: c.code, name: c.name, error: err.message });
+        const c = allMissing[i];
+        console.error(`Failed for ${c.code} (${c.id}):`, r.reason?.message || r.reason);
+        results.push({ code: c.code, name: c.name, error: r.reason?.message || String(r.reason) });
       }
-    }
+    });
 
     // How many still remain after this batch (so the caller knows whether to re-run).
     const remainingBatch = await base44.asServiceRole.entities.Component.filter(
