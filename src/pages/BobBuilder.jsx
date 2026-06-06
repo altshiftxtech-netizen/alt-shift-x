@@ -18,6 +18,7 @@ import useAgentStream from "@/hooks/useAgentStream";
 import StopButton from "@/components/StopButton";
 import BobPendingIndicator from "@/components/bob/BobPendingIndicator";
 import NextStepActions from "@/components/bob/NextStepActions";
+import BobTricks from "@/components/bob/BobTricks";
 import { buildDocContext } from "@/lib/extractDocText";
 import { playTileDrop, playChime, playCashIn, sayHi, sayThinking, sayQuestion, sayReady, sayTiles, saySubmitted } from "@/lib/bobSounds";
 import { Lock, LayoutDashboard } from "lucide-react";
@@ -1092,6 +1093,8 @@ export default function BobBuilder() {
                       <Send className="w-3.5 h-3.5" /> Send
                     </button>
                   </div>
+                  {/* BOB Tricks — power-user tips & multipliers right under the box */}
+                  <BobTricks />
                 </div>
               </Card>
             </div>
