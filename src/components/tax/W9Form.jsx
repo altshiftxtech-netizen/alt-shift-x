@@ -44,9 +44,16 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
   const isBusiness = form.payee_kind === "business";
 
   const submit = async (e) => {
-    e.preventDefault();
-    if (!form.legal_name || !form.tin || !form.address_line1 || !form.city || !form.state || !form.zip) {
-      toast.error("Please complete all required fields");
+    e?.preventDefault?.();
+    const missing = [];
+    if (!form.legal_name?.trim()) missing.push("Legal name");
+    if (!form.tin?.trim()) missing.push("TIN (SSN/EIN)");
+    if (!form.address_line1?.trim()) missing.push("Address");
+    if (!form.city?.trim()) missing.push("City");
+    if (!form.state?.trim()) missing.push("State");
+    if (!form.zip?.trim()) missing.push("ZIP");
+    if (missing.length) {
+      toast.error(`Please complete: ${missing.join(", ")}`);
       return;
     }
     setSaving(true);
@@ -69,7 +76,8 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
       toast.success("W-9 submitted — 1099 compliance complete");
       onSaved?.();
     } catch (err) {
-      toast.error("Could not submit W-9. Please try again.");
+      const msg = err?.response?.data?.message || err?.message || "Please try again.";
+      toast.error(`Could not submit W-9: ${msg}`);
       console.error("W-9 submit failed:", err);
     } finally {
       setSaving(false);
@@ -173,7 +181,7 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
         By submitting, you certify the information is correct under IRS Form W-9{isBusiness ? ", and that you are authorized to sign on behalf of this entity" : ""}. Your TIN is stored securely and only the last 4 digits appear in summaries.
       </div>
 
-      <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-slate-800 text-sm gap-1.5">
+      <Button type="button" onClick={submit} disabled={saving} className="bg-slate-900 hover:bg-slate-800 text-sm gap-1.5">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Submit W-9
       </Button>
     </form>
