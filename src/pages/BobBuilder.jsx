@@ -636,6 +636,7 @@ export default function BobBuilder() {
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything…  Enter = send · Shift+Enter = new line"}
                     minHeight={52}
                     maxHeight={200}
+                    showToolbar
                   />
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-0.5">
                     <label className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer select-none">

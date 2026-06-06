@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import MarkdownToolbar from "./MarkdownToolbar";
 
 /**
  * BobChatInput — a clean, standard chat composer for BOB.
@@ -20,6 +21,7 @@ export default function BobChatInput({
   minHeight = 52,
   maxHeight = 200,
   disabled = false,
+  showToolbar = false,
 }) {
   const ref = useRef(null);
 
@@ -47,16 +49,21 @@ export default function BobChatInput({
   };
 
   return (
-    <textarea
-      ref={ref}
-      value={value}
-      disabled={disabled}
-      onChange={(e) => onChange?.(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      rows={1}
-      className="w-full bg-slate-800/90 border border-slate-600 focus:border-violet-500 rounded-2xl outline-none text-slate-100 placeholder:text-slate-500 text-sm leading-relaxed px-4 py-3 resize-none transition-colors disabled:opacity-60"
-      style={{ minHeight, maxHeight, caretColor: "#a78bfa" }}
-    />
+    <div className="w-full">
+      {showToolbar && !disabled && (
+        <MarkdownToolbar textareaRef={ref} value={value} onChange={onChange} />
+      )}
+      <textarea
+        ref={ref}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange?.(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        rows={1}
+        className="w-full bg-slate-800/90 border border-slate-600 focus:border-violet-500 rounded-2xl outline-none text-slate-100 placeholder:text-slate-500 text-sm leading-relaxed px-4 py-3 resize-none transition-colors disabled:opacity-60"
+        style={{ minHeight, maxHeight, caretColor: "#a78bfa" }}
+      />
+    </div>
   );
 }
