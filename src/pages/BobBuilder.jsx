@@ -284,22 +284,49 @@ export default function BobBuilder() {
     if (convId) localStorage.setItem("bob_active_conv", convId);
   }, [convId]);
 
-  // On mount, reopen the last active conversation so the chat persists until wiped.
+  // On mount, reopen the last active conversation so the chat persists across
+  // sessions AND syncs across browsers/devices. We prefer this browser's locally
+  // remembered conversation, but fall back to the most recently updated project
+  // on the account — so signing in from a different browser, browser type, or the
+  // app reopens exactly where you left off.
   const restoreActiveConversation = async () => {
+    // 1) Try this browser's last-open conversation (fastest, no list call).
     const saved = localStorage.getItem("bob_active_conv");
-    if (!saved) return;
-    try {
-      const full = await base44.agents.getConversation(saved);
-      if (full && (full.messages || []).length > 0) {
-        setConv(full);
-        setConvId(full.id);
-        setMessages(full.messages || []);
-        setLaunched(true);
-        setActiveTab("chat");
+    if (saved) {
+      try {
+        const full = await base44.agents.getConversation(saved);
+        if (full && (full.messages || []).length > 0) {
+          openRestored(full);
+          return;
+        }
+      } catch {
+        localStorage.removeItem("bob_active_conv");
       }
-    } catch {
-      localStorage.removeItem("bob_active_conv");
     }
+
+    // 2) Cross-device sync: no local pointer (or it was stale) → pull the most
+    // recently updated non-trashed project from the account and resume it.
+    try {
+      const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
+      const candidates = (list || [])
+        .filter((c) => !c.metadata?.trashed && (c.metadata?.name && c.metadata.name !== "New Project"))
+        .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date));
+      const latest = candidates[0];
+      if (!latest) return;
+      const full = await base44.agents.getConversation(latest.id);
+      if (full && (full.messages || []).length > 0) openRestored(full);
+    } catch {
+      // best-effort — builder can still open any project from the Wipe Board
+    }
+  };
+
+  // Open a fetched conversation into the workspace chat.
+  const openRestored = (full) => {
+    setConv(full);
+    setConvId(full.id);
+    setMessages(full.messages || []);
+    setLaunched(true);
+    setActiveTab("chat");
   };
 
   // Auto-scroll to the bottom as streaming messages arrive, unless the user has
