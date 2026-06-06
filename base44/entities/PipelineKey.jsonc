@@ -1,0 +1,129 @@
+{
+  "name": "PipelineKey",
+  "type": "object",
+  "properties": {
+    "pipeline_id": {
+      "type": "string",
+      "description": "ID of the Pipeline this key unlocks"
+    },
+    "pipeline_slug": {
+      "type": "string"
+    },
+    "pipeline_name": {
+      "type": "string"
+    },
+    "buyer_id": {
+      "type": "string",
+      "description": "Base44 user ID of the purchasing buyer (the company's account)"
+    },
+    "buyer_kind": {
+      "type": "string",
+      "enum": [
+        "business",
+        "standard"
+      ],
+      "default": "business"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Purchasing company / organization name"
+    },
+    "company_email": {
+      "type": "string"
+    },
+    "key_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the issued pipeline key. The plaintext key is shown ONCE on the page after payment and never stored in plaintext."
+    },
+    "key_prefix": {
+      "type": "string",
+      "description": "First several characters of the key (e.g. ASX-PIPE-LIVE-XXXX) for identification in lists, never the full secret."
+    },
+    "key_last4": {
+      "type": "string",
+      "description": "Last 4 characters of the key for safe display."
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Total amount paid in USD"
+    },
+    "payment_provider": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "paypal",
+        "coinbase"
+      ],
+      "default": "stripe"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "Provider session/transaction id for reconciliation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "active",
+        "revoked"
+      ],
+      "default": "pending_payment"
+    },
+    "revealed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the one-time plaintext key has already been shown on the secure reveal page."
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "pipeline_id",
+    "buyer_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.buyer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.buyer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.buyer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

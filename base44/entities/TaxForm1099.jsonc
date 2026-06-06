@@ -25,6 +25,25 @@
       "type": "string",
       "format": "date-time"
     },
+    "payee_kind": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "business"
+      ],
+      "default": "individual",
+      "description": "Whether the payee filed the W-9 as an individual or a business/entity"
+    },
+    "is_business": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the W-9 was submitted on behalf of a business/entity"
+    },
+    "tax_exempt_1099": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the payee's tax classification (C/S corporation) exempts them from 1099-NEC reporting. W-9 is still kept on file."
+    },
     "legal_name": {
       "type": "string",
       "description": "Legal name as shown on the contractor's income tax return (W-9 line 1)"

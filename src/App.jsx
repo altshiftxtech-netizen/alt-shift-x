@@ -68,6 +68,8 @@ import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
 import UpKeeper from './pages/UpKeeper';
 import TaxCompliance from './pages/TaxCompliance';
+import Pipelines from './pages/Pipelines';
+import PipelineKeyReveal from './pages/PipelineKeyReveal';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -101,6 +103,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/pipelines" element={<Pipelines />} />
       <Route path="/builders/:id" element={<BuilderPublicProfile />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
@@ -127,6 +130,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/settings" element={<AccountSettings />} />
         <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
         <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
+        <Route path="/pipeline-key/:id" element={<PipelineKeyReveal />} />
         <Route path="/dashboard/testing" element={<TestingDashboard />} />
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
         <Route path="/dashboard/webhooks" element={<WebhookManager />} />

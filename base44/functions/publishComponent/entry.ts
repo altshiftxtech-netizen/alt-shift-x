@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     }
 
     const data = await req.json();
-    const { name, code, type, category, description, long_description, features, schema, price } = data;
+    const { name, code, type, category, description, long_description, features, schema, price, include_in_pipelines } = data;
 
     if (!name || !code || !type || !category || !description || price === undefined) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
@@ -27,6 +27,7 @@ Deno.serve(async (req) => {
       features: features || [],
       schema: schema || [],
       price,
+      include_in_pipelines: !!include_in_pipelines,
       status: "pending_review",
       rating: 0,
       reviews_count: 0,

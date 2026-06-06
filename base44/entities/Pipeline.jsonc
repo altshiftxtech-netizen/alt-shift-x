@@ -1,0 +1,89 @@
+{
+  "name": "Pipeline",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the pipeline (e.g. 'Alt+Shift+X Exclusive \u2014 Magna Dev Suite')"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique identifier, e.g. altshiftx-exclusive"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short marketing line shown on the marketplace card"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full marketing description of what the pipeline bundles and who it's for"
+    },
+    "pipeline_type": {
+      "type": "string",
+      "enum": [
+        "curated_exclusive",
+        "best_of_pool"
+      ],
+      "default": "curated_exclusive",
+      "description": "curated_exclusive: admin-assembled named pipeline (e.g. the Alt+Shift+X Exclusive Magna Dev pipeline). best_of_pool: auto-bundle of all components developers opted into via include_in_pipelines."
+    },
+    "buyer_kind": {
+      "type": "string",
+      "enum": [
+        "business",
+        "standard"
+      ],
+      "default": "business",
+      "description": "business: enterprise/company pipeline key (large-deal pricing & W-9/contract flow). standard: regular buyer."
+    },
+    "component_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Component codes explicitly included (curated_exclusive). For best_of_pool this can be left empty \u2014 membership is derived from Component.include_in_pipelines."
+    },
+    "resident_developer_ready": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, this curated pipeline will expand to include all Resident Developer components in the future (currently Magna Dev only)."
+    },
+    "price": {
+      "type": "number",
+      "description": "Total one-time enterprise pipeline price in USD (full payment unlocks the key instantly)."
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Surface prominently in the marketplace enterprise section"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "slug",
+    "pipeline_type",
+    "price"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

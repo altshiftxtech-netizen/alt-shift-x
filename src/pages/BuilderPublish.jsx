@@ -29,6 +29,7 @@ const INITIAL_FORM = {
   features: [],
   schema: [],
   version: "",
+  include_in_pipelines: false,
   cycleTimeTarget: "",
   errorRateTarget: "",
   benchmarkDocCount: "",
@@ -65,6 +66,7 @@ export default function BuilderPublish() {
         price: parseFloat(form.price) || 0,
         features: Array.isArray(form.features) ? form.features : [],
         schema: Array.isArray(form.schema) ? form.schema : [],
+        include_in_pipelines: !!form.include_in_pipelines,
       });
       setSubmitted(true);
     } catch (error) {
@@ -115,7 +117,7 @@ export default function BuilderPublish() {
         {step === 1 && <StepSchema form={form} onChange={updateForm} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
         {step === 2 && <StepBenchmark form={form} onChange={updateForm} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
         {step === 3 && <StepCompliance checks={form.checks} onChange={updateChecks} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
-        {step === 4 && <StepConfirm form={form} onSubmit={handleSubmit} onBack={() => setStep(3)} />}
+        {step === 4 && <StepConfirm form={form} onChange={updateForm} onSubmit={handleSubmit} onBack={() => setStep(3)} />}
       </div>
     </div>
   );

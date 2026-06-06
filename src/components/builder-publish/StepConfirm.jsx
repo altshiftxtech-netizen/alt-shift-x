@@ -1,9 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Layers } from "lucide-react";
 
-export default function StepConfirm({ form, onSubmit, onBack }) {
+export default function StepConfirm({ form, onSubmit, onBack, onChange }) {
   const rows = [
     ["Name (slug)", form.name],
     ["Display Name", form.displayName],
@@ -38,6 +38,20 @@ export default function StepConfirm({ form, onSubmit, onBack }) {
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-emerald-700">All 8 compliance checks passed. You're ready to submit.</p>
         </div>
+
+        {/* Enterprise pipelines opt-in */}
+        <label className="flex items-start gap-2.5 bg-violet-50 border border-violet-100 rounded-lg p-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!form.include_in_pipelines}
+            onChange={(e) => onChange?.({ ...form, include_in_pipelines: e.target.checked })}
+            className="mt-0.5"
+          />
+          <span className="text-xs text-slate-700 leading-relaxed">
+            <span className="font-semibold text-violet-800 flex items-center gap-1.5 mb-0.5"><Layers className="w-3.5 h-3.5" /> Include in enterprise pipelines</span>
+            Let companies access this component through Alt+Shift+X "best-of" pipeline keys. You earn from every pipeline that bundles it. You can change this anytime.
+          </span>
+        </label>
 
         <div className="flex justify-between pt-2">
           <Button variant="outline" onClick={onBack}>← Back</Button>

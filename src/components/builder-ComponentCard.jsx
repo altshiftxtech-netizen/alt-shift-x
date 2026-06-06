@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Download, ShieldCheck, DollarSign, History, FlaskConical, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ComponentDeleteDialog from "@/components/builder-ComponentDeleteDialog";
+import PipelineOptInToggle from "@/components/pipelines/PipelineOptInToggle";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
@@ -92,6 +93,12 @@ export default function ComponentCard({ component: c, onViewHistory, onRemoved }
             <History className="w-3.5 h-3.5" /> History
           </Button>
         </div>
+
+        {c.id && (
+          <div className="mt-2.5">
+            <PipelineOptInToggle componentId={c.id} initial={c.include_in_pipelines} />
+          </div>
+        )}
       </CardContent>
     </Card>
     </>

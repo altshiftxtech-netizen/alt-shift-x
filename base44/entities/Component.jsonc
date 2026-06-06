@@ -88,6 +88,11 @@
       ],
       "default": "draft"
     },
+    "include_in_pipelines": {
+      "type": "boolean",
+      "default": false,
+      "description": "Builder opt-in: when true, this component is eligible to be bundled into the shared 'best-of' Pipeline pool that enterprise pipeline keys can access."
+    },
     "rating": {
       "type": "number",
       "default": 0

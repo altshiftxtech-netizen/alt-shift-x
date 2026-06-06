@@ -21,6 +21,7 @@ const CLASSES = [
  */
 export default function W9Form({ record, userId, userEmail, onSaved }) {
   const [form, setForm] = useState(() => ({
+    payee_kind: record?.payee_kind || "individual",
     legal_name: record?.legal_name || "",
     business_name: record?.business_name || "",
     tax_classification: record?.tax_classification || "individual_sole_proprietor",
@@ -37,6 +38,11 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
+  // Corporations are exempt from 1099-NEC reporting — we still collect the W-9,
+  // but show the payee they won't receive a 1099.
+  const isExemptCorp = ["c_corporation", "s_corporation"].includes(form.tax_classification);
+  const isBusiness = form.payee_kind === "business";
+
   const submit = async (e) => {
     e.preventDefault();
     if (!form.legal_name || !form.tin || !form.address_line1 || !form.city || !form.state || !form.zip) {
@@ -46,6 +52,8 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
     setSaving(true);
     const payload = {
       ...form,
+      is_business: isBusiness,
+      tax_exempt_1099: isExemptCorp,
       builder_id: userId,
       builder_email: userEmail || "",
       tax_year: record?.tax_year || new Date().getFullYear(),
@@ -70,13 +78,40 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {/* Payee type — individual vs business */}
+      <div>
+        <label className="text-xs font-semibold text-slate-600 mb-1 block">Payee type *</label>
+        <div className="flex gap-2">
+          {[
+            { v: "individual", l: "Individual" },
+            { v: "business", l: "Business / Entity" },
+          ].map((o) => (
+            <button
+              key={o.v}
+              type="button"
+              onClick={() => {
+                set("payee_kind", o.v);
+                if (o.v === "business" && form.tin_type === "ssn") set("tin_type", "ein");
+              }}
+              className={`flex-1 h-9 rounded-md border text-sm font-medium transition-colors ${
+                form.payee_kind === o.v
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-input bg-transparent text-slate-600 hover:border-slate-400"
+              }`}
+            >
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Legal name *</label>
-          <Input value={form.legal_name} onChange={(e) => set("legal_name", e.target.value)} placeholder="As shown on your tax return" />
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">{isBusiness ? "Legal entity name *" : "Legal name *"}</label>
+          <Input value={form.legal_name} onChange={(e) => set("legal_name", e.target.value)} placeholder={isBusiness ? "Exact legal name registered with the IRS" : "As shown on your tax return"} />
         </div>
         <div>
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">Business name (if different)</label>
+          <label className="text-xs font-semibold text-slate-600 mb-1 block">{isBusiness ? "DBA / trade name (if any)" : "Business name (if different)"}</label>
           <Input value={form.business_name} onChange={(e) => set("business_name", e.target.value)} />
         </div>
       </div>
@@ -126,9 +161,16 @@ export default function W9Form({ record, userId, userEmail, onSaved }) {
         </div>
       </div>
 
+      {isExemptCorp && (
+        <div className="flex items-start gap-2 text-[11px] text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+          As a {form.tax_classification === "c_corporation" ? "C Corporation" : "S Corporation"}, you are generally <strong>exempt from 1099-NEC reporting</strong>. We still keep your W-9 on file for compliance, but you will not be issued a 1099 form.
+        </div>
+      )}
+
       <div className="flex items-start gap-2 text-[11px] text-slate-500 bg-slate-50 rounded-lg p-3">
         <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-        By submitting, you certify the information is correct under IRS Form W-9. Your TIN is stored securely and only the last 4 digits appear in summaries.
+        By submitting, you certify the information is correct under IRS Form W-9{isBusiness ? ", and that you are authorized to sign on behalf of this entity" : ""}. Your TIN is stored securely and only the last 4 digits appear in summaries.
       </div>
 
       <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-slate-800 text-sm gap-1.5">
