@@ -214,10 +214,13 @@ export function sayHi() {
 }
 
 // Thinking line plays immediately on send (cancels stale speech) so it lands
-// before / while BOB types. Completion lines queue so they wait for "On it" to
-// finish first instead of cutting it off.
+// before / while BOB types. If BOB replies before "On it" has even started
+// speaking, the queued copy could otherwise fire LATE — right before the
+// completion line. So completion lines do NOT queue: they cancel anything still
+// pending (including an un-started "On it") and speak right away. This is what
+// the user wants: "On it" → typing → completion, with no stray "On it" at the end.
 export const sayThinking = () => speak(pick(PHRASES.thinking));
-export const sayQuestion = () => speak(pick(PHRASES.question), { queue: true });
-export const sayReady = () => speak(pick(PHRASES.ready), { queue: true });
-export const sayTiles = () => speak(pick(PHRASES.tile), { queue: true });
-export const saySubmitted = () => speak(pick(PHRASES.submitted), { queue: true });
+export const sayQuestion = () => speak(pick(PHRASES.question));
+export const sayReady = () => speak(pick(PHRASES.ready));
+export const sayTiles = () => speak(pick(PHRASES.tile));
+export const saySubmitted = () => speak(pick(PHRASES.submitted));
