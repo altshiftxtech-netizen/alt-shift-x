@@ -144,6 +144,13 @@ export default function BobBuilder() {
   const wasGeneratingRef = useRef(false); // detect the generating → idle transition
   const lastSoundMsgRef = useRef(null);   // dedupe sound for the same final message
 
+  // Offline / large-job notify: when on, BOB notifies (bell + optional email) the
+  // moment the running job finishes, so the builder can leave the page/device and
+  // come back when alerted. The completed reply is already persisted in the thread.
+  const [notifyWhenDone, setNotifyWhenDone] = useState(false);
+  const [emailWhenDone, setEmailWhenDone] = useState(false);
+  const notifyPendingRef = useRef(false); // a job is running that the builder wants notified
+
   useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
 
   // Robotic unisex "hi" the moment the BOB chat workspace is initiated.
@@ -189,7 +196,38 @@ export default function BobBuilder() {
       // Just finished / asking a question / awaiting feedback.
       playChime();
     }
+
+    // Offline / large-job notify — if the builder opted in for this job, alert
+    // them now that it's done (bell always; email if they're leaving the device).
+    if (notifyPendingRef.current) {
+      notifyPendingRef.current = false;
+      notifyJobComplete(last);
+    }
   }, [isGenerating, sending, messages]);
+
+  // Fire an in-app bell notification (and optional email) that the BOB job
+  // finished, with a deep link straight back to the BOB chat.
+  const notifyJobComplete = async (lastMsg) => {
+    try {
+      const user = await base44.auth.me();
+      if (!user?.id) return;
+      const preview = (lastMsg?.content || "Your BOB job is complete.")
+        .replace(/\s+/g, " ").trim().slice(0, 140);
+      await base44.functions.invoke("sendNotification", {
+        user_id: user.id,
+        type: "component_published",
+        severity: "info",
+        title: "BOB finished your job",
+        message: `BOB completed your request. ${preview}`,
+        action_url: "/builder/bob",
+        action_label: "Open in BOB",
+        force_email: emailWhenDone,
+        metadata: { conversation_id: convId },
+      });
+    } catch (e) {
+      console.error("BOB job-complete notify failed:", e);
+    }
+  };
 
   // Persist the active conversation id so the chat stays loaded across sessions
   // (e.g. leaving to "New Session" / navigating away and coming back) until the
@@ -385,6 +423,7 @@ export default function BobBuilder() {
     const c = conv || await initConv();
     await base44.agents.addMessage(c, { role: "user", content: msg });
     await titleProject(c, msg);
+    if (notifyWhenDone) notifyPendingRef.current = true;
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: msg });
     setSending(false);
@@ -454,6 +493,7 @@ export default function BobBuilder() {
       file_urls: fileUrls
     });
     await titleProject(c, msg || fileList);
+    if (notifyWhenDone) notifyPendingRef.current = true;
     // Show the user's message instantly (hook keeps it until the stream confirms).
     onSent({ content: fullMsg, ...(fileUrls.length ? { file_urls: fileUrls } : {}) });
     setUploadedFiles([]);
@@ -849,6 +889,29 @@ export default function BobBuilder() {
                     minHeight={80}
                     maxHeight={260}
                   />
+                  {/* Offline / large-job notify — fire it off, leave, get pinged when done */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-0.5">
+                    <label className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={notifyWhenDone}
+                        onChange={(e) => { setNotifyWhenDone(e.target.checked); if (!e.target.checked) setEmailWhenDone(false); }}
+                        className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500"
+                      />
+                      Notify me when done <span className="text-slate-600">(leave the page — BOB keeps working)</span>
+                    </label>
+                    {notifyWhenDone && (
+                      <label className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={emailWhenDone}
+                          onChange={(e) => setEmailWhenDone(e.target.checked)}
+                          className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-violet-500 focus:ring-violet-500"
+                        />
+                        Email me too <span className="text-slate-600">(for when you leave the device)</span>
+                      </label>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     {/* Hidden file input */}
                     <input
