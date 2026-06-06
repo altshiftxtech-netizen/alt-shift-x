@@ -977,7 +977,7 @@ export default function BobBuilder() {
                     <div className="flex items-start gap-3 mt-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />
                       <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
-                        <p className="text-slate-200 text-sm">Hey! I'm BOB — the Advanced Builder. I can help you design, analyze, and publish components using licensed YottaJoule components as a foundation.</p>
+                        <p className="text-slate-200 text-sm">Builder Operated Bot online. I'm BOB — the Advanced Builder. I can help you design, analyze, and publish components using licensed YottaJoule components as a foundation.</p>
                         <p className="text-slate-400 text-xs mt-2">Use the <strong className="text-violet-400">Framework tab</strong> to configure your project blueprint, then send it to me for analysis. Or jump straight into a build below.</p>
                       </div>
                     </div>
