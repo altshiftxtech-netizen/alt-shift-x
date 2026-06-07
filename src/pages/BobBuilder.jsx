@@ -20,8 +20,7 @@ import useBobAccess from "@/hooks/useBobAccess";
 import useBobChat from "@/hooks/useBobChat";
 import { buildDocContext } from "@/lib/extractDocText";
 import {
-  playTileDrop, playChime, playCashIn, sayHi, sayThinking,
-  sayQuestion, sayReady, sayTiles, saySubmitted,
+  playTileDrop, playCashIn, sayHi, sayThinking, sayTiles, saySubmitted,
 } from "@/lib/bobSounds";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -146,22 +145,27 @@ export default function BobBuilder() {
   const lastSoundKeyRef = useRef(null);
 
   // ── Completion callback: sounds + optional notify, fired by the chat engine ──
+  // VOICE POLICY: speak ONLY on events BOB can confirm with certainty — i.e. a real
+  // create/bulkCreate tool actually ran (component submitted/tiles dropped). Every
+  // other completion stays silent (no fragile text-regex guessing of "ready" vs
+  // "question"), so BOB never talks over an answer it isn't sure about.
   useEffect(() => {
     setOnDone((last, msgs) => {
       const key = `${(msgs || []).length}:${(last.content || "").slice(0, 40)}`;
       if (lastSoundKeyRef.current === key) return;
       lastSoundKeyRef.current = key;
 
-      const text = (last.content || "").toLowerCase();
-      const isTile = /\btile\b|book tile/.test(text);
-      const submitted = /(creat|submit|publish|bulk|added|pending[_ ]review|priced|deploy[- ]?ready)/.test(text);
-      const usedCreate = (last.tool_calls || []).some((t) => /create|bulkcreate/i.test(t.name || ""));
-      const asking = /\?\s*$/.test((last.content || "").trim()) ||
-        /\b(let me know|how (would|do) you|which|would you like|should i|tell me|what.s next|say "?go"?)\b/i.test(text);
+      // Only a verified create/bulkCreate tool call counts as a confident success.
+      const usedCreate = (last.tool_calls || []).some(
+        (t) => /create|bulkcreate/i.test(t.name || "") && (!t.status || t.status === "completed" || t.status === "success")
+      );
 
-      if (isTile && (submitted || usedCreate)) { playTileDrop(); setTimeout(sayTiles, 500); }
-      else if (submitted || usedCreate) { playCashIn(); setTimeout(saySubmitted, 500); }
-      else { playChime(); setTimeout(asking ? sayQuestion : sayReady, 450); }
+      if (usedCreate) {
+        const isTile = /\btile\b|book tile/.test((last.content || "").toLowerCase());
+        if (isTile) { playTileDrop(); setTimeout(sayTiles, 500); }
+        else { playCashIn(); setTimeout(saySubmitted, 500); }
+      }
+      // No confident success → stay silent (no chime, no "ready/question" guess).
 
       if (notifyPendingRef.current) { notifyPendingRef.current = false; notifyJobComplete(last); }
     });
