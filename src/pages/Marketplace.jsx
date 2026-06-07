@@ -11,9 +11,11 @@ import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
 import ComponentSharePanel from "@/components/ComponentSharePanel";
 import FilterPanel from "@/components/marketplace/FilterPanel";
+import MarketplacePagination from "@/components/marketplace/MarketplacePagination";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
+const PAGE_SIZE = 50;
 
 const CATEGORIES = [
   "All",
@@ -87,6 +89,7 @@ export default function Marketplace() {
   const [installedMap, setInstalledMap] = useState({});
   const [bundleInstalling, setBundleInstalling] = useState(false);
   const [featuredKit, setFeaturedKit] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -176,6 +179,15 @@ export default function Marketplace() {
       }
       return sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0);
     }), [components, category, type, search, sortBy]);
+
+  // Reset to the first page whenever the result set changes (filters/search/sort).
+  useEffect(() => { setPage(1); }, [category, type, search, sortBy]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
 
   return (
     <div className="min-h-screen relative">
@@ -392,9 +404,14 @@ export default function Marketplace() {
                   );
                 })()}
 
-                <p className="text-xs text-white/40 mb-4">{filtered.length} components</p>
+                <p className="text-xs text-white/40 mb-4">
+                  {filtered.length} components
+                  {filtered.length > PAGE_SIZE && (
+                    <span> · showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}</span>
+                  )}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filtered.map(c => (
+                  {pageItems.map(c => (
                     <Link key={c.id} to={`/marketplace/${c.id}`}>
                       <div className={`bg-slate-900/70 border rounded-xl p-4 hover:bg-slate-900/80 hover:shadow-xl transition-colors h-full flex flex-col ${PINNED_CODES.includes(c.code) ? "border-violet-400/40 ring-1 ring-violet-400/20" : "border-white/15"}`}>
                         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
@@ -432,6 +449,8 @@ export default function Marketplace() {
                     </Link>
                   ))}
                 </div>
+
+                <MarketplacePagination page={page} pageCount={pageCount} onPage={setPage} />
               </>
             )}
           </div>
