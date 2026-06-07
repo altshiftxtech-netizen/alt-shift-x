@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
 
       // 1. Invite to the app (builders are standard users).
       try {
-        await base44.auth.inviteUser(email, "user");
+        await base44.users.inviteUser(email, "user");
         step.invited = true;
       } catch (e) {
         // Already invited / existing — keep going so they still get the perks.
