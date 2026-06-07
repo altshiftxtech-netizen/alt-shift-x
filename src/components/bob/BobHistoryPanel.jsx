@@ -25,7 +25,9 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setLoading(true);
     try {
       const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
-      setConvos((list || []).slice(0, 50));
+      // The agents SDK has no hard-delete; "Delete Forever" flags a project
+      // `cleared` in metadata, which we filter out permanently here.
+      setConvos((list || []).filter((c) => !c.metadata?.cleared).slice(0, 50));
     } catch {
       setConvos([]);
     }
@@ -79,10 +81,13 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setBusy(null);
   };
 
-  // Permanent delete — second step after confirmation
+  // Permanent delete — second step after confirmation. The agents SDK has no
+  // hard-delete, so we flag the project `cleared`; load() filters it out for good.
   const finalDelete = async (c) => {
     setBusy(c.id);
-    await base44.agents.deleteConversation(c.id);
+    await base44.agents.updateConversation(c.id, {
+      metadata: { ...(c.metadata || {}), cleared: true, cleared_at: new Date().toISOString() },
+    });
     setConfirmDelete(null);
     await load();
     setBusy(null);

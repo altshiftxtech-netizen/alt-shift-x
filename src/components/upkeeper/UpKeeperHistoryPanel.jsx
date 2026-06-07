@@ -21,7 +21,9 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
     setLoading(true);
     try {
       const list = await base44.agents.listConversations({ agent_name: "the_upkeeper" });
-      setConvos((list || []).slice(0, 25));
+      // The agents SDK has no hard-delete, so deleted sessions are flagged
+      // trashed in metadata and filtered out here.
+      setConvos((list || []).filter((c) => !c.metadata?.trashed).slice(0, 25));
     } catch {
       setConvos([]);
     }
@@ -69,17 +71,21 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
 
   const deleteSession = async (c) => {
     setBusy(c.id);
-    await base44.agents.deleteConversation(c.id);
+    await base44.agents.updateConversation(c.id, {
+      metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
+    });
     setConfirmDelete(null);
     await load();
     setBusy(null);
   };
 
-  // Two-step clear: deletes every session in the history.
+  // Two-step clear: flags every session trashed so they drop off the history.
   const clearHistory = async () => {
     setClearing(true);
     for (const c of convos) {
-      await base44.agents.deleteConversation(c.id);
+      await base44.agents.updateConversation(c.id, {
+        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
+      });
     }
     setConfirmClear(false);
     await load();
