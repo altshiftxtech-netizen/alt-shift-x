@@ -1,27 +1,41 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, UserPlus, CheckCircle2, XCircle, Mail, Crown, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, UserPlus, CheckCircle2, XCircle, Mail, Crown, Sparkles, Plus, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-// The two new Dev community members to onboard with complimentary top-tier
-// (Sovereign Commander) accounts + Resident Developer status + welcome email.
-const ROSTER = [
+// Preset roster — quick-fill the two original Dev community members.
+const PRESET = [
   { email: "daandrebrownthomas@gmail.com", name: "Da'Andre Brown Thomas" },
   { email: "kaliqbrownthomas@gmail.com", name: "Kaliq Brown Thomas" },
 ];
 
 export default function OnboardResidentDevsTab() {
+  const [rows, setRows] = useState([{ name: "", email: "" }]);
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
+  const updateRow = (i, field, value) =>
+    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  const addRow = () => setRows((prev) => [...prev, { name: "", email: "" }]);
+  const removeRow = (i) => setRows((prev) => prev.filter((_, idx) => idx !== i));
+  const loadPreset = () => setRows(PRESET.map((p) => ({ ...p })));
+
   const run = async () => {
+    const people = rows
+      .map((r) => ({ name: r.name.trim(), email: r.email.trim() }))
+      .filter((r) => r.email);
+    if (people.length === 0) {
+      setError("Add at least one email address.");
+      return;
+    }
     setRunning(true);
     setError(null);
     setResults(null);
     try {
-      const res = await base44.functions.invoke("onboardResidentDevs", { people: ROSTER });
+      const res = await base44.functions.invoke("onboardResidentDevs", { people });
       setResults(res.data?.results || []);
     } catch (e) {
       setError(e?.response?.data?.error || e.message);
@@ -41,15 +55,46 @@ export default function OnboardResidentDevsTab() {
                 Invites each member, grants a complimentary <strong>Sovereign Commander</strong> (top-tier) account,
                 marks them as a <strong>Resident Developer</strong>, and sends a welcome email to the Dev community.
               </p>
-              <div className="mt-3 space-y-1.5">
-                {ROSTER.map((p) => (
-                  <div key={p.email} className="flex items-center gap-2 text-xs text-slate-600">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-semibold">{p.name}</span>
-                    <span className="text-slate-400">· {p.email}</span>
+
+              {/* Editable name + email rows */}
+              <div className="mt-4 space-y-2">
+                {rows.map((row, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Full name (optional)"
+                      value={row.name}
+                      onChange={(e) => updateRow(i, "name", e.target.value)}
+                      className="h-9 text-sm flex-1"
+                    />
+                    <Input
+                      type="email"
+                      placeholder="email@example.com"
+                      value={row.email}
+                      onChange={(e) => updateRow(i, "email", e.target.value)}
+                      className="h-9 text-sm flex-1"
+                    />
+                    {rows.length > 1 && (
+                      <button
+                        onClick={() => removeRow(i)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
+
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <Button onClick={addRow} variant="outline" size="sm" className="text-xs gap-1.5 h-8">
+                  <Plus className="w-3.5 h-3.5" /> Add another
+                </Button>
+                <Button onClick={loadPreset} variant="outline" size="sm" className="text-xs h-8 text-slate-500">
+                  Fill preset roster
+                </Button>
+              </div>
+
               <Button onClick={run} disabled={running} className="mt-4 bg-violet-600 hover:bg-violet-700 text-sm gap-2">
                 {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                 {running ? "Onboarding…" : "Invite & Grant Accounts"}
