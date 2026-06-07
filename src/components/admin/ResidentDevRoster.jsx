@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CheckCircle2, Clock, Ban, ShieldOff, RefreshCw } from "lucide-react";
+import { Loader2, Users, CheckCircle2, Clock, Ban, ShieldOff, RefreshCw, FileArchive, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const STATUS = {
@@ -15,6 +15,8 @@ export default function ResidentDevRoster({ refreshSignal }) {
   const [loading, setLoading] = useState(true);
   const [confirmId, setConfirmId] = useState(null);
   const [revoking, setRevoking] = useState(null);
+  const [zipping, setZipping] = useState(null);
+  const [zipDone, setZipDone] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,6 +37,15 @@ export default function ResidentDevRoster({ refreshSignal }) {
     setConfirmId(null);
     setRevoking(null);
     await load();
+  };
+
+  const sendZip = async (dev) => {
+    setZipping(dev.user_id);
+    setZipDone(null);
+    await base44.functions.invoke("sendDevContributionsZip", { user_id: dev.user_id });
+    setZipping(null);
+    setZipDone(dev.user_id);
+    setTimeout(() => setZipDone(null), 4000);
   };
 
   return (
@@ -66,6 +77,19 @@ export default function ResidentDevRoster({ refreshSignal }) {
                     <p className="text-xs text-slate-400 truncate">{dev.email}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1"
+                      onClick={() => sendZip(dev)}
+                      disabled={zipping === dev.user_id}
+                      title="Email this dev a ZIP of their contributions"
+                    >
+                      {zipping === dev.user_id ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : zipDone === dev.user_id ? <Check className="w-3 h-3 text-emerald-600" />
+                        : <FileArchive className="w-3 h-3" />}
+                      {zipDone === dev.user_id ? "Sent" : "Send ZIP"}
+                    </Button>
                     {isRevoked ? (
                       <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-600 flex items-center gap-1">
                         <ShieldOff className="w-3 h-3" /> Revoked
