@@ -62,6 +62,16 @@ export function playCashIn() {
   blip(2000, t + 0.18, 0.4, { type: "sine", gain: 0.14 });      // sparkle harmonic
 }
 
+// Computing beep — rapid electronic processing sound
+export function playComputingBeep() {
+  const ac = audioCtx();
+  if (!ac) return;
+  const t = ac.currentTime;
+  blip(800, t, 0.08, { type: "square", gain: 0.15 });
+  blip(1200, t + 0.1, 0.08, { type: "square", gain: 0.15 });
+  blip(900, t + 0.2, 0.1, { type: "square", gain: 0.12 });
+}
+
 // ── User-adjustable voice settings ─────────────────────────────────────────
 // Persisted in localStorage so the user can tell BOB what to sound like and it
 // sticks across sessions. Defaults to the deep, gender-neutral robotic voice.
@@ -233,26 +243,9 @@ export function unlockSpeech() {
   } catch { /* no-op */ }
 }
 
-// "On it" — spoken THE INSTANT the user sends, directly inside the click/Enter
-// gesture so the browser always allows it. We prime the engine (first time),
-// cancel any lingering speech, and speak synchronously so it starts immediately.
+// Computing sound — electronic beep on send instead of spoken "On it"
 export const sayThinking = () => {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  unlockSpeech();
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.resume();
-  const u = new SpeechSynthesisUtterance(pick(PHRASES.thinking));
-  const s = getVoiceSettings();
-  u.pitch = s.pitch;
-  u.rate = s.rate;
-  u.volume = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const chosen = s.voiceName ? voices.find((v) => v.name === s.voiceName) : null;
-  if (chosen) u.voice = chosen;
-  // Speak immediately AND keep the engine alive — Chrome can pause a queued
-  // utterance after ~15s of inactivity, so a resume tick keeps it flowing.
-  window.speechSynthesis.speak(u);
-  window.speechSynthesis.resume();
+  playComputingBeep();
 };
 // Completion lines QUEUE behind an in-progress "On it" so they never cut it off.
 export const sayQuestion = () => speak(pick(PHRASES.question), { queue: true });
