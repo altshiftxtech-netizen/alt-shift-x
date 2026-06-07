@@ -212,35 +212,42 @@ export default function BobBuilder() {
   };
 
   // ── Conversation restore (cross-session / cross-device) ─────────────────────
+  // Restore runs ONCE on a truly untouched mount. The instant the user touches
+  // ANYTHING (types, attaches a file, launches, opens a project), `userActedRef`
+  // flips true and every restore step below bails — so a slow restore can never
+  // hijack a fresh board the user is already working in (the docs-into-old-chat bug).
   const restoreActiveConversation = async () => {
-    if (userActedRef.current) return;
+    // Bail if the user already acted, or a conversation/messages already exist.
+    if (userActedRef.current || convId || messages.length > 0) return;
     const saved = localStorage.getItem("bob_active_conv");
     if (saved) {
       try {
         const full = await base44.agents.getConversation(saved);
-        if (userActedRef.current) return;
         if (full && (full.messages || []).length > 0) { enterRestored(full); return; }
       } catch { localStorage.removeItem("bob_active_conv"); }
     }
     try {
       const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
-      if (userActedRef.current) return;
       const latest = (list || [])
         .filter((c) => !c.metadata?.trashed && c.metadata?.name && c.metadata.name !== "New Project")
         .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0];
       if (!latest) return;
       const full = await base44.agents.getConversation(latest.id);
-      if (userActedRef.current) return;
       if (full && (full.messages || []).length > 0) enterRestored(full);
     } catch { /* best-effort */ }
   };
 
+  // Final gate: never restore if the user acted, or a board is already in play.
   const enterRestored = (full) => {
-    if (userActedRef.current) return;
+    if (userActedRef.current || convId || messages.length > 0) return;
     openConversation(full);
     setLaunched(true);
     setActiveTab("chat");
   };
+
+  // Mark that the user has engaged — permanently disables auto-restore for this
+  // mount. Called by every interaction entry point (attach, camera, voice, type).
+  const markActed = () => { userActedRef.current = true; greetedRef.current = true; };
 
   const loadFrameworks = async () => {
     const data = await base44.entities.ComponentFramework.list("-created_date", 10);
@@ -317,7 +324,27 @@ export default function BobBuilder() {
       await dispatch(seedText);
     }
   };
-  const handleSplashSubmit = (e) => { e?.preventDefault(); launch(input.trim() ? input : undefined); };
+  // Splash submit: if files are staged, route through the file-aware send so the
+  // docs actually go WITH the message into the new chat (not just the text).
+  const handleSplashSubmit = async (e) => {
+    e?.preventDefault();
+    if (uploadedFiles.length > 0) {
+      markActed();
+      greetedRef.current = true;
+      lastSoundKeyRef.current = null;
+      localStorage.removeItem("bob_active_conv");
+      resetBoard();
+      setLaunched(true);
+      setActiveTab("chat");
+      await handleSend();
+      return;
+    }
+    launch(input.trim() ? input : undefined);
+  };
+
+  // Typing on the splash counts as engaging — disables auto-restore so a slow
+  // restore can't swap the board out from under what the user is writing.
+  const handleInput = (v) => { if (v && !launched) markActed(); setInput(v); };
 
   // "← New Session": go back to the splash with a fully cleared board, so the
   // next query opens a brand-new chat instead of reattaching to the old one.
@@ -370,6 +397,7 @@ export default function BobBuilder() {
 
   // ── Voice ────────────────────────────────────────────────────────────────────
   const toggleRecording = async () => {
+    markActed();
     if (isRecording) { mediaRecorderRef.current?.stop(); setIsRecording(false); return; }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const recorder = new MediaRecorder(stream);
@@ -391,6 +419,7 @@ export default function BobBuilder() {
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    markActed();
     setUploading(true);
     const uploaded = [];
     for (const file of files) {
@@ -407,6 +436,7 @@ export default function BobBuilder() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    markActed();
     setUploading(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setUploading(false);
@@ -499,7 +529,7 @@ export default function BobBuilder() {
 
             <BobChatInput
               value={input}
-              onChange={setInput}
+              onChange={handleInput}
               onSubmit={handleSplashSubmit}
               clearSignal={clearSignal}
               placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "What would you like to build today? Enter to launch, Shift+Enter for a new line…"}
