@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, UserPlus, CheckCircle2, XCircle, Mail, Crown, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Loader2, UserPlus, CheckCircle2, XCircle, Crown, Sparkles, Plus, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ResidentDevRoster from "@/components/admin/ResidentDevRoster";
 
 // Preset roster — quick-fill the two original Dev community members.
 const PRESET = [
@@ -16,6 +17,7 @@ export default function OnboardResidentDevsTab() {
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [rosterRefresh, setRosterRefresh] = useState(0);
 
   const updateRow = (i, field, value) =>
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
@@ -37,6 +39,7 @@ export default function OnboardResidentDevsTab() {
     try {
       const res = await base44.functions.invoke("onboardResidentDevs", { people });
       setResults(res.data?.results || []);
+      setRosterRefresh((n) => n + 1);
     } catch (e) {
       setError(e?.response?.data?.error || e.message);
     }
@@ -137,6 +140,8 @@ export default function OnboardResidentDevsTab() {
           </CardContent>
         </Card>
       ))}
+
+      <ResidentDevRoster refreshSignal={rosterRefresh} />
     </div>
   );
 }
