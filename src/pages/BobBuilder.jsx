@@ -317,11 +317,14 @@ export default function BobBuilder() {
   const handleSplashSubmit = (e) => { e?.preventDefault(); launch(input.trim() ? input : undefined); };
 
   const openHistory = () => { userActedRef.current = true; setLaunched(true); setActiveTab("chat"); resetBoard(); };
-  const wipeBoard = () => { userActedRef.current = true; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); };
+  const wipeBoard = () => { userActedRef.current = true; lastSoundKeyRef.current = null; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); };
   const openProject = async (c) => {
     userActedRef.current = true;
+    greetedRef.current = true;            // never greet over a restored project
+    lastSoundKeyRef.current = null;       // reset sound dedup for the new conversation
     const full = await base44.agents.getConversation(c.id);
     openConversation(full);
+    setLaunched(true);
     setActiveTab("chat");
   };
 

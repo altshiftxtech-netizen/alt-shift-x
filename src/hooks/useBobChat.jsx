@@ -51,6 +51,7 @@ export default function useBobChat() {
   const pendingUserRef = useRef(null);     // optimistic user bubble awaiting server echo
   const turnOpenRef = useRef(false);       // a user-initiated turn is in flight
   const lastTextRef = useRef("");          // last assistant text (settle tracking)
+  const lastLenRef = useRef(0);            // last rendered message count (anti-flicker guard)
   const onDoneRef = useRef(null);          // optional completion callback (sounds, notify)
 
   const clearTimers = () => {
@@ -98,6 +99,13 @@ export default function useBobChat() {
 
   const handleUpdate = useCallback((data) => {
     let msgs = data.messages || [];
+
+    // Guard against the subscription "replay" that fires immediately after we
+    // load a conversation: when no turn is open and the incoming list is empty
+    // or shorter than what we just rendered, ignore it. This is what caused the
+    // chat to flicker / momentarily change right after selecting a history item.
+    if (!turnOpenRef.current && msgs.length < (lastLenRef.current || 0)) return;
+    lastLenRef.current = msgs.length;
 
     // Reconcile the optimistic user bubble: keep it visible until the server
     // list actually contains it, inserting BEFORE any trailing assistant reply
@@ -180,6 +188,7 @@ export default function useBobChat() {
     lastTextRef.current = "";
     setIsWorking(false);
     convRef.current = full;
+    lastLenRef.current = (full.messages || []).length;
     setConvId(full.id);
     setMessages(full.messages || []);
     subscribe(full.id);
@@ -194,6 +203,7 @@ export default function useBobChat() {
     pendingUserRef.current = null;
     turnOpenRef.current = false;
     lastTextRef.current = "";
+    lastLenRef.current = 0;
     setIsWorking(false);
     setConvId(null);
     setMessages([]);
