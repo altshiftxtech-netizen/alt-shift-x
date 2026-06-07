@@ -301,20 +301,36 @@ export default function BobBuilder() {
 
   // ── Splash / session controls ───────────────────────────────────────────────
   const launch = async (seedText) => {
-    // Suppress the greeting up-front when launching WITH a seed prompt, so the
-    // greeting effect (which runs on setLaunched) never fires before dispatch.
-    if (seedText?.trim()) { userActedRef.current = true; greetedRef.current = true; }
+    // Starting a brand-new session from the splash: block any in-flight restore
+    // from hijacking this fresh board, and drop the saved active conversation so
+    // the submitted query opens a NEW chat instead of an old one from history.
+    userActedRef.current = true;
+    greetedRef.current = true;
+    lastSoundKeyRef.current = null;
+    localStorage.removeItem("bob_active_conv");
+    resetBoard();
     setLaunched(true);
     setActiveTab("chat");
     if (seedText?.trim()) {
       setInput("");
       setClearSignal((s) => s + 1);
       await dispatch(seedText);
-    } else {
-      resetBoard();
     }
   };
   const handleSplashSubmit = (e) => { e?.preventDefault(); launch(input.trim() ? input : undefined); };
+
+  // "← New Session": go back to the splash with a fully cleared board, so the
+  // next query opens a brand-new chat instead of reattaching to the old one.
+  const newSession = () => {
+    userActedRef.current = false;
+    greetedRef.current = false;
+    lastSoundKeyRef.current = null;
+    resetBoard();
+    localStorage.removeItem("bob_active_conv");
+    setInput("");
+    setClearSignal((s) => s + 1);
+    setLaunched(false);
+  };
 
   const openHistory = () => { userActedRef.current = true; setLaunched(true); setActiveTab("chat"); resetBoard(); };
   const wipeBoard = () => { userActedRef.current = true; lastSoundKeyRef.current = null; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); };
@@ -561,7 +577,7 @@ export default function BobBuilder() {
             <Link to="/builder" className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-lg transition-colors">
               <LayoutDashboard className="w-3.5 h-3.5" /> Builder Dashboard
             </Link>
-            <button onClick={() => setLaunched(false)} className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors">← New Session</button>
+            <button onClick={newSession} className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors">← New Session</button>
           </div>
         </div>
 
