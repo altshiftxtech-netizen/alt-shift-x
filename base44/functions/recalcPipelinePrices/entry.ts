@@ -13,10 +13,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Allow two callers: (1) an authenticated admin running it manually, or
+    // (2) the entity automation (no user context — it fires on Component changes).
+    let body = {};
+    try { body = await req.json(); } catch { /* no body */ }
+    const isAutomationTrigger = !!body?.event?.entity_name; // automation payload shape
+
+    if (!isAutomationTrigger) {
+      const user = await base44.auth.me();
+      if (user?.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
     }
 
     const [pipelines, allComponents, residentProfiles] = await Promise.all([
