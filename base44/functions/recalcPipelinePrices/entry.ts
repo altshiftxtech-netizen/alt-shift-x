@@ -65,10 +65,11 @@ Deno.serve(async (req) => {
       }
 
       const componentCount = included.size;
-      // Component prices are monthly ($/month) — a pipeline reflects the full
-      // ONE-YEAR subscription value, so sum monthly prices × 12.
+      // Component prices are monthly ($/month). These intelligence assets stay
+      // relevant ~10 years, so we price the pipeline at a fair 5-YEAR (60-month)
+      // subscription value — half the useful life.
       const monthlySum = [...included.values()].reduce((acc, c) => acc + (Number(c.price) || 0), 0);
-      const newPrice = Math.round(monthlySum * 12 * 100) / 100;
+      const newPrice = Math.round(monthlySum * 60 * 100) / 100;
 
       await base44.asServiceRole.entities.Pipeline.update(p.id, { price: newPrice });
 
