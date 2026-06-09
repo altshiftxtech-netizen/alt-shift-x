@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck, ArrowRight, Star, Lock } from "lucide-react";
-import InstallButton from "@/components/InstallButton";
 import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
 
 /**
@@ -58,18 +57,20 @@ export default function FeaturedSpotlight({ components = [], userId, installedMa
             </span>
           </div>
 
-          {/* Install (Stripe / PayPal) + affiliate share — stop the card link */}
+          {/* Affiliate share + gated CTA — payment only via the detail page legal walkthrough */}
           <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/10" onClick={(e) => e.preventDefault()}>
             <SpotlightShareButton component={c} />
-            <div className="ml-auto" onClick={(e) => e.preventDefault()}>
-              <InstallButton
-                component={c}
-                size="sm"
-                userId={userId}
-                installedRecord={installedMap[c.id] || null}
-                onUninstalled={onUninstalled}
-              />
-            </div>
+            {c.requires_legal_acceptance && (
+              <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-amber-300/80">
+                <Lock className="w-3 h-3" /> Disclaimer required before purchase
+              </span>
+            )}
+            <Link
+              to={`/marketplace/${c.id}`}
+              className="ml-auto inline-flex items-center gap-1.5 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Review &amp; Install <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </Link>
       ))}
