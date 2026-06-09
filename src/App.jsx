@@ -70,6 +70,9 @@ import UpKeeper from './pages/UpKeeper';
 import TaxCompliance from './pages/TaxCompliance';
 import Pipelines from './pages/Pipelines';
 import PipelineKeyReveal from './pages/PipelineKeyReveal';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Unsubscribe from './pages/Unsubscribe';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -108,6 +111,9 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/unsubscribe" element={<Unsubscribe />} />
       <Route path="/tutorials" element={<Tutorial />} />
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
       <Route path="/rollout-procedures" element={<RolloutProcedures />} />

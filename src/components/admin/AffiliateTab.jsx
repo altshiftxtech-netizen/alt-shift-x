@@ -9,11 +9,16 @@ const DESTINATIONS = [
   { id: "home", label: "Homepage", path: "/" },
   { id: "pricing", label: "Pricing (builder subs)", path: "/pricing" },
   { id: "marketplace", label: "Marketplace (Super Dev)", path: "/marketplace" },
+  { id: "product", label: "Product page (e.g. SAFEGUARD)", path: "/marketplace" },
 ];
 
 function buildUrl(link) {
-  const dest = DESTINATIONS.find(d => d.id === link.destination) || DESTINATIONS[0];
   const base = typeof window !== "undefined" ? window.location.origin : "";
+  // Product links land directly on the component detail page.
+  if (link.destination === "product" && link.product_id) {
+    return `${base}/marketplace/${link.product_id}?ref=${link.code}`;
+  }
+  const dest = DESTINATIONS.find(d => d.id === link.destination) || DESTINATIONS[0];
   return `${base}${dest.path}?ref=${link.code}`;
 }
 
@@ -24,7 +29,8 @@ export default function AffiliateTab() {
   const [copied, setCopied] = useState(null);
   const [seeding, setSeeding] = useState(false);
   const [user, setUser] = useState(null);
-  const [form, setForm] = useState({ campaign: "", label: "", destination: "home" });
+  const [products, setProducts] = useState([]);
+  const [form, setForm] = useState({ campaign: "", label: "", destination: "home", product_id: "" });
 
   const load = async () => {
     const data = await base44.entities.AffiliateLink.list("-created_date", 200).catch(() => []);
@@ -34,6 +40,7 @@ export default function AffiliateTab() {
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
+    base44.entities.Component.list("-created_date", 200).then(setProducts).catch(() => {});
     load();
   }, []);
 
@@ -42,17 +49,24 @@ export default function AffiliateTab() {
     "-" + Math.random().toString(36).slice(2, 7);
 
   const create = async () => {
+    if (form.destination === "product" && !form.product_id) {
+      alert("Pick a product for a product link.");
+      return;
+    }
     setCreating(true);
+    const prod = products.find((p) => p.id === form.product_id);
     await base44.entities.AffiliateLink.create({
       code: genCode(),
       campaign: form.campaign,
       label: form.label,
       destination: form.destination,
+      product_id: form.destination === "product" ? form.product_id : undefined,
+      product_name: form.destination === "product" ? (prod?.name || "") : undefined,
       owner_id: user?.id || "",
       owner_name: user?.full_name || "Admin",
       clicks: 0, signups: 0, paid_conversions: 0, revenue_total: 0, active: true,
     });
-    setForm({ campaign: "", label: "", destination: "home" });
+    setForm({ campaign: "", label: "", destination: "home", product_id: "" });
     await load();
     setCreating(false);
   };
@@ -108,6 +122,12 @@ export default function AffiliateTab() {
               {DESTINATIONS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
             </select>
           </div>
+          {form.destination === "product" && (
+            <select value={form.product_id} onChange={e => setForm(f => ({ ...f, product_id: e.target.value }))} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Select a product…</option>
+              {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
+            </select>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={create} disabled={creating} className="bg-slate-900 hover:bg-slate-800 text-white text-sm gap-2">
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />} Generate Link
@@ -130,6 +150,7 @@ export default function AffiliateTab() {
                   <div className="flex items-center gap-2 flex-wrap">
                     {l.campaign && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">{l.campaign}</span>}
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{l.destination}</span>
+                    {l.product_name && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{l.product_name}</span>}
                     {l.label && <span className="text-xs text-slate-500">{l.label}</span>}
                   </div>
                   <p className="text-xs font-mono text-slate-400 mt-1 truncate">{buildUrl(l)}</p>

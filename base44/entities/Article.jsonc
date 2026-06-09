@@ -1,0 +1,106 @@
+{
+  "name": "Article",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique identifier used at /blog/:slug"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "product",
+        "site",
+        "promotion",
+        "event",
+        "general"
+      ],
+      "default": "general",
+      "description": "What the article is about"
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "Short summary shown on the blog index card"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full article body in Markdown"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "AI-generated illustration used as the hero image"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "author_name": {
+      "type": "string",
+      "default": "The UpKeeper"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "default": "draft"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "body"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.status": "published"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

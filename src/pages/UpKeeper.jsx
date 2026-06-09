@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Send, Sparkles, Loader2, Paperclip, Mic, MicOff, X, ArrowRight,
-  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History
+  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History, Mail, Newspaper
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
@@ -11,6 +11,8 @@ import { buildDocContext } from "@/lib/extractDocText";
 import UpKeeperMessage from "@/components/upkeeper/UpKeeperMessage";
 import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
+import EmailCampaignStudio from "@/components/upkeeper/EmailCampaignStudio";
+import ArticleStudio from "@/components/upkeeper/ArticleStudio";
 import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
 import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
@@ -208,7 +210,7 @@ export default function UpKeeper() {
             The <span className="text-orange-400">UpKeeper</span>
           </h1>
           <p className="text-orange-200/70 text-lg mt-2 text-center max-w-md">
-            Your site superintendent. Monitor, fix, and grow the platform — and create & publish social content. Admins & staff only.
+            Your site superintendent. Monitor, fix, and grow the platform — and create &amp; publish social content. Admins &amp; staff only.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
             <span className="text-[11px] bg-emerald-900/60 text-emerald-400 px-2.5 py-1 rounded-full font-semibold border border-emerald-700/40 animate-pulse">● LIVE</span>
@@ -275,7 +277,7 @@ export default function UpKeeper() {
           </span>
           <div className="flex-1">
             <p className="font-semibold">Open Social Studio</p>
-            <p className="text-[11px] text-orange-200/50">Create photos, reels & videos and publish to linked accounts</p>
+            <p className="text-[11px] text-orange-200/50">Create photos, reels &amp; videos and publish to linked accounts</p>
           </div>
           <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-400" />
         </button>
@@ -309,6 +311,8 @@ export default function UpKeeper() {
   const TABS = [
     { id: "chat", label: "UpKeeper Chat", icon: Bot },
     { id: "social", label: "Social Studio", icon: Share2 },
+    { id: "email", label: "Email Studio", icon: Mail },
+    { id: "articles", label: "Article Studio", icon: Newspaper },
   ];
 
   return (
@@ -368,7 +372,7 @@ export default function UpKeeper() {
               {!isAdmin && (
                 <div className="bg-[#241812] border border-amber-800/40 rounded-xl p-3 flex items-start gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-orange-200/60 leading-relaxed">Your changes & posts are submitted for <strong className="text-amber-300">admin approval</strong> unless you're preauthorized.</p>
+                  <p className="text-[10px] text-orange-200/60 leading-relaxed">Your changes &amp; posts are submitted for <strong className="text-amber-300">admin approval</strong> unless you're preauthorized.</p>
                 </div>
               )}
             </div>
@@ -446,6 +450,10 @@ export default function UpKeeper() {
         {activeTab === "social" && (
           <SocialStudio isAdmin={isAdmin} user={user} conversationId={convId} />
         )}
+
+        {activeTab === "email" && <EmailCampaignStudio user={user} />}
+
+        {activeTab === "articles" && <ArticleStudio user={user} />}
       </div>
     </div>
   );

@@ -19,10 +19,19 @@
       "enum": [
         "home",
         "pricing",
-        "marketplace"
+        "marketplace",
+        "product"
       ],
       "default": "home",
-      "description": "Where the link lands: home (general signups), pricing (builder subs), marketplace (Super Dev / component purchases)"
+      "description": "Where the link lands: home (general signups), pricing (builder subs), marketplace (Super Dev / component purchases), product (a specific component detail page like SAFEGUARD)"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "When destination is 'product', the Component id the link points to (/marketplace/<product_id>)"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Display name of the targeted product, for admin reference"
     },
     "owner_id": {
       "type": "string",

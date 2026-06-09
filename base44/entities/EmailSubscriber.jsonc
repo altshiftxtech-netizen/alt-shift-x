@@ -1,0 +1,62 @@
+{
+  "name": "EmailSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Subscriber email address"
+    },
+    "name": {
+      "type": "string"
+    },
+    "audience": {
+      "type": "string",
+      "enum": [
+        "all_users",
+        "paying",
+        "builders",
+        "newsletter"
+      ],
+      "default": "newsletter",
+      "description": "Which audience segment this subscriber belongs to"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where the subscriber came from (e.g. manual, signup, import)"
+    },
+    "subscribed": {
+      "type": "boolean",
+      "default": true,
+      "description": "False when the person has opted out / unsubscribed"
+    },
+    "unsubscribe_token": {
+      "type": "string",
+      "description": "Opaque token used in unsubscribe links so people can opt out without logging in"
+    },
+    "unsubscribed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
