@@ -84,7 +84,7 @@ export default function SpotlightShareButton({ component }) {
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-2 right-0 z-50 bg-gray-900 border border-white/20 rounded-xl shadow-2xl p-4 w-64">
+        <div className="absolute bottom-full mb-2 left-0 z-[60] bg-gray-900 border border-white/20 rounded-xl shadow-2xl p-4 w-64">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-white/80 uppercase tracking-wider">Share {refCode ? "(Affiliate)" : ""}</span>
             <button onClick={(e) => { e.preventDefault(); setOpen(false); }} className="text-white/40 hover:text-white"><X className="w-3.5 h-3.5" /></button>

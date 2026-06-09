@@ -18,7 +18,7 @@ export default function FeaturedSpotlight({ components = [], userId, installedMa
         <Link
           key={c.id}
           to={`/marketplace/${c.id}`}
-          className="group relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/50 via-slate-900/70 to-black/70 backdrop-blur-md p-5 ring-1 ring-emerald-400/20 shadow-xl hover:border-emerald-400/70 transition-colors"
+          className="group relative rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/50 via-slate-900/70 to-black/70 backdrop-blur-md p-5 ring-1 ring-emerald-400/20 shadow-xl hover:border-emerald-400/70 transition-colors"
         >
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 flex items-center gap-1">

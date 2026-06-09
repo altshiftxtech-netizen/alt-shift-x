@@ -253,7 +253,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {spotlight.map((c) => (
               <Link key={c.id} to={`/marketplace/${c.id}`}>
-                <div className="relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/40 via-white/5 to-black/40 backdrop-blur-sm p-6 hover:border-emerald-400/70 transition-colors h-full">
+                <div className="relative rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/40 via-white/5 to-black/40 backdrop-blur-sm p-6 hover:border-emerald-400/70 transition-colors h-full">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300">Spotlight</span>
                     {c.requires_legal_acceptance && (
