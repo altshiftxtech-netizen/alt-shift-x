@@ -91,6 +91,15 @@ export const TUTORIALS = [
           "Use 'Uninstall' to remove one you no longer need.",
         ],
       },
+      {
+        title: "Downloading your components (ZIP)",
+        steps: [
+          "On standard paid accounts, open Dashboard → Installed Components.",
+          "Click 'Download ZIP' to bundle every component you own — full schema, JSON, and an install manifest.",
+          "Choose 'Download everything', 'Only new since last download', or hand-pick a batch.",
+          "The ZIP downloads straight to your device or cloud. (Free and developer accounts are excluded.)",
+        ],
+      },
     ],
   },
   {

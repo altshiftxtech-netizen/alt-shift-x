@@ -342,7 +342,7 @@ export default function Pricing() {
               {[
                 { step: "1", title: "Sign up free", desc: "Create your account and generate your first API key — no credit card required." },
                 { step: "2", title: "Browse & choose", desc: "Explore the marketplace. Pick the components that match your project needs." },
-                { step: "3", title: "Attach & pay", desc: "Attach a component to your API key. A monthly subscription starts only for that component." },
+                { step: "3", title: "Attach & pay", desc: "Attach a component to your API key. A monthly subscription starts only for that component. Paid accounts can also download all owned components as a ZIP (full schema + JSON)." },
               ].map(s => (
                 <div key={s.step} className="bg-white border border-slate-200 rounded-xl p-5 text-center">
                   <div className="w-8 h-8 rounded-full bg-slate-900 text-white text-sm font-black flex items-center justify-center mx-auto mb-3">{s.step}</div>
