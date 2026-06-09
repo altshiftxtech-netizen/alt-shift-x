@@ -4,11 +4,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * Admin-only one-time utility: recalculates each active pipeline's one-time
  * price as the SUM of the prices of all components it includes.
  *
- * Mirrors the Pipelines page resolution logic exactly:
- *  - curated_exclusive  → components matched by component_codes (deduped)
- *  - best_of_pool       → all published components with include_in_pipelines=true
- *  - resident_developer_ready → ALSO add all published components built by any
- *                               Resident Developer (UserAdminProfile.resident_developer)
+ * Membership & pricing per pipeline_type:
+ *  - curated_exclusive (Exclusive Pool) → components matched by component_codes
+ *      (+ all Resident Developer components when resident_developer_ready).
+ *      Priced one-time at a fair 5-YEAR value (monthly sum × 60).
+ *  - best_of_pool (Best-of Pool) → published components with include_in_pipelines=true.
+ *      Priced one-time at a fair 5-YEAR value (monthly sum × 60).
+ *  - open_contribution (Open Contribution Pipeline) → published components with
+ *      include_in_open_pipeline=true. Sold as a QUARTERLY subscription; each
+ *      quarterly charge = sum of contributors' monthly prices × 12.
  */
 Deno.serve(async (req) => {
   try {
@@ -42,6 +46,7 @@ Deno.serve(async (req) => {
     const residentIds = new Set((residentProfiles || []).map((p) => p.user_id));
     const residentComponents = allComponents.filter((c) => residentIds.has(c.builder_id));
     const poolComponents = allComponents.filter((c) => c.include_in_pipelines === true);
+    const openComponents = allComponents.filter((c) => c.include_in_open_pipeline === true);
 
     const results = [];
 
@@ -51,6 +56,8 @@ Deno.serve(async (req) => {
 
       if (p.pipeline_type === 'best_of_pool') {
         for (const c of poolComponents) included.set(c.id, c);
+      } else if (p.pipeline_type === 'open_contribution') {
+        for (const c of openComponents) included.set(c.id, c);
       } else {
         // curated_exclusive — resolve each code (dedup handled by the Map).
         for (const code of (p.component_codes || [])) {
@@ -65,11 +72,18 @@ Deno.serve(async (req) => {
       }
 
       const componentCount = included.size;
-      // Component prices are monthly ($/month). These intelligence assets stay
-      // relevant ~10 years, so we price the pipeline at a fair 5-YEAR (60-month)
-      // subscription value — half the useful life.
       const monthlySum = [...included.values()].reduce((acc, c) => acc + (Number(c.price) || 0), 0);
-      const newPrice = Math.round(monthlySum * 60 * 100) / 100;
+
+      let newPrice;
+      if (p.pipeline_type === 'open_contribution') {
+        // Open Contribution Pipeline — billed QUARTERLY; each quarterly charge is
+        // the sum of contributors' monthly prices × 12.
+        newPrice = Math.round(monthlySum * 12 * 100) / 100;
+      } else {
+        // The two pools — one-time, fair 5-YEAR value (monthly sum × 60), since
+        // these intelligence assets stay relevant ~10 years (half the useful life).
+        newPrice = Math.round(monthlySum * 60 * 100) / 100;
+      }
 
       await base44.asServiceRole.entities.Pipeline.update(p.id, { price: newPrice });
 
@@ -77,6 +91,7 @@ Deno.serve(async (req) => {
         id: p.id,
         name: p.name,
         pipeline_type: p.pipeline_type,
+        billing_cadence: p.billing_cadence,
         resident_developer_ready: !!p.resident_developer_ready,
         componentCount,
         oldPrice: p.price,

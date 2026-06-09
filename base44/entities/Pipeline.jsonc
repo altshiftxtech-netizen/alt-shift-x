@@ -22,10 +22,20 @@
       "type": "string",
       "enum": [
         "curated_exclusive",
-        "best_of_pool"
+        "best_of_pool",
+        "open_contribution"
       ],
       "default": "curated_exclusive",
-      "description": "curated_exclusive: admin-assembled named pipeline (e.g. the Alt+Shift+X Exclusive Magna Dev pipeline). best_of_pool: auto-bundle of all components developers opted into via include_in_pipelines."
+      "description": "curated_exclusive: the Exclusive Pool \u2014 Alt+Shift+X / Resident Developer components only. best_of_pool: the curated 'best of all' pool (Component.include_in_pipelines). open_contribution: the open pool any builder can contribute to (Component.include_in_open_pipeline), billed as a quarterly subscription."
+    },
+    "billing_cadence": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "quarterly"
+      ],
+      "default": "one_time",
+      "description": "one_time: full payment unlocks the key instantly (the two pools). quarterly: recurring subscription billed 4x/year (the open contribution pipeline)."
     },
     "buyer_kind": {
       "type": "string",
@@ -41,7 +51,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Component codes explicitly included (curated_exclusive). For best_of_pool this can be left empty \u2014 membership is derived from Component.include_in_pipelines."
+      "description": "Component codes explicitly included (curated_exclusive). For best_of_pool / open_contribution this can be left empty \u2014 membership is derived from the component opt-in flags."
     },
     "resident_developer_ready": {
       "type": "boolean",
@@ -50,7 +60,7 @@
     },
     "price": {
       "type": "number",
-      "description": "Total one-time enterprise pipeline price in USD (full payment unlocks the key instantly)."
+      "description": "For one_time pipelines: total one-time enterprise price in USD. For quarterly pipelines: the amount billed each quarter in USD."
     },
     "installs_count": {
       "type": "number",

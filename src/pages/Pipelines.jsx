@@ -13,19 +13,22 @@ export default function Pipelines() {
   const [loading, setLoading] = useState(true);
   const [pipelines, setPipelines] = useState([]);
   const [poolCount, setPoolCount] = useState(0);
+  const [openCount, setOpenCount] = useState(0);
   const [residentCount, setResidentCount] = useState(0);
   const [buying, setBuying] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const [pl, optedIn, residentProfiles] = await Promise.all([
+        const [pl, optedIn, openIn, residentProfiles] = await Promise.all([
           base44.entities.Pipeline.filter({ active: true }, "-featured"),
           base44.entities.Component.filter({ include_in_pipelines: true, status: "published" }),
+          base44.entities.Component.filter({ include_in_open_pipeline: true, status: "published" }),
           base44.entities.UserAdminProfile.filter({ resident_developer: true }),
         ]);
         setPipelines(pl || []);
         setPoolCount((optedIn || []).length);
+        setOpenCount((openIn || []).length);
 
         // Resident Developer pipelines (e.g. Alt+Shift+X Exclusive) auto-include every
         // published component built by any Resident Developer — currently Magna Dev.
@@ -46,6 +49,7 @@ export default function Pipelines() {
 
   const countFor = (p) => {
     if (p.pipeline_type === "best_of_pool") return poolCount;
+    if (p.pipeline_type === "open_contribution") return openCount;
     const explicit = (p.component_codes || []).length;
     // Resident-developer-ready curated pipelines expand to include all resident dev components.
     return p.resident_developer_ready ? explicit + residentCount : explicit;

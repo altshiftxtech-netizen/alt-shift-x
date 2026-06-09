@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ShieldCheck, Building2, Layers, ArrowRight, Crown } from "lucide-react";
+import { Sparkles, ShieldCheck, Building2, Layers, ArrowRight, Crown, Users } from "lucide-react";
 
 /**
  * Enterprise pipeline card — designed to appeal to large companies: trust badges,
@@ -9,7 +9,12 @@ import { Sparkles, ShieldCheck, Building2, Layers, ArrowRight, Crown } from "luc
  */
 export default function PipelineCard({ pipeline, componentCount, onBuy }) {
   const isExclusive = pipeline.pipeline_type === "curated_exclusive";
+  const isOpen = pipeline.pipeline_type === "open_contribution";
+  const isQuarterly = (pipeline.billing_cadence || "one_time") === "quarterly";
   const isBusiness = (pipeline.buyer_kind || "business") === "business";
+
+  const typeLabel = isExclusive ? "Alt+Shift+X Developers" : isOpen ? "Open Contribution" : "Best-of Pipeline";
+  const TypeIcon = isExclusive ? Sparkles : isOpen ? Users : Layers;
 
   return (
     <Card className={`relative overflow-hidden border bg-slate-900 ${isExclusive ? "border-amber-600/50" : "border-slate-700"}`}>
@@ -20,9 +25,9 @@ export default function PipelineCard({ pipeline, componentCount, onBuy }) {
       )}
       <div className="p-6">
         <div className="flex items-center gap-2 mb-3">
-          {isExclusive ? <Sparkles className="w-4 h-4 text-amber-400" /> : <Layers className="w-4 h-4 text-violet-400" />}
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isExclusive ? "bg-amber-900/40 text-amber-300 border border-amber-700/40" : "bg-violet-900/40 text-violet-300 border border-violet-700/40"}`}>
-            {isExclusive ? "Alt+Shift+X Developers" : "Best-of Pipeline"}
+          <TypeIcon className={`w-4 h-4 ${isExclusive ? "text-amber-400" : isOpen ? "text-emerald-400" : "text-violet-400"}`} />
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isExclusive ? "bg-amber-900/40 text-amber-300 border border-amber-700/40" : isOpen ? "bg-emerald-900/40 text-emerald-300 border border-emerald-700/40" : "bg-violet-900/40 text-violet-300 border border-violet-700/40"}`}>
+            {typeLabel}
           </span>
           {isBusiness && (
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 flex items-center gap-1">
@@ -41,8 +46,10 @@ export default function PipelineCard({ pipeline, componentCount, onBuy }) {
             <p className="text-xl font-black text-white mt-0.5">{componentCount}</p>
           </div>
           <div className="bg-slate-800/60 rounded-lg p-3">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wide">One-time price</p>
-            <p className="text-xl font-black text-white mt-0.5">${Number(pipeline.price || 0).toLocaleString()}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wide">{isQuarterly ? "Per quarter" : "One-time price"}</p>
+            <p className="text-xl font-black text-white mt-0.5">
+              ${Number(pipeline.price || 0).toLocaleString()}{isQuarterly && <span className="text-xs font-bold text-slate-400">/qtr</span>}
+            </p>
           </div>
         </div>
 
@@ -54,11 +61,13 @@ export default function PipelineCard({ pipeline, componentCount, onBuy }) {
 
         <div className="flex items-center gap-2 mt-4 text-[11px] text-slate-500">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          Full payment unlocks your secure key instantly — shown once.
+          {isQuarterly
+            ? "Quarterly subscription — billed 4× a year, cancel anytime."
+            : "Full payment unlocks your secure key instantly — shown once."}
         </div>
 
         <Button onClick={() => onBuy(pipeline)} className="w-full mt-4 bg-violet-600 hover:bg-violet-700 gap-2">
-          Get Pipeline Key <ArrowRight className="w-4 h-4" />
+          {isQuarterly ? "Subscribe to Pipeline" : "Get Pipeline Key"} <ArrowRight className="w-4 h-4" />
         </Button>
         <div className="flex items-center justify-center gap-3 mt-3 text-[10px] text-slate-600">
           <span>Stripe</span><span>·</span><span>PayPal</span><span>·</span><span>Coinbase (soon)</span>

@@ -107,6 +107,11 @@
       "default": false,
       "description": "Builder opt-in: when true, this component is eligible to be bundled into the shared 'best-of' Pipeline pool that enterprise pipeline keys can access."
     },
+    "include_in_open_pipeline": {
+      "type": "boolean",
+      "default": false,
+      "description": "Builder opt-in: when true, this component is contributed to the Open Contribution Pipeline \u2014 the open pool any builder can add to, sold as a quarterly subscription."
+    },
     "rating": {
       "type": "number",
       "default": 0

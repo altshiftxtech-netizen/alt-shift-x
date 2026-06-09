@@ -95,8 +95,9 @@ export default function ComponentCard({ component: c, onViewHistory, onRemoved }
         </div>
 
         {c.id && (
-          <div className="mt-2.5">
-            <PipelineOptInToggle componentId={c.id} initial={c.include_in_pipelines} />
+          <div className="mt-2.5 space-y-1.5">
+            <PipelineOptInToggle componentId={c.id} initial={c.include_in_pipelines} variant="best_of" />
+            <PipelineOptInToggle componentId={c.id} initial={c.include_in_open_pipeline} variant="open" />
           </div>
         )}
       </CardContent>
