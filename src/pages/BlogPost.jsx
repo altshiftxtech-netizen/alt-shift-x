@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import { Loader2, ArrowLeft, Calendar } from "lucide-react";
+import BlogReactions from "@/components/blog/BlogReactions";
+import BlogComments from "@/components/blog/BlogComments";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -52,6 +54,9 @@ export default function BlogPost() {
         <ReactMarkdown className="prose prose-slate max-w-none prose-headings:font-bold prose-a:text-violet-600">
           {article.body}
         </ReactMarkdown>
+
+        <BlogReactions slug={article.slug} />
+        <BlogComments slug={article.slug} />
       </div>
     </div>
   );

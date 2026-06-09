@@ -1,0 +1,51 @@
+{
+  "name": "BlogComment",
+  "type": "object",
+  "properties": {
+    "article_slug": {
+      "type": "string",
+      "description": "Slug of the article this comment belongs to"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Display name of the commenter"
+    },
+    "body": {
+      "type": "string",
+      "description": "Comment text"
+    }
+  },
+  "required": [
+    "article_slug",
+    "author_name",
+    "body"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
