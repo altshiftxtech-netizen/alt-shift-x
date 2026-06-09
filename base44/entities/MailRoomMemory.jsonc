@@ -1,0 +1,67 @@
+{
+  "name": "MailRoomMemory",
+  "type": "object",
+  "properties": {
+    "memory_key": {
+      "type": "string",
+      "description": "Stable key for the single live memory row, always 'live'"
+    },
+    "facts": {
+      "type": "array",
+      "description": "Accumulated facts/observations the mail room AI has learned about how to respond and about recipients",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "description": "e.g. tone, common_question, recipient_pattern, policy"
+          },
+          "learned_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "tone_guidance": {
+      "type": "string",
+      "description": "Admin-editable guidance on the voice/tone the AI should use when drafting and acknowledging"
+    },
+    "total_messages_seen": {
+      "type": "number",
+      "default": 0
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "memory_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

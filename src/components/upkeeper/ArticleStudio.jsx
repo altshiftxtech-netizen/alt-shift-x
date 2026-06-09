@@ -24,7 +24,23 @@ export default function ArticleStudio({ user }) {
   const [publishing, setPublishing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [articles, setArticles] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const fileRef = useRef(null);
+
+  const editArticle = (a) => {
+    setEditingId(a.id);
+    setCategory(a.category || "general");
+    setDraft({
+      title: a.title || "",
+      excerpt: a.excerpt || "",
+      body: a.body || "",
+      tags: a.tags || [],
+      hero_image_url: a.hero_image_url || "",
+    });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => { setDraft(null); setEditingId(null); setTopic(""); };
 
   const load = async () => {
     const list = await base44.entities.Article.list("-created_date", 30).catch(() => []);
@@ -77,9 +93,8 @@ export default function ArticleStudio({ user }) {
   const save = async (status) => {
     if (!draft?.title || !draft?.body) return;
     setPublishing(true);
-    await base44.entities.Article.create({
+    const payload = {
       title: draft.title,
-      slug: slugify(draft.title),
       category,
       excerpt: draft.excerpt,
       body: draft.body,
@@ -88,8 +103,13 @@ export default function ArticleStudio({ user }) {
       author_name: user?.full_name || "The UpKeeper",
       status,
       published_at: status === "published" ? new Date().toISOString() : undefined,
-    });
-    setDraft(null); setTopic("");
+    };
+    if (editingId) {
+      await base44.entities.Article.update(editingId, payload);
+    } else {
+      await base44.entities.Article.create({ ...payload, slug: slugify(draft.title) });
+    }
+    setDraft(null); setTopic(""); setEditingId(null);
     await load();
     setPublishing(false);
   };
@@ -127,6 +147,12 @@ export default function ArticleStudio({ user }) {
 
         {draft && (
           <div className="space-y-3 pt-2 border-t border-orange-900/40">
+            {editingId && (
+              <div className="flex items-center justify-between bg-[#2a1d16] border border-orange-900/40 rounded-lg px-3 py-2">
+                <span className="text-[11px] font-semibold text-orange-200 flex items-center gap-1.5"><FileEdit className="w-3.5 h-3.5 text-orange-400" /> Editing existing article</span>
+                <button onClick={cancelEdit} className="text-[11px] font-semibold text-orange-300 hover:text-white">Cancel</button>
+              </div>
+            )}
             {draft.hero_image_url && (
               <img src={draft.hero_image_url} alt="" className="w-full max-h-48 object-cover rounded-lg border border-orange-900/40" />
             )}
@@ -184,6 +210,10 @@ export default function ArticleStudio({ user }) {
                   <p className="text-sm font-semibold text-orange-50 truncate">{a.title}</p>
                   <p className="text-[11px] text-orange-200/50 capitalize">{a.category} · {a.status}</p>
                 </div>
+                <button onClick={() => editArticle(a)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-orange-300 hover:text-white shrink-0 bg-[#2a1d16] hover:bg-[#3a2a24] border border-orange-900/40 px-2 py-1 rounded-lg transition-colors">
+                  <FileEdit className="w-3 h-3" /> Edit
+                </button>
                 {a.status === "published" && (
                   <a href={`/blog/${a.slug}`} target="_blank" rel="noreferrer"
                     className="text-[11px] font-semibold text-orange-300 hover:text-white shrink-0">View →</a>

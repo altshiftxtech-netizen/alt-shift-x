@@ -1,0 +1,104 @@
+{
+  "name": "InboundMessage",
+  "type": "object",
+  "properties": {
+    "from_email": {
+      "type": "string",
+      "description": "Sender email address"
+    },
+    "from_name": {
+      "type": "string"
+    },
+    "to_email": {
+      "type": "string",
+      "description": "The mail room address it was sent to"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "body_text": {
+      "type": "string",
+      "description": "Plain-text body of the incoming email"
+    },
+    "body_html": {
+      "type": "string"
+    },
+    "subscriber_id": {
+      "type": "string",
+      "description": "Matched EmailSubscriber id, if the sender is a known recipient"
+    },
+    "in_reply_to_campaign_id": {
+      "type": "string",
+      "description": "Campaign this is likely a reply to, if detectable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unread",
+        "read",
+        "replied",
+        "acknowledged",
+        "archived"
+      ],
+      "default": "unread"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "negative",
+        "urgent",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "AI-classified sentiment of the message"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "Short AI summary of what the sender wants"
+    },
+    "ai_suggested_reply": {
+      "type": "string",
+      "description": "AI-drafted reply the admin can edit and send"
+    },
+    "ai_intent": {
+      "type": "string",
+      "description": "AI-detected intent (e.g. 'pricing question', 'support', 'unsubscribe request')"
+    },
+    "auto_acknowledged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether an automatic acknowledgement email was sent"
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "from_email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

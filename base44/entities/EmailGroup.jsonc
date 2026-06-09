@@ -1,0 +1,48 @@
+{
+  "name": "EmailGroup",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Group / list name (e.g. 'SafeGuard Parents', 'Beta Builders')"
+    },
+    "description": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color for the group chip, e.g. #7c3aed",
+      "default": "#7c3aed"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached count of subscribers in this group"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
