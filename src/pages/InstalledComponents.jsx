@@ -53,8 +53,8 @@ export default function InstalledComponents() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Installed Components</h1>
-            <p className="text-sm text-slate-400">{components.length} active</p>
+            <h1 className="text-2xl font-bold text-slate-900">Our Component Dashboard</h1>
+            <p className="text-sm text-slate-400">{components.length} active components</p>
           </div>
           <div className="flex items-center gap-2">
             <ComponentZipExport eligible={zipEligible} installs={components} />
@@ -128,7 +128,7 @@ export default function InstalledComponents() {
             {components.length === 0 && (
               <div className="text-center py-16">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 font-semibold mb-2">No components installed</p>
+                <p className="text-slate-500 font-semibold mb-2">No components in your dashboard</p>
                 <Link to="/marketplace"><Button className="bg-violet-700 hover:bg-violet-800 text-white text-sm">Browse Marketplace</Button></Link>
               </div>
             )}
