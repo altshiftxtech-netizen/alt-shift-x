@@ -123,6 +123,7 @@ export default function BobBuilder() {
   const [uploading, setUploading] = useState(false);
   const [notifyWhenDone, setNotifyWhenDone] = useState(false);
   const [emailWhenDone, setEmailWhenDone] = useState(false);
+  const [historyRefresh, setHistoryRefresh] = useState(0); // bump → reloads the Wipe Board list
 
   // Framework
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
@@ -170,6 +171,10 @@ export default function BobBuilder() {
       // No confident success → stay silent (no chime, no "ready/question" guess).
 
       if (notifyPendingRef.current) { notifyPendingRef.current = false; notifyJobComplete(last); }
+
+      // A turn finished → the project may have just been auto-titled; refresh the
+      // Wipe Board so newly-created sessions show up without a manual reload.
+      setHistoryRefresh((s) => s + 1);
     });
   }, [setOnDone, emailWhenDone, convId]);
 
@@ -625,7 +630,7 @@ export default function BobBuilder() {
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
-              <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} />
+              <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} refreshSignal={historyRefresh} />
               <BobVoiceSettings />
               <Card className="bg-slate-800 border-slate-700">
                 <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle></CardHeader>
@@ -663,7 +668,7 @@ export default function BobBuilder() {
               )}
 
               <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[520px]">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3 max-h-[520px]">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />

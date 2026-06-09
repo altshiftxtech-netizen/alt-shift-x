@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
 // record, soft-delete to Trash, restore, or permanently delete (two-step).
-export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onSpinOff }) {
+export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onSpinOff, refreshSignal }) {
   const [convos, setConvos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(null);
@@ -34,7 +34,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [activeConvId]);
+  useEffect(() => { load(); }, [activeConvId, refreshSignal]);
 
   const isTrashed = (c) => !!c.metadata?.trashed;
   // Hide stale, never-used projects: conversations still named "New Project" are
@@ -60,37 +60,52 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   // record to the builder so they keep a copy of the wiped project.
   const trashProject = async (c) => {
     setBusy(c.id);
-    await base44.agents.updateConversation(c.id, {
-      metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-    });
-    // Fire-and-forget: email the ESI record to the builder's own address.
-    base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
-    setConfirmTrash(null);
-    await load();
-    setShowTrash(true);
-    setBusy(null);
+    try {
+      await base44.agents.updateConversation(c.id, {
+        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
+      });
+      // Fire-and-forget: email the ESI record to the builder's own address.
+      base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
+      await load();
+      setShowTrash(true);
+    } catch {
+      // swallow — never leave the row stuck spinning
+    } finally {
+      setConfirmTrash(null);
+      setBusy(null);
+    }
   };
 
   const restoreProject = async (c) => {
     setBusy(c.id);
-    const md = { ...(c.metadata || {}) };
-    delete md.trashed;
-    delete md.trashed_at;
-    await base44.agents.updateConversation(c.id, { metadata: md });
-    await load();
-    setBusy(null);
+    try {
+      const md = { ...(c.metadata || {}) };
+      delete md.trashed;
+      delete md.trashed_at;
+      await base44.agents.updateConversation(c.id, { metadata: md });
+      await load();
+    } catch {
+      // swallow
+    } finally {
+      setBusy(null);
+    }
   };
 
   // Permanent delete — second step after confirmation. The agents SDK has no
   // hard-delete, so we flag the project `cleared`; load() filters it out for good.
   const finalDelete = async (c) => {
     setBusy(c.id);
-    await base44.agents.updateConversation(c.id, {
-      metadata: { ...(c.metadata || {}), cleared: true, cleared_at: new Date().toISOString() },
-    });
-    setConfirmDelete(null);
-    await load();
-    setBusy(null);
+    try {
+      await base44.agents.updateConversation(c.id, {
+        metadata: { ...(c.metadata || {}), cleared: true, cleared_at: new Date().toISOString() },
+      });
+      await load();
+    } catch {
+      // swallow
+    } finally {
+      setConfirmDelete(null);
+      setBusy(null);
+    }
   };
 
   const handleEsi = async (c) => {
@@ -136,16 +151,19 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   // each project's ESI record to the builder so nothing is lost.
   const clearHistory = async () => {
     setClearing(true);
-    for (const c of active) {
-      await base44.agents.updateConversation(c.id, {
-        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-      });
-      base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
+    try {
+      for (const c of active) {
+        await base44.agents.updateConversation(c.id, {
+          metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
+        }).catch(() => {});
+        base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
+      }
+      await load();
+      setShowTrash(true);
+    } finally {
+      setConfirmClear(false);
+      setClearing(false);
     }
-    setConfirmClear(false);
-    await load();
-    setShowTrash(true);
-    setClearing(false);
   };
 
   const titleFor = (c) => {
@@ -168,6 +186,9 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
             <History className="w-3.5 h-3.5 text-violet-400" /> Wipe Board · History
+            <button onClick={load} title="Refresh project list" className="text-slate-500 hover:text-violet-300 transition-colors">
+              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+            </button>
           </span>
           {confirmWipe ? (
             <div className="flex items-center gap-1.5">
