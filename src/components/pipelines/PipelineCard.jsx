@@ -22,7 +22,7 @@ export default function PipelineCard({ pipeline, componentCount, onBuy }) {
         <div className="flex items-center gap-2 mb-3">
           {isExclusive ? <Sparkles className="w-4 h-4 text-amber-400" /> : <Layers className="w-4 h-4 text-violet-400" />}
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isExclusive ? "bg-amber-900/40 text-amber-300 border border-amber-700/40" : "bg-violet-900/40 text-violet-300 border border-violet-700/40"}`}>
-            {isExclusive ? "Alt+Shift+X Exclusive" : "Best-of Pipeline"}
+            {isExclusive ? "Alt+Shift+X Developers" : "Best-of Pipeline"}
           </span>
           {isBusiness && (
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 flex items-center gap-1">
