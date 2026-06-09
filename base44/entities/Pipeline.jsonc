@@ -52,6 +52,11 @@
       "type": "number",
       "description": "Total one-time enterprise pipeline price in USD (full payment unlocks the key instantly)."
     },
+    "installs_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of enterprise keys provisioned for this pipeline."
+    },
     "featured": {
       "type": "boolean",
       "default": false,
