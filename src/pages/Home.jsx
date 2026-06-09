@@ -55,9 +55,12 @@ export default function Home() {
         const list = data || [];
         setComponentCount(list.length);
         setFeatured(list.slice(0, 3));
-        setSpotlight(
-          list.filter((c) => c.featured).sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999))
-        );
+        // Spotlight = any explicitly-featured component, plus SAFEGUARD pinned to the front by code.
+        const safeguard = list.find((c) => c.code === "SAFEGUARD-1.0");
+        const featuredList = list
+          .filter((c) => c.featured && c.code !== "SAFEGUARD-1.0")
+          .sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999));
+        setSpotlight(safeguard ? [safeguard, ...featuredList] : featuredList);
         const scored = list.filter((c) => c.trust_score > 0);
         if (scored.length) {
           setAvgTrust(Math.round(scored.reduce((s, c) => s + c.trust_score, 0) / scored.length));

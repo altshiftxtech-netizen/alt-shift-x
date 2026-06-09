@@ -160,12 +160,13 @@ export default function Marketplace() {
 
   // Spotlight: components explicitly flagged `featured` lead the whole page
   // (above the Enterprise Pipelines promo). Sorted by optional pinned_position.
-  const spotlight = useMemo(
-    () => components
-      .filter((c) => c.featured)
-      .sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999)),
-    [components]
-  );
+  const spotlight = useMemo(() => {
+    const safeguard = components.find((c) => c.code === "SAFEGUARD-1.0");
+    const rest = components
+      .filter((c) => c.featured && c.code !== "SAFEGUARD-1.0")
+      .sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999));
+    return safeguard ? [safeguard, ...rest] : rest;
+  }, [components]);
   const spotlightIds = useMemo(() => new Set(spotlight.map((c) => c.id)), [spotlight]);
 
   const filtered = useMemo(() => components
