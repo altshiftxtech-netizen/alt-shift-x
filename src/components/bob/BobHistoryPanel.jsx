@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
 
@@ -20,6 +20,9 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [confirmClear, setConfirmClear] = useState(false); // clear-history confirm state
   const [clearing, setClearing] = useState(false);
   const [confirmWipe, setConfirmWipe] = useState(false); // wipe-board confirm state
+  const [editing, setEditing] = useState(null); // conversation id whose title is being edited
+  const [draftTitle, setDraftTitle] = useState("");
+  const [savingTitle, setSavingTitle] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -166,6 +169,28 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     }
   };
 
+  const startEdit = (c) => {
+    setEditing(c.id);
+    setDraftTitle(titleFor(c) === "New Project" ? "" : titleFor(c));
+  };
+
+  const saveTitle = async (c) => {
+    const name = draftTitle.trim();
+    if (!name) { setEditing(null); return; }
+    setSavingTitle(true);
+    try {
+      await base44.agents.updateConversation(c.id, {
+        metadata: { ...(c.metadata || {}), name },
+      });
+      await load();
+    } catch {
+      // swallow
+    } finally {
+      setSavingTitle(false);
+      setEditing(null);
+    }
+  };
+
   const titleFor = (c) => {
     const n = c.metadata?.name;
     if (!n || n === "New Project") return "New Project";
@@ -273,15 +298,39 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                 key={c.id}
                 className={`px-3 py-2.5 transition-colors ${c.id === activeConvId ? "bg-violet-900/30" : "hover:bg-slate-700/40"}`}
               >
-                <button onClick={() => onOpen(c)} className="w-full text-left">
-                  <p className="text-[11px] font-semibold text-slate-200 truncate flex items-center gap-1.5">
-                    <MessageSquare className="w-3 h-3 text-violet-400 flex-shrink-0" />
-                    {titleFor(c)}
-                  </p>
-                  <p className="text-[9px] text-slate-500 flex items-center gap-1 mt-0.5">
-                    <Clock className="w-2.5 h-2.5" /> {timeFor(c)}
-                  </p>
-                </button>
+                {editing === c.id ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      autoFocus
+                      value={draftTitle}
+                      onChange={(e) => setDraftTitle(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") saveTitle(c); if (e.key === "Escape") setEditing(null); }}
+                      placeholder="Project title…"
+                      className="flex-1 min-w-0 text-[11px] font-semibold text-slate-100 bg-slate-900 border border-violet-600 rounded-md px-2 py-1 outline-none"
+                    />
+                    <button onClick={() => saveTitle(c)} disabled={savingTitle} title="Save" className="text-emerald-400 hover:text-emerald-300 p-1">
+                      {savingTitle ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    </button>
+                    <button onClick={() => setEditing(null)} title="Cancel" className="text-slate-500 hover:text-white p-1">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onOpen(c)} className="flex-1 min-w-0 text-left">
+                      <p className="text-[11px] font-semibold text-slate-200 truncate flex items-center gap-1.5">
+                        <MessageSquare className="w-3 h-3 text-violet-400 flex-shrink-0" />
+                        {titleFor(c)}
+                      </p>
+                      <p className="text-[9px] text-slate-500 flex items-center gap-1 mt-0.5">
+                        <Clock className="w-2.5 h-2.5" /> {timeFor(c)}
+                      </p>
+                    </button>
+                    <button onClick={() => startEdit(c)} title="Rename project" className="text-slate-500 hover:text-violet-300 p-1 flex-shrink-0">
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
                 <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                   <button
                     onClick={() => handleSpinOff(c)}
