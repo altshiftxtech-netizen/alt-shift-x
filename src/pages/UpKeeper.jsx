@@ -13,6 +13,7 @@ import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
 import EmailCampaignStudio from "@/components/upkeeper/EmailCampaignStudio";
 import ArticleStudio from "@/components/upkeeper/ArticleStudio";
+import BlogManager from "@/components/upkeeper/BlogManager";
 import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
 import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
@@ -313,6 +314,7 @@ export default function UpKeeper() {
     { id: "social", label: "Social Studio", icon: Share2 },
     { id: "email", label: "Email Studio", icon: Mail },
     { id: "articles", label: "Article Studio", icon: Newspaper },
+    { id: "blog", label: "Blog Manager", icon: MessageSquare },
   ];
 
   return (
@@ -454,6 +456,8 @@ export default function UpKeeper() {
         {activeTab === "email" && <EmailCampaignStudio user={user} />}
 
         {activeTab === "articles" && <ArticleStudio user={user} />}
+
+        {activeTab === "blog" && <BlogManager />}
       </div>
     </div>
   );
