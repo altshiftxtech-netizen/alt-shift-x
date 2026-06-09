@@ -250,7 +250,7 @@ export default function Home() {
             <ShieldCheck className="w-5 h-5 text-emerald-300" />
             <h2 className="text-2xl font-bold text-white">Featured Protection</h2>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5">
             {spotlight.map((c) => (
               <Link key={c.id} to={`/marketplace/${c.id}`}>
                 <div className="relative rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/40 via-white/5 to-black/40 backdrop-blur-sm p-6 hover:border-emerald-400/70 transition-colors h-full">

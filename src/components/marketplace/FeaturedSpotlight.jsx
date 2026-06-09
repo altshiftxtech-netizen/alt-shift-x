@@ -13,7 +13,7 @@ export default function FeaturedSpotlight({ components = [], userId, installedMa
   if (!components.length) return null;
 
   return (
-    <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="mb-6 grid grid-cols-1 gap-4">
       {components.map((c) => (
         <Link
           key={c.id}
