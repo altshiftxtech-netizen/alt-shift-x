@@ -100,7 +100,7 @@ export default function ArticleStudio({ user }) {
       body: draft.body,
       hero_image_url: draft.hero_image_url || undefined,
       tags: draft.tags,
-      author_name: user?.full_name || "The UpKeeper",
+      author_name: "Alt+Shift+X",
       status,
       published_at: status === "published" ? new Date().toISOString() : undefined,
     };
