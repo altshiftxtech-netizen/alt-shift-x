@@ -5,6 +5,7 @@ import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Use
 import InstallButton from "@/components/InstallButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
+import ReactMarkdown from "react-markdown";
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -85,7 +86,23 @@ export default function ComponentDetail() {
               </div>
               <h1 className="text-3xl font-black text-slate-900 mb-1">{component.name}</h1>
               <p className="text-sm font-mono text-slate-400 mb-4">{component.code}</p>
-              <p className="text-slate-600 leading-relaxed">{component.longDesc}</p>
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => <h2 className="text-xl font-bold text-slate-900 mt-6 mb-3 first:mt-0">{children}</h2>,
+                  h2: ({ children }) => <h3 className="text-lg font-bold text-slate-900 mt-6 mb-2.5 first:mt-0">{children}</h3>,
+                  h3: ({ children }) => <h4 className="text-base font-semibold text-slate-900 mt-5 mb-2 first:mt-0">{children}</h4>,
+                  p: ({ children }) => <p className="text-slate-600 leading-relaxed mb-4">{children}</p>,
+                  strong: ({ children }) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                  ul: ({ children }) => <ul className="list-disc pl-5 space-y-1.5 mb-4 text-slate-600">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1.5 mb-4 text-slate-600">{children}</ol>,
+                  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                  blockquote: ({ children }) => <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-500 my-4">{children}</blockquote>,
+                  a: ({ children, href }) => <a href={href} className="text-violet-600 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                  hr: () => <hr className="my-6 border-slate-200" />,
+                }}
+              >
+                {component.longDesc}
+              </ReactMarkdown>
             </div>
 
             {/* Features */}
