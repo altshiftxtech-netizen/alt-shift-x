@@ -1,0 +1,21 @@
+{
+  "name": "Alt+Shift+X Market",
+  "short_name": "Alt+Shift+X",
+  "description": "Verified AI-powered components for construction intelligence",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5b21b6",
+  "icons": [
+    {
+      "src": "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d476ae1cb_altxlogo2.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d476ae1cb_altxlogo2.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
