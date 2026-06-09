@@ -12,6 +12,7 @@ import VideoBackground from "@/components/VideoBackground";
 import ComponentSharePanel from "@/components/ComponentSharePanel";
 import FilterPanel from "@/components/marketplace/FilterPanel";
 import MarketplacePagination from "@/components/marketplace/MarketplacePagination";
+import FeaturedSpotlight from "@/components/marketplace/FeaturedSpotlight";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
@@ -157,8 +158,21 @@ export default function Marketplace() {
   const activeKit = featuredKit || FALLBACK_KIT;
   const PINNED_CODES = activeKit.component_codes || [];
 
+  // Spotlight: components explicitly flagged `featured` lead the whole page
+  // (above the Enterprise Pipelines promo). Sorted by optional pinned_position.
+  const spotlight = useMemo(
+    () => components
+      .filter((c) => c.featured)
+      .sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999)),
+    [components]
+  );
+  const spotlightIds = useMemo(() => new Set(spotlight.map((c) => c.id)), [spotlight]);
+
   const filtered = useMemo(() => components
     .filter(c => {
+      // Spotlighted (featured) components render in the hero strip — keep them
+      // out of the normal grid only on the default "All" + no-search view.
+      if (category === "All" && !search && spotlightIds.has(c.id)) return false;
       const effectiveCategory = COMPONENT_CATEGORY_OVERRIDE[c.code] || c.category;
       const categoryMatch = category === "All" || effectiveCategory === category;
       const typeMatch = type === "All" || c.type === type;
@@ -178,7 +192,7 @@ export default function Marketplace() {
         }
       }
       return sortBy === "rating" ? (b.rating || 0) - (a.rating || 0) : sortBy === "trust" ? (b.trust_score || 0) - (a.trust_score || 0) : (b.installs_count || 0) - (a.installs_count || 0);
-    }), [components, category, type, search, sortBy]);
+    }), [components, category, type, search, sortBy, spotlightIds]);
 
   // Reset to the first page whenever the result set changes (filters/search/sort).
   useEffect(() => { setPage(1); }, [category, type, search, sortBy]);
@@ -264,6 +278,9 @@ export default function Marketplace() {
             </select>
           </div>
         </div>
+
+        {/* Featured Protection spotlight — pinned above pipelines (e.g. SAFEGUARD-1.0) */}
+        {!loading && category === "All" && !search && <FeaturedSpotlight components={spotlight} />}
 
         {/* Enterprise Pipelines promo — for big companies */}
         <Link to="/pipelines" className="block mb-6 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-900/40 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-amber-400/70 transition-colors group">
@@ -421,6 +438,14 @@ export default function Marketplace() {
                           {PINNED_CODES.includes(c.code) && <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>}
                         </div>
                         <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
+                        {c.builder_id && (
+                          <button
+                            onClick={(e) => { e.preventDefault(); window.location.href = `/builders/${c.builder_id}`; }}
+                            className="text-[11px] text-violet-300 hover:text-violet-100 hover:underline mb-0.5 block text-left"
+                          >
+                            by {c.builder_name || "View developer"}
+                          </button>
+                        )}
                         <p className="text-[10px] font-mono text-white/40 mb-2">{c.code}</p>
                         <p className="text-xs text-white/60 flex-1 line-clamp-2 mb-3">
                           {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}

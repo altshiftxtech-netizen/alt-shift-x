@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import NonMagnaReminderDialog from "@/components/install/NonMagnaReminderDialog";
+import SafeguardLegalGate from "@/components/install/SafeguardLegalGate";
 
 // Accounts that are only provisioned with Magna Dev components.
 const RESTRICTED_ROLES = ["staff", "builder"];
@@ -24,21 +25,32 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   const [localRecord, setLocalRecord] = useState(installedRecord);
   const [showReminder, setShowReminder] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  // Legal gating (e.g. SAFEGUARD): walkthrough must be accepted before checkout.
+  const [showLegalGate, setShowLegalGate] = useState(false);
+  const [legalAccepted, setLegalAccepted] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState(null); // "card" | "paypal"
 
-  // Figure out if this is a restricted (staff/builder) account.
+  // Figure out if this is a restricted (staff/builder) account + any prior legal acceptance.
   useEffect(() => {
     (async () => {
       try {
         const me = await base44.auth.me();
         setUserRole(me?.role || null);
+        if (component?.requires_legal_acceptance && me?.id) {
+          const prior = await base44.entities.LegalAcceptance
+            .filter({ user_id: me.id, component_code: component.code })
+            .catch(() => []);
+          if (prior && prior.length > 0) setLegalAccepted(true);
+        }
       } catch {
         setUserRole(null);
       }
     })();
-  }, []);
+  }, [component?.id]);
 
   const isRestricted = RESTRICTED_ROLES.includes(userRole);
   const needsReminder = isRestricted && !isMagnaDev(component);
+  const needsLegalGate = !!component?.requires_legal_acceptance && !legalAccepted;
 
   const proceedToCardCheckout = async () => {
     setShowReminder(false);
@@ -57,6 +69,12 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   };
 
   const handleInstall = async () => {
+    // Legally-gated components require the disclaimer walkthrough first.
+    if (needsLegalGate) {
+      setPendingProvider("card");
+      setShowLegalGate(true);
+      return;
+    }
     // Staff/builder accounts get a friendly reminder before any non-Magna purchase.
     if (needsReminder) {
       setShowReminder(true);
@@ -77,6 +95,11 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   };
 
   const handlePaypalInstall = async () => {
+    if (needsLegalGate) {
+      setPendingProvider("paypal");
+      setShowLegalGate(true);
+      return;
+    }
     if (needsReminder) {
       setShowReminder(true);
       return;
@@ -101,6 +124,27 @@ export default function InstallButton({ component, userId, installedRecord, onUn
     setLocalRecord(null);
     if (onUninstalled) onUninstalled(component.id);
     setLoading(false);
+  };
+
+  // After the legal walkthrough is accepted, resume the originally-clicked checkout
+  // directly (don't re-call the handlers — legalAccepted state hasn't flushed yet).
+  const onLegalAccepted = async () => {
+    setLegalAccepted(true);
+    const provider = pendingProvider;
+    setPendingProvider(null);
+    if (window.self !== window.top) {
+      alert("Checkout is only available from the published app. Please open the live URL.");
+      return;
+    }
+    setLoading(true);
+    const fn = provider === "paypal" ? "createPaypalCheckout" : "createCheckoutSession";
+    const res = await base44.functions.invoke(fn, { componentId: component.id });
+    if (res.data?.url) {
+      window.location.href = res.data.url;
+    } else {
+      alert("Could not start checkout. Please try again.");
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -136,6 +180,13 @@ export default function InstallButton({ component, userId, installedRecord, onUn
         onOpenChange={setShowReminder}
         componentName={component?.name}
         onProceed={proceedToCardCheckout}
+      />
+
+      <SafeguardLegalGate
+        open={showLegalGate}
+        onOpenChange={setShowLegalGate}
+        component={component}
+        onAccepted={onLegalAccepted}
       />
     </div>
   );

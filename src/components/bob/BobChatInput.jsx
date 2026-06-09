@@ -11,7 +11,7 @@ import MarkdownToolbar from "./MarkdownToolbar";
  * Controlled: value + onChange(text). onSubmit fires on Enter (no shift).
  * clearSignal: bump to refocus after a send.
  */
-export default function BobChatInput({
+function BobChatInput({
   value = "",
   onChange,
   onSubmit,
@@ -67,3 +67,5 @@ export default function BobChatInput({
     </div>
   );
 }
+
+export default React.memo(BobChatInput);

@@ -45,6 +45,7 @@ export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [featured, setFeatured] = useState([]);
+  const [spotlight, setSpotlight] = useState([]);
   const [componentCount, setComponentCount] = useState(0);
   const [avgTrust, setAvgTrust] = useState(null);
 
@@ -54,6 +55,9 @@ export default function Home() {
         const list = data || [];
         setComponentCount(list.length);
         setFeatured(list.slice(0, 3));
+        setSpotlight(
+          list.filter((c) => c.featured).sort((a, b) => (a.pinned_position ?? 999) - (b.pinned_position ?? 999))
+        );
         const scored = list.filter((c) => c.trust_score > 0);
         if (scored.length) {
           setAvgTrust(Math.round(scored.reduce((s, c) => s + c.trust_score, 0) / scored.length));
@@ -214,6 +218,36 @@ export default function Home() {
                 View Agreement Details
               </Link>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Protection spotlight (bottom) */}
+      {spotlight.length > 0 && (
+        <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-center gap-2 mb-6">
+            <ShieldCheck className="w-5 h-5 text-emerald-300" />
+            <h2 className="text-2xl font-bold text-white">Featured Protection</h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {spotlight.map((c) => (
+              <Link key={c.id} to={`/marketplace/${c.id}`}>
+                <div className="relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/40 via-white/5 to-black/40 backdrop-blur-sm p-6 hover:border-emerald-400/70 transition-colors h-full">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300">Spotlight</span>
+                    {c.requires_legal_acceptance && (
+                      <span className="text-[9px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full">Legal gating</span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-extrabold text-white mb-1">{c.name}</h3>
+                  <p className="text-[11px] font-mono text-white/40 mb-3">{c.code}</p>
+                  <p className="text-sm text-white/60 line-clamp-3 mb-4">{c.description}</p>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-300">
+                    View details <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}

@@ -1,0 +1,62 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { ShieldCheck, ArrowRight, Star, Lock } from "lucide-react";
+
+/**
+ * FeaturedSpotlight — a pinned hero strip for components flagged `featured`.
+ * Rendered at the very top of the marketplace, above the Enterprise Pipelines
+ * promo, so spotlighted protection components (e.g. SAFEGUARD-1.0) lead the page.
+ */
+export default function FeaturedSpotlight({ components = [] }) {
+  if (!components.length) return null;
+
+  return (
+    <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {components.map((c) => (
+        <Link
+          key={c.id}
+          to={`/marketplace/${c.id}`}
+          className="group relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-900/50 via-slate-900/70 to-black/70 backdrop-blur-md p-5 ring-1 ring-emerald-400/20 shadow-xl hover:border-emerald-400/70 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" /> Featured Protection
+            </span>
+            {c.requires_legal_acceptance && (
+              <span className="text-[9px] font-bold bg-amber-400 text-black px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <Lock className="w-2.5 h-2.5" /> Legal gating
+              </span>
+            )}
+            {c.certified && (
+              <span className="text-[9px] font-semibold text-emerald-200 bg-emerald-800/60 px-1.5 py-0.5 rounded-full">Certified</span>
+            )}
+          </div>
+
+          <h2 className="text-2xl font-extrabold text-white mb-1 group-hover:text-emerald-200 transition-colors">
+            {c.name}
+          </h2>
+          <p className="text-[11px] font-mono text-white/40 mb-3">{c.code}</p>
+          <p className="text-sm text-white/70 leading-relaxed line-clamp-3 mb-4">{c.description}</p>
+
+          <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            <div className="flex items-center gap-3 text-xs">
+              {(c.rating || 0) > 0 && (
+                <span className="flex items-center gap-1 text-amber-300">
+                  <Star className="w-3.5 h-3.5 fill-amber-300 stroke-amber-300" /> {(c.rating || 0).toFixed(1)}
+                </span>
+              )}
+              {(c.trust_score || 0) > 0 && (
+                <span className="flex items-center gap-1 text-emerald-300">
+                  <ShieldCheck className="w-3.5 h-3.5" /> {c.trust_score} Trust
+                </span>
+              )}
+            </div>
+            <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 group-hover:translate-x-0.5 transition-transform">
+              View details <ArrowRight className="w-4 h-4" />
+            </span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}

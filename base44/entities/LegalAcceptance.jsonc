@@ -1,0 +1,70 @@
+{
+  "name": "LegalAcceptance",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID of the person who accepted"
+    },
+    "component_code": {
+      "type": "string",
+      "description": "Code of the component the legal walkthrough was accepted for (e.g. SAFEGUARD-1.0)"
+    },
+    "component_id": {
+      "type": "string"
+    },
+    "accepted_clauses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Titles/ids of each disclaimer the user explicitly checked"
+    },
+    "signature_name": {
+      "type": "string",
+      "description": "Typed full-name signature attesting acceptance"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "component_code"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

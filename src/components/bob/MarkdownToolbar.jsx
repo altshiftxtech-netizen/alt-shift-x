@@ -24,7 +24,7 @@ const WRAPS = [
   { icon: Link2, title: "Link", before: "[", after: "](url)", ph: "text" },
 ];
 
-export default function MarkdownToolbar({ textareaRef, value = "", onChange }) {
+function MarkdownToolbar({ textareaRef, value = "", onChange }) {
   const apply = (tool) => {
     const el = textareaRef?.current;
     const start = el ? el.selectionStart : value.length;
@@ -73,3 +73,5 @@ export default function MarkdownToolbar({ textareaRef, value = "", onChange }) {
     </div>
   );
 }
+
+export default React.memo(MarkdownToolbar);

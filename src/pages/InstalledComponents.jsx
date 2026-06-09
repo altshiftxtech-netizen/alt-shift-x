@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Trash2, ExternalLink, Terminal, Package, Download, Loader2 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import { exportInstalledComponentsPdf } from "@/utils/exportPdf";
+import ComponentZipExport from "@/components/install/ComponentZipExport";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
@@ -12,6 +13,8 @@ const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-
 export default function InstalledComponents() {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
+  // ZIP export is for standard paid accounts only — NOT developers or free plans.
+  const [zipEligible, setZipEligible] = useState(false);
 
   // Load the user's REAL installed components from the database.
   useEffect(() => {
@@ -20,6 +23,16 @@ export default function InstalledComponents() {
         const me = await base44.auth.me();
         const records = await base44.entities.InstalledComponent.filter({ user_id: me.id }, "-installed_at");
         setComponents(records);
+
+        // Eligibility: paid plan AND not a developer/builder.
+        const [subs, profiles, owned] = await Promise.all([
+          base44.entities.Subscription.filter({ user_id: me.id }).catch(() => []),
+          base44.entities.UserAdminProfile.filter({ user_id: me.id }).catch(() => []),
+          base44.entities.Component.filter({ builder_id: me.id }).catch(() => []),
+        ]);
+        const plan = subs?.[0]?.plan || "free";
+        const isDeveloper = profiles?.[0]?.resident_developer === true || (owned || []).length > 0;
+        setZipEligible(plan !== "free" && !isDeveloper);
       } catch {
         setComponents([]);
       } finally {
@@ -44,6 +57,7 @@ export default function InstalledComponents() {
             <p className="text-sm text-slate-400">{components.length} active</p>
           </div>
           <div className="flex items-center gap-2">
+            <ComponentZipExport eligible={zipEligible} installs={components} />
             <Button variant="outline" className="text-sm h-9 gap-2" onClick={() => exportInstalledComponentsPdf(components)}>
               <Download className="w-4 h-4" /> Export PDF
             </Button>
