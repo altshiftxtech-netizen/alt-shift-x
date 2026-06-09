@@ -1,7 +1,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
-// Admin-only: send an email campaign to a chosen audience segment.
-// Each email includes a working unsubscribe link so recipients can opt out.
+// Admin-only: send an email campaign to a chosen audience segment via Resend.
+// Resend can deliver to any (imported) address, unlike Base44's built-in email
+// which only sends to registered app users. Each email includes an unsubscribe link.
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,6 +10,14 @@ Deno.serve(async (req) => {
     if (user?.role !== "admin") {
       return Response.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
+
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      return Response.json({ error: "RESEND_API_KEY is not set" }, { status: 500 });
+    }
+    // Sending address: use your verified Resend domain. Falls back to Resend's
+    // shared onboarding sender for testing if you haven't verified a domain yet.
+    const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "Alt+Shift+X <onboarding@resend.dev>";
 
     const { campaignId } = await req.json();
     if (!campaignId) {
@@ -39,30 +48,61 @@ Deno.serve(async (req) => {
       return true;
     });
 
+    if (recipients.length === 0) {
+      await base44.asServiceRole.entities.EmailCampaign.update(campaignId, {
+        status: "failed", recipient_count: 0, sent_count: 0, failed_count: 0,
+      });
+      return Response.json({ ok: false, error: "No subscribers in this audience", sent: 0, failed: 0 }, { status: 200 });
+    }
+
     await base44.asServiceRole.entities.EmailCampaign.update(campaignId, {
       status: "sending",
       recipient_count: recipients.length,
     });
 
     const origin = req.headers.get("origin") || `https://${Deno.env.get("BASE44_APP_ID")}.base44.app`;
+    const escapeHtml = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
     let sent = 0;
     let failed = 0;
+    const errors = [];
 
+    // Send one-by-one so each recipient gets a personalized unsubscribe link.
+    // Resend rate limit is ~10 req/s on default plans; small delay keeps us safe.
     for (const r of recipients) {
       try {
         const unsubUrl = `${origin}/unsubscribe?token=${encodeURIComponent(r.unsubscribe_token || "")}&email=${encodeURIComponent(r.email)}`;
-        const footer = `\n\n———\nYou're receiving this because you subscribed to Alt+Shift+X updates.\nUnsubscribe: ${unsubUrl}`;
-        await base44.integrations.Core.SendEmail({
-          to: r.email,
-          subject: campaign.subject,
-          body: `${campaign.body}${footer}`,
-          from_name: campaign.created_by_name || "Alt+Shift+X",
+        const bodyHtml = escapeHtml(campaign.body).replace(/\n/g, "<br>");
+        const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${bodyHtml}<hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"><p style="font-size:12px;color:#888">You're receiving this because you subscribed to Alt+Shift+X updates.<br><a href="${unsubUrl}" style="color:#888">Unsubscribe</a></p></div>`;
+
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: r.email,
+            subject: campaign.subject,
+            html,
+          }),
         });
-        sent++;
+
+        if (res.ok) {
+          sent++;
+        } else {
+          failed++;
+          const errText = await res.text();
+          if (errors.length < 3) errors.push(`${r.email}: ${errText.slice(0, 200)}`);
+          console.error(`[sendEmailCampaign] Resend failed to ${r.email}: ${res.status} ${errText}`);
+        }
       } catch (e) {
-        console.error(`[sendEmailCampaign] failed to ${r.email}:`, e.message);
         failed++;
+        if (errors.length < 3) errors.push(`${r.email}: ${e.message}`);
+        console.error(`[sendEmailCampaign] failed to ${r.email}:`, e.message);
       }
+      await new Promise((resolve) => setTimeout(resolve, 120));
     }
 
     await base44.asServiceRole.entities.EmailCampaign.update(campaignId, {
@@ -73,7 +113,7 @@ Deno.serve(async (req) => {
     });
 
     console.log(`[sendEmailCampaign] campaign=${campaignId} sent=${sent} failed=${failed}`);
-    return Response.json({ ok: true, sent, failed, recipients: recipients.length });
+    return Response.json({ ok: sent > 0, sent, failed, recipients: recipients.length, errors });
   } catch (err) {
     console.error("[sendEmailCampaign] error:", err.message);
     return Response.json({ error: err.message }, { status: 500 });

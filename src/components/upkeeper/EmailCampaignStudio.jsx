@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Mail, Sparkles, Loader2, Send, RefreshCw, Users, CheckCircle2, XCircle, Clock, Inbox } from "lucide-react";
 import RecipientManager from "@/components/mailroom/RecipientManager";
 import InboxPanel from "@/components/mailroom/InboxPanel";
+import CampaignDetailModal from "@/components/upkeeper/CampaignDetailModal";
 
 const AUDIENCES = [
   { key: "newsletter", label: "Newsletter" },
@@ -30,6 +31,7 @@ export default function EmailCampaignStudio({ user }) {
   const [campaigns, setCampaigns] = useState([]);
   const [counts, setCounts] = useState({});
   const [view, setView] = useState("compose");
+  const [selected, setSelected] = useState(null);
 
   const load = async () => {
     const list = await base44.entities.EmailCampaign.list("-created_date", 30).catch(() => []);
@@ -74,7 +76,16 @@ export default function EmailCampaignStudio({ user }) {
       subject, body, audience, status: "draft",
       created_by_name: user?.full_name || "Admin",
     });
-    await base44.functions.invoke("sendEmailCampaign", { campaignId: campaign.id }).catch(() => {});
+    const res = await base44.functions.invoke("sendEmailCampaign", { campaignId: campaign.id })
+      .catch((e) => ({ data: { error: e?.response?.data?.error || e.message } }));
+    const d = res?.data || {};
+    if (d.error) {
+      alert(`Send failed: ${d.error}`);
+    } else if (d.sent === 0 && d.failed > 0) {
+      alert(`All ${d.failed} emails failed.${d.errors?.length ? "\n\n" + d.errors.join("\n") : ""}`);
+    } else {
+      alert(`Sent ${d.sent} email${d.sent === 1 ? "" : "s"}${d.failed ? `, ${d.failed} failed` : ""}.`);
+    }
     setSubject(""); setBody(""); setBrief("");
     await load();
     setSending(false);
@@ -177,7 +188,8 @@ export default function EmailCampaignStudio({ user }) {
             {campaigns.map((c) => {
               const Icon = c.status === "sent" ? CheckCircle2 : c.status === "failed" ? XCircle : Clock;
               return (
-                <div key={c.id} className="bg-[#241812] border border-orange-900/40 rounded-xl p-3">
+                <button key={c.id} onClick={() => setSelected(c)}
+                  className="w-full text-left bg-[#241812] border border-orange-900/40 hover:border-orange-600 rounded-xl p-3 transition-colors">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-orange-50 truncate">{c.subject}</p>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 ${STATUS_STYLE[c.status] || STATUS_STYLE.draft}`}>
@@ -187,7 +199,7 @@ export default function EmailCampaignStudio({ user }) {
                   <p className="text-[11px] text-orange-200/50 mt-1 capitalize">
                     {c.audience?.replace("_", " ")} · {c.sent_count || 0} sent{c.failed_count ? ` · ${c.failed_count} failed` : ""}
                   </p>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -195,6 +207,8 @@ export default function EmailCampaignStudio({ user }) {
       </div>
     </div>
       )}
+
+      {selected && <CampaignDetailModal campaign={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
