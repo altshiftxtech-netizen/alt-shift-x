@@ -65,8 +65,10 @@ Deno.serve(async (req) => {
       }
 
       const componentCount = included.size;
-      const sum = [...included.values()].reduce((acc, c) => acc + (Number(c.price) || 0), 0);
-      const newPrice = Math.round(sum * 100) / 100;
+      // Component prices are monthly ($/month) — a pipeline reflects the full
+      // ONE-YEAR subscription value, so sum monthly prices × 12.
+      const monthlySum = [...included.values()].reduce((acc, c) => acc + (Number(c.price) || 0), 0);
+      const newPrice = Math.round(monthlySum * 12 * 100) / 100;
 
       await base44.asServiceRole.entities.Pipeline.update(p.id, { price: newPrice });
 
