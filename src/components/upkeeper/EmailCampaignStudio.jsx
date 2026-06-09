@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Mail, Sparkles, Loader2, Send, RefreshCw, Users, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Mail, Sparkles, Loader2, Send, RefreshCw, Users, CheckCircle2, XCircle, Clock, Inbox } from "lucide-react";
+import RecipientManager from "@/components/mailroom/RecipientManager";
+import InboxPanel from "@/components/mailroom/InboxPanel";
 
 const AUDIENCES = [
   { key: "newsletter", label: "Newsletter" },
@@ -27,6 +29,7 @@ export default function EmailCampaignStudio({ user }) {
   const [syncing, setSyncing] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [counts, setCounts] = useState({});
+  const [view, setView] = useState("compose");
 
   const load = async () => {
     const list = await base44.entities.EmailCampaign.list("-created_date", 30).catch(() => []);
@@ -77,7 +80,27 @@ export default function EmailCampaignStudio({ user }) {
     setSending(false);
   };
 
+  const SUBTABS = [
+    { id: "compose", label: "Compose", icon: Mail },
+    { id: "recipients", label: "Recipients & Groups", icon: Users },
+    { id: "inbox", label: "Inbox", icon: Inbox },
+  ];
+
   return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-1 bg-[#1a120d] border border-orange-900/40 rounded-xl p-1 max-w-md">
+        {SUBTABS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setView(id)}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all ${view === id ? "bg-orange-600 text-white shadow" : "text-orange-200/60 hover:text-white hover:bg-[#2a1d16]"}`}>
+            <Icon className="w-3.5 h-3.5" />{label}
+          </button>
+        ))}
+      </div>
+
+      {view === "recipients" && <RecipientManager />}
+      {view === "inbox" && <InboxPanel />}
+
+      {view === "compose" && (
     <div className="grid lg:grid-cols-2 gap-4">
       {/* Composer */}
       <div className="bg-[#241812] border border-orange-900/40 rounded-2xl p-4 space-y-4">
@@ -170,6 +193,8 @@ export default function EmailCampaignStudio({ user }) {
           </div>
         )}
       </div>
+    </div>
+      )}
     </div>
   );
 }
