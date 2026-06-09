@@ -7,6 +7,8 @@ import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
 import PlatformSocials from "@/components/PlatformSocials";
+import InstallButton from "@/components/InstallButton";
+import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -48,6 +50,22 @@ export default function Home() {
   const [spotlight, setSpotlight] = useState([]);
   const [componentCount, setComponentCount] = useState(0);
   const [avgTrust, setAvgTrust] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [installedMap, setInstalledMap] = useState({});
+
+  useEffect(() => {
+    base44.auth.me()
+      .then(async (user) => {
+        setCurrentUser(user);
+        if (user) {
+          const installed = await base44.entities.InstalledComponent.filter({ user_id: user.id });
+          const map = {};
+          (installed || []).forEach((r) => { map[r.component_id] = r; });
+          setInstalledMap(map);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     base44.entities.Component.filter({ status: "published" }, "-installs_count", 100)
@@ -248,6 +266,20 @@ export default function Home() {
                   <span className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-300">
                     View details <ArrowRight className="w-4 h-4" />
                   </span>
+
+                  {/* Install (Stripe / PayPal) + affiliate share */}
+                  <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/10" onClick={(e) => e.preventDefault()}>
+                    <SpotlightShareButton component={c} />
+                    <div className="ml-auto" onClick={(e) => e.preventDefault()}>
+                      <InstallButton
+                        component={c}
+                        size="sm"
+                        userId={currentUser?.id}
+                        installedRecord={installedMap[c.id] || null}
+                        onUninstalled={(cid) => setInstalledMap((m) => { const n = { ...m }; delete n[cid]; return n; })}
+                      />
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}

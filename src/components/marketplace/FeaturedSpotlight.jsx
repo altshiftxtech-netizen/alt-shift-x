@@ -1,13 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck, ArrowRight, Star, Lock } from "lucide-react";
+import InstallButton from "@/components/InstallButton";
+import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
 
 /**
  * FeaturedSpotlight — a pinned hero strip for components flagged `featured`.
  * Rendered at the very top of the marketplace, above the Enterprise Pipelines
  * promo, so spotlighted protection components (e.g. SAFEGUARD-1.0) lead the page.
  */
-export default function FeaturedSpotlight({ components = [] }) {
+export default function FeaturedSpotlight({ components = [], userId, installedMap = {}, isAuthenticated, onUninstalled }) {
   if (!components.length) return null;
 
   return (
@@ -54,6 +56,20 @@ export default function FeaturedSpotlight({ components = [] }) {
             <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 group-hover:translate-x-0.5 transition-transform">
               View details <ArrowRight className="w-4 h-4" />
             </span>
+          </div>
+
+          {/* Install (Stripe / PayPal) + affiliate share — stop the card link */}
+          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/10" onClick={(e) => e.preventDefault()}>
+            <SpotlightShareButton component={c} />
+            <div className="ml-auto" onClick={(e) => e.preventDefault()}>
+              <InstallButton
+                component={c}
+                size="sm"
+                userId={userId}
+                installedRecord={installedMap[c.id] || null}
+                onUninstalled={onUninstalled}
+              />
+            </div>
           </div>
         </Link>
       ))}
