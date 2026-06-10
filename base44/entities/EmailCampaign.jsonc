@@ -25,15 +25,42 @@
       "default": "newsletter",
       "description": "Which subscriber segment this campaign targets"
     },
+    "attachments": {
+      "type": "array",
+      "description": "Files attached to this email. Stored as uploaded file URLs.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "If set, the campaign is sent automatically at this time instead of immediately."
+    },
     "status": {
       "type": "string",
       "enum": [
         "draft",
+        "scheduled",
         "sending",
         "sent",
-        "failed"
+        "failed",
+        "archived"
       ],
       "default": "draft"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the campaign has been archived out of the active history view"
     },
     "sent_count": {
       "type": "number",
@@ -43,6 +70,11 @@
     "failed_count": {
       "type": "number",
       "default": 0
+    },
+    "open_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of unique recipients who opened the email (read receipts)"
     },
     "recipient_count": {
       "type": "number",

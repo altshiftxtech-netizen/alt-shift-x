@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Mail, Sparkles, Loader2, Send, RefreshCw, Users, CheckCircle2, XCircle, Clock, Inbox } from "lucide-react";
+import { Mail, Sparkles, Loader2, Send, RefreshCw, Users, CheckCircle2, XCircle, Clock, Inbox, CalendarClock, Archive, Eye } from "lucide-react";
 import RecipientManager from "@/components/mailroom/RecipientManager";
 import InboxPanel from "@/components/mailroom/InboxPanel";
 import CampaignDetailModal from "@/components/upkeeper/CampaignDetailModal";
+import AttachmentUploader from "@/components/mailroom/AttachmentUploader";
 
 const AUDIENCES = [
   { key: "newsletter", label: "Newsletter" },
@@ -14,9 +15,11 @@ const AUDIENCES = [
 
 const STATUS_STYLE = {
   draft: "bg-slate-700/40 text-slate-300",
+  scheduled: "bg-blue-900/40 text-blue-300",
   sending: "bg-amber-900/40 text-amber-300",
   sent: "bg-emerald-900/40 text-emerald-300",
   failed: "bg-red-900/40 text-red-300",
+  archived: "bg-slate-800/40 text-slate-500",
 };
 
 // Mailchimp-style email studio: compose (AI-assisted) + audience + history.
@@ -25,6 +28,8 @@ export default function EmailCampaignStudio({ user }) {
   const [audience, setAudience] = useState("newsletter");
   const [brief, setBrief] = useState("");
   const [body, setBody] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const [scheduledFor, setScheduledFor] = useState("");
   const [genBody, setGenBody] = useState(false);
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -32,9 +37,10 @@ export default function EmailCampaignStudio({ user }) {
   const [counts, setCounts] = useState({});
   const [view, setView] = useState("compose");
   const [selected, setSelected] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
-    const list = await base44.entities.EmailCampaign.list("-created_date", 30).catch(() => []);
+    const list = await base44.entities.EmailCampaign.list("-created_date", 50).catch(() => []);
     setCampaigns(list);
     const subs = await base44.entities.EmailSubscriber.filter({ subscribed: true }).catch(() => []);
     const c = { all_users: subs.length, newsletter: 0, paying: 0, builders: 0 };
@@ -68,12 +74,41 @@ export default function EmailCampaignStudio({ user }) {
     setSyncing(false);
   };
 
+  const isScheduled = !!scheduledFor;
+
+  const resetComposer = () => {
+    setSubject(""); setBody(""); setBrief(""); setAttachments([]); setScheduledFor("");
+  };
+
   const sendCampaign = async () => {
     if (!subject.trim() || !body.trim()) return;
-    if (!window.confirm(`Send "${subject}" to ${audienceCount} ${audience.replace("_", " ")} subscriber(s)?`)) return;
+
+    // Scheduled path — store the campaign as "scheduled"; the automation sends it.
+    if (isScheduled) {
+      const when = new Date(scheduledFor);
+      if (isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+        alert("Pick a schedule time in the future.");
+        return;
+      }
+      if (!window.confirm(`Schedule "${subject}" to ${audienceCount} ${audience.replace("_", " ")} subscriber(s) for ${when.toLocaleString()}?`)) return;
+      setSending(true);
+      await base44.entities.EmailCampaign.create({
+        subject, body, audience, attachments, status: "scheduled",
+        scheduled_for: when.toISOString(),
+        created_by_name: user?.full_name || "Admin",
+      });
+      alert(`Scheduled for ${when.toLocaleString()}.`);
+      resetComposer();
+      await load();
+      setSending(false);
+      return;
+    }
+
+    // Immediate send.
+    if (!window.confirm(`Send "${subject}" to ${audienceCount} ${audience.replace("_", " ")} subscriber(s) now?`)) return;
     setSending(true);
     const campaign = await base44.entities.EmailCampaign.create({
-      subject, body, audience, status: "draft",
+      subject, body, audience, attachments, status: "draft",
       created_by_name: user?.full_name || "Admin",
     });
     const res = await base44.functions.invoke("sendEmailCampaign", { campaignId: campaign.id })
@@ -86,9 +121,15 @@ export default function EmailCampaignStudio({ user }) {
     } else {
       alert(`Sent ${d.sent} email${d.sent === 1 ? "" : "s"}${d.failed ? `, ${d.failed} failed` : ""}.`);
     }
-    setSubject(""); setBody(""); setBrief("");
+    resetComposer();
     await load();
     setSending(false);
+  };
+
+  const archiveCampaign = async (e, c) => {
+    e.stopPropagation();
+    await base44.entities.EmailCampaign.update(c.id, { archived: !c.archived }).catch(() => {});
+    await load();
   };
 
   const SUBTABS = [
@@ -164,12 +205,31 @@ export default function EmailCampaignStudio({ user }) {
           <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8}
             placeholder="Write or generate the email body…"
             className="w-full bg-[#1a120d] text-orange-50 text-sm px-3 py-2 rounded-lg border border-orange-900/40 outline-none focus:border-orange-600 resize-none" />
-          <p className="text-[10px] text-orange-200/40 mt-1">An unsubscribe link is added automatically to every email.</p>
+          <p className="text-[10px] text-orange-200/40 mt-1">An unsubscribe link &amp; open-tracking are added automatically. Read receipts appear in Campaign History.</p>
+        </div>
+
+        {/* Attachments */}
+        <AttachmentUploader attachments={attachments} onChange={setAttachments} />
+
+        {/* Schedule */}
+        <div>
+          <label className="text-[11px] font-semibold text-orange-200/70 mb-1.5 flex items-center gap-1.5">
+            <CalendarClock className="w-3.5 h-3.5 text-orange-400" /> Schedule send (optional)
+          </label>
+          <div className="flex items-center gap-2">
+            <input type="datetime-local" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)}
+              className="flex-1 bg-[#1a120d] text-orange-50 text-sm px-3 py-2 rounded-lg border border-orange-900/40 outline-none focus:border-orange-600" />
+            {scheduledFor && (
+              <button onClick={() => setScheduledFor("")} className="text-orange-300/60 hover:text-white text-[11px] px-2 py-2">Clear</button>
+            )}
+          </div>
+          <p className="text-[10px] text-orange-200/40 mt-1">Leave empty to send immediately.</p>
         </div>
 
         <button onClick={sendCampaign} disabled={sending || !subject.trim() || !body.trim()}
           className="w-full flex items-center justify-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:opacity-90 px-4 py-2.5 rounded-xl disabled:opacity-50 transition-opacity">
-          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Send to {audienceCount} subscriber{audienceCount === 1 ? "" : "s"}
+          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : isScheduled ? <CalendarClock className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+          {isScheduled ? "Schedule" : "Send now"} to {audienceCount} subscriber{audienceCount === 1 ? "" : "s"}
         </button>
       </div>
 
@@ -177,33 +237,55 @@ export default function EmailCampaignStudio({ user }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-orange-100">Campaign History</h3>
-          <button onClick={load} className="text-orange-300 hover:text-white p-1 rounded-lg hover:bg-[#2a1d16]">
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setShowArchived((v) => !v)}
+              className={`text-[10px] font-semibold px-2 py-1 rounded-lg border transition-colors ${showArchived ? "bg-orange-600 text-white border-orange-500" : "text-orange-200/60 border-orange-900/40 hover:border-orange-700"}`}>
+              {showArchived ? "Showing archived" : "Show archived"}
+            </button>
+            <button onClick={load} className="text-orange-300 hover:text-white p-1 rounded-lg hover:bg-[#2a1d16]">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-        {campaigns.length === 0 ? (
-          <p className="text-xs text-orange-200/50 py-6 text-center">No campaigns sent yet.</p>
-        ) : (
+        {(() => {
+          const visibleCampaigns = campaigns.filter((c) => (showArchived ? c.archived : !c.archived));
+          if (visibleCampaigns.length === 0) {
+            return <p className="text-xs text-orange-200/50 py-6 text-center">{showArchived ? "No archived campaigns." : "No campaigns yet."}</p>;
+          }
+          return (
           <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-            {campaigns.map((c) => {
-              const Icon = c.status === "sent" ? CheckCircle2 : c.status === "failed" ? XCircle : Clock;
+            {visibleCampaigns.map((c) => {
+              const Icon = c.status === "sent" ? CheckCircle2 : c.status === "failed" ? XCircle : c.status === "scheduled" ? CalendarClock : Clock;
               return (
-                <button key={c.id} onClick={() => setSelected(c)}
-                  className="w-full text-left bg-[#241812] border border-orange-900/40 hover:border-orange-600 rounded-xl p-3 transition-colors">
+                <div key={c.id} onClick={() => setSelected(c)}
+                  className="w-full text-left bg-[#241812] border border-orange-900/40 hover:border-orange-600 rounded-xl p-3 transition-colors cursor-pointer">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-orange-50 truncate">{c.subject}</p>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 ${STATUS_STYLE[c.status] || STATUS_STYLE.draft}`}>
-                      <Icon className="w-3 h-3" /> {c.status}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${STATUS_STYLE[c.status] || STATUS_STYLE.draft}`}>
+                        <Icon className="w-3 h-3" /> {c.status}
+                      </span>
+                      <button onClick={(e) => archiveCampaign(e, c)} title={c.archived ? "Unarchive" : "Archive"}
+                        className="text-orange-300/50 hover:text-orange-200 p-0.5 rounded hover:bg-[#3a2a24]">
+                        <Archive className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-orange-200/50 mt-1 capitalize">
-                    {c.audience?.replace("_", " ")} · {c.sent_count || 0} sent{c.failed_count ? ` · ${c.failed_count} failed` : ""}
-                  </p>
-                </button>
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-orange-200/50 capitalize">
+                    <span>{c.audience?.replace("_", " ")}</span>
+                    {c.status === "scheduled" && c.scheduled_for
+                      ? <span className="text-blue-300">· {new Date(c.scheduled_for).toLocaleString()}</span>
+                      : <span>· {c.sent_count || 0} sent{c.failed_count ? ` · ${c.failed_count} failed` : ""}</span>}
+                    {(c.open_count || 0) > 0 && (
+                      <span className="flex items-center gap-0.5 text-emerald-300"><Eye className="w-3 h-3" /> {c.open_count}</span>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
       )}

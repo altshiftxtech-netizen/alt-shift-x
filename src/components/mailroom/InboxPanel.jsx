@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Inbox, Loader2, Send, Sparkles, CheckCircle2, RefreshCw } from "lucide-react";
+import { Inbox, Loader2, Send, Sparkles, CheckCircle2, RefreshCw, Archive, Trash2, Mail } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const sentimentStyle = {
@@ -20,6 +20,7 @@ export default function InboxPanel() {
   const [active, setActive] = useState(null);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -30,9 +31,38 @@ export default function InboxPanel() {
 
   useEffect(() => { load(); }, []);
 
+  const visibleMessages = messages.filter((m) =>
+    showArchived ? m.status === "archived" : m.status !== "archived"
+  );
+
+  const archiveMessage = async (e, m) => {
+    e.stopPropagation();
+    const next = m.status === "archived" ? "read" : "archived";
+    await base44.entities.InboundMessage.update(m.id, { status: next }).catch(() => {});
+    if (active?.id === m.id) setActive(null);
+    load();
+  };
+
+  const deleteMessage = async (e, m) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this message permanently?")) return;
+    await base44.entities.InboundMessage.delete(m.id).catch(() => {});
+    if (active?.id === m.id) setActive(null);
+    load();
+  };
+
+  const [campaignName, setCampaignName] = useState("");
+
   const openMessage = async (m) => {
     setActive(m);
     setDraft(m.ai_suggested_reply || "");
+    setCampaignName("");
+    // Campaign recognition — if this reply is linked to a campaign, look up its subject.
+    if (m.in_reply_to_campaign_id) {
+      base44.entities.EmailCampaign.get(m.in_reply_to_campaign_id)
+        .then((c) => setCampaignName(c?.subject || ""))
+        .catch(() => {});
+    }
     if (m.status === "unread") {
       await base44.entities.InboundMessage.update(m.id, { status: "read" });
       load();
@@ -55,13 +85,19 @@ export default function InboxPanel() {
       {/* List */}
       <div className="md:col-span-2 space-y-1.5 max-h-[560px] overflow-y-auto">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-bold text-orange-200 flex items-center gap-1.5"><Inbox className="w-3.5 h-3.5 text-orange-400" /> Inbox ({messages.length})</p>
-          <button onClick={load} className="text-orange-300 hover:text-white"><RefreshCw className="w-3.5 h-3.5" /></button>
+          <p className="text-xs font-bold text-orange-200 flex items-center gap-1.5"><Inbox className="w-3.5 h-3.5 text-orange-400" /> {showArchived ? "Archived" : "Inbox"} ({visibleMessages.length})</p>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setShowArchived((v) => !v)} title={showArchived ? "Back to inbox" : "View archived"}
+              className={`p-1 rounded ${showArchived ? "text-orange-300 bg-[#2a1d16]" : "text-orange-300/60 hover:text-white"}`}>
+              <Archive className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={load} className="text-orange-300 hover:text-white"><RefreshCw className="w-3.5 h-3.5" /></button>
+          </div>
         </div>
-        {messages.length === 0 && <p className="text-xs text-orange-200/40 text-center py-8">No replies yet. They'll appear here once recipients respond.</p>}
-        {messages.map((m) => (
-          <button key={m.id} onClick={() => openMessage(m)}
-            className={`w-full text-left bg-[#1a120d] border rounded-lg p-3 transition-colors ${active?.id === m.id ? "border-orange-500" : "border-orange-900/30 hover:border-orange-700"}`}>
+        {visibleMessages.length === 0 && <p className="text-xs text-orange-200/40 text-center py-8">{showArchived ? "Nothing archived." : "No replies yet. They'll appear here once recipients respond."}</p>}
+        {visibleMessages.map((m) => (
+          <div key={m.id} onClick={() => openMessage(m)}
+            className={`w-full text-left bg-[#1a120d] border rounded-lg p-3 transition-colors cursor-pointer ${active?.id === m.id ? "border-orange-500" : "border-orange-900/30 hover:border-orange-700"}`}>
             <div className="flex items-center justify-between gap-2 mb-1">
               <span className="text-sm text-orange-50 truncate">{m.from_name || m.from_email}</span>
               <span className={`text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${sentimentStyle[m.sentiment] || sentimentStyle.unknown}`}>{m.sentiment}</span>
@@ -72,8 +108,11 @@ export default function InboxPanel() {
               {m.status === "unread" && <span className="text-[9px] bg-orange-600 text-white px-1.5 py-0.5 rounded-full">new</span>}
               {m.auto_acknowledged && <span className="text-[9px] bg-emerald-900/50 text-emerald-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><CheckCircle2 className="w-2.5 h-2.5" /> auto-ack'd</span>}
               {m.status === "replied" && <span className="text-[9px] bg-slate-700/50 text-slate-300 px-1.5 py-0.5 rounded-full">replied</span>}
+              <div className="flex-1" />
+              <button onClick={(e) => archiveMessage(e, m)} title={m.status === "archived" ? "Unarchive" : "Archive"} className="text-orange-300/50 hover:text-orange-200 p-0.5"><Archive className="w-3 h-3" /></button>
+              <button onClick={(e) => deleteMessage(e, m)} title="Delete" className="text-orange-300/50 hover:text-red-400 p-0.5"><Trash2 className="w-3 h-3" /></button>
             </div>
-          </button>
+          </div>
         ))}
       </div>
 
@@ -85,10 +124,21 @@ export default function InboxPanel() {
           </div>
         ) : (
           <div className="bg-[#1a120d] border border-orange-900/30 rounded-xl p-4 space-y-3">
-            <div>
-              <p className="text-sm font-bold text-orange-50">{active.subject}</p>
-              <p className="text-[11px] text-orange-200/50">From {active.from_name || active.from_email} &lt;{active.from_email}&gt;</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-orange-50">{active.subject}</p>
+                <p className="text-[11px] text-orange-200/50">From {active.from_name || active.from_email} &lt;{active.from_email}&gt;</p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={(e) => archiveMessage(e, active)} title="Archive" className="text-orange-300/60 hover:text-orange-200 p-1 rounded hover:bg-[#3a2a24]"><Archive className="w-3.5 h-3.5" /></button>
+                <button onClick={(e) => deleteMessage(e, active)} title="Delete" className="text-orange-300/60 hover:text-red-400 p-1 rounded hover:bg-[#3a2a24]"><Trash2 className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
+            {campaignName && (
+              <div className="flex items-center gap-1.5 text-[11px] text-blue-300 bg-blue-900/20 border border-blue-800/40 rounded-lg px-2.5 py-1.5">
+                <Mail className="w-3 h-3" /> Reply to campaign: <span className="font-semibold truncate">{campaignName}</span>
+              </div>
+            )}
             {active.ai_intent && (
               <div className="flex items-center gap-1.5 text-[11px] text-orange-300">
                 <Sparkles className="w-3 h-3" /> Intent: {active.ai_intent}

@@ -58,10 +58,27 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.EmailCampaign.update(campaignId, {
       status: "sending",
       recipient_count: recipients.length,
+      open_count: 0,
     });
 
     const origin = req.headers.get("origin") || `https://${Deno.env.get("BASE44_APP_ID")}.base44.app`;
+    const appId = Deno.env.get("BASE44_APP_ID");
     const escapeHtml = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // Build Resend attachment payloads by fetching each uploaded file once.
+    const attachmentPayloads = [];
+    for (const att of (campaign.attachments || [])) {
+      try {
+        const fileRes = await fetch(att.url);
+        if (!fileRes.ok) { console.error(`[sendEmailCampaign] attachment fetch failed: ${att.name}`); continue; }
+        const buf = new Uint8Array(await fileRes.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]);
+        attachmentPayloads.push({ filename: att.name, content: btoa(binary) });
+      } catch (e) {
+        console.error(`[sendEmailCampaign] attachment error ${att.name}:`, e.message);
+      }
+    }
 
     let sent = 0;
     let failed = 0;
@@ -73,7 +90,10 @@ Deno.serve(async (req) => {
       try {
         const unsubUrl = `${origin}/unsubscribe?token=${encodeURIComponent(r.unsubscribe_token || "")}&email=${encodeURIComponent(r.email)}`;
         const bodyHtml = escapeHtml(campaign.body).replace(/\n/g, "<br>");
-        const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${bodyHtml}<hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"><p style="font-size:12px;color:#888">You're receiving this because you subscribed to Alt+Shift+X updates.<br><a href="${unsubUrl}" style="color:#888">Unsubscribe</a></p></div>`;
+        // Read-receipt tracking pixel — opening the email pings trackEmailOpen.
+        const pixelUrl = `${origin}/functions/trackEmailOpen?c=${encodeURIComponent(campaignId)}`;
+        const pixel = `<img src="${pixelUrl}" width="1" height="1" alt="" style="display:none" />`;
+        const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${bodyHtml}<hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"><p style="font-size:12px;color:#888">You're receiving this because you subscribed to Alt+Shift+X updates.<br><a href="${unsubUrl}" style="color:#888">Unsubscribe</a></p>${pixel}</div>`;
 
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -86,6 +106,7 @@ Deno.serve(async (req) => {
             to: r.email,
             subject: campaign.subject,
             html,
+            ...(attachmentPayloads.length ? { attachments: attachmentPayloads } : {}),
           }),
         });
 

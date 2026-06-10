@@ -1,5 +1,5 @@
 import React from "react";
-import { X, CheckCircle2, XCircle, Clock, Users, Calendar } from "lucide-react";
+import { X, CheckCircle2, XCircle, Clock, Users, Calendar, Eye, Paperclip, CalendarClock } from "lucide-react";
 
 const STATUS_STYLE = {
   draft: "bg-slate-700/40 text-slate-300",
@@ -33,6 +33,11 @@ export default function CampaignDetailModal({ campaign, onClose }) {
                   <Calendar className="w-3 h-3" /> {new Date(c.sent_at).toLocaleString()}
                 </span>
               )}
+              {c.status === "scheduled" && c.scheduled_for && (
+                <span className="text-[11px] text-blue-300 flex items-center gap-1">
+                  <CalendarClock className="w-3 h-3" /> Scheduled {new Date(c.scheduled_for).toLocaleString()}
+                </span>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="text-orange-300 hover:text-white p-1 rounded-lg hover:bg-[#3a2a24] shrink-0">
@@ -41,7 +46,7 @@ export default function CampaignDetailModal({ campaign, onClose }) {
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <div className="bg-[#1a120d] border border-orange-900/30 rounded-lg p-2.5 text-center">
               <p className="text-lg font-black text-orange-50">{c.recipient_count || 0}</p>
               <p className="text-[10px] text-orange-200/50">Recipients</p>
@@ -54,7 +59,25 @@ export default function CampaignDetailModal({ campaign, onClose }) {
               <p className="text-lg font-black text-red-400">{c.failed_count || 0}</p>
               <p className="text-[10px] text-orange-200/50">Failed</p>
             </div>
+            <div className="bg-[#1a120d] border border-orange-900/30 rounded-lg p-2.5 text-center">
+              <p className="text-lg font-black text-blue-300 flex items-center justify-center gap-1"><Eye className="w-3.5 h-3.5" />{c.open_count || 0}</p>
+              <p className="text-[10px] text-orange-200/50">Opens</p>
+            </div>
           </div>
+
+          {(c.attachments || []).length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold text-orange-200/70 mb-1.5">Attachments</p>
+              <div className="flex flex-wrap gap-1.5">
+                {c.attachments.map((a, i) => (
+                  <a key={i} href={a.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 bg-[#1a120d] border border-orange-900/30 text-orange-200 text-[11px] px-2.5 py-1 rounded-full hover:border-orange-600">
+                    <Paperclip className="w-3 h-3" /> <span className="max-w-[160px] truncate">{a.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <p className="text-[11px] font-semibold text-orange-200/70 mb-1.5">Email body</p>
