@@ -20,6 +20,13 @@
       "default": "newsletter",
       "description": "Which audience segment this subscriber belongs to"
     },
+    "group_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of the EmailGroup folders this subscriber belongs to"
+    },
     "source": {
       "type": "string",
       "description": "Where the subscriber came from (e.g. manual, signup, import)"
