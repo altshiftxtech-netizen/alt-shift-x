@@ -1,22 +1,24 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Key, Copy, CheckCircle2, Loader2, PlayCircle, Bot, Lock, Baby, Smartphone, AppWindow, ArrowRight } from "lucide-react";
+import { Key, Copy, CheckCircle2, Loader2, ShieldCheck, Lock, Baby, Smartphone, AppWindow, ArrowRight } from "lucide-react";
 
 // A guided, plain-English walkthrough a parent can follow:
 //   1. Create the key   2. Save it   3. Paste it into their device's AI
-//   4. Test it (locked until the key exists)
-// The key is a universal access key — any AI assistant (toy, phone, app) accepts it.
+//   4. Verify the key is real & active on your account (an honest check only)
+//
+// IMPORTANT: We never claim a device/toy/phone is "connected" — this website
+// cannot observe a third-party device connecting. The verify step only confirms
+// the one fact we can truthfully check: the key exists and is active here.
 export default function QuickStartActivation({ componentName }) {
   const [apiKey, setApiKey] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [device, setDevice] = useState("phone");
-  const [testQuery, setTestQuery] = useState("");
-  const [testing, setTesting] = useState(false);
-  const [reply, setReply] = useState("");
-  const [agentName, setAgentName] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(null); // null | true | false
+  const [keyName, setKeyName] = useState("");
   const [error, setError] = useState("");
 
   const generate = async () => {
@@ -42,33 +44,32 @@ export default function QuickStartActivation({ componentName }) {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const runTest = async () => {
-    setTesting(true);
+  // Honest verification: only confirms the key is real & active on this account.
+  const verify = async () => {
+    setVerifying(true);
     setError("");
-    setReply("");
+    setVerified(null);
     try {
-      const res = await base44.functions.invoke("testComponentKey", {
-        apiKey,
-        componentName,
-        testQuery: testQuery.trim(),
-      });
+      const res = await base44.functions.invoke("testComponentKey", { apiKey });
       const d = res?.data || {};
-      if (d.ok) {
-        setReply(d.reply || "Connection confirmed.");
-        setAgentName(d.agent_name || componentName);
+      if (d.valid) {
+        setVerified(true);
+        setKeyName(d.key_name || "");
       } else {
-        setError(d.error || "The test could not be completed. Please try again.");
+        setVerified(false);
+        setError(d.error || "We couldn't verify this key. Please try again.");
       }
     } catch (e) {
-      setError(e?.response?.data?.error || "The test could not be completed. Please try again.");
+      setVerified(false);
+      setError(e?.response?.data?.error || "We couldn't verify this key. Please try again.");
     }
-    setTesting(false);
+    setVerifying(false);
   };
 
   const devices = [
-    { id: "toy", label: "Smart toy", icon: Baby, where: "In the toy's companion app, open Settings → Add AI Assistant (or AI Key). Tap the box, paste your key, and press Save." },
-    { id: "phone", label: "Phone assistant", icon: Smartphone, where: "Open your assistant app's Settings → Connect an AI / API Key. Tap the field, paste your key, and tap Connect." },
-    { id: "app", label: "An app", icon: AppWindow, where: "In the app, go to Settings → Integrations → Paste API Key. Tap the box, paste your key, and press Save." },
+    { id: "toy", label: "Smart toy", icon: Baby, where: "Open the toy's own companion app and look for an AI / API Key field in its settings. Paste your key there and save. (Exact wording varies by toy — check the toy's manual if you're unsure.)" },
+    { id: "phone", label: "Phone assistant", icon: Smartphone, where: "Open your assistant app's settings and look for where it asks for an AI connection or API key. Paste your key there and save. (The exact location depends on the app you're using.)" },
+    { id: "app", label: "An app", icon: AppWindow, where: "In the app's settings, look for an Integrations or API Key area. Paste your key there and save. (Where this lives depends on the app.)" },
   ];
   const activeDevice = devices.find((d) => d.id === device);
 
@@ -82,7 +83,7 @@ export default function QuickStartActivation({ componentName }) {
       {/* STEP 1 — Create the key */}
       <Step number="1" title="Create your access key" done={!!apiKey}>
         <p className="text-xs text-slate-500 mb-2">
-          Think of this as a private password that connects your device to {componentName}. Tap the button and we'll make one for you.
+          Think of this as a private password for your {componentName} subscription. Tap the button and we'll make one for you.
         </p>
         {!apiKey ? (
           <Button onClick={generate} disabled={generating} className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2">
@@ -118,7 +119,7 @@ export default function QuickStartActivation({ componentName }) {
       <Step number="3" title="Paste the key into your device's AI" locked={!apiKey}>
         {apiKey && (
           <>
-            <p className="text-xs text-slate-500 mb-2.5">Pick what you're setting up — we'll show you exactly where the key goes. This same key works with any AI assistant.</p>
+            <p className="text-xs text-slate-500 mb-2.5">Pick what you're setting up for a general idea of where the key goes. Every device is a little different, so use this as a guide.</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {devices.map((d) => {
                 const Icon = d.icon;
@@ -139,40 +140,30 @@ export default function QuickStartActivation({ componentName }) {
         )}
       </Step>
 
-      {/* STEP 4 — Test (locked until a key exists) */}
-      <Step number="4" title="Test that it's working" locked={!apiKey}>
+      {/* STEP 4 — Verify the key is real & active (honest check only) */}
+      <Step number="4" title="Check your key is active" locked={!apiKey}>
         {!apiKey ? (
-          <p className="text-xs text-slate-400 flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Create your key in Step 1 first — then you can test it here.</p>
+          <p className="text-xs text-slate-400 flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Create your key in Step 1 first.</p>
         ) : (
           <>
-            <p className="text-xs text-slate-500 mb-2">Ask the {componentName} assistant a question below. If it answers, everything is connected correctly.</p>
-            <textarea
-              value={testQuery}
-              onChange={(e) => setTestQuery(e.target.value)}
-              rows={2}
-              placeholder={`e.g. "What can ${componentName} help me with?"`}
-              className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 outline-none focus:border-violet-400 resize-none"
-            />
-            <Button onClick={runTest} disabled={testing} className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2 mt-2">
-              {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
-              {testing ? "Testing…" : "Test my key"}
+            <p className="text-xs text-slate-500 mb-2">
+              This confirms your key is real and active on your account. It does <span className="font-semibold">not</span> check your toy or phone — only your device can confirm it accepted the key.
+            </p>
+            <Button onClick={verify} disabled={verifying} className="bg-violet-700 hover:bg-violet-800 text-white text-sm gap-2">
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              {verifying ? "Checking…" : "Check my key is active"}
             </Button>
-            {error && reply === "" && <p className="text-xs text-red-500 mt-2">{error}</p>}
-            {reply && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 space-y-2 mt-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <p className="text-sm font-bold text-emerald-800">All done — your key is working!</p>
-                </div>
-                <div className="flex items-start gap-2 bg-white rounded-lg p-3 border border-emerald-100">
-                  <Bot className="w-4 h-4 text-violet-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[11px] font-semibold text-slate-400">{agentName} replied:</p>
-                    <p className="text-sm text-slate-700 mt-0.5 whitespace-pre-wrap">{reply}</p>
-                  </div>
+
+            {verified === true && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-3 flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-800">Your key is real and active.</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">{keyName ? `"${keyName}" ` : ""}is ready to paste into your device (Step 3). Once your device accepts it, it'll start working there.</p>
                 </div>
               </div>
             )}
+            {verified === false && error && <p className="text-xs text-red-500 mt-2">{error}</p>}
           </>
         )}
       </Step>

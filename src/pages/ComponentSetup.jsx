@@ -68,8 +68,8 @@ export default function ComponentSetup() {
               minutes — no technical experience needed.
             </p>
             <p className="text-sm leading-relaxed">
-              Getting set up is as simple as creating your personal access key, saving it somewhere safe, and
-              running a quick test to confirm everything is working. Just follow the three steps below, one at a time.
+              Getting set up is as simple as creating your personal access key, saving it somewhere safe, pasting it
+              into your device, and checking your key is active. Just follow the steps below, one at a time.
             </p>
             <p className="text-sm leading-relaxed">
               If you ever feel unsure at any point, please don't worry — our team is always happy to help. You'll
