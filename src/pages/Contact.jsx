@@ -114,7 +114,7 @@ export default function Contact() {
                 <Card><CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"><Mail className="w-6 h-6 text-blue-600" /></div>
                   <h3 className="font-semibold text-slate-900">Email</h3>
-                  <a href="mailto:support@altshiftx.com" className="text-blue-600 font-medium hover:underline">support@altshiftx.com</a>
+                  <a href="mailto:support@altshiftx.tech" className="text-blue-600 font-medium hover:underline">support@altshiftx.tech</a>
                 </CardContent></Card>
                 <Card><CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                   <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center"><Clock className="w-6 h-6 text-emerald-600" /></div>
