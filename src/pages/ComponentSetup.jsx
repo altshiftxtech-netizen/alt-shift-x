@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight, Package, Loader2, Mail, LifeBuoy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import QuickStartActivation from "@/components/install/QuickStartActivation";
+import SafeguardSetupGuide from "@/components/install/SafeguardSetupGuide";
 
 export default function ComponentSetup() {
   const { id } = useParams();
@@ -81,6 +82,9 @@ export default function ComponentSetup() {
 
         {/* The actual easy activation flow */}
         <QuickStartActivation componentName={name} />
+
+        {/* SafeGuard-specific: clearing, email/text/directions, test prompts */}
+        <SafeguardSetupGuide />
 
         {/* Help footer */}
         <Card className="bg-slate-50 border-slate-200">
