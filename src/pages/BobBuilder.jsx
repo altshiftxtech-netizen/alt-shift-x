@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, FileText, FileDown,
   Rocket, LayoutTemplate, X, Save, CheckCircle2, Loader2, Package, BookOpen,
-  Sparkles, ArrowRight, Mic, MicOff, Paperclip, History, Camera, Lock, LayoutDashboard,
+  Sparkles, ArrowRight, Mic, MicOff, Paperclip, History, Camera, Lock, LayoutDashboard, Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import BobVoiceSettings from "@/components/bob/BobVoiceSettings";
 import BobChatInput from "@/components/bob/BobChatInput";
 import BobPendingIndicator from "@/components/bob/BobPendingIndicator";
+import QueuedFollowups from "@/components/bob/QueuedFollowups";
 import NextStepActions from "@/components/bob/NextStepActions";
 import BobTricks from "@/components/bob/BobTricks";
 import StopButton from "@/components/StopButton";
@@ -109,7 +110,7 @@ function MessageBubble({ m }) {
 export default function BobBuilder() {
   const { isPaying } = useBobAccess();
   const {
-    convId, messages, isWorking,
+    convId, messages, isWorking, queued, removeQueued,
     send, stop, openConversation, resetBoard, initConv, setMessages, setOnDone,
   } = useBobChat();
 
@@ -686,6 +687,7 @@ export default function BobBuilder() {
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
                   {isWorking && <BobPendingIndicator />}
+                  <QueuedFollowups items={queued} onRemove={removeQueued} />
                 </div>
 
                 {uploadedFiles.length > 0 && (
@@ -737,8 +739,8 @@ export default function BobBuilder() {
                     </button>
                     <div className="flex-1" />
                     {isWorking && <StopButton onStop={stop} />}
-                    <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
-                      <Send className="w-3.5 h-3.5" /> Send
+                    <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} title={isWorking ? "BOB is working — your message will be queued and sent the moment it finishes" : "Send"} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                      {isWorking ? <><Clock className="w-3.5 h-3.5" /> Queue</> : <><Send className="w-3.5 h-3.5" /> Send</>}
                     </button>
                   </div>
                   <BobTricks />

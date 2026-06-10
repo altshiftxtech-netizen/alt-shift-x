@@ -42,7 +42,9 @@ export default function useBobChat() {
   const [convId, setConvId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isWorking, setIsWorking] = useState(false);
+  const [queued, setQueued] = useState([]);  // follow-ups waiting for the current turn to finish
 
+  const queuedRef = useRef([]);            // mirror of `queued` for use inside callbacks
   const convRef = useRef(null);            // full conversation object (for addMessage)
   const unsubRef = useRef(null);
   const subscribedIdRef = useRef(null);
@@ -70,7 +72,20 @@ export default function useBobChat() {
       const last = (msgs || [])[(msgs || []).length - 1];
       if (isAssistantText(last)) onDoneRef.current(last, msgs);
     }
+    // The turn is done — flush the NEXT queued follow-up (if any). Each queued
+    // message opens its own turn, so they're delivered one at a time, in order:
+    // BOB answers the original, then picks up the follow-up.
+    if (queuedRef.current.length > 0) {
+      const next = queuedRef.current[0];
+      queuedRef.current = queuedRef.current.slice(1);
+      setQueued([...queuedRef.current]);
+      // Slight defer so React settles the "done" state before the next turn opens.
+      setTimeout(() => { flushRef.current?.(next); }, 80);
+    }
   }, []);
+
+  // Bound late (after `send` is defined) to avoid a TDZ cycle.
+  const flushRef = useRef(null);
 
   // Is BOB still actively producing a reply for THIS turn?
   const detectWorking = (msgs) => {
@@ -186,6 +201,8 @@ export default function useBobChat() {
     turnOpenRef.current = false;
     pendingUserRef.current = null;
     lastTextRef.current = "";
+    queuedRef.current = [];
+    setQueued([]);
     setIsWorking(false);
     convRef.current = full;
     lastLenRef.current = (full.messages || []).length;
@@ -204,6 +221,8 @@ export default function useBobChat() {
     turnOpenRef.current = false;
     lastTextRef.current = "";
     lastLenRef.current = 0;
+    queuedRef.current = [];
+    setQueued([]);
     setIsWorking(false);
     setConvId(null);
     setMessages([]);
@@ -216,8 +235,9 @@ export default function useBobChat() {
     return c;
   }, []);
 
-  // THE one and only send path. Returns the conversation used.
-  const send = useCallback(async ({ content, file_urls } = {}) => {
+  // Low-level deliver: actually opens a turn and posts the message to BOB.
+  // Used both for a normal send AND when a queued follow-up is flushed.
+  const deliver = useCallback(async ({ content, file_urls } = {}) => {
     const text = (content || "").trim();
     if (!text && !(file_urls && file_urls.length)) return null;
 
@@ -241,10 +261,39 @@ export default function useBobChat() {
     return c;
   }, [finishTurn, initConv, subscribe]);
 
+  // Keep finishTurn's flush wired to the real deliver fn.
+  useEffect(() => { flushRef.current = deliver; }, [deliver]);
+
+  // THE one and only send path used by the UI.
+  // If BOB is mid-turn, the follow-up is QUEUED (shown as a stacked pending
+  // bubble) and delivered automatically the moment the current turn finishes —
+  // so builders can keep typing without interrupting BOB's work.
+  const send = useCallback(async ({ content, file_urls } = {}) => {
+    const text = (content || "").trim();
+    if (!text && !(file_urls && file_urls.length)) return null;
+
+    if (turnOpenRef.current) {
+      const item = { content, ...(file_urls ? { file_urls } : {}) };
+      queuedRef.current = [...queuedRef.current, item];
+      setQueued([...queuedRef.current]);
+      return convRef.current;
+    }
+
+    return deliver({ content, file_urls });
+  }, [deliver]);
+
+  // Remove a still-waiting queued follow-up before it's delivered.
+  const removeQueued = useCallback((index) => {
+    queuedRef.current = queuedRef.current.filter((_, i) => i !== index);
+    setQueued([...queuedRef.current]);
+  }, []);
+
   const stop = useCallback(() => {
     clearTimers();
     turnOpenRef.current = false;
     setIsWorking(false);
+    queuedRef.current = [];
+    setQueued([]);
   }, []);
 
   // Register a completion callback (sounds / notify). Called with (lastMsg, msgs).
@@ -255,6 +304,8 @@ export default function useBobChat() {
     conv: convRef.current,
     messages,
     isWorking,
+    queued,
+    removeQueued,
     send,
     stop,
     openConversation,
