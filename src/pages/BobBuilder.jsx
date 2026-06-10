@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import BobFrameworkForm from "@/components/bob/BobFrameworkForm";
+import FrameworkSeedUpload from "@/components/bob/FrameworkSeedUpload";
 import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import BobVoiceSettings from "@/components/bob/BobVoiceSettings";
 import BobChatInput from "@/components/bob/BobChatInput";
@@ -257,7 +258,12 @@ export default function BobBuilder() {
   const markActed = () => { userActedRef.current = true; greetedRef.current = true; };
 
   const loadFrameworks = async () => {
-    const data = await base44.entities.ComponentFramework.list("-created_date", 10);
+    // Scope to THIS builder so everyone gets their own framework workspace
+    // (Magna Dev's do-no-harm baseline still applies — this is their own spin on top).
+    const me = await base44.auth.me().catch(() => null);
+    const data = me?.id
+      ? await base44.entities.ComponentFramework.filter({ builder_id: me.id }, "-created_date", 10)
+      : await base44.entities.ComponentFramework.list("-created_date", 10);
     setSavedFrameworks(data);
     if (data.length > 0) {
       setFramework(data[0]);
@@ -770,6 +776,11 @@ export default function BobBuilder() {
                 </div>
               </CardContent>
             </Card>
+
+            <FrameworkSeedUpload
+              frameworkName={frameworkName}
+              onSeed={(seed, urls) => { setActiveTab("chat"); dispatch(seed, urls); }}
+            />
 
             <BobFrameworkForm framework={framework} onChange={setFramework} applyToAll={applyToAll} onToggleApplyAll={setApplyToAll} />
 
