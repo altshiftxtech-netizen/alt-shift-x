@@ -53,7 +53,7 @@ export default function InstalledComponents() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Our Component Dashboard</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Components</h1>
             <p className="text-sm text-slate-400">{components.length} active components</p>
           </div>
           <div className="flex items-center gap-2">
@@ -102,8 +102,8 @@ export default function InstalledComponents() {
                           </div>
                         )}
                         <div className="flex items-center gap-2">
-                          <Link to={`/marketplace/${c.component_id}`}>
-                            <Button variant="outline" size="icon" className="h-8 w-8"><ExternalLink className="w-3.5 h-3.5" /></Button>
+                          <Link to={`/dashboard/setup/${c.component_id}`}>
+                            <Button variant="outline" size="icon" className="h-8 w-8" title="Open component"><ExternalLink className="w-3.5 h-3.5" /></Button>
                           </Link>
                           <Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:border-red-300" onClick={() => handleUninstall(c.id)}>
                             <Trash2 className="w-3.5 h-3.5" />
