@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, CheckCircle2, Copy, Terminal, FileCode, Zap, Package } from "lucide-react";
+import { ChevronRight, CheckCircle2, Copy, Terminal, Zap, Package, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
-const SETUPS = {
-  "ironclad-protocol": {
-    name: "Ironclad Protocol",
-    code: "RP-CONSTRUCTION-1.0",
+// Build a setup guide for ANY component using its real name/code so every install
+// shows its own integration guide (not a single hardcoded Ironclad fallback).
+function buildSetup(component) {
+  const name = component?.name || component?.component_name || "Your Component";
+  const code = component?.code || component?.component_code || "COMPONENT-1.0";
+  return {
+    name,
+    code,
     steps: [
       {
         title: "Install via API",
@@ -16,9 +21,9 @@ const SETUPS = {
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "component": "RP-CONSTRUCTION-1.0",
-    "document_url": "https://your-storage.com/contract.pdf",
-    "options": { "passes": 4, "citation_mode": true }
+    "component": "${code}",
+    "document_url": "https://your-storage.com/document.pdf",
+    "options": { "citation_mode": true }
   }'`,
       },
       {
@@ -27,15 +32,8 @@ const SETUPS = {
         snippet: `{
   "job_id": "job_abc123",
   "status": "completed",
-  "component": "RP-CONSTRUCTION-1.0",
-  "output": {
-    "retention_amount": "5%",
-    "ld_rate_per_day": 2500,
-    "ld_cap": "10%",
-    "practical_completion_date": "2026-09-30",
-    "milestones": [...],
-    "eot_triggers": [...]
-  },
+  "component": "${code}",
+  "output": { ... },
   "confidence": 0.981,
   "latency_ms": 910
 }`,
@@ -52,14 +50,12 @@ const SETUPS = {
       },
       {
         title: "Test in Sandbox",
-        desc: "Validate your integration against sample construction contracts before going live.",
+        desc: "Validate your integration against sample documents before going live.",
         sandbox: true,
       },
     ],
-  },
-};
-
-const DEFAULT_SETUP = SETUPS["ironclad-protocol"];
+  };
+}
 
 function CodeBlock({ code }) {
   const [copied, setCopied] = useState(false);
@@ -76,14 +72,43 @@ function CodeBlock({ code }) {
 
 export default function ComponentSetup() {
   const { id } = useParams();
-  const setup = SETUPS[id] || DEFAULT_SETUP;
+  const [setup, setSetup] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [completedSteps, setCompletedSteps] = useState(new Set());
+
+  // Resolve the real component for this install — by Component id, then by the
+  // user's InstalledComponent record — so the guide matches what was clicked.
+  useEffect(() => {
+    (async () => {
+      let component = null;
+      try {
+        component = await base44.entities.Component.get(id);
+      } catch { /* not a Component id */ }
+      if (!component) {
+        try {
+          const me = await base44.auth.me();
+          const installs = await base44.entities.InstalledComponent.filter({ user_id: me.id, component_id: id });
+          if (installs?.[0]) component = installs[0];
+        } catch { /* ignore */ }
+      }
+      setSetup(buildSetup(component));
+      setLoading(false);
+    })();
+  }, [id]);
 
   const toggleStep = (i) => setCompletedSteps(prev => {
     const next = new Set(prev);
     next.has(i) ? next.delete(i) : next.add(i);
     return next;
   });
+
+  if (loading || !setup) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">
+        <Loader2 className="w-6 h-6 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
