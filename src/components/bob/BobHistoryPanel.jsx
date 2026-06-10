@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
+import { loadMetaMap, renameConversation, trashConversation, restoreConversation, clearConversation } from "@/lib/conversationMeta";
+
+const AGENT = "bob_builder";
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
@@ -27,10 +30,27 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const load = async () => {
     setLoading(true);
     try {
-      const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
-      // The agents SDK has no hard-delete; "Delete Forever" flags a project
-      // `cleared` in metadata, which we filter out permanently here.
-      setConvos((list || []).filter((c) => !c.metadata?.cleared).slice(0, 50));
+      const [list, metaMap] = await Promise.all([
+        base44.agents.listConversations({ agent_name: AGENT }),
+        loadMetaMap(AGENT),
+      ]);
+      // The agents SDK exposes no updateConversation — rename/trash/clear live in
+      // our ConversationMeta entity. Merge that state onto each conversation so
+      // the rest of the panel can read it off c.metadata as before.
+      const merged = (list || []).map((c) => {
+        const m = metaMap[c.id];
+        if (!m) return c;
+        return {
+          ...c,
+          metadata: {
+            ...(c.metadata || {}),
+            ...(m.title ? { name: m.title } : {}),
+            trashed: !!m.trashed,
+            cleared: !!m.cleared,
+          },
+        };
+      });
+      setConvos(merged.filter((c) => !c.metadata?.cleared).slice(0, 50));
     } catch {
       setConvos([]);
     }
@@ -64,9 +84,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const trashProject = async (c) => {
     setBusy(c.id);
     try {
-      await base44.agents.updateConversation(c.id, {
-        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-      });
+      await trashConversation(c.id, AGENT);
       // Fire-and-forget: email the ESI record to the builder's own address.
       base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
       await load();
@@ -82,10 +100,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const restoreProject = async (c) => {
     setBusy(c.id);
     try {
-      const md = { ...(c.metadata || {}) };
-      delete md.trashed;
-      delete md.trashed_at;
-      await base44.agents.updateConversation(c.id, { metadata: md });
+      await restoreConversation(c.id, AGENT);
       await load();
     } catch {
       // swallow
@@ -99,9 +114,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const finalDelete = async (c) => {
     setBusy(c.id);
     try {
-      await base44.agents.updateConversation(c.id, {
-        metadata: { ...(c.metadata || {}), cleared: true, cleared_at: new Date().toISOString() },
-      });
+      await clearConversation(c.id, AGENT);
       await load();
     } catch {
       // swallow
@@ -156,9 +169,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setClearing(true);
     try {
       for (const c of active) {
-        await base44.agents.updateConversation(c.id, {
-          metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-        }).catch(() => {});
+        await trashConversation(c.id, AGENT).catch(() => {});
         base44.functions.invoke("emailEsiRecord", { conversationId: c.id }).catch(() => {});
       }
       await load();
@@ -179,9 +190,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     if (!name) { setEditing(null); return; }
     setSavingTitle(true);
     try {
-      await base44.agents.updateConversation(c.id, {
-        metadata: { ...(c.metadata || {}), name },
-      });
+      await renameConversation(c.id, AGENT, name);
       await load();
     } catch {
       // swallow

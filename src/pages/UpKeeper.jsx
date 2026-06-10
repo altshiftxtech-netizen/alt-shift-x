@@ -94,7 +94,7 @@ export default function UpKeeper() {
     if (seedText?.trim()) {
       setSending(true);
       await base44.agents.addMessage(c, { role: "user", content: seedText });
-      onSent();
+      onSent({ content: seedText }, c.id);
       setSending(false);
     }
   };
@@ -113,7 +113,7 @@ export default function UpKeeper() {
       ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.${docContext}`
       : msg;
     await base44.agents.addMessage(c, { role: "user", content: fullMsg, file_urls: filesToSend.map((f) => f.url) });
-    onSent();
+    onSent({ content: fullMsg }, c.id);
     setUploadedFiles([]); setSending(false);
   };
 
@@ -143,7 +143,7 @@ export default function UpKeeper() {
     if (!msg.trim()) return;
     setSending(true); setInput("");
     await base44.agents.addMessage(conv, { role: "user", content: msg });
-    onSent();
+    onSent({ content: msg }, conv.id);
     setSending(false);
   };
 
@@ -194,7 +194,7 @@ export default function UpKeeper() {
       ? `${msg ? msg + "\n\n" : ""}[Attached files: ${fileList}]\nPlease analyze these.${docContext}`
       : msg;
     await base44.agents.addMessage(conv, { role: "user", content: fullMsg, file_urls: filesToSend.map((f) => f.url) });
-    onSent();
+    onSent({ content: fullMsg }, conv.id);
     setUploadedFiles([]); setSending(false);
   };
 

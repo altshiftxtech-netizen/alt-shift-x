@@ -1,0 +1,78 @@
+{
+  "name": "ConversationMeta",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "The agents SDK conversation id this metadata augments"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Which agent the conversation belongs to (e.g. bob_builder, the_upkeeper)"
+    },
+    "title": {
+      "type": "string",
+      "description": "User-set display title / name for the conversation"
+    },
+    "trashed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft-deleted to Trash (recoverable)"
+    },
+    "trashed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cleared": {
+      "type": "boolean",
+      "default": false,
+      "description": "Permanently removed from the history list"
+    },
+    "cleared_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "conversation_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

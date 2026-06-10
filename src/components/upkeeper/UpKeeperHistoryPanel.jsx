@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { History, Plus, Loader2, MessageSquare, Clock, Trash2, FileText, CheckCircle2, Mail, Archive, AlertTriangle, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { loadMetaMap, trashConversation } from "@/lib/conversationMeta";
+
+const AGENT = "the_upkeeper";
 
 // The UpKeeper's session history — mirrors BOB's Wipe Board. Each maintenance
 // session can be reopened, emailed as a Maintenance Event Log (ESI), or deleted
@@ -20,10 +23,17 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
   const load = async () => {
     setLoading(true);
     try {
-      const list = await base44.agents.listConversations({ agent_name: "the_upkeeper" });
-      // The agents SDK has no hard-delete, so deleted sessions are flagged
-      // trashed in metadata and filtered out here.
-      setConvos((list || []).filter((c) => !c.metadata?.trashed).slice(0, 25));
+      const [list, metaMap] = await Promise.all([
+        base44.agents.listConversations({ agent_name: AGENT }),
+        loadMetaMap(AGENT),
+      ]);
+      // The agents SDK exposes no updateConversation — trashed state lives in our
+      // ConversationMeta entity. Merge it on, then filter out trashed sessions.
+      const merged = (list || []).map((c) => {
+        const m = metaMap[c.id];
+        return m ? { ...c, metadata: { ...(c.metadata || {}), trashed: !!m.trashed } } : c;
+      });
+      setConvos(merged.filter((c) => !c.metadata?.trashed).slice(0, 25));
     } catch {
       setConvos([]);
     }
@@ -71,9 +81,7 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
 
   const deleteSession = async (c) => {
     setBusy(c.id);
-    await base44.agents.updateConversation(c.id, {
-      metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-    });
+    await trashConversation(c.id, AGENT).catch(() => {});
     setConfirmDelete(null);
     await load();
     setBusy(null);
@@ -83,9 +91,7 @@ export default function UpKeeperHistoryPanel({ activeConvId, onOpen, onWipeBoard
   const clearHistory = async () => {
     setClearing(true);
     for (const c of convos) {
-      await base44.agents.updateConversation(c.id, {
-        metadata: { ...(c.metadata || {}), trashed: true, trashed_at: new Date().toISOString() },
-      });
+      await trashConversation(c.id, AGENT).catch(() => {});
     }
     setConfirmClear(false);
     await load();
