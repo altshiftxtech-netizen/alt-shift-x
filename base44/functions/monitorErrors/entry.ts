@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
  * monitorErrors — platform-wide error watchdog.
@@ -19,11 +19,14 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
+    // Authorization: allow (a) the internal scheduled task carrying the secret,
+    // (b) a scheduled/service invocation with no end-user context, or (c) an admin.
+    // Block only authenticated non-admin end users.
     const internalSecret = Deno.env.get("INTERNAL_TASK_SECRET");
     const isInternalTask = !!internalSecret && body.task_secret === internalSecret;
     if (!isInternalTask) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== "admin") {
+      if (user && user.role !== "admin") {
         return Response.json({ error: "Admin only" }, { status: 403 });
       }
     }
