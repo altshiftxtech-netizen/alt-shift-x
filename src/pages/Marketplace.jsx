@@ -141,7 +141,10 @@ export default function Marketplace() {
       }
       alert(res.data?.error || "Could not start checkout. Please try again.");
     } catch (e) {
-      alert("Could not start checkout. Please try again.");
+      const msg = e?.response?.data?.error || e?.message || "";
+      alert(/rate limit|429|too many/i.test(msg)
+        ? "We're getting a lot of requests right now. Please wait a few seconds and tap Install Bundle again."
+        : "Could not start checkout. Please try again.");
     }
     setBundleInstalling(false);
   };

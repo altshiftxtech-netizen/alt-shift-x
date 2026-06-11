@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     // ── Reuse existing Stripe customer if available ──────────────────────────
     let customerId;
-    const existing = await base44.entities.Subscription.filter({ user_id: user.id });
+    const existing = await base44.asServiceRole.entities.Subscription.filter({ user_id: user.id });
     if (existing.length > 0 && existing[0].stripe_customer_id) {
       customerId = existing[0].stripe_customer_id;
     }
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
     // ── Route A: Per-component checkout (developer attaching a component) ────
     if (componentId) {
-      const components = await base44.entities.Component.filter({ id: componentId });
+      const components = await base44.asServiceRole.entities.Component.filter({ id: componentId });
       if (!components.length) {
         return Response.json({ error: "Component not found" }, { status: 404 });
       }
