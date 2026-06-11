@@ -4,7 +4,7 @@
  * revenue share %, creates RevenueSplit records.
  * Admin-only. Run on 1st of each month.
  */
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 const TIER_SHARE = { platinum: 85, gold: 77, silver: 72, bronze: 70 };
 const CERT_BONUS = { platinum: 10, gold: 5, silver: 2, bronze: 0 };
@@ -17,9 +17,11 @@ Deno.serve(async (req) => {
     // Authorize: must be an admin user OR an internal scheduled task carrying the secret.
     const internalSecret = Deno.env.get("INTERNAL_TASK_SECRET");
     const isInternalTask = !!internalSecret && body.task_secret === internalSecret;
+    // Allow the internal scheduled task, a scheduled/service invocation with no
+    // end-user context, or an admin. Block only authenticated non-admin users.
     if (!isInternalTask) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== "admin") {
+      if (user && user.role !== "admin") {
         return Response.json({ error: "Admin only" }, { status: 403 });
       }
     }

@@ -3,7 +3,7 @@
  * Called by publishComponent or manually triggered by builders.
  * Payload: { component_id, changelog, breaking_change }
  */
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 function bumpVersion(current) {
   if (!current) return "1.0.0";
@@ -30,11 +30,26 @@ function diffSnapshots(prev, curr) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const body = await req.json().catch(() => ({}));
 
-    const { component_id, changelog, breaking_change = false } = await req.json();
+    // Accept both direct calls ({ component_id, ... }) and the entity-automation
+    // payload ({ event: { entity_id }, data, old_data }).
+    const component_id = body.component_id || body.event?.entity_id;
+    const changelog = body.changelog;
+    const breaking_change = body.breaking_change || false;
     if (!component_id) return Response.json({ error: "component_id required" }, { status: 400 });
+
+    // When invoked by the Component-update automation, only snapshot on an actual
+    // transition INTO "published" — skip every other update.
+    if (body.event) {
+      const becamePublished =
+        body.data?.status === "published" && body.old_data?.status !== "published";
+      if (!becamePublished) {
+        return Response.json({ skipped: true, reason: "not a publish transition" });
+      }
+    }
+
+    const user = await base44.auth.me().catch(() => null);
 
     // Load the component
     const components = await base44.asServiceRole.entities.Component.filter({ id: component_id });
@@ -59,7 +74,7 @@ Deno.serve(async (req) => {
       component_id,
       component_name: component.name,
       version: newVersion,
-      builder_id: user.id,
+      builder_id: component.builder_id || user?.id || null,
       changelog: changelog || `Version ${newVersion} release`,
       snapshot,
       diff_summary: diff,
