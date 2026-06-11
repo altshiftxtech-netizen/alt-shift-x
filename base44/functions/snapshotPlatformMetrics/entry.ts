@@ -2,13 +2,15 @@
  * snapshotPlatformMetrics — admin-only daily snapshot of platform health.
  * Run on schedule (daily) to track moat metrics: NRR, trust flywheel, governance coverage.
  */
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (user?.role !== "admin") return Response.json({ error: "Admin only" }, { status: 403 });
+    // Allow scheduled/service invocations (no end-user context); block only
+    // authenticated non-admin users.
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== "admin") return Response.json({ error: "Admin only" }, { status: 403 });
 
     const today = new Date().toISOString().split("T")[0];
 
