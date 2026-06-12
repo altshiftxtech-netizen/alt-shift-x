@@ -1,5 +1,22 @@
 import Stripe from "npm:stripe@14.21.0";
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+
+// Safely turn a Stripe unix timestamp into a YYYY-MM-DD string (null if missing/invalid).
+function toDateStr(unixSeconds) {
+  if (!unixSeconds || typeof unixSeconds !== "number") return null;
+  const d = new Date(unixSeconds * 1000);
+  return isNaN(d.getTime()) ? null : d.toISOString().split("T")[0];
+}
+
+// Newer Stripe API versions moved current_period_start/end onto the subscription
+// item instead of the top-level subscription object. Read from either location.
+function subPeriod(sub) {
+  const item = sub?.items?.data?.[0] || {};
+  return {
+    start: toDateStr(sub?.current_period_start ?? item.current_period_start),
+    end: toDateStr(sub?.current_period_end ?? item.current_period_end),
+  };
+}
 
 // Map LIVE builder-plan price IDs → plan keys (matches createCheckoutSession + website)
 const PRICE_TO_PLAN = {
@@ -78,8 +95,7 @@ Deno.serve(async (req) => {
         }
 
         const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const periodStart = new Date(stripeSubscription.current_period_start * 1000).toISOString().split("T")[0];
-        const periodEnd = new Date(stripeSubscription.current_period_end * 1000).toISOString().split("T")[0];
+        const { start: periodStart, end: periodEnd } = subPeriod(stripeSubscription);
 
         const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_customer_id: customerId });
 
@@ -196,8 +212,7 @@ Deno.serve(async (req) => {
         const sub = event.data.object;
         const customerId = sub.customer;
         const priceId = sub.items.data[0]?.price?.id;
-        const periodStart = new Date(sub.current_period_start * 1000).toISOString().split("T")[0];
-        const periodEnd = new Date(sub.current_period_end * 1000).toISOString().split("T")[0];
+        const { start: periodStart, end: periodEnd } = subPeriod(sub);
 
         console.log(`Subscription updated: customer=${customerId}, status=${sub.status} (e.g. trial → active transition)`);
 
