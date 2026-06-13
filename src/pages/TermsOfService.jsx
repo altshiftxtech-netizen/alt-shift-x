@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ChevronRight, FileText, ShieldCheck, Users, Scale, Clock } from "lucide-react";
 import Logo from "@/components/Logo";
 import LegalDocumentViewer from "@/components/admin/LegalDocumentViewer";
+import { useSiteContent } from "@/hooks/useSiteContent";
+import ReactMarkdown from "react-markdown";
 
 function Section({ icon: Icon, title, children }) {
   return (
@@ -50,6 +52,16 @@ function Highlight({ children }) {
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 my-4">
       <p className="text-sm text-amber-800 leading-relaxed">{children}</p>
     </div>
+  );
+}
+
+function SanctionsClause() {
+  const content = useSiteContent("sanctions_tos_clause");
+  if (!content?.body) return null;
+  return (
+    <Section icon={Scale} title={content.title || "Sanctions & Export Controls"}>
+      <ReactMarkdown className="prose prose-sm max-w-none">{content.body}</ReactMarkdown>
+    </Section>
   );
 }
 
@@ -189,6 +201,9 @@ export default function TermsOfService() {
             Any dispute arising out of or relating to these Terms or your use of the platform shall first be submitted to binding arbitration administered by the American Arbitration Association, except where prohibited by applicable law. Class action waiver: you agree to bring disputes only in your individual capacity and not as a plaintiff or class member in any purported class or representative proceeding.
           </p>
         </Section>
+
+        {/* Sanctions & Export Controls (live, managed by The UpKeeper) */}
+        <SanctionsClause />
 
         {/* Contact */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">

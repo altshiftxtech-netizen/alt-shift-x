@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import Logo from "@/components/Logo";
+import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 
 // ── Developer: free account, pay per component ────────────────────────────────
 const COMPONENT_TIERS = [
@@ -436,6 +437,11 @@ export default function Pricing() {
           </div>
         </>
       )}
+
+      {/* Live pricing-page legal notice (managed by The UpKeeper) */}
+      <div className="max-w-3xl mx-auto px-4 pb-6">
+        <SiteContentBlock contentKey="pricing_page_notice" className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-xl p-4" />
+      </div>
 
       <div className="text-center pb-12 text-xs text-slate-400">
         Developers: free account, pay per component. Builders: first month free with full marketplace listing rights. Cancel anytime.

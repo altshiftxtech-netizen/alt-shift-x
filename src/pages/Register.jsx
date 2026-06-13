@@ -11,6 +11,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/auth/PasswordStrength";
+import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 
 export default function Register() {
   const { isAuthenticated, authChecked } = useAuth();
@@ -251,6 +252,9 @@ export default function Register() {
           )}
         </Button>
       </form>
+
+      {/* Live signup sanctions/compliance notice (managed by The UpKeeper) */}
+      <SiteContentBlock contentKey="sanctions_signup_notice" short className="mt-4 text-xs text-muted-foreground" />
     </AuthLayout>
   );
 }

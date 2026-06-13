@@ -13,6 +13,7 @@ import ComponentSharePanel from "@/components/ComponentSharePanel";
 import FilterPanel from "@/components/marketplace/FilterPanel";
 import MarketplacePagination from "@/components/marketplace/MarketplacePagination";
 import FeaturedSpotlight from "@/components/marketplace/FeaturedSpotlight";
+import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
@@ -238,6 +239,10 @@ export default function Marketplace() {
        </nav>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-8">
+        {/* Live marketplace banner (managed by The UpKeeper) */}
+        <div className="mb-4 pt-2">
+          <SiteContentBanner contentKey="marketplace_top_banner" variant="dark" />
+        </div>
         <div className="mb-8">
           <AiSearchConsultant />
         </div>

@@ -6,6 +6,7 @@ import InstallButton from "@/components/InstallButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
+import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -187,6 +188,8 @@ export default function ComponentDetail() {
                 <div className="mb-3 w-full">
                   <InstallButton component={component} size="lg" />
                 </div>
+                {/* Live sanctions/compliance badge near purchase (managed by The UpKeeper) */}
+                <SiteContentBlock contentKey="component_page_sanctions_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />
                 <Link to="/builder/sandbox">
                   <Button variant="outline" className="w-full text-sm h-9 gap-2"><FlaskConical className="w-3.5 h-3.5" /> Try in Sandbox</Button>
                 </Link>
