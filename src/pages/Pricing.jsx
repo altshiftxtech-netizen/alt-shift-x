@@ -440,7 +440,7 @@ export default function Pricing() {
 
       {/* Live pricing-page legal notice (managed by The UpKeeper) */}
       <div className="max-w-3xl mx-auto px-4 pb-6">
-        <SiteContentBlock contentKey="pricing_page_notice" className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-xl p-4" />
+        <SiteContentBlock contentKey="sanctions_tos_clause" short className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-xl p-4" />
       </div>
 
       <div className="text-center pb-12 text-xs text-slate-400">

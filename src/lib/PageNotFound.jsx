@@ -1,7 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import SiteContentBlock from '@/components/site-content/SiteContentBlock';
 
 
 export default function PageNotFound({}) {
@@ -38,8 +37,6 @@ export default function PageNotFound({}) {
                         <p className="text-slate-600 leading-relaxed">
                             The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
                         </p>
-                        {/* Live 404 message (managed by The UpKeeper), shown when set */}
-                        <SiteContentBlock contentKey="error_page_404" className="text-sm text-slate-500" />
                     </div>
                     
                     {/* Admin Note */}

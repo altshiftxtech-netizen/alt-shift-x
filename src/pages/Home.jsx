@@ -313,7 +313,6 @@ export default function Home() {
           <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
         </div>
         <SiteContentBlock contentKey="sanctions_footer_notice" short className="max-w-2xl mx-auto text-white/50" />
-        <SiteContentBlock contentKey="footer_compliance_statement" short className="max-w-2xl mx-auto text-white/50" />
         <PlatformSocials variant="light" />
         <p>© 2026 Alt+Shift+X. All rights reserved.</p>
         <p className="text-white/30">Powered by: Trust AR LLC.</p>

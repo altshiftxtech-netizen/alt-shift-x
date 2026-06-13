@@ -189,7 +189,7 @@ export default function ComponentDetail() {
                   <InstallButton component={component} size="lg" />
                 </div>
                 {/* Live sanctions/compliance badge near purchase (managed by The UpKeeper) */}
-                <SiteContentBlock contentKey="component_page_sanctions_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />
+                <SiteContentBlock contentKey="sanctions_marketplace_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />
                 <Link to="/builder/sandbox">
                   <Button variant="outline" className="w-full text-sm h-9 gap-2"><FlaskConical className="w-3.5 h-3.5" /> Try in Sandbox</Button>
                 </Link>
