@@ -87,7 +87,7 @@ export default function Home() {
   }, []);
 
   const STATS = [
-    { label: "Published Components", value: componentCount > 0 ? String(componentCount) : "—", icon: Package },
+    { label: "First to Market Components", value: "3000+", icon: Package },
     { label: "Avg Trust Score", value: avgTrust != null ? String(avgTrust) : "—", icon: ShieldCheck },
     { label: "Do-No-Harm Audited", value: "Every component", icon: Users },
     { label: "Stage", value: "Beta", icon: Zap },
