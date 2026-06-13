@@ -36,6 +36,7 @@ import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import ExportControls from './pages/ExportControls';
 import BuilderAgreement from './pages/BuilderAgreement';
 import InstallSuccess from './pages/InstallSuccess';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
@@ -110,6 +111,8 @@ const AuthenticatedApp = () => {
       <Route path="/builders/:id" element={<BuilderPublicProfile />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/export-controls" element={<ExportControls />} />
+      <Route path="/sanctions-policy" element={<ExportControls />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
