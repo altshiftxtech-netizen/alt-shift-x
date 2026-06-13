@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { X } from "lucide-react";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
@@ -26,7 +27,7 @@ export default function SiteContentBanner({ contentKey, variant = "light", class
   return (
     <div className={`relative flex items-start gap-3 rounded-xl border px-4 py-3 ${styles} ${className}`}>
       <div className="flex-1 text-sm [&_p]:m-0">
-        <ReactMarkdown className="prose prose-sm max-w-none">{text}</ReactMarkdown>
+        <ReactMarkdown rehypePlugins={[rehypeRaw]} className="prose prose-sm max-w-none">{text}</ReactMarkdown>
       </div>
       <button
         type="button"

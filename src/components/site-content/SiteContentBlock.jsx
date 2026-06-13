@@ -1,5 +1,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { useSiteContent } from "@/hooks/useSiteContent";
 
 /**
@@ -19,7 +20,7 @@ export default function SiteContentBlock({ contentKey, short = false, className 
 
   return (
     <Wrapper className={className}>
-      <ReactMarkdown className="prose prose-sm max-w-none">{text}</ReactMarkdown>
+      <ReactMarkdown rehypePlugins={[rehypeRaw]} className="prose prose-sm max-w-none">{text}</ReactMarkdown>
     </Wrapper>
   );
 }
