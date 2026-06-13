@@ -1,0 +1,50 @@
+{
+  "name": "SiteSettings",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Setting key, e.g. sanctions_enforcement_active, maintenance_mode"
+    },
+    "value": {
+      "type": "string",
+      "description": "The setting value, stored as a string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "boolean",
+        "string",
+        "number",
+        "json"
+      ],
+      "default": "string"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about this setting"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

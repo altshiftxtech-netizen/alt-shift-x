@@ -435,7 +435,7 @@ export default function UpKeeper() {
                     </button>
                     <div className="flex-1" />
                     {(sending || isGenerating) ? (
-                      <StopButton onStop={stopGenerating} />
+                      <StopButton onStop={() => { stopGenerating(); setSending(false); }} />
                     ) : (
                       <button onClick={sendWithFiles} disabled={!input.trim() && uploadedFiles.length === 0}
                         className="bg-orange-600 hover:bg-orange-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">

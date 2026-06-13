@@ -1,0 +1,108 @@
+{
+  "name": "SiteContent",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique slug, e.g. sanctions_tos_clause"
+    },
+    "section": {
+      "type": "string",
+      "enum": [
+        "legal",
+        "footer",
+        "checkout",
+        "marketplace",
+        "signup",
+        "homepage",
+        "email_templates",
+        "notifications",
+        "announcements",
+        "component_pages",
+        "dashboard",
+        "blog",
+        "faq",
+        "pricing_page",
+        "about_page",
+        "error_pages",
+        "onboarding",
+        "other"
+      ],
+      "description": "Which part of the site this content belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable label"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full content body (HTML or Markdown supported)"
+    },
+    "body_short": {
+      "type": "string",
+      "description": "Optional short version for banners, badges, footers"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = rendered on site, false = draft/disabled"
+    },
+    "requires_auth": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = only shown to logged-in users"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "buyers",
+        "builders",
+        "admins",
+        "guests"
+      ],
+      "default": "all"
+    },
+    "last_updated_by": {
+      "type": "string",
+      "description": "Admin user ID who last changed this"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for admin/agent context"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Increments on each save for audit trail"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this was last made active"
+    }
+  },
+  "required": [
+    "key",
+    "section",
+    "title"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
