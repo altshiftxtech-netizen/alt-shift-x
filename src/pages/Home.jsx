@@ -10,6 +10,7 @@ import PlatformSocials from "@/components/PlatformSocials";
 import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
 import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
+import { openCookiePreferences } from "@/components/cookies/cookiePrefStore";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -311,6 +312,7 @@ export default function Home() {
           <Link to="/privacy" className="hover:text-slate-600">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-slate-600">Terms of Service</Link>
           <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
+          <button onClick={() => openCookiePreferences()} className="hover:text-slate-600">Cookie Settings</button>
         </div>
         <SiteContentBlock contentKey="sanctions_footer_notice" short className="max-w-2xl mx-auto text-white/50" />
         <PlatformSocials variant="light" />

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { isAllowed } from "@/lib/cookieConsent";
 
 const GA_ID = "G-VH2R8WDX7K";
 
@@ -35,6 +36,8 @@ export default function AnalyticsTracker() {
   const location = useLocation();
 
   useEffect(() => {
+    // GDPR/PECR: analytics is non-essential — do nothing until the user consents.
+    if (!isAllowed("analytics")) return;
     if (isExcluded(location.pathname)) return;
     ensureGtagLoaded();
     window.gtag("config", GA_ID, {
