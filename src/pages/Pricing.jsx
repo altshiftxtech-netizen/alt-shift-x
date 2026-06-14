@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket } from "lucide-react";
+import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import Logo from "@/components/Logo";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
@@ -437,6 +437,27 @@ export default function Pricing() {
           </div>
         </>
       )}
+
+      {/* Enterprise & DPA — for companies processing personal data through the platform */}
+      <div className="max-w-3xl mx-auto px-4 pb-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-slate-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-900 mb-1">Enterprise & Data Processing Agreements</p>
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
+              Companies processing personal data through Alt+Shift+X can execute a Data Processing Agreement (DPA) covering GDPR/UK GDPR obligations, sub-processors, and security commitments. For a countersigned DPA, custom enterprise terms, or volume pricing, contact our team.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <a href="mailto:info@altshiftx.tech?subject=Data%20Processing%20Agreement%20Request">
+                <Button size="sm" variant="outline" className="text-xs gap-1.5"><FileText className="w-3.5 h-3.5" /> Request a DPA</Button>
+              </a>
+              <Link to="/legal/dpa" className="text-xs text-violet-600 font-semibold hover:underline">Read the DPA →</Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Live pricing-page legal notice (managed by The UpKeeper) */}
       <div className="max-w-3xl mx-auto px-4 pb-6">
