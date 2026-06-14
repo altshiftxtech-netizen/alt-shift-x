@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, ArrowRight, Star, Lock } from "lucide-react";
+import { ShieldCheck, ArrowRight, Lock } from "lucide-react";
 import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
+import RatingDisplay from "@/components/RatingDisplay";
 
 /**
  * FeaturedSpotlight — a pinned hero strip for components flagged `featured`.
@@ -40,18 +41,14 @@ export default function FeaturedSpotlight({ components = [], userId, installedMa
           <p className="text-sm text-white/70 leading-relaxed line-clamp-3 mb-4">{c.description}</p>
 
           <div className="flex items-center justify-between pt-3 border-t border-white/10">
-            <div className="flex items-center gap-3 text-xs">
-              {(c.rating || 0) > 0 && (
-                <span className="flex items-center gap-1 text-amber-300">
-                  <Star className="w-3.5 h-3.5 fill-amber-300 stroke-amber-300" /> {(c.rating || 0).toFixed(1)}
-                </span>
-              )}
-              {(c.trust_score || 0) > 0 && (
-                <span className="flex items-center gap-1 text-emerald-300">
-                  <ShieldCheck className="w-3.5 h-3.5" /> {c.trust_score} Trust
-                </span>
-              )}
-            </div>
+             <div className="flex items-center gap-3">
+               <RatingDisplay rating={c.rating || 0} reviewsCount={c.reviews_count || 0} className="!text-amber-300 !bg-transparent !px-0" />
+               {(c.trust_score || 0) > 0 && (
+                 <span className="flex items-center gap-1 text-xs text-emerald-300">
+                   <ShieldCheck className="w-3.5 h-3.5" /> {c.trust_score} Trust
+                 </span>
+               )}
+             </div>
             <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 group-hover:translate-x-0.5 transition-transform">
               View details <ArrowRight className="w-4 h-4" />
             </span>

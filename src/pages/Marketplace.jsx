@@ -6,6 +6,7 @@ import { Search, Star, ShieldCheck, Download, SlidersHorizontal, ChevronRight, L
 import Logo from "@/components/Logo";
 import InstallButton from "@/components/InstallButton";
 import { base44 } from "@/api/base44Client";
+import RatingDisplay from "@/components/RatingDisplay";
 import AiSearchConsultant from "@/components/AiSearchConsultant";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
@@ -468,10 +469,7 @@ export default function Marketplace() {
                           {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}
                         </p>
                         <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                          <div className="flex items-center gap-1 text-xs">
-                            <Star className="w-3 h-3 fill-amber-400 stroke-amber-400" />
-                            <span className="font-semibold text-white">{(c.rating || 0).toFixed(1)}</span>
-                          </div>
+                           <RatingDisplay rating={c.rating || 0} reviewsCount={c.reviews_count || 0} className="!text-white/70 !bg-transparent !px-0" />
                           <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
                             <div className="relative">
                               <button

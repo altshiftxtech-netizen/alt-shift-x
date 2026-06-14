@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
+import RatingDisplay from "@/components/RatingDisplay";
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -157,11 +158,7 @@ export default function ComponentDetail() {
               <CardContent className="pt-5">
                 <div className="flex items-center gap-3 mb-4">
                   <h3 className="text-sm font-bold text-slate-900">Reviews</h3>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-amber-400 stroke-amber-400" />
-                    <span className="text-sm font-bold text-slate-800">{component.rating}</span>
-                    <span className="text-xs text-slate-400">({component.reviews})</span>
-                  </div>
+                  <RatingDisplay rating={component.rating || 0} reviewsCount={component.reviews || 0} />
                 </div>
                 <div className="space-y-4">
                   {component.recentReviews.map((r, i) => (
