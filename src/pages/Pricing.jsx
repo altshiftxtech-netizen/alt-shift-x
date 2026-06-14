@@ -393,11 +393,11 @@ export default function Pricing() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-slate-200">
-                      <th className="text-left py-2 pr-4 text-slate-500 font-semibold">Builder Tier</th>
-                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Base Payout</th>
-                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Certification Bonus</th>
-                      <th className="text-center py-2 pr-4 text-slate-500 font-semibold">Volume Rebate</th>
-                      <th className="text-center py-2 text-slate-500 font-semibold">Total Potential</th>
+                      <th scope="col" className="text-left py-2 pr-4 text-slate-500 font-semibold">Builder Tier</th>
+                      <th scope="col" className="text-center py-2 pr-4 text-slate-500 font-semibold">Base Payout</th>
+                      <th scope="col" className="text-center py-2 pr-4 text-slate-500 font-semibold">Certification Bonus</th>
+                      <th scope="col" className="text-center py-2 pr-4 text-slate-500 font-semibold">Volume Rebate</th>
+                      <th scope="col" className="text-center py-2 text-slate-500 font-semibold">Total Potential</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">

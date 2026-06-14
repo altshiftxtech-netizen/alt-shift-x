@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
 import PlatformSocials from "@/components/PlatformSocials";
+import { useSiteContentSection } from "@/hooks/useSiteContent";
 
 export default function Contact() {
+  const faqEntries = useSiteContentSection("faq");
   const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [convId, setConvId] = useState(null);
@@ -114,7 +117,7 @@ export default function Contact() {
                 <Card><CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"><Mail className="w-6 h-6 text-blue-600" /></div>
                   <h3 className="font-semibold text-slate-900">Email</h3>
-                  <a href="mailto:info@altshiftx.tech" className="text-blue-600 font-medium hover:underline">info@altshiftx.tech</a>
+                  <a href="mailto:support@altshiftx.tech" className="text-blue-600 font-medium hover:underline">support@altshiftx.tech</a>
                 </CardContent></Card>
                 <Card><CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                   <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center"><Clock className="w-6 h-6 text-emerald-600" /></div>
@@ -126,16 +129,18 @@ export default function Contact() {
           </div>
         )}
 
-        {/* FAQ */}
-        {info?.faq_items?.length > 0 && (
+        {/* FAQ — live entries managed by The UpKeeper (SiteContent · faq) */}
+        {faqEntries.length > 0 && (
           <div className="mb-12">
             <h2 className="text-xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
             <div className="space-y-4">
-              {info.faq_items.map((faq, i) => (
-                <Card key={i}>
+              {faqEntries.map((faq) => (
+                <Card key={faq.id}>
                   <CardContent className="pt-4 pb-4">
-                    <p className="font-semibold text-slate-900 mb-1">{faq.question}</p>
-                    <p className="text-sm text-slate-600">{faq.answer}</p>
+                    <p className="font-semibold text-slate-900 mb-2">{faq.title?.replace(/^FAQ[:—-]?\s*/i, "")}</p>
+                    <div className="prose prose-sm max-w-none text-slate-600 prose-headings:text-base prose-headings:font-semibold prose-headings:text-slate-900 prose-headings:mt-3 prose-headings:mb-1 prose-a:text-violet-600">
+                      <ReactMarkdown>{faq.body}</ReactMarkdown>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -170,9 +175,9 @@ export default function Contact() {
               <MessageCircle className="w-4 h-4" />
               <span className="text-sm font-semibold">Support Chat</span>
             </div>
-            <button onClick={() => setChatOpen(false)} className="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+            <button onClick={() => setChatOpen(false)} aria-label="Close chat" className="text-slate-400 hover:text-white text-lg leading-none w-11 h-11 -mr-2 flex items-center justify-center">&times;</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2" aria-live="polite" role="log">
             {messages.length === 0 && (
               <p className="text-slate-400 text-xs text-center mt-4">Hi! How can we help you today?</p>
             )}
