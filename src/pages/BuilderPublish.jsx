@@ -8,6 +8,7 @@ import StepSchema from "@/components/builder-publish/StepSchema";
 import StepBenchmark from "@/components/builder-publish/StepBenchmark";
 import StepCompliance from "@/components/builder-publish/StepCompliance";
 import StepConfirm from "@/components/builder-publish/StepConfirm";
+import BuilderAgreementModal from "@/components/builder-publish/BuilderAgreementModal";
 
 export const STEPS = [
   { id: 0, label: "Upload Document" },
@@ -50,11 +51,37 @@ export default function BuilderPublish() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
+  const [showAgreement, setShowAgreement] = useState(false);
 
   const updateForm = (updates) => setForm(prev => ({ ...prev, ...updates }));
   const updateChecks = (key, val) => setForm(prev => ({ ...prev, checks: { ...prev.checks, [key]: val } }));
 
+  // One-time Builder Agreement gate: if the builder hasn't accepted yet, show
+  // the modal before the first submit. Once accepted, proceed straight through.
   const handleSubmit = async () => {
+    try {
+      const me = await base44.auth.me();
+      if (!me?.builder_agreement_accepted) {
+        setShowAgreement(true);
+        return;
+      }
+    } catch {
+      // If we can't read the user, fall through to the modal to be safe.
+      setShowAgreement(true);
+      return;
+    }
+    await doSubmit();
+  };
+
+  const handleAgreementConfirm = async () => {
+    setShowAgreement(false);
+    try {
+      await base44.auth.updateMe({ builder_agreement_accepted: true, builder_agreement_accepted_at: new Date().toISOString() });
+    } catch { /* non-blocking */ }
+    await doSubmit();
+  };
+
+  const doSubmit = async () => {
     try {
       await base44.functions.invoke("publishComponent", {
         name: form.displayName || form.name,
@@ -119,6 +146,12 @@ export default function BuilderPublish() {
         {step === 3 && <StepCompliance checks={form.checks} onChange={updateChecks} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
         {step === 4 && <StepConfirm form={form} onChange={updateForm} onSubmit={handleSubmit} onBack={() => setStep(3)} />}
       </div>
+
+      <BuilderAgreementModal
+        open={showAgreement}
+        onOpenChange={setShowAgreement}
+        onConfirm={handleAgreementConfirm}
+      />
     </div>
   );
 }

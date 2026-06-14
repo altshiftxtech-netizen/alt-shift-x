@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +10,7 @@ import { COOKIE_CATEGORIES, getConsent, saveConsent, acceptAll } from "@/lib/coo
  * toggles default OFF and are never pre-checked, satisfying GDPR/PECR.
  */
 export default function CookiePreferenceCenter({ open, onOpenChange }) {
-  const [selections, setSelections] = useState({ analytics: false, attribution: false });
+  const [selections, setSelections] = useState({ functional: false, analytics: false, marketing: false });
 
   // When opened, reflect any previously saved choices (still OFF if undecided).
   useEffect(() => {
@@ -17,8 +18,9 @@ export default function CookiePreferenceCenter({ open, onOpenChange }) {
       const consent = getConsent();
       const cats = (consent && consent.categories) || {};
       setSelections({
+        functional: !!cats.functional,
         analytics: !!cats.analytics,
-        attribution: !!cats.attribution,
+        marketing: !!cats.marketing,
       });
     }
   }, [open]);
@@ -60,6 +62,10 @@ export default function CookiePreferenceCenter({ open, onOpenChange }) {
             </div>
           ))}
         </div>
+
+        <p className="text-[11px] text-slate-400 pt-1">
+          Read our full <Link to="/legal/cookies" className="text-violet-600 hover:underline" onClick={() => onOpenChange(false)}>Cookie Policy</Link>.
+        </p>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button variant="outline" onClick={handleSave}>Save preferences</Button>

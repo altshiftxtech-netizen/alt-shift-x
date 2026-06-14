@@ -10,7 +10,7 @@ import PlatformSocials from "@/components/PlatformSocials";
 import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton";
 import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
-import { openCookiePreferences } from "@/components/cookies/cookiePrefStore";
+import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -307,16 +307,12 @@ export default function Home() {
 
       <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm py-8 text-center text-xs text-white/40 space-y-4">
         <div className="flex justify-center gap-4 flex-wrap">
-          <Link to="/contact" className="hover:text-slate-600">Contact</Link>
-          <Link to="/tutorials" className="hover:text-slate-600">Tutorials</Link>
-          <Link to="/privacy" className="hover:text-slate-600">Privacy Policy</Link>
-          <Link to="/terms" className="hover:text-slate-600">Terms of Service</Link>
-          <Link to="/sensitive-intelligence-policy" className="hover:text-slate-600">Sensitive Intelligence Policy</Link>
-          <button onClick={() => openCookiePreferences()} className="hover:text-slate-600">Cookie Settings</button>
+          <Link to="/contact" className="hover:text-white">Contact</Link>
+          <Link to="/tutorials" className="hover:text-white">Tutorials</Link>
+          <Link to="/sensitive-intelligence-policy" className="hover:text-white">Sensitive Intelligence Policy</Link>
         </div>
-        <SiteContentBlock contentKey="sanctions_footer_notice" short className="max-w-2xl mx-auto text-white/50" />
+        <LegalFooterLinks variant="light" />
         <PlatformSocials variant="light" />
-        <p>© 2026 Alt+Shift+X. All rights reserved.</p>
         <p className="text-white/30">Powered by: Trust AR LLC.</p>
       </footer>
     </div>

@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import NonMagnaReminderDialog from "@/components/install/NonMagnaReminderDialog";
 import SafeguardLegalGate from "@/components/install/SafeguardLegalGate";
+import CheckoutLegalBlock from "@/components/install/CheckoutLegalBlock";
 
 // Accounts that are only provisioned with Magna Dev components.
 const RESTRICTED_ROLES = ["staff", "builder"];
@@ -24,6 +25,8 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   const [loading, setLoading] = useState(false);
   const [localRecord, setLocalRecord] = useState(installedRecord);
   const [showReminder, setShowReminder] = useState(false);
+  // Mandatory sanctions acknowledgment — checkout is blocked until checked.
+  const [sanctionsAck, setSanctionsAck] = useState(false);
   const [userRole, setUserRole] = useState(null);
   // Legal gating (e.g. SAFEGUARD): walkthrough must be accepted before checkout.
   const [showLegalGate, setShowLegalGate] = useState(false);
@@ -69,6 +72,8 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   };
 
   const handleInstall = async () => {
+    // Legal compliance: the sanctions acknowledgment must be checked first.
+    if (!sanctionsAck) return;
     // Legally-gated components require the disclaimer walkthrough first.
     if (needsLegalGate) {
       setPendingProvider("card");
@@ -95,6 +100,7 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   };
 
   const handlePaypalInstall = async () => {
+    if (!sanctionsAck) return;
     if (needsLegalGate) {
       setPendingProvider("paypal");
       setShowLegalGate(true);
@@ -166,14 +172,22 @@ export default function InstallButton({ component, userId, installedRecord, onUn
 
   return (
     <div className="flex flex-col gap-2">
-      <Button size={size} onClick={handleInstall}
+      {/* Summary of key terms + refund notice, shown above the payment buttons */}
+      <CheckoutLegalBlock
+        sanctionsAck={sanctionsAck}
+        onSanctionsAckChange={setSanctionsAck}
+      />
+
+      <Button size={size} onClick={handleInstall} disabled={!sanctionsAck}
         className="gap-2 bg-violet-700 hover:bg-violet-800 text-white">
         <Download className="w-4 h-4" /> Install (Card)
       </Button>
-      <Button size={size} onClick={handlePaypalInstall}
+      <Button size={size} onClick={handlePaypalInstall} disabled={!sanctionsAck}
         className="gap-2 bg-[#ffc439] hover:bg-[#f0b72e] text-[#003087] font-semibold">
         Pay with PayPal
       </Button>
+
+      <CheckoutLegalBlock.Links />
 
       <NonMagnaReminderDialog
         open={showReminder}

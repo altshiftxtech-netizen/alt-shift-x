@@ -75,6 +75,20 @@ import PipelineKeyReveal from './pages/PipelineKeyReveal';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Unsubscribe from './pages/Unsubscribe';
+import LegalTerms from './pages/legal/LegalTerms';
+import LegalPrivacy from './pages/legal/LegalPrivacy';
+import LegalCookies from './pages/legal/LegalCookies';
+import LegalAcceptableUse from './pages/legal/LegalAcceptableUse';
+import LegalBuilderAgreement from './pages/legal/LegalBuilderAgreement';
+import LegalRefunds from './pages/legal/LegalRefunds';
+import LegalDmca from './pages/legal/LegalDmca';
+import LegalExportControls from './pages/legal/LegalExportControls';
+import LegalAiDisclosure from './pages/legal/LegalAiDisclosure';
+import LegalSecurityDisclosure from './pages/legal/LegalSecurityDisclosure';
+import LegalReferralTerms from './pages/legal/LegalReferralTerms';
+import LegalAccessibility from './pages/legal/LegalAccessibility';
+import LegalDpa from './pages/legal/LegalDpa';
+import LegalChildrensSafety from './pages/legal/LegalChildrensSafety';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -120,6 +134,21 @@ const AuthenticatedApp = () => {
       <Route path="/unsubscribe" element={<Unsubscribe />} />
       <Route path="/tutorials" element={<Tutorial />} />
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
+      {/* ── Legal library routes ── */}
+      <Route path="/legal/terms" element={<LegalTerms />} />
+      <Route path="/legal/privacy" element={<LegalPrivacy />} />
+      <Route path="/legal/cookies" element={<LegalCookies />} />
+      <Route path="/legal/acceptable-use" element={<LegalAcceptableUse />} />
+      <Route path="/legal/builder-agreement" element={<LegalBuilderAgreement />} />
+      <Route path="/legal/refunds" element={<LegalRefunds />} />
+      <Route path="/legal/dmca" element={<LegalDmca />} />
+      <Route path="/legal/export-controls" element={<LegalExportControls />} />
+      <Route path="/legal/ai-disclosure" element={<LegalAiDisclosure />} />
+      <Route path="/legal/security-disclosure" element={<LegalSecurityDisclosure />} />
+      <Route path="/legal/referral-terms" element={<LegalReferralTerms />} />
+      <Route path="/legal/accessibility" element={<LegalAccessibility />} />
+      <Route path="/legal/dpa" element={<LegalDpa />} />
+      <Route path="/legal/childrens-safety" element={<LegalChildrensSafety />} />
       <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />

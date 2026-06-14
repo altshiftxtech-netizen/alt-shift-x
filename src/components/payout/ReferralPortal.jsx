@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle2, Share2, Gift, Users, DollarSign } from "lucide-react";
@@ -129,6 +130,12 @@ export default function ReferralPortal({ badge }) {
             </div>
           </div>
         </div>
+
+        {/* Referral & Affiliate Program Terms notice */}
+        <p className="mt-5 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+          By sharing your referral code, you agree to the{" "}
+          <Link to="/legal/referral-terms" className="text-violet-600 underline">Referral &amp; Affiliate Program Terms</Link>.
+        </p>
       </CardContent>
     </Card>
   );

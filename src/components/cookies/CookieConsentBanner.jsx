@@ -40,15 +40,15 @@ export default function CookieConsentBanner() {
             <div className="flex items-start gap-3 flex-1">
               <Cookie className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
               <p className="text-sm text-slate-600 leading-relaxed">
-                We use strictly necessary cookies to run the site. With your consent, we also use{" "}
-                <span className="font-medium text-slate-800">analytics and attribution</span> cookies. These stay off until you accept.{" "}
-                <Link to="/privacy" className="text-violet-600 hover:underline">Learn more</Link>.
+                We use cookies to keep you logged in, process payments, and understand how the Platform is used.
+                Non-essential cookies stay off until you accept. By clicking Accept All, you agree to our{" "}
+                <Link to="/legal/cookies" className="text-violet-600 hover:underline">Cookie Policy</Link>.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 md:justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setPrefsOpen(true)}>Customize</Button>
-              <Button variant="outline" size="sm" onClick={handleRejectAll}>Reject all</Button>
-              <Button size="sm" onClick={handleAcceptAll}>Accept all</Button>
+              <Button variant="ghost" size="sm" onClick={() => setPrefsOpen(true)}>Cookie Settings</Button>
+              <Button variant="outline" size="sm" onClick={handleRejectAll}>Reject Non-Essential</Button>
+              <Button size="sm" onClick={handleAcceptAll}>Accept All</Button>
             </div>
           </div>
         </div>

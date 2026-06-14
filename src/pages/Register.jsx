@@ -255,6 +255,16 @@ export default function Register() {
 
       {/* Live signup sanctions/compliance notice (managed by The UpKeeper) */}
       <SiteContentBlock contentKey="sanctions_signup_notice" short className="mt-4 text-xs text-muted-foreground" />
+
+      {/* Terms / Privacy agreement + age confirmation (legal requirement) */}
+      <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+        By creating an account, you agree to our{" "}
+        <Link to="/legal/terms" className="text-primary hover:underline">Terms of Service</Link> and{" "}
+        <Link to="/legal/privacy" className="text-primary hover:underline">Privacy Policy</Link>. You must be 18 or older to use this platform.
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        <Link to="/legal/childrens-safety" className="text-primary hover:underline">Children's Safety Policy</Link>
+      </p>
     </AuthLayout>
   );
 }

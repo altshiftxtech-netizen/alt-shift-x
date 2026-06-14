@@ -8,7 +8,7 @@ export default function AffiliateCapture() {
   const location = useLocation();
   useEffect(() => {
     // GDPR/PECR: attribution is non-essential — only persist after consent.
-    if (!isAllowed("attribution")) return;
+    if (!isAllowed("marketing")) return;
     captureRefFromUrl();
   }, [location.search]);
   return null;
