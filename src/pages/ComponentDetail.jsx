@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 import RatingDisplay from "@/components/RatingDisplay";
+import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -187,6 +188,7 @@ export default function ComponentDetail() {
                 </div>
                 {/* Live sanctions/compliance badge near purchase (managed by The UpKeeper) */}
                 <SiteContentBlock contentKey="sanctions_marketplace_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />
+                <AiDisclosureNotice variant="dark" className="mb-3" />
                 <Link to="/builder/sandbox">
                   <Button variant="outline" className="w-full text-sm h-9 gap-2"><FlaskConical className="w-3.5 h-3.5" /> Try in Sandbox</Button>
                 </Link>

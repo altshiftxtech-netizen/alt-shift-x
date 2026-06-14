@@ -15,6 +15,7 @@ import FilterPanel from "@/components/marketplace/FilterPanel";
 import MarketplacePagination from "@/components/marketplace/MarketplacePagination";
 import FeaturedSpotlight from "@/components/marketplace/FeaturedSpotlight";
 import SiteContentBanner from "@/components/site-content/SiteContentBanner";
+import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
@@ -244,9 +245,10 @@ export default function Marketplace() {
         <div className="mb-4 pt-2">
           <SiteContentBanner contentKey="marketplace_top_banner" variant="dark" />
         </div>
-        <div className="mb-8">
+        <div className="mb-4">
           <AiSearchConsultant />
         </div>
+        <AiDisclosureNotice variant="light" className="mb-8" />
 
         {/* Search + Sort */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
