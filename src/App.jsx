@@ -14,6 +14,7 @@ import NewsletterPopup from './components/newsletter/NewsletterPopup';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
+import AboutUs from './pages/AboutUs';
 import Marketplace from './pages/Marketplace';
 import ComponentDetail from './pages/ComponentDetail';
 import UserDashboard from './pages/UserDashboard';
@@ -122,6 +123,7 @@ const AuthenticatedApp = () => {
       {/* ── Public routes — no login required ── */}
       <Route path="/" element={<Home />} />
       <Route path="/marketplace" element={<Marketplace />} />
+      <Route path="/about" element={<AboutUs />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/pipelines" element={<Pipelines />} />

@@ -63,9 +63,9 @@ export default function AboutUsSection() {
                 Explore the marketplace <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Link to="/white-paper">
+            <Link to="/about">
               <Button variant="outline" className="h-11 px-6 text-sm bg-white/5 border-white/25 text-white hover:bg-white/15">
-                Read our white paper
+                Read our full story
               </Button>
             </Link>
           </div>

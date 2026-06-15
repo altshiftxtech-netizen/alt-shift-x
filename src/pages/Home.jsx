@@ -118,6 +118,7 @@ export default function Home() {
         <Logo className="h-8 w-auto" variant="purple" />
         <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
           <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
+          <Link to="/about" className="hover:text-white">About</Link>
           <Link to="/builder" className="hover:text-white">Build</Link>
           <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
           <Link to="/contact" className="hover:text-white">Contact</Link>
