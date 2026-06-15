@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import AffiliateCapture from './components/AffiliateCapture';
 import CookieConsentBanner from './components/cookies/CookieConsentBanner';
+import NewsletterPopup from './components/newsletter/NewsletterPopup';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
@@ -226,6 +227,7 @@ function App() {
             <AffiliateCapture />
             <AuthenticatedApp />
             <CookieConsentBanner />
+            <NewsletterPopup />
           </Router>
           <Toaster />
         </QueryClientProvider>
