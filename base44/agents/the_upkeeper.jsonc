@@ -164,6 +164,18 @@
         "read",
         "update"
       ]
+    },
+    {
+      "function_name": "googleDriveOps",
+      "description": "List, read, create, update, trash, and (with confirm:true) delete files in the Alt+Shift+X operations Google Drive folder."
+    },
+    {
+      "function_name": "googleSheetsOps",
+      "description": "Create spreadsheets and read/write cells and formulas in the operations/finance Google Sheets workbook."
+    },
+    {
+      "function_name": "googleCalendarOps",
+      "description": "List, create, update, and (with confirm:true) delete Google Calendar events for DMCA expirations, campaigns, sales windows, and tests."
     }
   ],
   "context_files": [],
