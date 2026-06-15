@@ -74,6 +74,7 @@ import Pipelines from './pages/Pipelines';
 import PipelineKeyReveal from './pages/PipelineKeyReveal';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import WhitePaper from './pages/WhitePaper';
 import Unsubscribe from './pages/Unsubscribe';
 import LegalTerms from './pages/legal/LegalTerms';
 import LegalPrivacy from './pages/legal/LegalPrivacy';
@@ -131,6 +132,8 @@ const AuthenticatedApp = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/white-paper" element={<WhitePaper />} />
+      <Route path="/about/white-paper" element={<WhitePaper />} />
       <Route path="/unsubscribe" element={<Unsubscribe />} />
       <Route path="/tutorials" element={<Tutorial />} />
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />

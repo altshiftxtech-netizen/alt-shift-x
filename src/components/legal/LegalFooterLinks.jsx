@@ -17,6 +17,7 @@ const LEGAL_LINKS = [
   { label: "Accessibility", to: "/legal/accessibility" },
   { label: "Children's Safety", to: "/legal/childrens-safety" },
   { label: "DPA", to: "/legal/dpa" },
+  { label: "White Paper", to: "/white-paper" },
 ];
 
 /**
