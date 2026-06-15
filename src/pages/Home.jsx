@@ -11,6 +11,7 @@ import SpotlightShareButton from "@/components/marketplace/SpotlightShareButton"
 import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
+import AboutUsSection from "@/components/home/AboutUsSection";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -222,6 +223,9 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* About Us — Magna Dev × Alt+Shift+X */}
+      <AboutUsSection />
 
       {/* Builder Agreement Section */}
       {!isAuthenticated && (
