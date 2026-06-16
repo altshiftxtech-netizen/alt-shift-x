@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight } from "lucide-react";
+import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight, BookOpen, Award } from "lucide-react";
 
 const PROCESS = [
   { icon: Beaker, step: "01", title: "Innovate freely", body: "Bring the bleeding edge — novel models, unconventional pipelines, the idea nobody else dared to ship. Invention is welcome here." },
@@ -26,6 +26,31 @@ export default function BuilderInnovationSection() {
             genuinely new, and the credibility of a process every component passes through, no exceptions. That's why
             buyers trust what carries our mark, and why your work sells faster because of it.
           </p>
+        </div>
+
+        {/* 76 years of knowledge → meet or exceed the Magna Doctrine */}
+        <div className="mb-10 rounded-2xl border border-violet-400/30 bg-gradient-to-r from-violet-600/20 via-white/5 to-transparent p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-start gap-5">
+            <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center shrink-0">
+              <BookOpen className="w-6 h-6 text-violet-200" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-2 text-violet-200 text-xs font-bold uppercase tracking-widest mb-2">
+                <Award className="w-3.5 h-3.5" /> 76 Years of Compounded Knowledge
+              </div>
+              <h3 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight">
+                Upload with 76 years of knowledge behind you.
+              </h3>
+              <p className="text-white/70 leading-relaxed">
+                When you bring a component to Alt+Shift+X, you're not building alone. Every upload is reinforced by
+                <span className="text-white font-semibold"> 76 years of accumulated operational, strategic, and engineering knowledge</span> —
+                distilled into the standards, audits, and frameworks your work runs through. That depth doesn't just help your
+                product <span className="text-white font-semibold">meet the Magna Doctrine</span> — it's engineered to help it
+                <span className="text-violet-300 font-semibold"> accomplish and exceed it</span>. The result is a component that ships
+                sharper, safer, and more trusted than it could ever be on its own.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
