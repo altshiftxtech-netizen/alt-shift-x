@@ -100,7 +100,7 @@ export default function AboutUs() {
               shrugs and ships anyway. We built Alt+Shift+X to stand exactly in that gap and refuse to move.
             </p>
             <p className="text-white/90 font-medium">
-              Magna Dev engineers the components. Alt+Shift+X is the gate they have to pass through. Nothing
+              Builders engineer the components. Alt+Shift+X is the gate they have to pass through. Nothing
               reaches you that hasn't earned it.
             </p>
           </div>
