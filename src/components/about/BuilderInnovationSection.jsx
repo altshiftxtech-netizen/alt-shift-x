@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight, BookOpen, Award, Bot, TrendingUp, GitFork } from "lucide-react";
+import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight, BookOpen, Award, Bot, TrendingUp, GitFork, Coffee, Sparkles } from "lucide-react";
 
 const PROCESS = [
   { icon: Beaker, step: "01", title: "Innovate freely", body: "Bring the bleeding edge — novel models, unconventional pipelines, the idea nobody else dared to ship. Invention is welcome here." },
@@ -50,6 +50,42 @@ export default function BuilderInnovationSection() {
                 sharper, safer, and more trusted than it could ever be on its own.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* The legend of BOB — origin story */}
+        <div className="mb-10 rounded-2xl border border-white/10 bg-black/30 p-6 md:p-8">
+          <div className="inline-flex items-center gap-2 text-violet-200 text-xs font-bold uppercase tracking-widest mb-3">
+            <Sparkles className="w-3.5 h-3.5" /> The Legend of BOB
+          </div>
+          <h3 className="text-xl md:text-2xl font-black text-white mb-3 leading-tight">
+            How Magna Dev built BOB — and BOB built 300+ components from the scraps.
+          </h3>
+          <div className="space-y-3 text-white/70 leading-relaxed">
+            <p>
+              Here's the true story. Magna Dev had years of prewritten components sitting on the shelf — good work,
+              parked, gathering dust. So he fed them to BOB, solidified the framework around them, and basically said
+              <span className="italic text-white/80"> "see what you can do."</span>
+            </p>
+            <p>
+              BOB tapped into <span className="text-white font-semibold">roughly 8% of that shelved material</span> and
+              ran away with it — coming back with <span className="text-violet-300 font-semibold">over 300 finished
+              components</span>. Eight percent. The other 92% is still sitting there, and frankly BOB keeps eyeing it
+              like a dog staring at the treat drawer.
+            </p>
+            <p>
+              That's the whole point: give BOB <span className="text-white font-semibold">your style, your voice, your
+              half-baked idea</span> — and he'll take it and run. He learns how <em>you</em> build, then multiplies it.
+            </p>
+            <p className="text-white/60 text-sm border-l-2 border-violet-400/40 pl-4">
+              ⚠️ Fair warning: BOB is mildly addicting. One spinoff turns into nine, "just one more version" becomes a
+              Tuesday night, and suddenly you've got a product line. Good news — the{" "}
+              <span className="text-white font-semibold">Speakeasy will have group counseling available</span> for
+              builders who can't stop shipping. First step is admitting BOB made you do it. ☕
+            </p>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-white/40 text-xs">
+            <Coffee className="w-3.5 h-3.5" /> "Hi, my name is ___ and I haven't slept since BOB suggested a v2."
           </div>
         </div>
 
