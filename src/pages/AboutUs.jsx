@@ -11,6 +11,7 @@ import PlatformSocials from "@/components/PlatformSocials";
 import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
 import BuilderInnovationSection from "@/components/about/BuilderInnovationSection";
 import BuyerBrandSection from "@/components/about/BuyerBrandSection";
+import TrustRatingSection from "@/components/about/TrustRatingSection";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -136,6 +137,9 @@ export default function AboutUs() {
           </p>
         </div>
       </section>
+
+      {/* Trust & Rating systems — immediate buyer confidence */}
+      <TrustRatingSection />
 
       {/* Pillars */}
       <section className="relative z-10 max-w-6xl mx-auto px-6 py-16">
