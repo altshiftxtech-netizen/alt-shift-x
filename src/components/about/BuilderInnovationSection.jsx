@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight, BookOpen, Award } from "lucide-react";
+import { Beaker, GitBranch, ShieldCheck, Rocket, ArrowRight, BookOpen, Award, Bot, TrendingUp, GitFork } from "lucide-react";
 
 const PROCESS = [
   { icon: Beaker, step: "01", title: "Innovate freely", body: "Bring the bleeding edge — novel models, unconventional pipelines, the idea nobody else dared to ship. Invention is welcome here." },
@@ -49,6 +49,50 @@ export default function BuilderInnovationSection() {
                 <span className="text-violet-300 font-semibold"> accomplish and exceed it</span>. The result is a component that ships
                 sharper, safer, and more trusted than it could ever be on its own.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Got an idea or a project in motion? Meet BOB Builder */}
+        <div className="mb-10 rounded-2xl border border-violet-400/30 bg-gradient-to-r from-violet-600/20 via-white/5 to-transparent p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-start gap-5">
+            <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center shrink-0">
+              <Bot className="w-6 h-6 text-violet-200" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-2 text-violet-200 text-xs font-bold uppercase tracking-widest mb-2">
+                <Rocket className="w-3.5 h-3.5" /> Meet BOB Builder
+              </div>
+              <h3 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight">
+                Got an idea — or a project already in the works? Let BOB build it with you.
+              </h3>
+              <p className="text-white/70 leading-relaxed mb-4">
+                BOB Builder is your in-house AI partner. Bring a rough concept or a half-finished model and BOB helps you
+                <span className="text-white font-semibold"> build it out, speed it up, and ship it</span> — refining your descriptions,
+                tightening your pricing, and walking it through the standards before it ever hits review. He doesn't wait to be asked:
+                BOB instinctively looks for ways to <span className="text-violet-300 font-semibold">scale your product</span>, surfacing
+                spinoffs and new versions you hadn't thought of yet. And because everything runs through the same gauntlet, BOB can spin up
+                <span className="text-white font-semibold"> safer versions of your current modeling</span> — so you grow your line without
+                ever stepping outside the trusted mark.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                {[
+                  { icon: TrendingUp, t: "Scales before you ask", b: "Spots where your product can grow and pitches the next move first." },
+                  { icon: GitFork, t: "Versions & spinoffs", b: "Turns one strong component into a whole line of trusted variants." },
+                  { icon: ShieldCheck, t: "Safe by design", b: "Builds safer versions of your modeling that still clear every audit." },
+                ].map(({ icon: Icon, t, b }) => (
+                  <div key={t} className="rounded-xl border border-white/10 bg-black/20 p-3.5">
+                    <Icon className="w-4 h-4 text-violet-300 mb-1.5" />
+                    <div className="text-white text-xs font-bold mb-1">{t}</div>
+                    <p className="text-white/50 text-[11px] leading-snug">{b}</p>
+                  </div>
+                ))}
+              </div>
+              <Link to="/builder/bob">
+                <Button className="h-10 px-5 bg-violet-600 hover:bg-violet-500 text-white text-sm gap-2">
+                  Build with BOB <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
