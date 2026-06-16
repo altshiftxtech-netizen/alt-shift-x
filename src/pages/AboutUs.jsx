@@ -105,6 +105,14 @@ export default function AboutUs() {
               Builders engineer the components. Alt+Shift+X is the gate they have to pass through. Nothing
               reaches you that hasn't earned it.
             </p>
+            <p>
+              And that gate isn't empty rigor — it's backed by{" "}
+              <span className="text-white font-semibold">76 years of compounded operational, strategic, and engineering knowledge</span>.
+              When a builder uploads to Alt+Shift+X, that depth is poured into their work through the standards,
+              audits, and frameworks every component runs through — engineered not just to help a product{" "}
+              <span className="text-white font-semibold">meet the Magna Doctrine</span>, but to{" "}
+              <span className="text-violet-300 font-semibold">accomplish and exceed it</span>.
+            </p>
           </div>
         </div>
       </section>
