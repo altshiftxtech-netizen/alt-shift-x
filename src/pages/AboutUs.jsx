@@ -9,6 +9,8 @@ import Logo from "@/components/Logo";
 import VideoBackground from "@/components/VideoBackground";
 import PlatformSocials from "@/components/PlatformSocials";
 import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
+import BuilderInnovationSection from "@/components/about/BuilderInnovationSection";
+import BuyerBrandSection from "@/components/about/BuyerBrandSection";
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -176,6 +178,12 @@ export default function AboutUs() {
           </div>
         </div>
       </section>
+
+      {/* For builders — innovation through a trusted process */}
+      <BuilderInnovationSection />
+
+      {/* For buyers building a brand/business — subliminal how & when to use */}
+      <BuyerBrandSection />
 
       {/* The promise / pull quote */}
       <section className="relative z-10 max-w-4xl mx-auto px-6 py-20 text-center">
