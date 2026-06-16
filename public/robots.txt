@@ -1,33 +1,54 @@
+# Alt+Shift+X — robots.txt
+# Public marketing & catalog pages are indexable. Everything private,
+# authenticated, administrative, or operationally sensitive is blocked
+# from all crawlers.
+
 User-agent: *
 
-# Public, indexable pages
+# ── Allowed (public) ──
 Allow: /$
 Allow: /marketplace
 Allow: /pricing
-Allow: /builders
-Allow: /privacy
-Allow: /terms
+Allow: /pipelines
+Allow: /about
+Allow: /blog
+Allow: /white-paper
 Allow: /contact
 Allow: /tutorials
-Allow: /sensitive-intelligence-policy
-Allow: /mobile
 
-# Private / authenticated areas — do not index or crawl
+# ── Disallowed (private / authenticated / sensitive) ──
 Disallow: /dashboard
 Disallow: /builder
 Disallow: /admin
-Disallow: /finance
+Disallow: /speakeasy
 Disallow: /vendor-portal
+Disallow: /finance
 Disallow: /api-partners
 Disallow: /spend-intelligence
 Disallow: /vendor-scores
 Disallow: /onboarding
+Disallow: /success
+Disallow: /pipeline-key
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
-Disallow: /success
+Disallow: /unsubscribe
+Disallow: /sensitive-intelligence-policy
 Disallow: /rollout-procedures
-Disallow: /builder/agreement
 
-Sitemap: https://altshiftx.com/sitemap.xml
+# Block aggressive AI scrapers / training crawlers
+User-agent: GPTBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://altshiftx.tech/sitemap.xml
