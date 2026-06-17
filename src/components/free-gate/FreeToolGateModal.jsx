@@ -61,15 +61,14 @@ export default function FreeToolGateModal({ open, onOpenChange, component }) {
     setError("");
     setSending(true);
     try {
-      // Use the existing newsletter system. We always capture the email; the
-      // checkbox controls whether they're kept subscribed to the weekly tip.
-      await base44.functions.invoke("subscribeNewsletter", {
+      // deliverFreeTool both captures the email (with the opt-in) AND sends the
+      // tool to their inbox via Resend in one call.
+      await base44.functions.invoke("deliverFreeTool", {
         email: clean,
-        name: firstName.trim(),
-        source: `free_gate:${code}`,
-        newsletter_opted_in: optIn,
-        tool_downloaded: code,
+        first_name: firstName.trim(),
+        tool_code: code,
         tool_name: component?.name || "",
+        newsletter_opted_in: optIn,
         user_type: inferUserType(code),
       });
     } catch (err) {
