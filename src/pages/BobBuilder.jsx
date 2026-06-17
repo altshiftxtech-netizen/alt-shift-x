@@ -13,7 +13,7 @@ import FrameworkSeedUpload from "@/components/bob/FrameworkSeedUpload";
 import BobHistoryPanel from "@/components/bob/BobHistoryPanel";
 import BobVoiceSettings from "@/components/bob/BobVoiceSettings";
 import BobChatInput from "@/components/bob/BobChatInput";
-import BobPendingIndicator from "@/components/bob/BobPendingIndicator";
+import BobStatusIndicator from "@/components/bob/BobStatusIndicator";
 import QueuedFollowups from "@/components/bob/QueuedFollowups";
 import NextStepActions from "@/components/bob/NextStepActions";
 import BobTricks from "@/components/bob/BobTricks";
@@ -69,18 +69,9 @@ function MessageBubble({ m }) {
     (t) => !t.status || ["pending", "in_progress", "running"].includes(t.status)
   );
 
-  if (!isUser && !hasText) {
-    if (runningTools.length === 0) return null;
-    return (
-      <div className="flex items-start gap-2.5">
-        <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-0.5" alt="BOB" />
-        <div className="bg-slate-800 text-slate-400 px-4 py-3 rounded-2xl rounded-tl-sm text-xs flex items-center gap-2">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
-          Working… searching &amp; analyzing
-        </div>
-      </div>
-    );
-  }
+  // While BOB is mid-turn with no spoken text yet (only running tools), render
+  // nothing in the stream — the top-left status indicator now signals working.
+  if (!isUser && !hasText) return null;
 
   return (
     <div className={`flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`}>
@@ -198,13 +189,17 @@ export default function BobBuilder() {
     if (convId) localStorage.setItem("bob_active_conv", convId);
   }, [convId]);
 
-  // Auto-scroll on new messages unless the user scrolled up.
+  // Scroll-to-bottom ONLY when the user themselves just sent a message — never
+  // while BOB is streaming/working in the background, so the user can scroll up
+  // and read freely without the view snapping back to the latest token.
+  const lastUserCountRef = useRef(0);
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    if (nearBottom) setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 60);
-  }, [messages, isWorking]);
+    const userCount = messages.filter((m) => m.role === "user").length;
+    if (userCount > lastUserCountRef.current) {
+      lastUserCountRef.current = userCount;
+      setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 60);
+    }
+  }, [messages]);
 
   const notifyJobComplete = async (lastMsg) => {
     try {
@@ -637,6 +632,7 @@ export default function BobBuilder() {
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
+              <BobStatusIndicator isWorking={isWorking} hasQueued={queued.length > 0} />
               <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} refreshSignal={historyRefresh} />
               <BobVoiceSettings />
               <Card className="bg-slate-800 border-slate-700">
@@ -686,7 +682,6 @@ export default function BobBuilder() {
                     </div>
                   )}
                   {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
-                  {isWorking && <BobPendingIndicator />}
                   <QueuedFollowups items={queued} onRemove={removeQueued} />
                 </div>
 

@@ -16,6 +16,7 @@ import MarketplacePagination from "@/components/marketplace/MarketplacePaginatio
 import FeaturedSpotlight from "@/components/marketplace/FeaturedSpotlight";
 import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
+import { isFreeGated } from "@/components/free-gate/freeGateData";
 import { Share2 } from "lucide-react";
 
 const ALL_COMPONENTS = [];
@@ -456,6 +457,12 @@ export default function Marketplace() {
                           <ScoreBadge score={c.trust_score || 0} />
                           {c.certified && <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-900/50 px-1.5 py-0.5 rounded-full">Certified</span>}
                           {PINNED_CODES.includes(c.code) && <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>}
+                          {isFreeGated(c) && (
+                            <>
+                              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-900/50 px-1.5 py-0.5 rounded-full">🆓 FREE</span>
+                              <span className="text-[10px] font-semibold text-sky-300 bg-sky-900/50 px-1.5 py-0.5 rounded-full">📬 Get by email</span>
+                            </>
+                          )}
                         </div>
                         <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
                         {c.builder_id && (

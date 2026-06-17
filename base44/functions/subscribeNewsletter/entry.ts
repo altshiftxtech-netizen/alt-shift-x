@@ -6,7 +6,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { email, name } = await req.json();
+    const { email, name, source, newsletter_opted_in, tool_downloaded, user_type } = await req.json();
 
     const clean = (email || "").toLowerCase().trim();
     if (!clean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
@@ -15,12 +15,17 @@ Deno.serve(async (req) => {
 
     const existing = await base44.asServiceRole.entities.EmailSubscriber.filter({ email: clean });
     const token = crypto.randomUUID().replace(/-/g, "");
+    // For free-tool gate captures, only keep them subscribed if they opted in.
+    // The default popup flow (no flag passed) keeps the original behavior.
+    const subscribed = newsletter_opted_in === false ? false : true;
+    const src = source || "site_popup";
 
     if (existing && existing.length > 0) {
       const found = existing[0];
       await base44.asServiceRole.entities.EmailSubscriber.update(found.id, {
-        subscribed: true,
-        unsubscribed_at: null,
+        // Never un-subscribe someone who already opted in; only upgrade to subscribed.
+        subscribed: found.subscribed || subscribed,
+        unsubscribed_at: (found.subscribed || subscribed) ? null : found.unsubscribed_at,
         name: name || found.name || "",
         unsubscribe_token: found.unsubscribe_token || token,
       });
@@ -31,8 +36,8 @@ Deno.serve(async (req) => {
       email: clean,
       name: name || "",
       audience: "newsletter",
-      source: "site_popup",
-      subscribed: true,
+      source: src,
+      subscribed,
       unsubscribe_token: token,
     });
 

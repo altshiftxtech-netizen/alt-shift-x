@@ -5,6 +5,8 @@ import { Download, Loader2, Trash2 } from "lucide-react";
 import NonMagnaReminderDialog from "@/components/install/NonMagnaReminderDialog";
 import SafeguardLegalGate from "@/components/install/SafeguardLegalGate";
 import CheckoutLegalBlock from "@/components/install/CheckoutLegalBlock";
+import FreeToolGateModal from "@/components/free-gate/FreeToolGateModal";
+import { isFreeGated } from "@/components/free-gate/freeGateData";
 
 // Accounts that are only provisioned with Magna Dev components.
 const RESTRICTED_ROLES = ["staff", "builder"];
@@ -32,6 +34,9 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   const [showLegalGate, setShowLegalGate] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
   const [pendingProvider, setPendingProvider] = useState(null); // "card" | "paypal"
+  // FREE-* email-gate modal (opt-in delivery, not access control).
+  const [showFreeGate, setShowFreeGate] = useState(false);
+  const freeGated = isFreeGated(component);
 
   // Figure out if this is a restricted (staff/builder) account + any prior legal acceptance.
   useEffect(() => {
@@ -152,6 +157,20 @@ export default function InstallButton({ component, userId, installedRecord, onUn
       setLoading(false);
     }
   };
+
+  // FREE-* tools: a single CTA that opens the email-gate modal. The listing
+  // content stays fully public — this gate is opt-in delivery, not a paywall.
+  if (freeGated) {
+    return (
+      <>
+        <Button size={size} onClick={() => setShowFreeGate(true)}
+          className="gap-2 bg-violet-700 hover:bg-violet-800 text-white w-full">
+          <Download className="w-4 h-4" /> Get This Free →
+        </Button>
+        <FreeToolGateModal open={showFreeGate} onOpenChange={setShowFreeGate} component={component} />
+      </>
+    );
+  }
 
   if (loading) {
     return (
