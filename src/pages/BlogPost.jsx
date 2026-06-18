@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Loader2, ArrowLeft, Calendar } from "lucide-react";
 import BlogReactions from "@/components/blog/BlogReactions";
 import BlogComments from "@/components/blog/BlogComments";
