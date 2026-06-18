@@ -632,9 +632,9 @@ export default function BobBuilder() {
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
-              <BobStatusIndicator isWorking={isWorking} hasQueued={queued.length > 0} />
-              <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} refreshSignal={historyRefresh} />
               <BobVoiceSettings />
+              <BobHistoryPanel activeConvId={convId} onOpen={openProject} onWipeBoard={wipeBoard} onSpinOff={spinOff} refreshSignal={historyRefresh} />
+              <BobStatusIndicator isWorking={isWorking} hasQueued={queued.length > 0} />
               <Card className="bg-slate-800 border-slate-700">
                 <CardHeader className="pb-2 pt-4 px-4"><CardTitle className="text-xs text-slate-300 flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-violet-400" />Quick Prompts</CardTitle></CardHeader>
                 <CardContent className="px-3 pb-3 space-y-1">
