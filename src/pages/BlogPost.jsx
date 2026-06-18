@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Loader2, ArrowLeft, Calendar } from "lucide-react";
 import BlogReactions from "@/components/blog/BlogReactions";
 import BlogComments from "@/components/blog/BlogComments";
@@ -52,7 +51,26 @@ export default function BlogPost() {
           )}
         </div>
 
-        <ReactMarkdown className="prose prose-slate max-w-none prose-headings:font-bold prose-a:text-violet-600">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          className="prose prose-slate max-w-none
+            prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
+            prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-5 prose-h2:pb-2 prose-h2:border-b prose-h2:border-slate-200
+            prose-h3:text-lg prose-h3:mt-9 prose-h3:mb-2
+            prose-p:leading-relaxed prose-p:text-slate-600 prose-p:my-4
+            prose-strong:text-slate-900 prose-strong:font-semibold
+            prose-em:text-slate-500
+            prose-a:text-violet-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
+            prose-li:text-slate-600 prose-li:my-1 prose-ol:my-4 prose-ul:my-4
+            prose-blockquote:border-l-4 prose-blockquote:border-violet-400 prose-blockquote:bg-violet-50/60
+            prose-blockquote:rounded-r-lg prose-blockquote:py-2 prose-blockquote:px-5 prose-blockquote:not-italic
+            prose-blockquote:font-medium prose-blockquote:text-slate-700
+            prose-hr:my-10 prose-hr:border-slate-200
+            prose-table:my-6 prose-table:w-full prose-table:text-sm
+            prose-thead:border-b-2 prose-thead:border-slate-300
+            prose-th:text-left prose-th:font-bold prose-th:text-slate-900 prose-th:py-2.5 prose-th:px-3
+            prose-td:py-2.5 prose-td:px-3 prose-td:border-t prose-td:border-slate-100 prose-td:align-top"
+        >
           {article.body}
         </ReactMarkdown>
 
