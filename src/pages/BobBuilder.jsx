@@ -670,8 +670,8 @@ export default function BobBuilder() {
                 </Card>
               )}
 
-              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ minHeight: "520px" }}>
-                <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3 max-h-[520px]">
+              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "min(72vh, 640px)", minHeight: "420px" }}>
+                <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
                       <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/10a720a09_generated_image.png" className="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="BOB" />

@@ -25,15 +25,25 @@ function BobChatInput({
 }) {
   const ref = useRef(null);
 
-  // Auto-grow the textarea to fit its content (up to maxHeight).
+  // Auto-grow the textarea to fit its content (up to maxHeight). Runs inside
+  // requestAnimationFrame so a mobile keyboard open/close re-layout can't leave
+  // the box stuck at a stale, broken height (the Android/iOS scramble bug).
   const resize = () => {
     const el = ref.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+    requestAnimationFrame(() => {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+    });
   };
 
   useEffect(() => { resize(); }, [value]);
+  // Re-fit on viewport changes (mobile keyboard show/hide, rotation) so the
+  // composer never gets wedged at the wrong size after the keyboard closes.
+  useEffect(() => {
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
   useEffect(() => { if (autoFocus) ref.current?.focus(); }, [autoFocus]);
   useEffect(() => {
     if (clearSignal === 0) return;

@@ -8,7 +8,6 @@ import DashboardActivityFeed from "@/components/builder-dashboard/DashboardActiv
 import DashboardQuickLinks from "@/components/builder-dashboard/DashboardQuickLinks";
 import ComponentExportButton from "@/components/builder-dashboard/ComponentExportButton";
 import BobAdvisorWidget from "@/components/BobAdvisorWidget";
-import BuilderTestBot from "@/components/BuilderTestBot";
 import W9RequiredBanner from "@/components/tax/W9RequiredBanner";
 import { Loader2, Package } from "lucide-react";
 
@@ -103,7 +102,6 @@ export default function BuilderDashboard() {
           </>
         )}
       </div>
-      <BuilderTestBot />
     </div>
   );
 }
