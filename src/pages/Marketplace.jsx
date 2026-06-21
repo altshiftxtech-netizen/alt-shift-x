@@ -178,9 +178,6 @@ export default function Marketplace() {
 
   const filtered = useMemo(() => components
     .filter(c => {
-      // Spotlighted (featured) components render in the hero strip — keep them
-      // out of the normal grid only on the default "All" + no-search view.
-      if (category === "All" && !search && spotlightIds.has(c.id)) return false;
       const effectiveCategory = COMPONENT_CATEGORY_OVERRIDE[c.code] || c.category;
       const categoryMatch = category === "All" || effectiveCategory === category;
       const typeMatch = type === "All" || c.type === type;
@@ -291,17 +288,6 @@ export default function Marketplace() {
             </select>
           </div>
         </div>
-
-        {/* Featured Protection spotlight — pinned above pipelines (e.g. SAFEGUARD-1.0) */}
-        {!loading && category === "All" && !search && (
-          <FeaturedSpotlight
-            components={spotlight}
-            userId={currentUser?.id}
-            installedMap={installedMap}
-            isAuthenticated={isAuthenticated}
-            onUninstalled={(cid) => setInstalledMap((m) => { const n = { ...m }; delete n[cid]; return n; })}
-          />
-        )}
 
         {/* Enterprise Pipelines promo — for big companies */}
         <Link to="/pipelines" className="block mb-6 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-900/40 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-amber-400/70 transition-colors group">

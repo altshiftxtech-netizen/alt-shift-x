@@ -190,41 +190,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured */}
-      {featured.length > 0 && (
-        <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-white">Featured Components</h2>
-            <Link to="/marketplace" className="text-sm text-violet-300 hover:underline flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5" /></Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {featured.map(c => (
-              <Link key={c.id} to={`/marketplace/${c.id}`}>
-                <div className="border border-white/10 rounded-xl p-5 hover:shadow-xl transition-shadow bg-white/10 backdrop-blur-sm h-full flex flex-col">
-                  <div className="flex items-center gap-2 mb-3">
-                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeColors[c.type] || "bg-slate-100 text-slate-600"}`}>{c.type}</span>
-                     <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">{c.category}</span>
-                   </div>
-                   <h3 className="text-base font-bold text-white mb-1">{c.name}</h3>
-                   <p className="text-xs text-white/60 mb-4 flex-1 line-clamp-3">{c.description}</p>
-                   <div className="flex items-center justify-between">
-                     {(c.rating || 0) > 0 ? (
-                       <div className="flex items-center gap-1 text-xs text-amber-400">
-                         <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
-                         <span className="font-semibold">{(c.rating || 0).toFixed(1)}</span>
-                       </div>
-                     ) : <span />}
-                     {(c.trust_score || 0) > 0 && (
-                       <span className="flex items-center gap-1 text-xs text-emerald-400"><ShieldCheck className="w-3.5 h-3.5" /> {c.trust_score} Trust</span>
-                     )}
-                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* About Us — Magna Dev × Alt+Shift+X */}
       <AboutUsSection />
 
