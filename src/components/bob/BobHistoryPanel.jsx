@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
+import RecoverProjectButton from "@/components/bob/RecoverProjectButton";
+import { downloadRecoveryFile } from "@/lib/projectRecovery";
 import { loadMetaMap, renameConversation, trashConversation, restoreConversation, clearConversation } from "@/lib/conversationMeta";
 
 const AGENT = "bob_builder";
+// History lifecycle limits.
+const ACTIVE_LIMIT = 10; // projects shown as "active" before older ones archive
+const HARD_CAP = 20;     // beyond this, the builder must download-or-lose
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
@@ -26,6 +31,8 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [editing, setEditing] = useState(null); // conversation id whose title is being edited
   const [draftTitle, setDraftTitle] = useState("");
   const [savingTitle, setSavingTitle] = useState(false);
+  const [jsonBusy, setJsonBusy] = useState(null); // conversation id whose recovery file is downloading
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -67,10 +74,37 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     const n = c.metadata?.name;
     return n && n !== "New Project";
   };
-  const active = convos
-    .filter((c) => !isTrashed(c) && (isNamed(c) || c.id === activeConvId))
-    .slice(0, 25);
+  // All live (non-trashed, real) projects, newest first.
+  const live = convos.filter((c) => !isTrashed(c) && (isNamed(c) || c.id === activeConvId));
+  const active = live.slice(0, ACTIVE_LIMIT);                 // top 10
+  const archived = live.slice(ACTIVE_LIMIT, HARD_CAP);        // 11–20, collapsed
+  const overCap = live.slice(HARD_CAP);                       // beyond 20 → download-or-lose
   const trashed = convos.filter(isTrashed);
+
+  // Download a single project's JSON recovery file.
+  const handleSaveFile = async (c) => {
+    setJsonBusy(c.id);
+    try {
+      await downloadRecoveryFile(c);
+    } catch {
+      // recovery export is free — nothing to fall back to
+    }
+    setJsonBusy(null);
+  };
+
+  // Over-cap projects: download the recovery file, then clear it out for good.
+  const downloadAndRelease = async (c) => {
+    setBusy(c.id);
+    try {
+      await downloadRecoveryFile(c);
+      await clearConversation(c.id, AGENT);
+      await load();
+    } catch {
+      // swallow
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const handleSpinOff = async (c) => {
     setSpinning(c.id);
@@ -258,6 +292,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
               {zipBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Archive className="w-3 h-3" />}
               Download All (ZIP)
             </button>
+            <RecoverProjectButton onRecovered={async (conv) => { await load(); onOpen(conv); }} />
             {confirmClear ? (
               <div className="flex items-center gap-1.5 ml-auto">
                 <button
@@ -297,9 +332,14 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
             <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
           </div>
         ) : active.length === 0 ? (
-          <p className="text-[11px] text-slate-500 px-4 py-5 text-center leading-relaxed">
-            No projects yet. Hit <span className="text-violet-400 font-semibold">Wipe Board</span> to start your first one.
-          </p>
+          <div className="px-4 py-5 text-center space-y-2.5">
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              No projects yet. Hit <span className="text-violet-400 font-semibold">Wipe Board</span> to start your first one.
+            </p>
+            <div className="flex items-center justify-center">
+              <RecoverProjectButton onRecovered={async (conv) => { await load(); onOpen(conv); }} />
+            </div>
+          </div>
         ) : (
           <div className="divide-y divide-slate-700/60">
             {active.map((c) => (
@@ -360,6 +400,15 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
                     ESI Record
                   </button>
                   <button
+                    onClick={() => handleSaveFile(c)}
+                    disabled={jsonBusy === c.id}
+                    title="Save a recovery file (.json) you can re-import later"
+                    className="flex items-center gap-1 text-[10px] font-semibold text-amber-300 hover:text-white bg-amber-900/30 hover:bg-amber-800 border border-amber-700/50 px-2 py-1 rounded-md transition-colors"
+                  >
+                    {jsonBusy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                    Save File
+                  </button>
+                  <button
                     onClick={() => setShareConv(c)}
                     title="Share ESI record to Google Drive, Dropbox, OneDrive & more"
                     className="flex items-center gap-1 text-[10px] font-semibold text-sky-300 hover:text-white bg-sky-900/30 hover:bg-sky-800 border border-sky-700/50 px-2 py-1 rounded-md transition-colors"
@@ -408,6 +457,74 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           </div>
         )}
       </div>
+
+      {/* Over-cap projects — must be downloaded or released (download-or-lose).
+          Anything beyond the 20-project hard cap lands here. */}
+      {overCap.length > 0 && (
+        <div className="border-t border-amber-800/60 bg-amber-950/30">
+          <div className="px-4 py-2.5">
+            <p className="text-[10px] font-bold text-amber-300 flex items-center gap-1.5">
+              <AlertTriangle className="w-3 h-3" /> {overCap.length} project{overCap.length > 1 ? "s" : ""} over the {HARD_CAP}-project limit
+            </p>
+            <p className="text-[9px] text-amber-400/80 mt-0.5">
+              Save each as a recovery file to keep it. Releasing removes it from the board.
+            </p>
+          </div>
+          <div className="divide-y divide-amber-900/40 max-h-[180px] overflow-y-auto">
+            {overCap.map((c) => (
+              <div key={c.id} className="px-3 py-2 flex items-center gap-2">
+                <p className="text-[11px] font-semibold text-slate-300 truncate flex-1">{titleFor(c)}</p>
+                <button
+                  onClick={() => downloadAndRelease(c)}
+                  disabled={busy === c.id}
+                  title="Download recovery file, then remove from board"
+                  className="flex items-center gap-1 text-[10px] font-bold text-[#1a1205] bg-amber-400 hover:bg-amber-300 px-2 py-1 rounded-md transition-colors flex-shrink-0"
+                >
+                  {busy === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                  Save & Release
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Archived drawer — live projects 11–20, kept but collapsed. */}
+      {archived.length > 0 && (
+        <div className="border-t border-slate-700">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-2.5 text-[10px] font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-700/40 transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <Archive className="w-3 h-3" /> Archived ({archived.length})
+            </span>
+            <span>{showArchived ? "Hide" : "Show"}</span>
+          </button>
+          {showArchived && (
+            <div className="divide-y divide-slate-700/60 max-h-[220px] overflow-y-auto bg-slate-900/40">
+              {archived.map((c) => (
+                <div key={c.id} className="px-3 py-2.5 flex items-center gap-2">
+                  <button onClick={() => onOpen(c)} className="flex-1 min-w-0 text-left">
+                    <p className="text-[11px] font-semibold text-slate-300 truncate">{titleFor(c)}</p>
+                    <p className="text-[9px] text-slate-500 flex items-center gap-1 mt-0.5">
+                      <Clock className="w-2.5 h-2.5" /> {timeFor(c)}
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => handleSaveFile(c)}
+                    disabled={jsonBusy === c.id}
+                    title="Save recovery file (.json)"
+                    className="text-amber-300 hover:text-white p-1 flex-shrink-0"
+                  >
+                    {jsonBusy === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Trash drawer */}
       {trashed.length > 0 && (
