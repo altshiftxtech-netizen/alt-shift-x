@@ -9,19 +9,26 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Installs are entitlements — only the payment webhooks (service role) or an
+    // admin may create them. A logged-in user must NOT be able to self-provision
+    // a paid component for free by calling this endpoint directly.
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { component_id, component_name, component_code, component_type } = await req.json();
+    const { user_id, component_id, component_name, component_code, component_type } = await req.json();
 
     if (!component_id || !component_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    if (!user_id) {
+      return Response.json({ error: 'user_id is required' }, { status: 400 });
+    }
+
     // Check if already installed
-    const existing = await base44.entities.InstalledComponent.filter({
-      user_id: user.id,
+    const existing = await base44.asServiceRole.entities.InstalledComponent.filter({
+      user_id: user_id,
       component_id: component_id
     });
 
@@ -34,8 +41,8 @@ Deno.serve(async (req) => {
     }
 
     // Create installation record
-    const install = await base44.entities.InstalledComponent.create({
-      user_id: user.id,
+    const install = await base44.asServiceRole.entities.InstalledComponent.create({
+      user_id: user_id,
       component_id: component_id,
       component_name: component_name,
       component_code: component_code || '',
@@ -44,7 +51,7 @@ Deno.serve(async (req) => {
       status: 'active'
     });
 
-    console.log(`[INFO] Component installed: user=${user.id}, component=${component_name}`);
+    console.log(`[INFO] Component installed: user=${user_id}, component=${component_name}`);
     return Response.json({ success: true, install });
   } catch (error) {
     console.error('Install record error:', error.message);
