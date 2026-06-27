@@ -91,7 +91,7 @@ export default function Home() {
   }, []);
 
   const STATS = [
-    { label: "First to Market Components", value: "3000+", icon: Package },
+    { label: "First to Market Components", value: "5000+", icon: Package },
     { label: "Avg Trust Score", value: avgTrust != null ? String(avgTrust) : "—", icon: ShieldCheck },
     { label: "Do-No-Harm Audited", value: "Every component", icon: Users },
     { label: "Stage", value: "Beta", icon: Zap },
@@ -170,8 +170,8 @@ export default function Home() {
               </Button>
             </Link>
           ) : (
-            <Button variant="outline" className="h-11 px-6 text-sm" onClick={() => setShowInstallModal(true)}>
-              Install a Component
+            <Button className="h-11 px-6 text-sm gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-lg shadow-violet-900/40 ring-2 ring-violet-300/40" onClick={() => setShowInstallModal(true)}>
+              <Package className="w-4 h-4" /> Install a Component
             </Button>
           )}
         </div>
