@@ -88,6 +88,14 @@ export default function useBobChat() {
   const flushRef = useRef(null);
 
   // Is BOB still actively producing a reply for THIS turn?
+  //
+  // IMPORTANT: spoken text alone does NOT mean the turn is done. BOB often narrates
+  // mid-batch ("Building now…", "1 of 16 ✅ — continuing in parallel") while tools
+  // keep running. Returning "not working" the instant any text appeared made the
+  // amber indicator flash off while BOB was clearly still working. Instead we treat
+  // the turn as ongoing whenever ANY tool (on the last message OR earlier this turn)
+  // is still running, and otherwise hand off to the settle timer — which only
+  // finishes once the reply text has actually stopped changing.
   const detectWorking = (msgs) => {
     if (!turnOpenRef.current) return false;
     if (!msgs || msgs.length === 0) return true; // sent, nothing back yet
@@ -95,21 +103,18 @@ export default function useBobChat() {
 
     if (last.role === "user") return true; // reply incoming
 
-    // An assistant message exists. If ANY assistant message this turn has spoken
-    // text, and the LAST message's tools have settled, we're done.
-    const anySpoke = msgs.some(isAssistantText);
-    const lastToolRunning = (last.tool_calls || []).some(
-      (t) => t.status && RUNNING.includes(t.status)
-    );
-    if (lastToolRunning) return true;            // still running a tool
-    if (last.status && RUNNING.includes(last.status)) return true;
-    if (anySpoke) return false;                  // spoke + tools settled → done(ish)
-
-    // Nothing spoken yet anywhere and no running tool on last — check earlier.
+    // Any tool still running anywhere this turn → definitely working.
     const anyToolRunning = msgs.some(
       (m) => m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
     );
-    return anyToolRunning || !anySpoke; // keep working until something is said
+    if (anyToolRunning) return true;
+    if (last.status && RUNNING.includes(last.status)) return true;
+
+    // Tools settled. If BOB has spoken, stay "working" and let the settle timer
+    // (driven by handleUpdate) close the turn once the text stops changing — this
+    // keeps the amber indicator on through the whole stream instead of blinking off.
+    // If nothing has been spoken yet, keep working until something is said.
+    return true;
   };
 
   const handleUpdate = useCallback((data) => {
@@ -147,14 +152,31 @@ export default function useBobChat() {
 
     setIsWorking(true);
 
-    // Settle: if the last message has spoken text, finish once it stops changing.
+    // Settle: once BOB has spoken AND no tool is still running, start (or restart)
+    // the settle timer. While the text keeps changing we push the timer out; the
+    // moment it stops changing for SETTLE_MS the turn closes and the indicator
+    // flips green. A still-running tool keeps the timer cleared so we never finish
+    // mid-batch.
     const last = msgs[msgs.length - 1];
-    if (isAssistantText(last)) {
+    const anyToolRunning = msgs.some(
+      (m) => m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
+    );
+    if (isAssistantText(last) && !anyToolRunning) {
       if (last.content !== lastTextRef.current) {
+        // Text still changing → reset the settle window.
         lastTextRef.current = last.content;
         if (settleRef.current) clearTimeout(settleRef.current);
         settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
+      } else if (!settleRef.current) {
+        // Text already stable and no timer pending (e.g. tools just finished after
+        // the last text update) → arm the settle window so the turn can close.
+        settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
       }
+    } else if (anyToolRunning && settleRef.current) {
+      // A new tool started after text settled → cancel the pending finish; we're
+      // still working. The amber indicator stays on.
+      clearTimeout(settleRef.current);
+      settleRef.current = null;
     }
   }, [finishTurn]);
 
