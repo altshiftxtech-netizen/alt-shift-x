@@ -65,7 +65,7 @@ export default function Pipelines() {
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-white">Pipeline Keys for Companies</h1>
           <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
-            License a curated bundle of components behind a single secure key. Full payment unlocks your key instantly — Stripe, PayPal, and Coinbase (soon).
+            License a curated bundle of components behind a single secure key. Full payment unlocks your key instantly — Stripe, PayPal, and Stripe Stablecoin available.
           </p>
         </div>
 
