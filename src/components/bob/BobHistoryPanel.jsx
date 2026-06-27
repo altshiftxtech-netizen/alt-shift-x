@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X, Download } from "lucide-react";
+import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X, Download, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
 import RecoverProjectButton from "@/components/bob/RecoverProjectButton";
@@ -33,6 +33,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [savingTitle, setSavingTitle] = useState(false);
   const [jsonBusy, setJsonBusy] = useState(null); // conversation id whose recovery file is downloading
   const [showArchived, setShowArchived] = useState(false);
+  const [collapsed, setCollapsed] = useState(true); // whole panel collapses into a dropdown header
 
   const load = async () => {
     setLoading(true);
@@ -252,12 +253,18 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-700 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            title={collapsed ? "Show project history" : "Hide project history"}
+            className="text-xs font-bold text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
+          >
+            <ChevronDown className={`w-3.5 h-3.5 text-violet-400 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
             <History className="w-3.5 h-3.5 text-violet-400" /> Wipe Board · History
-            <button onClick={load} title="Refresh project list" className="text-slate-500 hover:text-violet-300 transition-colors">
-              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
-            </button>
-          </span>
+            {live.length > 0 && <span className="text-[9px] font-semibold text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded-full">{live.length}</span>}
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); load(); }} title="Refresh project list" className="text-slate-500 hover:text-violet-300 transition-colors ml-auto mr-2">
+            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+          </button>
           {confirmWipe ? (
             <div className="flex items-center gap-1.5">
               <button
@@ -281,7 +288,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
             </button>
           )}
         </div>
-        {active.length > 0 && (
+        {!collapsed && active.length > 0 && (
           <div className="flex items-center gap-1.5">
             <button
               onClick={downloadAllZip}
@@ -319,13 +326,15 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
             )}
           </div>
         )}
-        {confirmClear && (
+        {!collapsed && confirmClear && (
           <p className="text-[9px] text-slate-500 flex items-center gap-1">
             <Mail className="w-2.5 h-2.5" /> All projects move to Trash; each ESI record is emailed to you.
           </p>
         )}
       </div>
 
+      {!collapsed && (
+      <>
       <div className="max-h-[340px] overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-6">
@@ -588,6 +597,8 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
             </div>
           )}
         </div>
+      )}
+      </>
       )}
 
       {shareConv && <EsiShareModal conversation={shareConv} onClose={() => setShareConv(null)} />}

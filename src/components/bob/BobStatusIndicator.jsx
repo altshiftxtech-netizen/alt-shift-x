@@ -6,9 +6,11 @@ import React from "react";
  * "BOB working" popup so the user can scroll and read freely while BOB works.
  *
  * States:
- *   - working  (purple, flashing) — BOB is generating / running tools
- *   - ready    (yellow)           — BOB can take additional commands (queued)
- *   - done     (green)            — last response delivered, awaiting new directions
+ *   - working  (amber, flashing)   — BOB is generating / running tools. It is
+ *                                    still listening: you can keep typing and it
+ *                                    will reply — it has NOT asked you anything.
+ *   - ready    (yellow)            — BOB can take additional commands (queued)
+ *   - done     (green)             — last response delivered, awaiting new directions
  *
  * `working` takes priority. When idle with queued follow-ups in flight we show
  * "ready"; otherwise "done".
@@ -21,11 +23,11 @@ export default function BobStatusIndicator({ isWorking, hasQueued }) {
 
   const config = {
     working: {
-      dot: "bg-violet-500",
-      ring: "bg-violet-500",
+      dot: "bg-amber-500",
+      ring: "bg-amber-500",
       flash: true,
-      text: "BOB working",
-      textColor: "text-violet-300",
+      text: "Working but listening",
+      textColor: "text-amber-300",
     },
     ready: {
       dot: "bg-yellow-400",

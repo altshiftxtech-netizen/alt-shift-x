@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link2, Plus, Copy, Check, Loader2, MousePointerClick, UserPlus, DollarSign, Sparkles } from "lucide-react";
+import { Link2, Plus, Copy, Check, Loader2, MousePointerClick, UserPlus, DollarSign, Sparkles, Archive, Trash2, RotateCcw } from "lucide-react";
 
 const DESTINATIONS = [
   { id: "home", label: "Homepage", path: "/" },
@@ -31,6 +31,9 @@ export default function AffiliateTab() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ campaign: "", label: "", destination: "home", product_id: "" });
+  const [busyId, setBusyId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = async () => {
     const data = await base44.entities.AffiliateLink.list("-created_date", 200).catch(() => []);
@@ -77,6 +80,21 @@ export default function AffiliateTab() {
     setTimeout(() => setCopied(null), 1500);
   };
 
+  const setArchived = async (link, archived) => {
+    setBusyId(link.id);
+    await base44.entities.AffiliateLink.update(link.id, { archived, active: !archived });
+    await load();
+    setBusyId(null);
+  };
+
+  const remove = async (link) => {
+    setBusyId(link.id);
+    await base44.entities.AffiliateLink.delete(link.id);
+    setConfirmDelete(null);
+    await load();
+    setBusyId(null);
+  };
+
   const seedVested100 = async () => {
     setSeeding(true);
     const res = await base44.functions.invoke("seedVested100Links", {}).catch(e => ({ data: { error: e.message } }));
@@ -87,7 +105,10 @@ export default function AffiliateTab() {
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>;
 
-  const totals = links.reduce((a, l) => ({
+  const activeLinks = links.filter((l) => !l.archived);
+  const archivedLinks = links.filter((l) => l.archived);
+
+  const totals = activeLinks.reduce((a, l) => ({
     clicks: a.clicks + (l.clicks || 0),
     signups: a.signups + (l.signups || 0),
     conv: a.conv + (l.paid_conversions || 0),
@@ -141,35 +162,105 @@ export default function AffiliateTab() {
 
       {/* List */}
       <div className="space-y-2">
-        {links.length === 0 && <div className="text-center py-12 text-slate-400 text-sm">No affiliate links yet</div>}
-        {links.map(l => (
-          <Card key={l.id}>
-            <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {l.campaign && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">{l.campaign}</span>}
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{l.destination}</span>
-                    {l.product_name && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{l.product_name}</span>}
-                    {l.label && <span className="text-xs text-slate-500">{l.label}</span>}
-                  </div>
-                  <p className="text-xs font-mono text-slate-400 mt-1 truncate">{buildUrl(l)}</p>
-                </div>
-                <div className="flex items-center gap-4 text-xs shrink-0">
-                  <div className="text-center"><p className="font-bold text-slate-700">{l.clicks || 0}</p><p className="text-slate-400 text-[10px]">clicks</p></div>
-                  <div className="text-center"><p className="font-bold text-slate-700">{l.signups || 0}</p><p className="text-slate-400 text-[10px]">signups</p></div>
-                  <div className="text-center"><p className="font-bold text-emerald-600">{l.paid_conversions || 0}</p><p className="text-slate-400 text-[10px]">paid</p></div>
-                  <div className="text-center"><p className="font-bold text-amber-600">${(l.revenue_total || 0).toLocaleString()}</p><p className="text-slate-400 text-[10px]">revenue</p></div>
-                  <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => copy(l)}>
-                    {copied === l.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied === l.id ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {activeLinks.length === 0 && <div className="text-center py-12 text-slate-400 text-sm">No affiliate links yet</div>}
+        {activeLinks.map(l => (
+          <AffiliateRow
+            key={l.id}
+            l={l}
+            copied={copied}
+            busyId={busyId}
+            confirmDelete={confirmDelete}
+            onCopy={copy}
+            onArchive={() => setArchived(l, true)}
+            onDelete={() => remove(l)}
+            onConfirmDelete={() => setConfirmDelete(l.id)}
+            onCancelDelete={() => setConfirmDelete(null)}
+          />
         ))}
       </div>
+
+      {/* Archived drawer */}
+      {archivedLinks.length > 0 && (
+        <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <span className="flex items-center gap-1.5"><Archive className="w-3.5 h-3.5" /> Archived Links ({archivedLinks.length})</span>
+            <span>{showArchived ? "Hide" : "Show"}</span>
+          </button>
+          {showArchived && (
+            <div className="p-3 space-y-2 bg-slate-50">
+              {archivedLinks.map(l => (
+                <AffiliateRow
+                  key={l.id}
+                  l={l}
+                  archived
+                  copied={copied}
+                  busyId={busyId}
+                  confirmDelete={confirmDelete}
+                  onCopy={copy}
+                  onUnarchive={() => setArchived(l, false)}
+                  onDelete={() => remove(l)}
+                  onConfirmDelete={() => setConfirmDelete(l.id)}
+                  onCancelDelete={() => setConfirmDelete(null)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function AffiliateRow({ l, archived, copied, busyId, confirmDelete, onCopy, onArchive, onUnarchive, onDelete, onConfirmDelete, onCancelDelete }) {
+  return (
+    <Card className={archived ? "opacity-70" : ""}>
+      <CardContent className="py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              {l.campaign && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700">{l.campaign}</span>}
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 capitalize">{l.destination}</span>
+              {l.product_name && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{l.product_name}</span>}
+              {l.label && <span className="text-xs text-slate-500">{l.label}</span>}
+            </div>
+            <p className="text-xs font-mono text-slate-400 mt-1 truncate">{buildUrl(l)}</p>
+          </div>
+          <div className="flex items-center gap-4 text-xs shrink-0 flex-wrap">
+            <div className="text-center"><p className="font-bold text-slate-700">{l.clicks || 0}</p><p className="text-slate-400 text-[10px]">clicks</p></div>
+            <div className="text-center"><p className="font-bold text-slate-700">{l.signups || 0}</p><p className="text-slate-400 text-[10px]">signups</p></div>
+            <div className="text-center"><p className="font-bold text-emerald-600">{l.paid_conversions || 0}</p><p className="text-slate-400 text-[10px]">paid</p></div>
+            <div className="text-center"><p className="font-bold text-amber-600">${(l.revenue_total || 0).toLocaleString()}</p><p className="text-slate-400 text-[10px]">revenue</p></div>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => onCopy(l)}>
+              {copied === l.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied === l.id ? "Copied" : "Copy"}
+            </Button>
+            {archived ? (
+              <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={onUnarchive} disabled={busyId === l.id}>
+                {busyId === l.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />} Restore
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={onArchive} disabled={busyId === l.id}>
+                {busyId === l.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5" />} Archive
+              </Button>
+            )}
+            {confirmDelete === l.id ? (
+              <div className="flex items-center gap-1.5">
+                <Button size="sm" className="h-8 gap-1.5 bg-red-600 hover:bg-red-700 text-white" onClick={onDelete} disabled={busyId === l.id}>
+                  {busyId === l.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Confirm
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 text-slate-500" onClick={onCancelDelete}>Cancel</Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-red-500 border-red-200 hover:bg-red-50" onClick={onConfirmDelete}>
+                <Trash2 className="w-3.5 h-3.5" /> Delete
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
