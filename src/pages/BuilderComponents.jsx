@@ -1,89 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Link2 } from "lucide-react";
+import { ChevronRight, Package, Plus, Download, ShieldCheck, DollarSign, History, FlaskConical, X, Tag, CheckCircle2, Archive, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Link2, Search, Calendar } from "lucide-react";
 import VersionReleaseModal from "@/components/version-manager/VersionReleaseModal";
 import BobAdvisorWidget from "@/components/BobAdvisorWidget";
+import ComponentExportButton from "@/components/builder-dashboard/ComponentExportButton";
+import DriveCatalogBackupButton from "@/components/builder-dashboard/DriveCatalogBackupButton";
+import MarketplacePagination from "@/components/marketplace/MarketplacePagination";
+import { base44 } from "@/api/base44Client";
 
-// ── Mock Data ────────────────────────────────────────────────────────────────
-const MOCK_COMPONENTS = [
-  {
-    id: "rp-construction",
-    name: "RP-CONSTRUCTION-1.0",
-    displayName: "Ironclad Protocol",
-    type: "X1",
-    version: "v2.4.1",
-    status: "published",
-    installs: 847,
-    revenue: 4235,
-    trustScore: 91,
-    category: "Risk & Compliance",
-    description: "Extracts and validates all contractual risk indicators from subcontractor agreements, including retention clauses, liquidated damages, and milestone obligations.",
+const PAGE_SIZE = 12;
+
+// Maps a stored Component record into the shape this page's cards expect.
+function toCardModel(c) {
+  return {
+    ...c,
+    displayName: c.name,
+    name: c.code || c.name,
+    installs: Number(c.installs_count || 0),
+    revenue: Math.round(Number(c.price || 0) * Number(c.installs_count || 0)),
+    trustScore: c.trust_score ? Math.round(c.trust_score) : null,
+    version: c.version_label || "v1.0",
+    publishedDate: c.created_date,
     versions: [
-      { version: "v2.4.1", date: "May 12, 2026", notes: "Improved retention clause detection accuracy to 98.1%.", status: "live" },
-      { version: "v2.4.0", date: "Apr 28, 2026", notes: "Added support for NZS 3910 contract templates.", status: "archived" },
-      { version: "v2.3.2", date: "Mar 15, 2026", notes: "Hotfix: Fixed false positive on milestone extraction.", status: "archived" },
-      { version: "v2.3.0", date: "Feb 1, 2026", notes: "Major overhaul of Pass 3 cross-reference engine.", status: "archived" },
+      {
+        version: c.version_label || "v1.0",
+        date: c.created_date ? new Date(c.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+        notes: "Current published version.",
+        status: c.status === "published" ? "live" : c.status === "draft" ? "draft" : "archived",
+      },
     ],
-  },
-  {
-    id: "pm-construction",
-    name: "PM-CONSTRUCTION-BID",
-    displayName: "Estimator's Eye",
-    type: "X2",
-    version: "v1.9.3",
-    status: "published",
-    installs: 312,
-    revenue: 1872,
-    trustScore: 87,
-    category: "Project Management",
-    description: "Parses construction bid estimates and extracts division-level costs, alternates, contingencies, and validity windows for comparison and audit workflows.",
-    versions: [
-      { version: "v1.9.3", date: "Apr 5, 2026", notes: "Fixed benchmark regression in Pass 1 classification.", status: "live" },
-      { version: "v1.9.2", date: "Mar 20, 2026", notes: "Added Alternate item detection for up to 10 alternates.", status: "archived" },
-      { version: "v1.9.0", date: "Feb 12, 2026", notes: "Initial support for CSI MasterFormat division parsing.", status: "archived" },
-    ],
-  },
-  {
-    id: "rc-construction",
-    name: "RC-CONSTRUCTION",
-    displayName: "The Site Board",
-    type: "X4",
-    version: "v3.1.0",
-    status: "published",
-    installs: 203,
-    revenue: 811,
-    trustScore: 93,
-    category: "Site Reporting",
-    description: "Transforms daily site reports into structured data: workforce counts, work completed/delayed, RFI tracking, materials received, and programme impact.",
-    versions: [
-      { version: "v3.1.0", date: "May 1, 2026", notes: "Added programme impact delta extraction and chained RFI resolution tracking.", status: "live" },
-      { version: "v3.0.1", date: "Apr 10, 2026", notes: "Hotfix: Weather field parsing for non-standard formats.", status: "archived" },
-      { version: "v3.0.0", date: "Mar 1, 2026", notes: "Full rewrite using new 4-pass pipeline architecture.", status: "archived" },
-    ],
-  },
-  {
-    id: "rc-construction-draft",
-    name: "RP-CONSTRUCTION-2.0",
-    displayName: "Ironclad Protocol 2.0",
-    type: "X1",
-    version: "v0.1.0-draft",
-    status: "draft",
-    installs: 0,
-    revenue: 0,
-    trustScore: null,
-    category: "Risk & Compliance",
-    description: "Next-generation risk extraction with support for AS 4000-1997, NEC4, and FIDIC contract families. Includes multi-party agreement parsing.",
-    versions: [
-      { version: "v0.1.0-draft", date: "May 27, 2026", notes: "Initial draft. Schema defined, Pass 1 in development.", status: "draft" },
-    ],
-  },
-];
+  };
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X4: "bg-amber-100 text-amber-700" };
+const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-rose-100 text-rose-700" };
 const statusStyles = {
   published: "bg-emerald-100 text-emerald-700 border-emerald-200",
   draft: "bg-slate-100 text-slate-500 border-slate-200",
@@ -308,7 +261,12 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
           </button>
         </div>
         <h3 className="text-base font-bold text-slate-900 mb-0.5">{c.displayName}</h3>
-        <p className="text-[10px] text-slate-400 font-mono mb-2">{c.name}</p>
+        <p className="text-[10px] text-slate-400 font-mono mb-1">{c.name}</p>
+        {c.publishedDate && (
+          <p className="text-[10px] text-slate-400 flex items-center gap-1 mb-2">
+            <Calendar className="w-2.5 h-2.5" /> Published {new Date(c.publishedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          </p>
+        )}
         <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-2">{c.description}</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="text-center">
@@ -396,33 +354,60 @@ function VersionHistoryDrawer({ component, onClose }) {
   );
 }
 
-// ── Module-level state (persists across navigations within the session) ────────
-let _components = MOCK_COMPONENTS;
-
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function BuilderComponents() {
   const [drawerComponent, setDrawerComponent] = useState(null);
   const [releaseComponent, setReleaseComponent] = useState(null);
   const [filter, setFilter] = useState("all");
-  const [components, setComponents] = useState(_components);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [components, setComponents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleRemoved = (id) => {
-    _components = _components.filter(c => c.id !== id);
-    setComponents(_components);
+  const load = async () => {
+    setLoading(true);
+    try {
+      const me = await base44.auth.me();
+      // Admins see the full catalog; builders see only their own components.
+      const query = me?.role === "admin" ? {} : { builder_id: me.id };
+      const list = await base44.entities.Component.filter(query, "-created_date", 5000);
+      setComponents(list.map(toCardModel));
+    } catch {
+      setComponents([]);
+    }
+    setLoading(false);
   };
 
-  const handleShelf = (id) => {
-    _components = _components.map(c => c.id === id ? { ...c, status: "shelved" } : c);
-    setComponents([..._components]);
+  useEffect(() => { load(); }, []);
+  // Reset to page 1 whenever filters/search change.
+  useEffect(() => { setPage(1); }, [filter, typeFilter, search]);
+
+  const handleRemoved = async (id) => {
+    setComponents((prev) => prev.filter((c) => c.id !== id));
   };
 
-  const handleRedeploy = (id, endpointUrl) => {
-    _components = _components.map(c =>
-      c.id === id ? { ...c, status: "draft", ...(endpointUrl ? { endpoint_url: endpointUrl } : {}) } : c
-    );
-    setComponents([..._components]);
+  const handleShelf = async (id) => {
+    await base44.entities.Component.update(id, { status: "shelved" });
+    setComponents((prev) => prev.map((c) => (c.id === id ? { ...c, status: "shelved" } : c)));
   };
-  const filtered = filter === "all" ? components.filter(c => c.status !== "shelved") : components.filter(c => c.status === filter);
+
+  const handleRedeploy = async (id, endpointUrl) => {
+    await base44.entities.Component.update(id, { status: "draft", ...(endpointUrl ? { endpoint_url: endpointUrl } : {}) });
+    setComponents((prev) => prev.map((c) => (c.id === id ? { ...c, status: "draft", ...(endpointUrl ? { endpoint_url: endpointUrl } : {}) } : c)));
+  };
+
+  // Apply status, type, and text filters.
+  const q = search.trim().toLowerCase();
+  const filtered = components.filter((c) => {
+    const statusOk = filter === "all" ? c.status !== "shelved" : c.status === filter;
+    const typeOk = typeFilter === "all" || c.type === typeFilter;
+    const searchOk = !q || [c.displayName, c.name, c.code, c.category, c.description].some((v) => (v || "").toLowerCase().includes(q));
+    return statusOk && typeOk && searchOk;
+  });
+
+  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -440,52 +425,92 @@ export default function BuilderComponents() {
               <div className="p-2 rounded-xl bg-slate-100"><Package className="w-5 h-5 text-slate-600" /></div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">My Components</h1>
-                <p className="text-sm text-slate-500">{components.length} components in your portfolio</p>
+                <p className="text-sm text-slate-500">{components.length.toLocaleString()} components in your portfolio</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 self-start sm:self-auto">
-            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
-              {["all", "published", "draft", "shelved"].map(f => (
-                <button key={f} onClick={() => setFilter(f)}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-all ${filter === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"}`}>
-                  {f}
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <ComponentExportButton components={components} />
+            <DriveCatalogBackupButton components={components} />
             <Link to="/builder/publish">
-              <Button className="bg-violet-700 hover:bg-violet-800 text-white text-xs h-8 gap-1.5">
+              <Button className="bg-violet-700 hover:bg-violet-800 text-white text-xs h-9 gap-1.5">
                 <Plus className="w-3.5 h-3.5" /> Publish New
               </Button>
             </Link>
           </div>
         </div>
 
+        {/* Search + filters toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, code, category…"
+              className="w-full pl-9 pr-3 h-9 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400"
+            />
+          </div>
+          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto">
+            {["all", "published", "draft", "shelved"].map((f) => (
+              <button key={f} onClick={() => setFilter(f)}
+                className={`px-3 py-1 rounded-md text-xs font-semibold capitalize whitespace-nowrap transition-all ${filter === f ? "bg-slate-800 text-white" : "text-slate-500 hover:text-slate-700"}`}>
+                {f}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 overflow-x-auto">
+            {["all", "X1", "X2", "X3", "X4", "X5"].map((t) => (
+              <button key={t} onClick={() => setTypeFilter(t)}
+                className={`px-3 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${typeFilter === t ? "bg-violet-700 text-white" : "text-slate-500 hover:text-slate-700"}`}>
+                {t === "all" ? "All Types" : t}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Grid */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
               <Package className="w-6 h-6 text-slate-400" />
             </div>
-            <p className="text-sm font-semibold text-slate-600 mb-1">No {filter === "all" ? "" : filter} components</p>
+            <p className="text-sm font-semibold text-slate-600 mb-1">
+              {q || typeFilter !== "all" ? "No matching components" : `No ${filter === "all" ? "" : filter} components`}
+            </p>
             <p className="text-xs text-slate-400">
-              {filter === "shelved" ? "Components you shelf will appear here." : "Publish a new component to get started."}
+              {q || typeFilter !== "all" ? "Try adjusting your search or filters." : filter === "shelved" ? "Components you shelf will appear here." : "Publish a new component to get started."}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {filtered.map(comp => (
-              <ComponentCard 
-                key={comp.id} 
-                component={comp} 
-                onViewHistory={() => setDrawerComponent(_components.find(c => c.id === comp.id) || comp)}
-                onReleaseVersion={() => setReleaseComponent(_components.find(c => c.id === comp.id) || comp)}
-                onRemoved={handleRemoved}
-                onShelf={comp.status === "shelved" ? null : handleShelf}
-                onRedeploy={handleRedeploy}
-              />
-            ))}
-          </div>
+          <>
+            <p className="text-xs text-slate-400">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length.toLocaleString()}
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {paged.map((comp) => (
+                <ComponentCard
+                  key={comp.id}
+                  component={comp}
+                  onViewHistory={() => setDrawerComponent(comp)}
+                  onReleaseVersion={() => setReleaseComponent(comp)}
+                  onRemoved={handleRemoved}
+                  onShelf={comp.status === "shelved" ? null : handleShelf}
+                  onRedeploy={handleRedeploy}
+                />
+              ))}
+            </div>
+            {/* Light pagination bar (page colors tuned for the light builder theme) */}
+            {pageCount > 1 && (
+              <div className="[&_button]:!bg-white [&_button]:!border-slate-200 [&_button]:!text-slate-600 [&_span]:!text-slate-400">
+                <MarketplacePagination page={page} pageCount={pageCount} onPage={setPage} />
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -501,14 +526,12 @@ export default function BuilderComponents() {
           isOpen={!!releaseComponent}
           onClose={() => setReleaseComponent(null)}
           onSuccess={(data) => {
-            // Update the local component's version label
             if (data?.version) {
-              _components = _components.map(c =>
+              setComponents((prev) => prev.map((c) =>
                 c.id === releaseComponent.id
-                  ? { ...c, version: `v${data.version}`, versions: [{ version: `v${data.version}`, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), notes: data.changelog || "New version released.", status: "live" }, ...c.versions] }
+                  ? { ...c, version: `v${data.version}`, versions: [{ version: `v${data.version}`, date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), notes: data.changelog || "New version released.", status: "live" }, ...c.versions] }
                   : c
-              );
-              setComponents([..._components]);
+              ));
             }
             setReleaseComponent(null);
             setDrawerComponent(null);
