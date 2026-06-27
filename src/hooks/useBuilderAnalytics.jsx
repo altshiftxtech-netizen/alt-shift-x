@@ -44,7 +44,7 @@ export default function useBuilderAnalytics() {
       // ── Selector options from real published/all components ──
       const selectorOptions = [
         { id: "all", label: "All Components" },
-        ...components.map((c) => ({ id: c.id, label: c.name })),
+        ...components.map((c) => ({ id: c.id, label: c.name, type: c.type })),
       ];
 
       // ── Earnings (last 6 months) from RevenueSplit period (YYYY-MM) ──
