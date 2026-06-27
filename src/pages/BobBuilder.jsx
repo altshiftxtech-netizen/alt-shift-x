@@ -670,7 +670,7 @@ export default function BobBuilder() {
                 </Card>
               )}
 
-              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "min(72vh, 640px)", minHeight: "420px" }}>
+              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 200px)", minHeight: "560px" }}>
                 <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
