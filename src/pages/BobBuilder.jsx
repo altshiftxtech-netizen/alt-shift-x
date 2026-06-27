@@ -27,6 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import BobMessageActions from "@/components/bob/BobMessageActions";
+import BobLiveIndicator from "@/components/bob/BobLiveIndicator";
 
 const QUICK_PROMPTS = [
   "Help me create a new X1 Risk & Compliance component",
@@ -516,7 +517,7 @@ export default function BobBuilder() {
             <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight text-center">Meet <span className="text-violet-400">BOB</span></h1>
             <p className="text-slate-400 text-lg mt-2 text-center max-w-md">Your AI-powered component builder. Design, analyze, and publish world-class YottaJoule components.</p>
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-              <span className="text-[11px] bg-emerald-900/60 text-emerald-400 px-2.5 py-1 rounded-full font-semibold border border-emerald-700/40 animate-pulse">● LIVE</span>
+              <BobLiveIndicator className="border border-emerald-700/40" />
               <span className="text-[11px] bg-violet-900/60 text-violet-300 px-2.5 py-1 rounded-full font-semibold border border-violet-700/40">Yotta Protocol · Backend Builder Platform</span>
               <Link to="/builder" className="flex items-center gap-1.5 text-[11px] font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-full transition-colors">
                 <LayoutDashboard className="w-3 h-3" /> Builder Dashboard
@@ -612,7 +613,7 @@ export default function BobBuilder() {
             </div>
           </div>
           <div className="sm:ml-auto flex flex-wrap items-center gap-2">
-            <span className="text-[10px] bg-emerald-900 text-emerald-400 px-2 py-1 rounded-full font-semibold animate-pulse">● LIVE</span>
+            <BobLiveIndicator />
             <Link to="/builder" className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 px-2.5 py-1 rounded-lg transition-colors">
               <LayoutDashboard className="w-3.5 h-3.5" /> Builder Dashboard
             </Link>
