@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, BarChart3 } from "lucide-react";
+import ComponentSelectDropdown from "@/components/builder-analytics/ComponentSelectDropdown";
 
 export default function AnalyticsHeader({ components, selected, onSelect }) {
   return (
@@ -19,14 +20,7 @@ export default function AnalyticsHeader({ components, selected, onSelect }) {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-sm self-start sm:self-auto flex-wrap">
-        {components.map(c => (
-          <button key={c.id} onClick={() => onSelect(c.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selected === c.id ? "bg-amber-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}>
-            {c.label}
-          </button>
-        ))}
-      </div>
+      <ComponentSelectDropdown components={components} selected={selected} onSelect={onSelect} />
     </div>
   );
 }
