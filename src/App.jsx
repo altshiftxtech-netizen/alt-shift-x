@@ -168,6 +168,12 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Speakeasy rooms enforce their own membership gate (ProxyRoomGate), so
+          they live outside ProtectedRoute — this also lets them render in the
+          builder preview instead of bouncing to /login as a 404. */}
+      <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
+      <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
+      <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
 
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
@@ -183,9 +189,6 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
         <Route path="/dashboard/webhooks" element={<WebhookManager />} />
         <Route path="/speakeasy" element={<Speakeasy />} />
-        <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
-        <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
-        <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
         <Route path="/builder" element={<BuilderDashboard />} />
         <Route path="/builder/revenue" element={<BuilderRevenue />} />
         <Route path="/builder/trust" element={<TrustEngine />} />
