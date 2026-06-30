@@ -23,25 +23,25 @@ const FRAME = "#D8C18A";
 //  • Back-wall gates fill the four recessed doorway slots flanking the bar.
 //  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
-  // ── Left side wall — Tutorials & Hallway, bottoms toed to the floor markers ──
+  // ── Left side wall — Tutorials & Hallway posters ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
-    style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", floorSlant: 0 },
+    style: { left: "6%", top: "52%" } },
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", floorSlant: 0 },
-  // ── Back wall — four small doorway slots flanking the bar, toed to floor markers ──
+    style: { left: "19%", top: "52%" } },
+  // ── Back wall — four posters flanking the bar ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "31%", top: "34%" } },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "41%", top: "34%" } },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "59%", top: "34%" } },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", floorSlant: 0 },
-  // ── Right side wall — mirror of the left, bottoms toed to the floor markers ──
+    style: { left: "69%", top: "34%" } },
+  // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", floorSlant: 0 },
+    style: { left: "81%", top: "52%" } },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", floorSlant: 0 },
+    style: { left: "94%", top: "52%" } },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
@@ -119,7 +119,7 @@ function ProxyRoomInner() {
       <ProxyScene>
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
-          <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} floorSlant={d.floorSlant}
+          <ProxyDoor key={d.label} style={d.style}
             label={d.label} sublabel={d.sublabel} accent={FRAME}
             onClick={() => navigate(d.to)} />
         ))}
