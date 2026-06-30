@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Users, Sparkles, DoorOpen } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
@@ -95,89 +95,50 @@ function ProxyRoomInner() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "radial-gradient(ellipse at 50% 20%, #15101f 0%, #0a0712 55%, #050308 100%)" }}>
-      {/* Top bar */}
-      <div className="relative z-30 flex items-center justify-between px-5 py-4">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
-          <ArrowLeft className="w-4 h-4" /> Leave
-        </button>
-        <div className="flex items-center gap-2.5">
-          <SpeakeasyLogo size={30} />
-          <div className="text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">The Speakeasy</p>
-            <h1 className="text-lg font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>Proxy Room</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/20 rounded-full px-3 py-1">
-          <Users className="w-3.5 h-3.5" /> {members.length}
-        </div>
+    <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
+      {/* Full-bleed scene */}
+      <ProxyScene>
+        {/* Four recessed doorways in the back wall + the two outer doors,
+            positioned to sit over the doorways/bar of the room art. */}
+        <ProxyDoor style={{ left: "30%", top: "44%" }} label={DOORS[0].label} sublabel={DOORS[0].sublabel}
+          accent={DOORS[0].accent} onClick={() => navigate(DOORS[0].to)} />
+        <ProxyDoor style={{ left: "40%", top: "44%" }} label={DOORS[1].label} sublabel={DOORS[1].sublabel}
+          accent={DOORS[1].accent} onClick={() => navigate(DOORS[1].to)} />
+        <ProxyDoor style={{ left: "60%", top: "44%", transform: "translateX(-50%)" }} label={DOORS[2].label} sublabel={DOORS[2].sublabel}
+          accent={DOORS[2].accent} onClick={() => navigate(DOORS[2].to)} />
+        <ProxyDoor style={{ left: "70%", top: "44%" }} label={DOORS[3].label} sublabel={DOORS[3].sublabel}
+          accent={DOORS[3].accent} onClick={() => navigate(DOORS[3].to)} />
+        {/* Side-wall doors */}
+        <ProxyDoor style={{ left: "9%", top: "46%" }} label={DOORS[4].label} sublabel={DOORS[4].sublabel}
+          accent={DOORS[4].accent} onClick={() => navigate(DOORS[4].to)} />
+        <ProxyDoor style={{ right: "9%", top: "46%" }} label={DOORS[5].label} sublabel={DOORS[5].sublabel}
+          accent={DOORS[5].accent} onClick={() => navigate(DOORS[5].to)} />
+
+        {/* Hidden scavenger fixtures */}
+        {FIXTURES.map((f) => (
+          <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
+            found={foundFixtures.includes(f.fixture_id)}
+            onClick={() => inspectFixture(f.fixture_id)} />
+        ))}
+
+        {/* Live member avatars */}
+        <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+      </ProxyScene>
+
+      {/* Minimal floating chrome */}
+      <button onClick={() => navigate(-1)}
+        className="absolute top-4 left-4 z-30 flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-black/40 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
+        <ArrowLeft className="w-4 h-4" /> Leave
+      </button>
+      <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 text-xs text-[#E6C878] bg-black/40 border border-[#E6C878]/25 rounded-full px-3 py-1.5 backdrop-blur-sm">
+        <Users className="w-3.5 h-3.5" /> {members.length}
       </div>
-
-      {/* Scene + controls panel */}
-      <div className="relative z-10 mx-auto w-full max-w-[1280px] px-4 pb-4 grid gap-4 items-start md:grid-cols-[1.2fr_.8fr]">
-        {/* Perspective scene */}
-        <ProxyScene>
-          {/* Left & right door slots flanking the front room */}
-          <ProxyDoor style={{ left: "6%", top: "50%" }} label={DOORS[0].label} sublabel={DOORS[0].sublabel}
-            accent={DOORS[0].accent} onClick={() => navigate(DOORS[0].to)} />
-          <ProxyDoor style={{ right: "8%", top: "50%" }} label={DOORS[1].label} sublabel={DOORS[1].sublabel}
-            accent={DOORS[1].accent} onClick={() => navigate(DOORS[1].to)} />
-
-          {/* Hidden scavenger fixtures */}
-          {FIXTURES.map((f) => (
-            <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
-              found={foundFixtures.includes(f.fixture_id)}
-              onClick={() => inspectFixture(f.fixture_id)} />
-          ))}
-
-          {/* Live member avatars */}
-          <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
-        </ProxyScene>
-
-        {/* Room controls panel */}
-        <aside className="rounded-[18px] overflow-hidden border border-white/10 bg-[rgba(17,17,23,0.55)] shadow-2xl md:sticky md:top-4">
-          <div className="p-4 flex flex-col gap-3">
-            <div className="flex items-baseline justify-between gap-2.5">
-              <h2 className="text-base font-semibold text-white tracking-wide">Room Doors</h2>
-              <span className="text-xs text-[#C8A95B] border border-[#C8A95B]/35 bg-[#C8A95B]/10 px-2.5 py-1.5 rounded-full">
-                {members.length} present
-              </span>
-            </div>
-
-            <div className="grid gap-2">
-              {DOORS.map((d) => (
-                <button key={d.label} onClick={() => navigate(d.to)}
-                  className="flex items-center gap-3 text-left rounded-[14px] border border-white/10 bg-black/20 hover:bg-white/[0.06] px-3 py-2.5 transition-colors">
-                  <span className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${d.accent}1a`, border: `1px solid ${d.accent}55` }}>
-                    <DoorOpen className="w-4 h-4" style={{ color: d.accent }} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-white truncate">{d.label}</span>
-                    <span className="block text-[11px] text-white/50 truncate">{d.sublabel}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            <div className="h-px bg-white/10" />
-
-            <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
-              <p className="text-[11px] text-white/50">Hidden fixtures</p>
-              <p className="mt-1.5 text-sm font-semibold text-white">
-                {foundFixtures.length} of {FIXTURES.length} found
-              </p>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      {/* Footer hint */}
-      <div className="relative z-30 text-center pb-4">
-        <p className="text-[11px] text-white/40 flex items-center justify-center gap-1.5">
-          <Sparkles className="w-3 h-3 text-[#C8A95B]" />
-          Walk the room · tap a door to explore · hover a guest to message · some fixtures hide prizes
-        </p>
+      <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5">
+        <SpeakeasyLogo size={26} />
+        <div className="text-center">
+          <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E6C878]">The Speakeasy</p>
+          <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>Proxy Room</h1>
+        </div>
       </div>
 
       <HuntUnlockModal open={huntOpen} state={huntState} result={huntResult} onClose={() => setHuntOpen(false)} />
