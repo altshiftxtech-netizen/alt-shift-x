@@ -1,100 +1,117 @@
 import React from "react";
 import { SPEAKEASY_WALLPAPER } from "@/components/speakeasy/speakeasyAssets";
 
+// Warm parquet floor that matches the wallpaper's gold/plum palette.
+const FLOOR_TEXTURE = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24b2679a9_generated_image.png";
+
 /**
- * A true 3D-perspective Speakeasy room: a back wall straight ahead, two side
- * walls receding toward it, and a floor. Children render in 3D space on top.
+ * A true 3D-perspective Speakeasy room rendered as a continuous box: back wall
+ * straight ahead, two side walls receding to meet it at the same seam, a warm
+ * floor and a dark ceiling. All four wall planes share the SAME wallpaper at the
+ * SAME scale so the lattice pattern reads as one unbroken room (the previous
+ * version mismatched the pattern between panels).
  *
- * Layout matches the hand-drawn perspective draft — doors line the left and
- * right side walls angling toward a vanishing point, with a bar centered on
- * the floor. Built with CSS 3D transforms so Base44 can render it natively.
+ * Children render in flat screen-space on top so UI stays crisp and clickable.
  */
-export default function PerspectiveRoom({ children, wallpaper = SPEAKEASY_WALLPAPER }) {
+export default function PerspectiveRoom({ children, wallpaper = SPEAKEASY_WALLPAPER, floor = FLOOR_TEXTURE }) {
+  // Shared geometry so the three walls meet cleanly at the corners.
+  const WALL_H = 460;
+  const BACK_W = 600;
+  const SIDE_W = 560;
+  const DEPTH = 540;
+
+  const wallPaper = {
+    backgroundImage: `url(${wallpaper})`,
+    backgroundSize: `${BACK_W}px ${WALL_H}px`,
+    backgroundRepeat: "no-repeat",
+  };
+
   return (
     <div
-      className="absolute inset-0 overflow-hidden"
-      style={{ perspective: "1100px", perspectiveOrigin: "50% 42%" }}
+      className="absolute inset-0 overflow-hidden rounded-2xl"
+      style={{ perspective: "1300px", perspectiveOrigin: "50% 44%" }}
     >
-      {/* The 3D room shell */}
       <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
-        {/* BACK WALL — straight ahead, papered */}
+        {/* BACK WALL — papered, dead ahead */}
         <div
           className="absolute left-1/2 top-1/2"
           style={{
-            width: "640px",
-            height: "440px",
-            transform: "translate(-50%, -58%) translateZ(-560px)",
-            backgroundImage: `url(${wallpaper})`,
-            backgroundSize: "cover",
+            width: `${BACK_W}px`,
+            height: `${WALL_H}px`,
+            transform: `translate(-50%, -54%) translateZ(-${DEPTH}px)`,
+            ...wallPaper,
             backgroundPosition: "center",
-            boxShadow: "inset 0 0 120px rgba(0,0,0,0.65), 0 0 60px rgba(200,169,91,0.12)",
-            borderLeft: "2px solid rgba(200,169,91,0.18)",
-            borderRight: "2px solid rgba(200,169,91,0.18)",
+            boxShadow: "inset 0 0 90px rgba(0,0,0,0.5), 0 0 70px rgba(200,169,91,0.14)",
           }}
         />
 
-        {/* LEFT WALL — angled inward */}
+        {/* LEFT WALL — angled in toward the back-wall left edge */}
         <div
           className="absolute left-1/2 top-1/2"
           style={{
-            width: "620px",
-            height: "440px",
+            width: `${SIDE_W}px`,
+            height: `${WALL_H}px`,
             transformOrigin: "left center",
-            transform: "translate(0, -58%) translateX(-320px) rotateY(72deg)",
-            backgroundImage: `url(${wallpaper})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "brightness(0.6)",
-            boxShadow: "inset 0 0 140px rgba(0,0,0,0.75)",
+            transform: `translate(-50%, -54%) translateX(-${BACK_W / 2}px) translateZ(-${DEPTH}px) rotateY(64deg)`,
+            ...wallPaper,
+            backgroundPosition: "left center",
+            filter: "brightness(0.74)",
+            boxShadow: "inset -60px 0 110px rgba(0,0,0,0.55)",
           }}
         />
 
-        {/* RIGHT WALL — angled inward */}
+        {/* RIGHT WALL — mirror of the left */}
         <div
           className="absolute left-1/2 top-1/2"
           style={{
-            width: "620px",
-            height: "440px",
+            width: `${SIDE_W}px`,
+            height: `${WALL_H}px`,
             transformOrigin: "right center",
-            transform: "translate(-100%, -58%) translateX(320px) rotateY(-72deg)",
-            backgroundImage: `url(${wallpaper})`,
+            transform: `translate(-50%, -54%) translateX(${BACK_W / 2}px) translateZ(-${DEPTH}px) rotateY(-64deg)`,
+            ...wallPaper,
+            backgroundPosition: "right center",
+            filter: "brightness(0.74)",
+            boxShadow: "inset 60px 0 110px rgba(0,0,0,0.55)",
+          }}
+        />
+
+        {/* FLOOR — warm parquet tilting away from the viewer */}
+        <div
+          className="absolute left-1/2 top-1/2"
+          style={{
+            width: `${BACK_W}px`,
+            height: `${DEPTH + 160}px`,
+            transformOrigin: "top center",
+            transform: `translate(-50%, ${WALL_H * 0.46}px) translateZ(-${DEPTH}px) rotateX(80deg)`,
+            backgroundImage: `url(${floor})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "brightness(0.6)",
-            boxShadow: "inset 0 0 140px rgba(0,0,0,0.75)",
+            filter: "brightness(0.5) sepia(0.4) hue-rotate(-12deg)",
+            boxShadow: "inset 0 80px 140px rgba(0,0,0,0.7)",
           }}
         />
 
-        {/* FLOOR — dark herringbone tone tilting away */}
+        {/* CEILING — dark cap */}
         <div
           className="absolute left-1/2 top-1/2"
           style={{
-            width: "640px",
-            height: "620px",
-            transformOrigin: "top center",
-            transform: "translate(-50%, 0) translateY(82px) rotateX(74deg)",
-            background:
-              "repeating-linear-gradient(90deg, #1c160f 0px, #1c160f 28px, #221a11 28px, #221a11 56px), radial-gradient(ellipse at 50% 0%, rgba(200,169,91,0.18), transparent 60%)",
-            backgroundBlendMode: "overlay",
-            boxShadow: "inset 0 60px 120px rgba(0,0,0,0.6)",
-          }}
-        />
-
-        {/* CEILING — subtle dark cap */}
-        <div
-          className="absolute left-1/2 top-1/2"
-          style={{
-            width: "640px",
-            height: "560px",
+            width: `${BACK_W}px`,
+            height: `${DEPTH + 120}px`,
             transformOrigin: "bottom center",
-            transform: "translate(-50%, -100%) translateY(-138px) rotateX(-74deg)",
-            background: "linear-gradient(180deg, #0a0810, #120d1a)",
-            boxShadow: "inset 0 -40px 100px rgba(0,0,0,0.7)",
+            transform: `translate(-50%, -${WALL_H * 0.54}px) translateZ(-${DEPTH}px) rotateX(-80deg)`,
+            background: "linear-gradient(180deg, #0a0810, #150f1e)",
+            boxShadow: "inset 0 -60px 120px rgba(0,0,0,0.7)",
           }}
         />
       </div>
 
-      {/* Foreground content sits in flat screen space above the 3D shell */}
+      {/* Ambient warm glow toward the center, like the draft's lit back wall */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 38%, rgba(200,169,91,0.12), transparent 55%)" }}
+      />
+
+      {/* Foreground content (doors, bar, avatars) in flat screen space */}
       <div className="absolute inset-0">{children}</div>
     </div>
   );

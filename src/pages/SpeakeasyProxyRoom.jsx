@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import PerspectiveRoom from "@/components/speakeasy/proxy/PerspectiveRoom";
 import PerspectiveDoor from "@/components/speakeasy/proxy/PerspectiveDoor";
+import OuterArchDoor from "@/components/speakeasy/proxy/OuterArchDoor";
 import SpeakeasyBar from "@/components/speakeasy/proxy/SpeakeasyBar";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
@@ -15,18 +16,22 @@ import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
 
-// Destination doors line the two side walls, receding toward the back wall —
-// just like the perspective draft. `side` + `depth` (0 near → 1 far) place each
-// door flat against its angled wall. All routes are live, so no 404s.
+// Inner doors line the two angled side walls, receding toward the back wall.
+// `side` + `depth` (0 near → 1 far) place each door flat against its wall.
 const LEFT_DOORS = [
-  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD, depth: 0 },
-  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c", depth: 0.5 },
-  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8", depth: 1 },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c", depth: 0.15 },
+  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8", depth: 0.85 },
 ];
 const RIGHT_DOORS = [
-  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8", depth: 0 },
-  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950", depth: 0.5 },
-  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c", depth: 1 },
+  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c", depth: 0.15 },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950", depth: 0.85 },
+];
+
+// Marketplace & The Feed sit as large framed archways on the flat OUTER walls,
+// flanking the perspective box — exactly like the draft.
+const OUTER_DOORS = [
+  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD, side: "left" },
+  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8", side: "right" },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
@@ -117,34 +122,60 @@ function ProxyRoomInner() {
         </div>
       </div>
 
-      {/* 3D perspective room stage */}
-      <div className="relative z-10 mx-auto max-w-6xl h-[calc(100vh-150px)] min-h-[520px] px-2">
-        <PerspectiveRoom>
-          {/* Destination doors lining the two side walls */}
-          {LEFT_DOORS.map((d) => (
-            <PerspectiveDoor key={d.label} side="left" depth={d.depth}
-              label={d.label} sublabel={d.sublabel} accent={d.accent}
+      {/* Stage: two outer archways flanking the central perspective box */}
+      <div className="relative z-10 mx-auto max-w-7xl h-[calc(100vh-150px)] min-h-[520px] flex items-center gap-2 sm:gap-4 px-3">
+        {/* Marketplace — flat outer-left wall */}
+        <div className="hidden md:flex flex-shrink-0">
+          {OUTER_DOORS.filter((d) => d.side === "left").map((d) => (
+            <OuterArchDoor key={d.label} label={d.label} sublabel={d.sublabel} accent={d.accent}
               onClick={() => navigate(d.to)} />
           ))}
-          {RIGHT_DOORS.map((d) => (
-            <PerspectiveDoor key={d.label} side="right" depth={d.depth}
-              label={d.label} sublabel={d.sublabel} accent={d.accent}
+        </div>
+
+        {/* The 3D perspective room box */}
+        <div className="relative flex-1 h-full min-w-0">
+          <PerspectiveRoom>
+            {/* Top-center exit portal on the back wall */}
+            <button onClick={() => navigate(-1)} aria-label="Exit"
+              className="group absolute left-1/2 -translate-x-1/2 top-[8%] w-12 h-12 rounded-lg border-2 z-20 transition-all hover:brightness-125"
+              style={{ borderColor: GOLD, background: "rgba(8,6,12,0.9)", boxShadow: `0 0 24px ${GOLD}66` }}>
+              <span className="absolute inset-1.5 rounded-md border" style={{ borderColor: `${GOLD}55` }} />
+            </button>
+
+            {/* Inner doors lining the two angled side walls */}
+            {LEFT_DOORS.map((d) => (
+              <PerspectiveDoor key={d.label} side="left" depth={d.depth}
+                label={d.label} sublabel={d.sublabel} accent={d.accent}
+                onClick={() => navigate(d.to)} />
+            ))}
+            {RIGHT_DOORS.map((d) => (
+              <PerspectiveDoor key={d.label} side="right" depth={d.depth}
+                label={d.label} sublabel={d.sublabel} accent={d.accent}
+                onClick={() => navigate(d.to)} />
+            ))}
+
+            {/* Central bar + barkeeper */}
+            <SpeakeasyBar />
+
+            {/* Hidden scavenger fixtures */}
+            {FIXTURES.map((f) => (
+              <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
+                found={foundFixtures.includes(f.fixture_id)}
+                onClick={() => inspectFixture(f.fixture_id)} />
+            ))}
+
+            {/* Live member avatars */}
+            <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+          </PerspectiveRoom>
+        </div>
+
+        {/* The Feed — flat outer-right wall */}
+        <div className="hidden md:flex flex-shrink-0">
+          {OUTER_DOORS.filter((d) => d.side === "right").map((d) => (
+            <OuterArchDoor key={d.label} label={d.label} sublabel={d.sublabel} accent={d.accent}
               onClick={() => navigate(d.to)} />
           ))}
-
-          {/* Central bar + barkeeper */}
-          <SpeakeasyBar />
-
-          {/* Hidden scavenger fixtures */}
-          {FIXTURES.map((f) => (
-            <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
-              found={foundFixtures.includes(f.fixture_id)}
-              onClick={() => inspectFixture(f.fixture_id)} />
-          ))}
-
-          {/* Live member avatars */}
-          <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
-        </PerspectiveRoom>
+        </div>
       </div>
 
       {/* Footer hint */}
