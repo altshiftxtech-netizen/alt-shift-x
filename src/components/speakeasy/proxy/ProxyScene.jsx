@@ -1,5 +1,4 @@
 import React from "react";
-import { SPEAKEASY_WALLPAPER } from "@/components/speakeasy/speakeasyAssets";
 
 const GOLD = "#E6C878";
 const LAMP = "#FFE6A6";
@@ -51,9 +50,9 @@ export default function ProxyScene({ children }) {
           <div
             className="absolute"
             style={{
-              left: "-25%", right: "-25%", bottom: "0%", height: "52%",
+              left: "-25%", right: "-25%", bottom: "0%", height: "58%",
               transformOrigin: "bottom center",
-              transform: "rotateX(70deg) translateZ(-40px)",
+              transform: "rotateX(72deg) translateZ(-40px)",
               backgroundColor: "#6b4a2b",
               backgroundImage:
                 "repeating-linear-gradient(45deg, #7a5631 0px, #7a5631 14px, #5e3f24 14px, #5e3f24 28px), repeating-linear-gradient(-45deg, rgba(255,220,160,.10) 0px, rgba(255,220,160,.10) 14px, rgba(0,0,0,.12) 14px, rgba(0,0,0,.12) 28px)",
@@ -150,18 +149,12 @@ function SideWall({ side }) {
         top: "8%", bottom: "16%", width: "38%",
         transformOrigin: isLeft ? "left center" : "right center",
         transform: `rotateY(${isLeft ? "60deg" : "-60deg"})`,
-        backgroundColor: "#2c2015",
-        backgroundImage: `url('${SPEAKEASY_WALLPAPER}')`,
-        backgroundSize: "60% auto",
-        backgroundBlendMode: "overlay",
-        backgroundRepeat: "repeat",
+        backgroundColor: "#241a12",
       }}
     >
       <div className="absolute inset-0" style={{ background: isLeft
-        ? "linear-gradient(90deg, rgba(20,14,8,.4), rgba(20,14,8,.85))"
-        : "linear-gradient(270deg, rgba(20,14,8,.4), rgba(20,14,8,.85))" }} />
-      {/* wainscot strip */}
-      <div className="absolute inset-x-0 bottom-0" style={{ top: "62%", background: "linear-gradient(180deg, rgba(40,28,18,.9), rgba(22,16,10,.95))", borderTop: `2px solid ${GOLD}33` }} />
+        ? "linear-gradient(90deg, rgba(20,14,8,.35), rgba(20,14,8,.85))"
+        : "linear-gradient(270deg, rgba(20,14,8,.35), rgba(20,14,8,.85))" }} />
       {/* sconce */}
       <div className="absolute" style={{ [isLeft ? "right" : "left"]: "26%", top: "30%" }}>
         <div className="w-3 h-8 rounded-sm" style={{ background: `linear-gradient(180deg, ${LAMP}, ${GOLD})`, boxShadow: `0 0 34px 12px ${LAMP}77` }} />
