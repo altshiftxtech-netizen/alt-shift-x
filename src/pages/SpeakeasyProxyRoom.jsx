@@ -20,12 +20,16 @@ const GOLD = "#C8A95B";
 // Uniform gold-cream frame for every doorway, matching the reference art.
 const FRAME = "#D8C18A";
 
-// Fancy ballroom founder portraits, hung as the artwork on each poster.
+// Fancy ballroom founder portraits, one unique painting per poster.
 const PORTRAITS = [
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/103a31902_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/068847a68_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f4256b221_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bf4090b73_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b9853d6ba_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44f47ed67_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/c54413bd4_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d53c9d278_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/a916ad0b2_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/e583d06f8_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cdb3ba45f_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/0d65c0a7a_generated_image.png",
 ];
 
 // Each gate is placed to sit in the room's perspective:
@@ -43,14 +47,14 @@ const DOORS = [
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
     style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3] },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[0] },
+    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4] },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[1] },
+    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5] },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[2] },
+    style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[6] },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", image: PORTRAITS[3] },
+    style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", image: PORTRAITS[7] },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
