@@ -12,7 +12,7 @@ export default function ProxyScene({ children }) {
   return (
     <section
       aria-label="Speakeasy scene"
-      className="relative rounded-[18px] overflow-hidden min-h-[560px] h-full border border-white/10"
+      className="relative overflow-hidden min-h-[560px] h-full border border-white/10"
       style={{
         background:
           "linear-gradient(180deg, rgba(216,180,106,.12), rgba(0,0,0,0) 35%), radial-gradient(900px 500px at 55% 15%, rgba(216,180,106,.10), rgba(0,0,0,0) 60%), rgba(17,17,23,.35)",
@@ -55,7 +55,6 @@ export default function ProxyScene({ children }) {
               right: "0%",
               top: "44%",
               bottom: "14%",
-              borderRadius: 0,
               transform: "translateZ(55px)",
               background:
                 "linear-gradient(135deg, rgba(216,180,106,.18), rgba(0,0,0,0) 45%), radial-gradient(800px 500px at 40% 0%, rgba(255,255,255,.06), rgba(0,0,0,0) 60%), rgba(10,10,13,.55)",
