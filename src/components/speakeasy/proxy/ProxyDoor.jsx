@@ -5,7 +5,7 @@ import React from "react";
  * Matches the reference: a tall dark panel with a thin gold-cream frame,
  * label set beneath it. Positioned absolutely via the `style` prop.
  */
-export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "" }) {
+export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "", floorSlant = 0 }) {
   return (
     <button
       onClick={onClick}
@@ -27,6 +27,18 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
       >
         {/* inner reveal line */}
         <span className="absolute inset-1.5 rounded-[2px] border" style={{ borderColor: `${accent}33` }} />
+        {/* perspective-slanted floor base — a thin strip skewed to match the wall angle */}
+        {floorSlant !== 0 && (
+          <span
+            className="absolute -bottom-px left-0 right-0 h-2"
+            style={{
+              background: `linear-gradient(180deg, ${accent}, ${accent}55)`,
+              transform: `skewY(${floorSlant}deg)`,
+              transformOrigin: floorSlant > 0 ? "left bottom" : "right bottom",
+              boxShadow: `0 0 8px ${accent}55`,
+            }}
+          />
+        )}
         {/* hover glow */}
         <div
           className="absolute inset-0 rounded-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
