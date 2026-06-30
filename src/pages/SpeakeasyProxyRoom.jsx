@@ -23,7 +23,13 @@ const DOORS = [
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c" },
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8" },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950" },
+  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines", accent: "#5BC8C8" },
+  { label: "Home", sublabel: "Lobby", to: "/", accent: GOLD },
 ];
+
+// Even horizontal spread of the gate arches across the back-wall skeleton.
+const GATE_TOP = "62%";
+const gateLeft = (i, n) => `${8 + (i * (84 / (n - 1)))}%`;
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
 // for a real prize; unmatched clicks gracefully report "nothing here yet".
@@ -98,21 +104,12 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
-        {/* Four recessed doorways in the back wall + the two outer doors,
-            positioned to sit over the doorways/bar of the room art. */}
-        <ProxyDoor style={{ left: "30%", top: "44%" }} label={DOORS[0].label} sublabel={DOORS[0].sublabel}
-          accent={DOORS[0].accent} onClick={() => navigate(DOORS[0].to)} />
-        <ProxyDoor style={{ left: "40%", top: "44%" }} label={DOORS[1].label} sublabel={DOORS[1].sublabel}
-          accent={DOORS[1].accent} onClick={() => navigate(DOORS[1].to)} />
-        <ProxyDoor style={{ left: "60%", top: "44%", transform: "translateX(-50%)" }} label={DOORS[2].label} sublabel={DOORS[2].sublabel}
-          accent={DOORS[2].accent} onClick={() => navigate(DOORS[2].to)} />
-        <ProxyDoor style={{ left: "70%", top: "44%" }} label={DOORS[3].label} sublabel={DOORS[3].sublabel}
-          accent={DOORS[3].accent} onClick={() => navigate(DOORS[3].to)} />
-        {/* Side-wall doors */}
-        <ProxyDoor style={{ left: "9%", top: "46%" }} label={DOORS[4].label} sublabel={DOORS[4].sublabel}
-          accent={DOORS[4].accent} onClick={() => navigate(DOORS[4].to)} />
-        <ProxyDoor style={{ right: "9%", top: "46%" }} label={DOORS[5].label} sublabel={DOORS[5].sublabel}
-          accent={DOORS[5].accent} onClick={() => navigate(DOORS[5].to)} />
+        {/* Labeled arch gates sitting in a row across the back-wall skeleton. */}
+        {DOORS.map((d, i) => (
+          <ProxyDoor key={d.label} style={{ left: gateLeft(i, DOORS.length), top: GATE_TOP }}
+            label={d.label} sublabel={d.sublabel} accent={d.accent}
+            onClick={() => navigate(d.to)} />
+        ))}
 
         {/* Hidden scavenger fixtures */}
         {FIXTURES.map((f) => (
