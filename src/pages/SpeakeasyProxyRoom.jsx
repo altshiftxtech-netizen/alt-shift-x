@@ -135,7 +135,7 @@ function ProxyRoomInner() {
 
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
-          <ProxyDoor key={d.label} style={d.style} tilt={d.tilt}
+          <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
             label={d.label} sublabel={d.sublabel} accent={FRAME}
             onClick={() => navigate(d.to)} />
         ))}
