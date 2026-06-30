@@ -8,6 +8,7 @@ import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
 import MessageModal from "@/components/speakeasy/proxy/MessageModal";
+import RoomWallpaper from "@/components/speakeasy/RoomWallpaper";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
@@ -92,7 +93,8 @@ function ProxyRoomInner() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "radial-gradient(ellipse at 50% 30%, #1a1530 0%, #0d0a18 55%, #060409 100%)" }}>
+    <div className="relative min-h-screen overflow-hidden">
+      <RoomWallpaper room="proxy_room" />
       {/* Ambient gold vignette + floor */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 65%, rgba(200,169,91,0.10), transparent 60%)" }} />
       <div className="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent, rgba(200,169,91,0.06))", borderTop: "1px solid rgba(200,169,91,0.15)" }} />

@@ -4,6 +4,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
+import RoomWallpaper from "@/components/speakeasy/RoomWallpaper";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
@@ -13,7 +14,8 @@ function HallwayInner() {
   const { members, me } = useSpeakeasyPresence("hallway");
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 100%)" }}>
+    <div className="relative min-h-screen overflow-hidden">
+      <RoomWallpaper room="hallway" />
       {/* Gold sconce glow down the sides */}
       <div className="absolute left-0 top-0 bottom-0 w-32 pointer-events-none" style={{ background: "radial-gradient(circle at 0% 40%, rgba(200,169,91,0.12), transparent 70%)" }} />
       <div className="absolute right-0 top-0 bottom-0 w-32 pointer-events-none" style={{ background: "radial-gradient(circle at 100% 40%, rgba(139,71,137,0.14), transparent 70%)" }} />

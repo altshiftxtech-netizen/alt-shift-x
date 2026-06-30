@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, BookOpen, LifeBuoy } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import KeeperNotebook from "@/components/speakeasy/proxy/KeeperNotebook";
+import RoomWallpaper from "@/components/speakeasy/RoomWallpaper";
 
 // Static community resources surfaced on the bathroom "notice board".
 const NOTICE_LINKS = [
@@ -13,19 +14,20 @@ const NOTICE_LINKS = [
 function BathroomInner() {
   const navigate = useNavigate();
   return (
-    <div className="relative min-h-screen" style={{ background: "linear-gradient(180deg, #f7f5f0 0%, #e9e6df 100%)" }}>
-      <div className="flex items-center justify-between px-5 py-4">
-        <button onClick={() => navigate("/speakeasy/proxy-room")} className="flex items-center gap-1.5 text-xs text-[#2c2c2c]/70 hover:text-[#2c2c2c]">
+    <div className="relative min-h-screen">
+      <RoomWallpaper room="bathroom" overlay="heavy" />
+      <div className="relative z-10 flex items-center justify-between px-5 py-4">
+        <button onClick={() => navigate("/speakeasy/proxy-room")} className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white">
           <ArrowLeft className="w-4 h-4" /> Back to the Room
         </button>
         <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#b8973f]">Private</p>
-          <h1 className="text-lg font-bold text-[#1a1a1a]" style={{ fontFamily: "'Playfair Display', serif" }}>The Powder Room</h1>
+          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">Private</p>
+          <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>The Powder Room</h1>
         </div>
         <span className="w-16" />
       </div>
 
-      <div className="max-w-md mx-auto px-6 py-8">
+      <div className="relative z-10 max-w-md mx-auto px-6 py-8">
         {/* Keeper greeting */}
         <div className="flex items-start gap-3 mb-6">
           <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8973f] flex items-center justify-center text-white text-lg flex-shrink-0">🤵</div>

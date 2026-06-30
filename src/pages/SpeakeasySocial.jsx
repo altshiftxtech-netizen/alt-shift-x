@@ -7,6 +7,7 @@ import SpeakeasyVideoBackground from "@/components/speakeasy/SpeakeasyVideoBackg
 import SocialFeedStream from "@/components/speakeasy/social/SocialFeedStream";
 import ParticipationStanding from "@/components/speakeasy/social/ParticipationStanding";
 import CommunityHighlights from "@/components/speakeasy/social/CommunityHighlights";
+import SpeakeasyLogo from "@/components/speakeasy/SpeakeasyLogo";
 import LevelUpCelebration from "@/components/speakeasy/social/LevelUpCelebration";
 import WeeklyRecap from "@/components/speakeasy/social/WeeklyRecap";
 import useParticipation from "@/hooks/useParticipation";
@@ -28,9 +29,7 @@ function SocialFeedInner() {
             <button onClick={() => navigate("/speakeasy/proxy-room")} className="text-[#9CA0A8] hover:text-white transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#8B6FB8]/30 to-[#C8A95B]/20 border border-white/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#C8A95B]" />
-            </div>
+            <SpeakeasyLogo size={36} />
             <div>
               <h1 className="text-lg font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The Feed</h1>
               <p className="text-[10px] text-[#9CA0A8] mt-0.5">A calmer social room — built for genuine connection, not endless scrolling.</p>
