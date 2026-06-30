@@ -16,20 +16,25 @@ const GOLD = "#C8A95B";
 
 // All room destinations. The two flanking the front room render as the scene's
 // left/right door slots; the rest appear as quick links in the side panel.
+// Uniform gold-cream frame for every doorway, matching the reference art.
+const FRAME = "#D8C18A";
+
 const DOORS = [
-  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD },
-  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8" },
-  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c" },
-  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c" },
-  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8" },
-  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950" },
-  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines", accent: "#5BC8C8" },
-  { label: "Home", sublabel: "Lobby", to: "/", accent: GOLD },
+  { label: "Marketplace", sublabel: "Components", to: "/marketplace" },
+  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social" },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups" },
+  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom" },
+  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway" },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet" },
+  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines" },
+  { label: "Dashboard", sublabel: "Your Hub", to: "/dashboard" },
+  { label: "Tutorials", sublabel: "Learn", to: "/tutorials" },
+  { label: "Home", sublabel: "Lobby", to: "/" },
 ];
 
-// Even horizontal spread of the gate arches across the back-wall skeleton.
-const GATE_TOP = "62%";
-const gateLeft = (i, n) => `${8 + (i * (84 / (n - 1)))}%`;
+// Even horizontal spread of the doorways across the back wall.
+const GATE_TOP = "44%";
+const gateLeft = (i, n) => `${6 + (i * (88 / (n - 1)))}%`;
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
 // for a real prize; unmatched clicks gracefully report "nothing here yet".
@@ -104,10 +109,10 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
-        {/* Labeled arch gates sitting in a row across the back-wall skeleton. */}
+        {/* Recessed wall doorways in a row across the back wall. */}
         {DOORS.map((d, i) => (
           <ProxyDoor key={d.label} style={{ left: gateLeft(i, DOORS.length), top: GATE_TOP }}
-            label={d.label} sublabel={d.sublabel} accent={d.accent}
+            label={d.label} sublabel={d.sublabel} accent={FRAME}
             onClick={() => navigate(d.to)} />
         ))}
 

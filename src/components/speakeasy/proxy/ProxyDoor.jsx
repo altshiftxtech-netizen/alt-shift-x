@@ -1,41 +1,38 @@
 import React from "react";
 
 /**
- * A labeled arch "gate" sitting on the back-wall skeleton.
- * Not a literal door — a rounded-top arch outline with a glowing rim that
- * acts as the gateway to a page. Positioned absolutely via the `style` prop.
+ * A recessed wall doorway that acts as a gateway to a page.
+ * Matches the reference: a tall dark panel with a thin gold-cream frame,
+ * label set beneath it. Positioned absolutely via the `style` prop.
  */
-export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#C8A95B" }) {
+export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A" }) {
   return (
     <button
       onClick={onClick}
       style={style}
-      className="group absolute flex flex-col items-center justify-end focus:outline-none -translate-x-1/2"
+      className="group absolute flex flex-col items-center focus:outline-none -translate-x-1/2"
       aria-label={`Enter ${label}`}
     >
-      {/* arch outline */}
+      {/* recessed dark door panel with thin frame */}
       <div
-        className="relative w-20 h-24 sm:w-24 sm:h-28 transition-all duration-300 group-hover:-translate-y-1"
+        className="relative w-16 h-28 sm:w-20 sm:h-36 transition-all duration-300 group-hover:-translate-y-1"
         style={{
-          borderTopLeftRadius: "9999px",
-          borderTopRightRadius: "9999px",
+          borderRadius: "3px",
           border: `2px solid ${accent}`,
-          borderBottom: "none",
-          background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 100%)",
-          boxShadow: `inset 0 0 22px ${accent}33`,
+          background: "linear-gradient(180deg, #1a120c 0%, #0b0805 100%)",
+          boxShadow: `inset 0 0 24px rgba(0,0,0,0.85)`,
         }}
       >
+        {/* inner reveal line */}
+        <span className="absolute inset-1.5 rounded-[2px] border" style={{ borderColor: `${accent}33` }} />
+        {/* hover glow */}
         <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{
-            borderTopLeftRadius: "9999px",
-            borderTopRightRadius: "9999px",
-            boxShadow: `0 0 26px 4px ${accent}66`,
-          }}
+          className="absolute inset-0 rounded-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{ boxShadow: `0 0 22px 3px ${accent}55` }}
         />
       </div>
-      {/* label sits inside the arch */}
-      <div className="absolute inset-x-0 bottom-3 text-center px-1">
+      {/* label beneath the door */}
+      <div className="mt-1.5 text-center px-1">
         <p
           className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] leading-tight"
           style={{ color: accent, fontFamily: "'Playfair Display', serif" }}
