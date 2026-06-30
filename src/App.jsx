@@ -71,6 +71,7 @@ import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
 import SpeakeasyProxyRoom from './pages/SpeakeasyProxyRoom';
+import SpeakeasySocial from './pages/SpeakeasySocial';
 import SpeakeasyHallway from './pages/SpeakeasyHallway';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import UpKeeper from './pages/UpKeeper';
@@ -172,6 +173,7 @@ const AuthenticatedApp = () => {
           they live outside ProtectedRoute — this also lets them render in the
           builder preview instead of bouncing to /login as a 404. */}
       <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
+      <Route path="/speakeasy/social" element={<SpeakeasySocial />} />
       <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
       <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
 

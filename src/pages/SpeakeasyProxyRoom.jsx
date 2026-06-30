@@ -16,7 +16,7 @@ const GOLD = "#C8A95B";
 // are no 404s. The room/hallway/bathroom are placeholders within this page for now.
 const FEATURE_DOORS = [
   { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD },
-  { label: "Social", sublabel: "The Feed", to: "/speakeasy", accent: "#8B6FB8" },
+  { label: "Social", sublabel: "The Feed", to: "/speakeasy/social", accent: "#8B6FB8" },
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines", accent: "#4169e1" },
 ];
 

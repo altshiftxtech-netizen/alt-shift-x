@@ -1,0 +1,72 @@
+{
+  "name": "ParticipationScore",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user id this score belongs to"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total lifetime participation points earned"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "Newcomer",
+        "Regular",
+        "Contributor",
+        "Pillar",
+        "Luminary"
+      ],
+      "default": "Newcomer",
+      "description": "Wholesome standing derived from points \u2014 recognition, not addiction-farming"
+    },
+    "posts_count": {
+      "type": "number",
+      "default": 0
+    },
+    "thoughtful_replies_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Replies that added to a conversation (length-gated to discourage low-effort spam)"
+    },
+    "appreciations_given": {
+      "type": "number",
+      "default": 0,
+      "description": "Reactions given to others \u2014 generosity is rewarded, not just self-posting"
+    },
+    "last_awarded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
