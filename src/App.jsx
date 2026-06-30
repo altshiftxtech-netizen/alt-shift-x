@@ -72,6 +72,9 @@ import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
 import SpeakeasyProxyRoom from './pages/SpeakeasyProxyRoom';
 import SpeakeasySocial from './pages/SpeakeasySocial';
+import SpeakeasyGroups from './pages/SpeakeasyGroups';
+import SpeakeasyGroup from './pages/SpeakeasyGroup';
+import SpeakeasyMeet from './pages/SpeakeasyMeet';
 import SpeakeasyHallway from './pages/SpeakeasyHallway';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import UpKeeper from './pages/UpKeeper';
@@ -174,6 +177,9 @@ const AuthenticatedApp = () => {
           builder preview instead of bouncing to /login as a 404. */}
       <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
       <Route path="/speakeasy/social" element={<SpeakeasySocial />} />
+      <Route path="/speakeasy/groups" element={<SpeakeasyGroups />} />
+      <Route path="/speakeasy/groups/:slug" element={<SpeakeasyGroup />} />
+      <Route path="/speakeasy/meet" element={<SpeakeasyMeet />} />
       <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
       <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
 

@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
  * Inline reply composer. Awards "reply" participation points (the backend
  * length-gates it so only substantive replies earn recognition).
  */
-export default function SocialReplyBox({ parent, user, onReplied, award }) {
+export default function SocialReplyBox({ parent, user, onReplied, award, groupId }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -20,6 +20,7 @@ export default function SocialReplyBox({ parent, user, onReplied, award }) {
       content: body,
       post_type: "text",
       parent_id: parent.id,
+      ...(groupId ? { group_id: groupId } : {}),
       reactions: {},
     });
     await base44.entities.SpeakeasyPost.update(parent.id, { reply_count: (parent.reply_count || 0) + 1 });

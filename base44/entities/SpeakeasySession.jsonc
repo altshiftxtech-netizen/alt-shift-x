@@ -1,0 +1,82 @@
+{
+  "name": "SpeakeasySession",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Session topic, e.g. 'Estimating workflows \u2014 open table'"
+    },
+    "description": {
+      "type": "string"
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "host_name": {
+      "type": "string"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "Optional \u2014 if the session belongs to a specific circle"
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the live session begins"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 30
+    },
+    "meeting_url": {
+      "type": "string",
+      "description": "Video link (Google Meet, Zoom, etc.) where the session happens"
+    },
+    "calendar_event_id": {
+      "type": "string",
+      "description": "Mirrored Google Calendar event id, if synced"
+    },
+    "rsvp_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User ids who pulled up a chair",
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "live",
+        "ended",
+        "cancelled"
+      ],
+      "default": "scheduled"
+    }
+  },
+  "required": [
+    "title",
+    "host_id",
+    "starts_at"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {},
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

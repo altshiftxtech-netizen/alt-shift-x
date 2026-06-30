@@ -17,6 +17,8 @@ const GOLD = "#C8A95B";
 const FEATURE_DOORS = [
   { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD },
   { label: "Social", sublabel: "The Feed", to: "/speakeasy/social", accent: "#8B6FB8" },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c" },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950" },
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines", accent: "#4169e1" },
 ];
 

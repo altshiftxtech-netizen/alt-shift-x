@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { LogOut, User as UserIcon, Settings, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import StandingBadge from "@/components/speakeasy/social/StandingBadge";
 
 /**
  * UserMenu — the avatar in the top-right of SharedNav, now a working dropdown.
@@ -52,6 +53,7 @@ export default function UserMenu({ isDev = false }) {
                 {user?.email && (
                   <p className={`text-[10px] truncate ${isDev ? "text-[#8b949e]" : "text-slate-500"}`}>{user.email}</p>
                 )}
+                <div className="mt-1.5"><StandingBadge /></div>
               </div>
               <Link
                 to="/dashboard/settings"

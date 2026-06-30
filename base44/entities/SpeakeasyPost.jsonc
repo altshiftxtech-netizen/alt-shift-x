@@ -45,6 +45,10 @@
       "type": "string",
       "description": "If set, this post is a reply to another post"
     },
+    "group_id": {
+      "type": "string",
+      "description": "If set, this post belongs to a SpeakeasyGroup circle. Empty/unset = the main public Feed."
+    },
     "mentions_ai": {
       "type": "boolean",
       "default": false,

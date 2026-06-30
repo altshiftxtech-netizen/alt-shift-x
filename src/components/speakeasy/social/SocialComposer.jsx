@@ -9,7 +9,7 @@ const QUICK_EMOJIS = ["🥂", "🔥", "🛠️", "✨", "🚀", "💡", "👏", 
  * Social feed composer — same posting behaviour as SpeakeasyComposer, but
  * awards a "post" participation point and summons The Front Man on @mentions.
  */
-export default function SocialComposer({ user, onPosted, award }) {
+export default function SocialComposer({ user, onPosted, award, groupId }) {
   const [content, setContent] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [showVideo, setShowVideo] = useState(false);
@@ -29,6 +29,7 @@ export default function SocialComposer({ user, onPosted, award }) {
       mentions_ai: mentionsAI,
       reactions: {},
     };
+    if (groupId) data.group_id = groupId;
     if (showVideo && videoUrl) { data.media_url = videoUrl; data.media_title = "Shared video"; }
 
     const post = await base44.entities.SpeakeasyPost.create(data);

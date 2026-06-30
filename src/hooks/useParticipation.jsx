@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 export default function useParticipation() {
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [leveledUpTo, setLeveledUpTo] = useState(null); // set when an award crosses a tier
 
   const load = useCallback(async () => {
     try {
@@ -28,6 +29,7 @@ export default function useParticipation() {
   const award = useCallback(async (action, text) => {
     try {
       const res = await base44.functions.invoke("awardParticipation", { action, text });
+      if (res.data?.leveled_up && res.data?.level) setLeveledUpTo(res.data.level);
       await load();
       return res.data;
     } catch {
@@ -35,5 +37,5 @@ export default function useParticipation() {
     }
   }, [load]);
 
-  return { score, loading, award, reload: load };
+  return { score, loading, award, reload: load, leveledUpTo, clearLevelUp: () => setLeveledUpTo(null) };
 }

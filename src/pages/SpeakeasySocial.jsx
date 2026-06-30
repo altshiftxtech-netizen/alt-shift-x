@@ -1,44 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles, ArrowLeft, Heart } from "lucide-react";
+import { Sparkles, ArrowLeft, Heart, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import SpeakeasyVideoBackground from "@/components/speakeasy/SpeakeasyVideoBackground";
-import SocialComposer from "@/components/speakeasy/social/SocialComposer";
-import SocialFeedCard from "@/components/speakeasy/social/SocialFeedCard";
-import SocialReplyBox from "@/components/speakeasy/social/SocialReplyBox";
+import SocialFeedStream from "@/components/speakeasy/social/SocialFeedStream";
 import ParticipationStanding from "@/components/speakeasy/social/ParticipationStanding";
 import CommunityHighlights from "@/components/speakeasy/social/CommunityHighlights";
+import LevelUpCelebration from "@/components/speakeasy/social/LevelUpCelebration";
+import WeeklyRecap from "@/components/speakeasy/social/WeeklyRecap";
 import useParticipation from "@/hooks/useParticipation";
 
 function SocialFeedInner() {
   const navigate = useNavigate();
-  const { score, award, reload } = useParticipation();
+  const { score, award, reload, leveledUpTo, clearLevelUp } = useParticipation();
   const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [replyTo, setReplyTo] = useState(null); // post id currently being replied to
 
-  const load = async () => {
-    const data = await base44.entities.SpeakeasyPost.list("-created_date", 100);
-    setPosts(data || []);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-    load();
-    const unsub = base44.entities.SpeakeasyPost.subscribe(() => load());
-    return () => unsub?.();
-  }, []);
-
-  const afterAward = () => { load(); reload(); };
-
-  const topLevel = posts.filter(p => !p.parent_id);
-  const repliesByParent = posts.reduce((acc, p) => {
-    if (p.parent_id) (acc[p.parent_id] = acc[p.parent_id] || []).push(p);
-    return acc;
-  }, {});
+  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
 
   return (
     <div className="min-h-screen relative">
@@ -58,48 +36,27 @@ function SocialFeedInner() {
               <p className="text-[10px] text-[#9CA0A8] mt-0.5">A calmer social room — built for genuine connection, not endless scrolling.</p>
             </div>
           </div>
-          {score && (
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/20 rounded-full px-3 py-1">
-              <Heart className="w-3.5 h-3.5" /> {(score.points || 0).toLocaleString()} pts · {score.level}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/speakeasy/groups")}
+              className="flex items-center gap-1.5 text-xs text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-3 py-1.5 transition-colors">
+              <Users className="w-3.5 h-3.5 text-[#C8A95B]" /> Circles
+            </button>
+            {score && (
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/20 rounded-full px-3 py-1">
+                <Heart className="w-3.5 h-3.5" /> {(score.points || 0).toLocaleString()} pts · {score.level}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-6">
         <div className="grid lg:grid-cols-[1fr_320px] gap-6">
-          {/* Feed */}
-          <div className="space-y-4">
-            {user && <SocialComposer user={user} onPosted={afterAward} award={award} />}
-            {loading ? (
-              <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-[#D9DCE1]/40" /></div>
-            ) : topLevel.length === 0 ? (
-              <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/[0.02]">
-                <Sparkles className="w-6 h-6 text-[#C8A95B] mx-auto mb-3" />
-                <p className="text-sm text-[#9CA0A8]">The room is quiet. Pour the first drink — start a conversation. 🥂</p>
-              </div>
-            ) : (
-              topLevel.map(post => (
-                <div key={post.id} className="space-y-2">
-                  <SocialFeedCard post={post} currentUserId={user?.id} award={award}
-                    onReply={(p) => setReplyTo(replyTo === p.id ? null : p.id)} />
-                  {(repliesByParent[post.id] || []).map(reply => (
-                    <div key={reply.id} className="ml-6 pl-3 border-l border-white/10">
-                      <SocialFeedCard post={reply} currentUserId={user?.id} award={award} />
-                    </div>
-                  ))}
-                  {replyTo === post.id && user && (
-                    <SocialReplyBox parent={post} user={user} award={award}
-                      onReplied={() => { setReplyTo(null); afterAward(); }} />
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+          <SocialFeedStream user={user} award={award} onActivity={reload} />
 
-          {/* Sidebar */}
           <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
             <ParticipationStanding score={score} />
+            <WeeklyRecap score={score} />
             <CommunityHighlights />
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8A95B] mb-2">How points work</p>
@@ -113,6 +70,8 @@ function SocialFeedInner() {
           </div>
         </div>
       </main>
+
+      {leveledUpTo && <LevelUpCelebration level={leveledUpTo} onClose={clearLevelUp} />}
     </div>
   );
 }

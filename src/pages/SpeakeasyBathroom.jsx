@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageCircle, BookOpen, LifeBuoy } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
+import KeeperNotebook from "@/components/speakeasy/proxy/KeeperNotebook";
 
 // Static community resources surfaced on the bathroom "notice board".
 const NOTICE_LINKS = [
@@ -48,6 +49,8 @@ function BathroomInner() {
             </div>
           </div>
         </div>
+
+        <KeeperNotebook />
       </div>
     </div>
   );

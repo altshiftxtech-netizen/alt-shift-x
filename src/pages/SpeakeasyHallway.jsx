@@ -32,10 +32,10 @@ function HallwayInner() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-4xl h-[calc(100vh-180px)] min-h-[460px] px-4">
-        {/* Three TBD expansion doors */}
-        <ProxyDoor label="Room A" sublabel="Coming Soon" accent="#555" onClick={() => {}} style={{ left: "6%", top: "30%" }} />
-        <ProxyDoor label="Room B" sublabel="Coming Soon" accent="#555" onClick={() => {}} style={{ right: "6%", top: "30%", left: "auto" }} />
-        <ProxyDoor label="Room C" sublabel="Coming Soon" accent="#555" onClick={() => {}} style={{ left: "50%", top: "16%", transform: "translateX(-50%)" }} />
+        {/* Live destination doors down the corridor */}
+        <ProxyDoor label="Circles" sublabel="Community Groups" accent="#8B6FB8" onClick={() => navigate("/speakeasy/groups")} style={{ left: "6%", top: "30%" }} />
+        <ProxyDoor label="The Feed" sublabel="Social" accent={GOLD} onClick={() => navigate("/speakeasy/social")} style={{ right: "6%", top: "30%", left: "auto" }} />
+        <ProxyDoor label="Powder Room" sublabel="Private" accent="#e0719c" onClick={() => navigate("/speakeasy/bathroom")} style={{ left: "50%", top: "16%", transform: "translateX(-50%)" }} />
 
         {/* Lounge seating area */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-[20%] flex gap-3">
@@ -48,7 +48,7 @@ function HallwayInner() {
         <AvatarCluster members={members} meId={me?.id} />
       </div>
 
-      <p className="relative z-30 text-center pb-4 text-[11px] text-white/40">A quiet corridor. More doors are being built.</p>
+      <p className="relative z-30 text-center pb-4 text-[11px] text-white/40">A quiet corridor connecting the rooms of the Speakeasy.</p>
     </div>
   );
 }

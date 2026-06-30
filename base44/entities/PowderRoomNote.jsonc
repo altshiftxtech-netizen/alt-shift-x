@@ -1,0 +1,56 @@
+{
+  "name": "PowderRoomNote",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string",
+      "description": "A private note, suggestion, or quiet word left for the keeper"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin marks notes as read/handled"
+    }
+  },
+  "required": [
+    "note"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
