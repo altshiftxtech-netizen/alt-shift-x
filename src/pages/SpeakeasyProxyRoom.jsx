@@ -19,22 +19,30 @@ const GOLD = "#C8A95B";
 // Uniform gold-cream frame for every doorway, matching the reference art.
 const FRAME = "#D8C18A";
 
+// Each gate is placed to sit in the room's perspective:
+//  • Back-wall gates fill the four recessed doorway slots flanking the bar.
+//  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
-  { label: "Marketplace", sublabel: "Components", to: "/marketplace" },
-  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social" },
-  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups" },
-  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom" },
-  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway" },
-  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet" },
-  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines" },
-  { label: "Dashboard", sublabel: "Your Hub", to: "/dashboard" },
-  { label: "Tutorials", sublabel: "Learn", to: "/tutorials" },
-  { label: "Home", sublabel: "Lobby", to: "/" },
+  // ── Left side wall (recedes toward the back) ──
+  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
+    style: { left: "8%", top: "40%" }, tilt: "perspective(700px) rotateY(34deg) scale(0.78)" },
+  { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
+    style: { left: "18%", top: "42%" }, tilt: "perspective(700px) rotateY(34deg) scale(0.62)" },
+  // ── Back wall — four doorway slots flanking the bar ──
+  { label: "Marketplace", sublabel: "Components", to: "/marketplace",
+    style: { left: "29%", top: "44%" }, tilt: "" },
+  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
+    style: { left: "39%", top: "44%" }, tilt: "" },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
+    style: { left: "61%", top: "44%" }, tilt: "" },
+  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
+    style: { left: "71%", top: "44%" }, tilt: "" },
+  // ── Right side wall (recedes toward the back) ──
+  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
+    style: { left: "82%", top: "42%" }, tilt: "perspective(700px) rotateY(-34deg) scale(0.62)" },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
+    style: { left: "92%", top: "40%" }, tilt: "perspective(700px) rotateY(-34deg) scale(0.78)" },
 ];
-
-// Even horizontal spread of the doorways across the back wall.
-const GATE_TOP = "44%";
-const gateLeft = (i, n) => `${6 + (i * (88 / (n - 1)))}%`;
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
 // for a real prize; unmatched clicks gracefully report "nothing here yet".
@@ -109,9 +117,9 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
-        {/* Recessed wall doorways in a row across the back wall. */}
-        {DOORS.map((d, i) => (
-          <ProxyDoor key={d.label} style={{ left: gateLeft(i, DOORS.length), top: GATE_TOP }}
+        {/* Gates placed in the room's perspective — back wall + angled side walls. */}
+        {DOORS.map((d) => (
+          <ProxyDoor key={d.label} style={d.style} tilt={d.tilt}
             label={d.label} sublabel={d.sublabel} accent={FRAME}
             onClick={() => navigate(d.to)} />
         ))}

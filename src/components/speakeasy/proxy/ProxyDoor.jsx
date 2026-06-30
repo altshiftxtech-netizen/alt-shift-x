@@ -5,7 +5,7 @@ import React from "react";
  * Matches the reference: a tall dark panel with a thin gold-cream frame,
  * label set beneath it. Positioned absolutely via the `style` prop.
  */
-export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A" }) {
+export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "" }) {
   return (
     <button
       onClick={onClick}
@@ -13,7 +13,7 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
       className="group absolute flex flex-col items-center focus:outline-none -translate-x-1/2"
       aria-label={`Enter ${label}`}
     >
-      {/* recessed dark door panel with thin frame */}
+      {/* recessed dark door panel with thin frame — tilt skews it into wall perspective */}
       <div
         className="relative w-16 h-28 sm:w-20 sm:h-36 transition-all duration-300 group-hover:-translate-y-1"
         style={{
@@ -21,6 +21,8 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           border: `2px solid ${accent}`,
           background: "linear-gradient(180deg, #1a120c 0%, #0b0805 100%)",
           boxShadow: `inset 0 0 24px rgba(0,0,0,0.85)`,
+          transform: tilt,
+          transformOrigin: "center",
         }}
       >
         {/* inner reveal line */}

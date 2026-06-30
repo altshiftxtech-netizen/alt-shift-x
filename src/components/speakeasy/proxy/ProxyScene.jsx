@@ -104,12 +104,6 @@ export default function ProxyScene({ children }) {
               top: "62%", background: "linear-gradient(180deg, #2c2015, #1c140c)",
             }} />
 
-            {/* Recessed doorways flanking the bar */}
-            <Doorway style={{ left: "8%" }} />
-            <Doorway style={{ left: "22%" }} />
-            <Doorway style={{ right: "22%" }} />
-            <Doorway style={{ right: "8%" }} />
-
             {/* Central bar with arched bottle shelf */}
             <div className="absolute left-1/2 -translate-x-1/2" style={{ top: "20%", width: "26%", height: "44%" }}>
               {/* arched back shelf */}
@@ -183,20 +177,6 @@ function SideWall({ side }) {
       <div className="absolute" style={{ [isLeft ? "right" : "left"]: "26%", top: "30%" }}>
         <div className="w-3 h-8 rounded-sm" style={{ background: `linear-gradient(180deg, ${LAMP}, ${GOLD})`, boxShadow: `0 0 34px 12px ${LAMP}77` }} />
       </div>
-    </div>
-  );
-}
-
-/** A dark recessed doorway in the back wall. */
-function Doorway({ style }) {
-  return (
-    <div className="absolute" style={{ top: "30%", height: "32%", width: "9%", ...style }}>
-      <div className="absolute inset-0" style={{
-        borderRadius: "4px 4px 0 0",
-        background: "linear-gradient(180deg, #0c0805, #16100a)",
-        border: `2px solid ${GOLD}44`,
-        boxShadow: "inset 0 0 18px rgba(0,0,0,.8)",
-      }} />
     </div>
   );
 }
