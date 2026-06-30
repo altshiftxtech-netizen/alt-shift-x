@@ -1,0 +1,72 @@
+{
+  "name": "SpeakeasyHuntItem",
+  "type": "object",
+  "properties": {
+    "fixture_id": {
+      "type": "string",
+      "description": "Unique identifier of the clickable fixture in the room (e.g. 'bar-mirror', 'wall-painting')"
+    },
+    "room": {
+      "type": "string",
+      "enum": [
+        "proxy_room",
+        "hallway",
+        "bathroom"
+      ],
+      "default": "proxy_room"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Display name of the hidden prize, e.g. 'Speakeasy Founder's Portrait'"
+    },
+    "description": {
+      "type": "string",
+      "description": "Lore / hint description shown on discovery"
+    },
+    "prize_type": {
+      "type": "string",
+      "enum": [
+        "xp_boost",
+        "badge",
+        "discord_role",
+        "merchandise",
+        "discount"
+      ],
+      "default": "xp_boost"
+    },
+    "prize_value": {
+      "type": "string",
+      "description": "Human-readable prize value (e.g. '100 XP', 'Illuminated badge', '10% off code')"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "found_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "fixture_id",
+    "item_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

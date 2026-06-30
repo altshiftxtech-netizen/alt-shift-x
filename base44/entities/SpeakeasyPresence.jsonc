@@ -1,0 +1,68 @@
+{
+  "name": "SpeakeasyPresence",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user id of the present member"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name shown on the avatar"
+    },
+    "room": {
+      "type": "string",
+      "enum": [
+        "proxy_room",
+        "hallway",
+        "bathroom"
+      ],
+      "default": "proxy_room",
+      "description": "Which speakeasy room the user is currently in"
+    },
+    "pos_x": {
+      "type": "number",
+      "description": "Avatar X position in the room on a 0-100 scale"
+    },
+    "pos_y": {
+      "type": "number",
+      "description": "Avatar Y position in the room on a 0-100 scale"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heartbeat timestamp \u2014 stale presence is treated as offline"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

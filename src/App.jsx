@@ -70,6 +70,9 @@ import UserOnboarding from './pages/UserOnboarding';
 import SecurityCenter from './pages/SecurityCenter';
 import SystemHealth from './pages/SystemHealth';
 import Speakeasy from './pages/Speakeasy';
+import SpeakeasyProxyRoom from './pages/SpeakeasyProxyRoom';
+import SpeakeasyHallway from './pages/SpeakeasyHallway';
+import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import UpKeeper from './pages/UpKeeper';
 import TaxCompliance from './pages/TaxCompliance';
 import Pipelines from './pages/Pipelines';
@@ -180,6 +183,9 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
         <Route path="/dashboard/webhooks" element={<WebhookManager />} />
         <Route path="/speakeasy" element={<Speakeasy />} />
+        <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
+        <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
+        <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
         <Route path="/builder" element={<BuilderDashboard />} />
         <Route path="/builder/revenue" element={<BuilderRevenue />} />
         <Route path="/builder/trust" element={<TrustEngine />} />
