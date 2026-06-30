@@ -1,138 +1,196 @@
 import React from "react";
 import { SPEAKEASY_WALLPAPER } from "@/components/speakeasy/speakeasyAssets";
 
+const GOLD = "#C8A95B";
+
 /**
- * ProxyScene — the perspective "hallway → front room" stage from the design
- * skeleton. Renders a 3D-tilted scene with a full-bleed wallpaper panel, dark
- * trim band and lower plinth zone. Interactive elements (doors, avatars,
- * fixtures) are layered on top via `children` in screen space so they stay
- * crisp and clickable.
+ * ProxyScene — a true 3D tall-ceiling room built with CSS 3D transforms.
+ * A back wall (papered, with framed pictures + a gold dado rail), two angled
+ * side walls, a receding floor and a high ceiling form an actual box you look
+ * into. Interactive elements (doors, avatars, fixtures) are layered on top via
+ * `children` in screen space so they stay crisp and clickable.
  */
 export default function ProxyScene({ children }) {
   return (
     <section
-      aria-label="Speakeasy scene"
+      aria-label="Speakeasy room"
       className="relative overflow-hidden min-h-[560px] h-full border border-white/10"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(216,180,106,.12), rgba(0,0,0,0) 35%), radial-gradient(900px 500px at 55% 15%, rgba(216,180,106,.10), rgba(0,0,0,0) 60%), rgba(17,17,23,.35)",
-      }}
+      style={{ background: "#07050b" }}
     >
-      {/* Perspective stage */}
+      {/* 3D stage */}
       <div
-        className="absolute inset-0 flex items-stretch justify-center p-[18px]"
-        style={{ perspective: "1100px", transformStyle: "preserve-3d" }}
+        className="absolute inset-0"
+        style={{ perspective: "1200px", perspectiveOrigin: "50% 42%" }}
       >
         <div
-          className="relative w-full h-full"
-          style={{
-            transform: "translateZ(0) rotateX(14deg) rotateY(-8deg) scale(1.05)",
-            transformOrigin: "center bottom",
-            filter: "saturate(1.05) contrast(1.05)",
-          }}
+          className="absolute inset-0"
+          style={{ transformStyle: "preserve-3d", transform: "translateZ(-40px)" }}
         >
-          {/* Corridor / ceiling plane */}
-          <div
-            className="absolute"
-            style={{
-              left: "-10%",
-              right: "-10%",
-              top: "5%",
-              bottom: "45%",
-              transform: "translateZ(25px)",
-              opacity: 0.85,
-              borderBottom: "1px solid rgba(216,180,106,.12)",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0) 60%), repeating-linear-gradient(to right, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 2px, rgba(0,0,0,0) 18px, rgba(0,0,0,0) 26px)",
-            }}
-          />
-
-          {/* Front room plane — full bleed (no internal inset) */}
+          {/* ── BACK WALL ── */}
           <div
             className="absolute overflow-hidden"
             style={{
-              left: "0%",
-              right: "0%",
-              top: "44%",
-              bottom: "14%",
-              transform: "translateZ(55px)",
-              background:
-                "linear-gradient(135deg, rgba(216,180,106,.18), rgba(0,0,0,0) 45%), radial-gradient(800px 500px at 40% 0%, rgba(255,255,255,.06), rgba(0,0,0,0) 60%), rgba(10,10,13,.55)",
-              border: "1px solid rgba(255,255,255,.08)",
-              boxShadow:
-                "0 30px 90px rgba(0,0,0,.45), inset 0 0 0 1px rgba(216,180,106,.10)",
+              left: "28%",
+              right: "28%",
+              top: "10%",
+              bottom: "22%",
+              transform: "translateZ(-420px)",
+              transformStyle: "preserve-3d",
+              backgroundColor: "#150f1f",
+              boxShadow: "0 0 120px rgba(0,0,0,.7) inset",
             }}
           >
-            {/* Wallpaper — full-bleed light panel anchored near top */}
+            {/* Wallpaper upper field */}
             <div
-              aria-hidden="true"
-              className="absolute"
+              className="absolute inset-x-0 top-0"
               style={{
-                top: "6%",
-                left: "0%",
-                right: "0%",
-                bottom: "48%",
-                width: "100%",
-                borderRadius: 0,
-                opacity: 0.9,
+                bottom: "34%",
                 backgroundImage: `url('${SPEAKEASY_WALLPAPER}')`,
-                backgroundSize: "170% 170%",
-                backgroundPosition: "50% 8%",
+                backgroundSize: "60% auto",
+                backgroundPosition: "center top",
                 backgroundRepeat: "repeat",
-                filter: "contrast(1.03) brightness(.98)",
+                opacity: 0.92,
+                filter: "brightness(.9) contrast(1.05)",
               }}
             />
-
-            {/* Dark trim / molding band */}
+            {/* Gold dado rail */}
             <div
-              aria-hidden="true"
-              className="absolute"
+              className="absolute inset-x-0"
               style={{
-                left: "0%",
-                right: "0%",
-                top: "48.5%",
-                height: "9%",
-                borderRadius: 0,
-                transform: "translateZ(60px)",
-                background:
-                  "linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55))",
-                borderTop: "1px solid rgba(255,255,255,.08)",
-                borderBottom: "1px solid rgba(0,0,0,.55)",
+                top: "66%",
+                height: "3px",
+                background: `linear-gradient(180deg, ${GOLD}, rgba(120,95,40,.6))`,
+                boxShadow: `0 0 10px ${GOLD}66`,
               }}
             />
-
-            {/* Lower darker wall zone */}
+            {/* Dark wainscot below rail */}
             <div
-              aria-hidden="true"
-              className="absolute"
+              className="absolute inset-x-0 bottom-0"
               style={{
-                left: "0%",
-                right: "0%",
-                top: "57%",
-                bottom: "10%",
-                width: "100%",
-                borderRadius: 0,
-                transform: "translateZ(55px)",
-                background:
-                  "linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.30) 55%, rgba(0,0,0,.45)), radial-gradient(600px 220px at 35% 20%, rgba(216,180,106,.10), rgba(0,0,0,0) 60%)",
+                top: "66%",
+                background: "linear-gradient(180deg, #1c1320, #0d0913)",
+              }}
+            />
+            {/* Framed pictures on the back wall */}
+            <Frame style={{ left: "14%", top: "16%", width: "20%", height: "30%" }} hue="#8B6FB8" />
+            <Frame style={{ left: "40%", top: "10%", width: "20%", height: "34%" }} hue={GOLD} tall />
+            <Frame style={{ left: "66%", top: "16%", width: "20%", height: "30%" }} hue="#e0719c" />
+          </div>
+
+          {/* ── LEFT WALL ── */}
+          <SideWall side="left" />
+          {/* ── RIGHT WALL ── */}
+          <SideWall side="right" />
+
+          {/* ── FLOOR ── */}
+          <div
+            className="absolute"
+            style={{
+              left: "-20%",
+              right: "-20%",
+              bottom: "0%",
+              height: "60%",
+              transformOrigin: "bottom center",
+              transform: "rotateX(72deg) translateZ(-60px)",
+              background:
+                "repeating-linear-gradient(90deg, #120c1a 0px, #120c1a 60px, #1a1226 60px, #1a1226 120px)",
+              boxShadow: "0 0 200px rgba(0,0,0,.8) inset",
+              opacity: 0.95,
+            }}
+          />
+
+          {/* ── CEILING ── */}
+          <div
+            className="absolute"
+            style={{
+              left: "-20%",
+              right: "-20%",
+              top: "0%",
+              height: "46%",
+              transformOrigin: "top center",
+              transform: "rotateX(-68deg) translateZ(-60px)",
+              background: "linear-gradient(180deg, #0c0814, #160f22)",
+              opacity: 0.97,
+            }}
+          >
+            {/* central ceiling glow / chandelier wash */}
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                width: "40%",
+                height: "55%",
+                background: `radial-gradient(ellipse at center, ${GOLD}33, rgba(0,0,0,0) 70%)`,
               }}
             />
           </div>
-
-          {/* Vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              transform: "translateZ(110px)",
-              background:
-                "radial-gradient(800px 420px at 55% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.6) 100%)",
-            }}
-          />
         </div>
       </div>
+
+      {/* Ambient depth vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(900px 520px at 50% 42%, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 62%, rgba(0,0,0,.72) 100%)",
+        }}
+      />
 
       {/* Interactive overlay — screen space, crisp & clickable */}
       <div className="absolute inset-0">{children}</div>
     </section>
+  );
+}
+
+/** Angled side wall receding toward the back wall. */
+function SideWall({ side }) {
+  const isLeft = side === "left";
+  return (
+    <div
+      className="absolute overflow-hidden"
+      style={{
+        [isLeft ? "left" : "right"]: "0%",
+        top: "10%",
+        bottom: "22%",
+        width: "30%",
+        transformOrigin: isLeft ? "left center" : "right center",
+        transform: `rotateY(${isLeft ? "62deg" : "-62deg"})`,
+        background: isLeft
+          ? "linear-gradient(90deg, #1a1226, #0e0a16)"
+          : "linear-gradient(270deg, #1a1226, #0e0a16)",
+        boxShadow: "0 0 120px rgba(0,0,0,.6) inset",
+      }}
+    >
+      {/* sconce glow */}
+      <div
+        className="absolute top-[34%] h-2 w-2 rounded-full"
+        style={{
+          [isLeft ? "right" : "left"]: "22%",
+          background: GOLD,
+          boxShadow: `0 0 24px 8px ${GOLD}55`,
+        }}
+      />
+    </div>
+  );
+}
+
+/** A framed picture hung on a wall. */
+function Frame({ style, hue = "#C8A95B", tall }) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        ...style,
+        border: `3px solid ${hue}`,
+        background: "linear-gradient(160deg, rgba(255,255,255,.06), rgba(0,0,0,.5))",
+        boxShadow: `0 6px 18px rgba(0,0,0,.55), 0 0 14px ${hue}44`,
+      }}
+    >
+      <div
+        className="absolute inset-[3px]"
+        style={{
+          background: `radial-gradient(circle at 50% ${tall ? "38%" : "42%"}, ${hue}33, rgba(0,0,0,.6) 70%)`,
+        }}
+      />
+    </div>
   );
 }
