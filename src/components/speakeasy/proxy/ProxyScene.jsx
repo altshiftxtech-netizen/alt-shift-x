@@ -73,7 +73,7 @@ export default function ProxyScene({ children }) {
           <div
             className="absolute overflow-hidden"
             style={{
-              left: "22%", right: "22%", top: "8%", bottom: "16%",
+              left: "16%", right: "16%", top: "8%", bottom: "16%",
               transform: "translateZ(-460px)",
               backgroundColor: "#241a12",
             }}
@@ -82,7 +82,7 @@ export default function ProxyScene({ children }) {
             <div className="absolute inset-x-0 top-0" style={{
               bottom: "30%",
               backgroundImage: `url('${SPEAKEASY_WALLPAPER}')`,
-              backgroundSize: "44% auto",
+              backgroundSize: "34% auto",
               backgroundPosition: "center top",
               backgroundRepeat: "repeat",
               opacity: 0.95,
@@ -105,7 +105,7 @@ export default function ProxyScene({ children }) {
             }} />
 
             {/* Central bar with arched bottle shelf */}
-            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: "20%", width: "26%", height: "44%" }}>
+            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: "20%", width: "22%", height: "44%" }}>
               {/* arched back shelf */}
               <div className="absolute inset-x-0 top-0 h-[64%] overflow-hidden"
                 style={{
@@ -158,9 +158,9 @@ function SideWall({ side }) {
       className="absolute overflow-hidden"
       style={{
         [isLeft ? "left" : "right"]: "0%",
-        top: "8%", bottom: "16%", width: "34%",
+        top: "8%", bottom: "16%", width: "38%",
         transformOrigin: isLeft ? "left center" : "right center",
-        transform: `rotateY(${isLeft ? "64deg" : "-64deg"})`,
+        transform: `rotateY(${isLeft ? "60deg" : "-60deg"})`,
         backgroundColor: "#2c2015",
         backgroundImage: `url('${SPEAKEASY_WALLPAPER}')`,
         backgroundSize: "60% auto",
