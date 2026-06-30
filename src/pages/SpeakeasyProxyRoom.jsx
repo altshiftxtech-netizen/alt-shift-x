@@ -43,13 +43,13 @@ const DOORS = [
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1] },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2] },
+    style: { left: "26%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2] },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3] },
+    style: { left: "40%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3] },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4] },
+    style: { left: "60%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4] },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5] },
+    style: { left: "74%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5] },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
     style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[6] },
