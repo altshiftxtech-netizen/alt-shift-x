@@ -4,6 +4,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
+import ProxyBar from "@/components/speakeasy/proxy/ProxyBar";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
@@ -117,6 +118,9 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
+        {/* Freestanding bar — the room's centerpiece, sitting on the floor up front. */}
+        <ProxyBar style={{ left: "50%", bottom: "10%" }} />
+
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt}
