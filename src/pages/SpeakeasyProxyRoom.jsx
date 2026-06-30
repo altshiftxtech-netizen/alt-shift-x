@@ -25,23 +25,23 @@ const FRAME = "#D8C18A";
 const DOORS = [
   // ── Left side wall — Tutorials & Hallway side by side along the wall ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
-    style: { left: "6%", top: "42%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.9)" },
+    style: { left: "6%", top: "58%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.9)" },
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "20%", top: "42%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.78)" },
-  // ── Back wall — four small doorway slots flanking the bar, up against the wall ──
+    style: { left: "20%", top: "58%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.78)" },
+  // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "27%" }, tilt: "scale(0.56)" },
+    style: { left: "30%", top: "42%" }, tilt: "scale(0.56)" },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "27%" }, tilt: "scale(0.56)" },
+    style: { left: "39%", top: "42%" }, tilt: "scale(0.56)" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "27%" }, tilt: "scale(0.56)" },
+    style: { left: "61%", top: "42%" }, tilt: "scale(0.56)" },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "27%" }, tilt: "scale(0.56)" },
+    style: { left: "70%", top: "42%" }, tilt: "scale(0.56)" },
   // ── Right side wall — mirror of the left: Pipelines & The Table side by side ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "80%", top: "42%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.78)" },
+    style: { left: "80%", top: "58%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.78)" },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "94%", top: "42%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.9)" },
+    style: { left: "94%", top: "58%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.9)" },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
