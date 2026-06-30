@@ -28,15 +28,15 @@ const DOORS = [
     style: { left: "8%", top: "40%" }, tilt: "perspective(700px) rotateY(34deg) scale(0.78)" },
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
     style: { left: "18%", top: "42%" }, tilt: "perspective(700px) rotateY(34deg) scale(0.62)" },
-  // ── Back wall — four doorway slots flanking the bar ──
+  // ── Back wall — four doorway slots flanking the bar (smaller, pushed up against the wall) ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "29%", top: "44%" }, tilt: "" },
+    style: { left: "31%", top: "34%" }, tilt: "scale(0.72)" },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "44%" }, tilt: "" },
+    style: { left: "40%", top: "34%" }, tilt: "scale(0.72)" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "44%" }, tilt: "" },
+    style: { left: "60%", top: "34%" }, tilt: "scale(0.72)" },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "71%", top: "44%" }, tilt: "" },
+    style: { left: "69%", top: "34%" }, tilt: "scale(0.72)" },
   // ── Right side wall (recedes toward the back) ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
     style: { left: "82%", top: "42%" }, tilt: "perspective(700px) rotateY(-34deg) scale(0.62)" },
