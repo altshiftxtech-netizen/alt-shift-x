@@ -13,3 +13,10 @@ export const ROOM_WALLPAPERS = {
 
 // The SpeakeasySocial keyhole "Neural Keymark" logo (gold line-art on black).
 export const SPEAKEASY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/8f3d92a3f_generated_image.png";
+
+// Speakeasy interior wall texture — cream geometric "neural keymark" lattice
+// over deep plum wood wainscoting with gold trim (matches the decor reference).
+export const SPEAKEASY_WALLPAPER = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24b2679a9_generated_image.png";
+
+// Carrara marble texture with gold veining — for the Powder Room.
+export const MARBLE_TEXTURE = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c98ec78_generated_image.png";

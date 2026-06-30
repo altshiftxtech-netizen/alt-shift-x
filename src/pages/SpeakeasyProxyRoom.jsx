@@ -3,24 +3,30 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Users, Sparkles, Volume2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
-import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
+import PerspectiveRoom from "@/components/speakeasy/proxy/PerspectiveRoom";
+import PerspectiveDoor from "@/components/speakeasy/proxy/PerspectiveDoor";
+import SpeakeasyBar from "@/components/speakeasy/proxy/SpeakeasyBar";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
 import MessageModal from "@/components/speakeasy/proxy/MessageModal";
-import RoomWallpaper from "@/components/speakeasy/RoomWallpaper";
+import SpeakeasyLogo from "@/components/speakeasy/SpeakeasyLogo";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
 
-// The feature doors along the back wall. These map to existing routes so there
-// are no 404s. The room/hallway/bathroom are placeholders within this page for now.
-const FEATURE_DOORS = [
-  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD },
-  { label: "Social", sublabel: "The Feed", to: "/speakeasy/social", accent: "#8B6FB8" },
-  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c" },
-  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950" },
-  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines", accent: "#4169e1" },
+// Destination doors line the two side walls, receding toward the back wall —
+// just like the perspective draft. `side` + `depth` (0 near → 1 far) place each
+// door flat against its angled wall. All routes are live, so no 404s.
+const LEFT_DOORS = [
+  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD, depth: 0 },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c", depth: 0.5 },
+  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8", depth: 1 },
+];
+const RIGHT_DOORS = [
+  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8", depth: 0 },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950", depth: 0.5 },
+  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c", depth: 1 },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
@@ -93,67 +99,59 @@ function ProxyRoomInner() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <RoomWallpaper room="proxy_room" />
-      {/* Ambient gold vignette + floor */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 50% 65%, rgba(200,169,91,0.10), transparent 60%)" }} />
-      <div className="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent, rgba(200,169,91,0.06))", borderTop: "1px solid rgba(200,169,91,0.15)" }} />
-
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "radial-gradient(ellipse at 50% 20%, #15101f 0%, #0a0712 55%, #050308 100%)" }}>
       {/* Top bar */}
       <div className="relative z-30 flex items-center justify-between px-5 py-4">
         <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
           <ArrowLeft className="w-4 h-4" /> Leave
         </button>
-        <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">The Speakeasy</p>
-          <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Proxy Room</h1>
+        <div className="flex items-center gap-2.5">
+          <SpeakeasyLogo size={30} />
+          <div className="text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">The Speakeasy</p>
+            <h1 className="text-lg font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>Proxy Room</h1>
+          </div>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/20 rounded-full px-3 py-1">
           <Users className="w-3.5 h-3.5" /> {members.length}
         </div>
       </div>
 
-      {/* Room stage */}
-      <div className="relative z-10 mx-auto max-w-5xl h-[calc(100vh-180px)] min-h-[460px] px-4">
-        {/* Back-wall feature doors */}
-        <ProxyDoor label="Hallway" sublabel="Expansion" accent="#8B6FB8"
-          onClick={() => navigate("/speakeasy/hallway")}
-          style={{ left: "4%", top: "34%" }} />
-        <ProxyDoor label="Bathroom" sublabel="Private" accent={GOLD}
-          onClick={() => navigate("/speakeasy/bathroom")}
-          style={{ right: "4%", top: "34%", left: "auto" }} />
-
-        <div className="absolute left-1/2 top-[20%] -translate-x-1/2 flex items-end gap-5 sm:gap-10">
-          {FEATURE_DOORS.map((d) => (
-            <ProxyDoor key={d.label} label={d.label} sublabel={d.sublabel} accent={d.accent}
-              onClick={() => navigate(d.to)} style={{ position: "relative", left: 0, top: 0 }} />
+      {/* 3D perspective room stage */}
+      <div className="relative z-10 mx-auto max-w-6xl h-[calc(100vh-150px)] min-h-[520px] px-2">
+        <PerspectiveRoom>
+          {/* Destination doors lining the two side walls */}
+          {LEFT_DOORS.map((d) => (
+            <PerspectiveDoor key={d.label} side="left" depth={d.depth}
+              label={d.label} sublabel={d.sublabel} accent={d.accent}
+              onClick={() => navigate(d.to)} />
           ))}
-        </div>
+          {RIGHT_DOORS.map((d) => (
+            <PerspectiveDoor key={d.label} side="right" depth={d.depth}
+              label={d.label} sublabel={d.sublabel} accent={d.accent}
+              onClick={() => navigate(d.to)} />
+          ))}
 
-        {/* The bar */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[18%] w-64 sm:w-80 h-16 rounded-xl"
-          style={{ background: "linear-gradient(180deg, #2a2018, #15100a)", border: "1px solid rgba(200,169,91,0.4)", boxShadow: "0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(200,169,91,0.3)" }}>
-          <p className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-[0.3em] text-[#C8A95B]/60" style={{ fontFamily: "'Playfair Display', serif" }}>
-            The Bar
-          </p>
-        </div>
+          {/* Central bar + barkeeper */}
+          <SpeakeasyBar />
 
-        {/* Hidden scavenger fixtures */}
-        {FIXTURES.map((f) => (
-          <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
-            found={foundFixtures.includes(f.fixture_id)}
-            onClick={() => inspectFixture(f.fixture_id)} />
-        ))}
+          {/* Hidden scavenger fixtures */}
+          {FIXTURES.map((f) => (
+            <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
+              found={foundFixtures.includes(f.fixture_id)}
+              onClick={() => inspectFixture(f.fixture_id)} />
+          ))}
 
-        {/* Live member avatars */}
-        <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+          {/* Live member avatars */}
+          <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+        </PerspectiveRoom>
       </div>
 
       {/* Footer hint */}
       <div className="relative z-30 text-center pb-4">
         <p className="text-[11px] text-white/40 flex items-center justify-center gap-1.5">
           <Sparkles className="w-3 h-3 text-[#C8A95B]" />
-          Tap the doors to explore · hover a guest to message · some fixtures hide prizes
+          Walk the room · tap a door to explore · hover a guest to message · some fixtures hide prizes
         </p>
       </div>
 
