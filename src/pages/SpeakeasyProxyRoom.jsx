@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Users, Sparkles, Volume2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Users, Sparkles, DoorOpen } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
-import PerspectiveRoom from "@/components/speakeasy/proxy/PerspectiveRoom";
-import PerspectiveDoor from "@/components/speakeasy/proxy/PerspectiveDoor";
-import SpeakeasyBar from "@/components/speakeasy/proxy/SpeakeasyBar";
+import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
+import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
@@ -15,17 +14,15 @@ import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
 
-// Inner doors line the two angled side walls, receding toward the back wall.
-// `side` + `depth` (0 near → 1 far) place each door flat against its wall.
-const LEFT_DOORS = [
-  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD, depth: 0.1 },
-  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c", depth: 0.55 },
-  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8", depth: 1 },
-];
-const RIGHT_DOORS = [
-  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8", depth: 0.1 },
-  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c", depth: 0.55 },
-  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950", depth: 1 },
+// All room destinations. The two flanking the front room render as the scene's
+// left/right door slots; the rest appear as quick links in the side panel.
+const DOORS = [
+  { label: "Marketplace", sublabel: "Components", to: "/marketplace", accent: GOLD },
+  { label: "The Feed", sublabel: "Social", to: "/speakeasy/social", accent: "#8B6FB8" },
+  { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups", accent: "#e0719c" },
+  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom", accent: "#e0719c" },
+  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway", accent: "#8B6FB8" },
+  { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet", accent: "#3fb950" },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
@@ -116,43 +113,63 @@ function ProxyRoomInner() {
         </div>
       </div>
 
-      {/* 3D perspective room stage */}
-      <div className="relative z-10 mx-auto max-w-6xl h-[calc(100vh-150px)] min-h-[520px] px-2">
-        <div className="relative w-full h-full">
-          <PerspectiveRoom>
-            {/* Top-center exit portal on the back wall */}
-            <button onClick={() => navigate(-1)} aria-label="Exit"
-              className="group absolute left-1/2 -translate-x-1/2 top-[8%] w-12 h-12 rounded-lg border-2 z-20 transition-all hover:brightness-125"
-              style={{ borderColor: GOLD, background: "rgba(8,6,12,0.9)", boxShadow: `0 0 24px ${GOLD}66` }}>
-              <span className="absolute inset-1.5 rounded-md border" style={{ borderColor: `${GOLD}55` }} />
-            </button>
+      {/* Scene + controls panel */}
+      <div className="relative z-10 mx-auto w-full max-w-[1280px] px-4 pb-4 grid gap-4 items-start md:grid-cols-[1.2fr_.8fr]">
+        {/* Perspective scene */}
+        <ProxyScene>
+          {/* Left & right door slots flanking the front room */}
+          <ProxyDoor style={{ left: "6%", top: "50%" }} label={DOORS[0].label} sublabel={DOORS[0].sublabel}
+            accent={DOORS[0].accent} onClick={() => navigate(DOORS[0].to)} />
+          <ProxyDoor style={{ right: "8%", top: "50%" }} label={DOORS[1].label} sublabel={DOORS[1].sublabel}
+            accent={DOORS[1].accent} onClick={() => navigate(DOORS[1].to)} />
 
-            {/* Inner doors lining the two angled side walls */}
-            {LEFT_DOORS.map((d) => (
-              <PerspectiveDoor key={d.label} side="left" depth={d.depth}
-                label={d.label} sublabel={d.sublabel} accent={d.accent}
-                onClick={() => navigate(d.to)} />
-            ))}
-            {RIGHT_DOORS.map((d) => (
-              <PerspectiveDoor key={d.label} side="right" depth={d.depth}
-                label={d.label} sublabel={d.sublabel} accent={d.accent}
-                onClick={() => navigate(d.to)} />
-            ))}
+          {/* Hidden scavenger fixtures */}
+          {FIXTURES.map((f) => (
+            <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
+              found={foundFixtures.includes(f.fixture_id)}
+              onClick={() => inspectFixture(f.fixture_id)} />
+          ))}
 
-            {/* Central bar + barkeeper */}
-            <SpeakeasyBar />
+          {/* Live member avatars */}
+          <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+        </ProxyScene>
 
-            {/* Hidden scavenger fixtures */}
-            {FIXTURES.map((f) => (
-              <ScavengerFixture key={f.fixture_id} icon={f.icon} style={f.style}
-                found={foundFixtures.includes(f.fixture_id)}
-                onClick={() => inspectFixture(f.fixture_id)} />
-            ))}
+        {/* Room controls panel */}
+        <aside className="rounded-[18px] overflow-hidden border border-white/10 bg-[rgba(17,17,23,0.55)] shadow-2xl md:sticky md:top-4">
+          <div className="p-4 flex flex-col gap-3">
+            <div className="flex items-baseline justify-between gap-2.5">
+              <h2 className="text-base font-semibold text-white tracking-wide">Room Doors</h2>
+              <span className="text-xs text-[#C8A95B] border border-[#C8A95B]/35 bg-[#C8A95B]/10 px-2.5 py-1.5 rounded-full">
+                {members.length} present
+              </span>
+            </div>
 
-            {/* Live member avatars */}
-            <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
-          </PerspectiveRoom>
-        </div>
+            <div className="grid gap-2">
+              {DOORS.map((d) => (
+                <button key={d.label} onClick={() => navigate(d.to)}
+                  className="flex items-center gap-3 text-left rounded-[14px] border border-white/10 bg-black/20 hover:bg-white/[0.06] px-3 py-2.5 transition-colors">
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${d.accent}1a`, border: `1px solid ${d.accent}55` }}>
+                    <DoorOpen className="w-4 h-4" style={{ color: d.accent }} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-white truncate">{d.label}</span>
+                    <span className="block text-[11px] text-white/50 truncate">{d.sublabel}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="h-px bg-white/10" />
+
+            <div className="rounded-[14px] border border-white/10 bg-black/20 p-3">
+              <p className="text-[11px] text-white/50">Hidden fixtures</p>
+              <p className="mt-1.5 text-sm font-semibold text-white">
+                {foundFixtures.length} of {FIXTURES.length} found
+              </p>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Footer hint */}
