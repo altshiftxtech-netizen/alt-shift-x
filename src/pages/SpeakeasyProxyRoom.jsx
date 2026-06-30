@@ -23,25 +23,25 @@ const FRAME = "#D8C18A";
 //  • Back-wall gates fill the four recessed doorway slots flanking the bar.
 //  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
-  // ── Left side wall — Tutorials stacked above Hallway, receding to the back ──
+  // ── Left side wall — Hallway at the margin edge, Tutorials just above it ──
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "9%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.82)" },
+    style: { left: "5%", top: "50%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.9)" },
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
-    style: { left: "9%", top: "24%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.82)" },
-  // ── Back wall — four doorway slots flanking the bar (smaller, up against the wall) ──
+    style: { left: "5%", top: "24%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.9)" },
+  // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "29%", top: "34%" }, tilt: "scale(0.72)" },
+    style: { left: "30%", top: "36%" }, tilt: "scale(0.56)" },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "34%" }, tilt: "scale(0.72)" },
+    style: { left: "39%", top: "36%" }, tilt: "scale(0.56)" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "34%" }, tilt: "scale(0.72)" },
+    style: { left: "61%", top: "36%" }, tilt: "scale(0.56)" },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "71%", top: "34%" }, tilt: "scale(0.72)" },
-  // ── Right side wall — Pipelines stacked above The Table, receding to the back ──
+    style: { left: "70%", top: "36%" }, tilt: "scale(0.56)" },
+  // ── Right side wall — mirror of the left: The Table at edge, Pipelines above ──
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "91%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.82)" },
+    style: { left: "95%", top: "50%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.9)" },
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "91%", top: "24%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.82)" },
+    style: { left: "95%", top: "24%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.9)" },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record

@@ -78,17 +78,6 @@ export default function ProxyScene({ children }) {
               backgroundColor: "#241a12",
             }}
           >
-            {/* Wallpaper upper field */}
-            <div className="absolute inset-x-0 top-0" style={{
-              bottom: "30%",
-              backgroundImage: `url('${SPEAKEASY_WALLPAPER}')`,
-              backgroundSize: "34% auto",
-              backgroundPosition: "center top",
-              backgroundRepeat: "repeat",
-              opacity: 0.95,
-              filter: "brightness(1.25) saturate(1.1)",
-            }} />
-
             {/* Crown molding */}
             <div className="absolute inset-x-0 top-0 h-[7%]"
               style={{ background: "linear-gradient(180deg, #4a3520, #2e2014)", borderBottom: `2px solid ${GOLD}55` }} />
