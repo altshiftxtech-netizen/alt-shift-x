@@ -7,7 +7,7 @@ import React from "react";
  * skews the panel into the wall's perspective (side walls); back-wall doors use
  * a plain scale.
  */
-export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "" }) {
+export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "", image }) {
   return (
     <button
       onClick={onClick}
@@ -27,8 +27,17 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           transformOrigin: "center",
         }}
       >
+        {/* founder portrait artwork filling the poster */}
+        {image && (
+          <img
+            src={image}
+            alt={`${label} founder portrait`}
+            className="absolute inset-1.5 w-[calc(100%-12px)] h-[calc(100%-12px)] object-cover rounded-[2px]"
+            style={{ filter: "saturate(0.95) brightness(0.92)" }}
+          />
+        )}
         {/* inner reveal line */}
-        <span className="absolute inset-1.5 rounded-[2px] border" style={{ borderColor: `${accent}33` }} />
+        <span className="absolute inset-1.5 rounded-[2px] border" style={{ borderColor: `${accent}55` }} />
         {/* hover glow */}
         <div
           className="absolute inset-0 rounded-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"

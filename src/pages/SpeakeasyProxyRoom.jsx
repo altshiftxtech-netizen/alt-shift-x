@@ -20,29 +20,37 @@ const GOLD = "#C8A95B";
 // Uniform gold-cream frame for every doorway, matching the reference art.
 const FRAME = "#D8C18A";
 
+// Fancy ballroom founder portraits, hung as the artwork on each poster.
+const PORTRAITS = [
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/103a31902_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/068847a68_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f4256b221_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bf4090b73_generated_image.png",
+];
+
 // Each gate is placed to sit in the room's perspective:
 //  • Back-wall gates fill the four recessed doorway slots flanking the bar.
 //  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
   // ── Left side wall — Tutorials & Hallway, skewed into the wall perspective ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
-    style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)" },
+    style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", image: PORTRAITS[0] },
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)" },
+    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1] },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)" },
+    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2] },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)" },
+    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3] },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)" },
+    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[0] },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)" },
+    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[1] },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)" },
+    style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[2] },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)" },
+    style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", image: PORTRAITS[3] },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
