@@ -23,26 +23,26 @@ const FRAME = "#D8C18A";
 //  • Back-wall gates fill the four recessed doorway slots flanking the bar.
 //  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
-  // ── Left side wall — Tutorials & Hallway side by side; bottoms sit on the
-  //    floor line, slanting down toward the viewer (positive skew). ──
+  // ── Left side wall — Tutorials & Hallway; bottoms sit on the diagonal floor
+  //    line that rises toward the back wall (skew up = negative). ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
-    style: { left: "5%", top: "62%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.9)", floorSlant: 14 },
+    style: { left: "5%", top: "52%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", floorSlant: -18 },
   { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "19%", top: "60%" }, tilt: "perspective(700px) rotateY(40deg) scale(0.78)", floorSlant: 14 },
+    style: { left: "18%", top: "50%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", floorSlant: -18 },
   // ── Back wall — four small doorway slots flanking the bar (floor is level) ──
   { label: "Marketplace", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "44%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "30%", top: "30%" }, tilt: "scale(0.56)", floorSlant: 0 },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "44%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "39%", top: "30%" }, tilt: "scale(0.56)", floorSlant: 0 },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "44%" }, tilt: "scale(0.56)", floorSlant: 0 },
+    style: { left: "61%", top: "30%" }, tilt: "scale(0.56)", floorSlant: 0 },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "44%" }, tilt: "scale(0.56)", floorSlant: 0 },
-  // ── Right side wall — mirror of the left; bottoms slant down toward viewer (negative skew). ──
+    style: { left: "70%", top: "30%" }, tilt: "scale(0.56)", floorSlant: 0 },
+  // ── Right side wall — mirror; bottoms sit on the floor line rising to the back (skew up = positive). ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
-    style: { left: "81%", top: "60%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.78)", floorSlant: -14 },
+    style: { left: "82%", top: "50%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", floorSlant: 18 },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
-    style: { left: "95%", top: "62%" }, tilt: "perspective(700px) rotateY(-40deg) scale(0.9)", floorSlant: -14 },
+    style: { left: "95%", top: "52%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", floorSlant: 18 },
 ];
 
 // Hidden scavenger fixtures. fixture_id must match a SpeakeasyHuntItem record
