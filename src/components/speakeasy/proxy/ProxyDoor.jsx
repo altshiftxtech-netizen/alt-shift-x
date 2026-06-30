@@ -22,7 +22,7 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           borderRadius: "3px",
           border: `2px solid ${accent}`,
           background: "linear-gradient(180deg, #1a120c 0%, #0b0805 100%)",
-          boxShadow: "inset 0 0 24px rgba(0,0,0,0.85)",
+          overflow: "hidden",
           transform: tilt,
           transformOrigin: "center",
         }}
@@ -32,12 +32,12 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           <img
             src={image}
             alt={`${label} founder portrait`}
-            className="absolute inset-1.5 w-[calc(100%-12px)] h-[calc(100%-12px)] object-cover rounded-[2px]"
-            style={{ filter: "saturate(0.95) brightness(0.92)" }}
+            className="absolute inset-1 rounded-[2px] object-cover"
+            style={{ width: "calc(100% - 8px)", height: "calc(100% - 8px)" }}
           />
         )}
         {/* inner reveal line */}
-        <span className="absolute inset-1.5 rounded-[2px] border" style={{ borderColor: `${accent}55` }} />
+        <span className="absolute inset-1 rounded-[2px] border pointer-events-none" style={{ borderColor: `${accent}55` }} />
         {/* hover glow */}
         <div
           className="absolute inset-0 rounded-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
