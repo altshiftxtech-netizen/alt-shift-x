@@ -182,16 +182,22 @@ export default function AdminPanel() {
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap items-center gap-1 bg-white border border-slate-200 rounded-lg p-1">
-          {TABS.map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === tab ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-700"}`}>
-              {tab}
-              {tab === "Pending Review" && stats.pending > 0 && <span className="ml-1.5 bg-amber-500 text-white text-[9px] px-1 rounded-full">{stats.pending}</span>}
-              {tab === "Flagged" && stats.flagged > 0 && <span className="ml-1.5 bg-red-500 text-white text-[9px] px-1 rounded-full">{stats.flagged}</span>}
-            </button>
-          ))}
+        {/* Section selector */}
+        <div className="max-w-xs">
+          <label className="text-xs font-semibold text-slate-500 mb-1 block">Section</label>
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+            className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+          >
+            {TABS.map((tab) => (
+              <option key={tab} value={tab}>
+                {tab}
+                {tab === "Pending Review" && stats.pending > 0 ? ` (${stats.pending})` : ""}
+                {tab === "Flagged" && stats.flagged > 0 ? ` (${stats.flagged})` : ""}
+              </option>
+            ))}
+          </select>
         </div>
 
         {tabContent[activeTab]}
