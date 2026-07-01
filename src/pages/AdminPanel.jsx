@@ -22,8 +22,9 @@ import PendingReviewTab from "@/components/admin/PendingReviewTab";
 import PublishedTab from "@/components/admin/PublishedTab";
 import FlaggedTab from "@/components/admin/FlaggedTab";
 import BuildersTab from "@/components/admin/BuildersTab";
+import AiChangeLogTab from "@/components/admin/AiChangeLogTab";
 
-const TABS = ["Finance Analytics", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Platform Intelligence"];
+const TABS = ["Finance Analytics", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Platform Intelligence"];
 
 const PLAN_LABELS = { starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
 const PLAN_COLORS = { starter: "bg-slate-100 text-slate-600", pro: "bg-violet-100 text-violet-700", enterprise: "bg-blue-100 text-blue-700" };
@@ -124,6 +125,7 @@ export default function AdminPanel() {
     "Beta Program": <Vested100Tab />,
     "Affiliate Links": <AffiliateTab />,
     "Legal Docs": <LegalDocumentsTab />,
+    "AI Change Log": <AiChangeLogTab />,
     "Reconciliation": <ReconciliationPanel />,
     "Audit Trail": <AuditTrailViewer />,
     "Financial Metrics": <FinancialMetricsTab />,

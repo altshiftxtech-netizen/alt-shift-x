@@ -1,0 +1,61 @@
+{
+  "name": "AiProgrammingChange",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "component",
+        "doctrine",
+        "policy",
+        "agent_behaviour",
+        "knowledge_block",
+        "other"
+      ],
+      "default": "component",
+      "description": "Which area of AI agent programming this change affects"
+    },
+    "agent_or_component": {
+      "type": "string",
+      "description": "The agent, component, or policy the change applies to (e.g. BOB, AGENT-NETGOOD-1.0, Do No Harm Doctrine)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short title of the change"
+    },
+    "details": {
+      "type": "string",
+      "description": "Full description of what was added or changed"
+    },
+    "recorded_by": {
+      "type": "string",
+      "description": "Name/email of the admin who recorded the entry"
+    }
+  },
+  "required": [
+    "category",
+    "summary"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
