@@ -42,6 +42,7 @@ const SPLASH_SUGGESTIONS = [
   { label: "Build a Risk Compliance Component", icon: "🛡️" },
   { label: "Design a Site Reporting X4", icon: "📋" },
   { label: "Optimize my component pricing", icon: "💡" },
+  { label: "Build an Operational Engineering component", icon: "⚙️" },
   { label: "Review my trust score", icon: "⭐" },
 ];
 
@@ -61,6 +62,7 @@ const LICENSED = [
   { code: "RC-CONSTRUCTION", name: "The Site Board", type: "X4" },
   { code: "PM-CONSTRUCTION-BID", name: "Estimator's Eye", type: "X2" },
   { code: "PM-SCHEDULE-1.0", name: "Schedule Pulse", type: "X2" },
+  { code: "OE-OPS-ENGINEER-1.0", name: "Operational Engineer", type: "X4" },
 ];
 
 function MessageBubble({ m }) {

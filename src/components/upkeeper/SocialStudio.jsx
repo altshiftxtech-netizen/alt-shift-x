@@ -17,6 +17,7 @@ const MEDIA_TYPES = [
 export default function SocialStudio({ isAdmin, user, conversationId }) {
   const [platform, setPlatform] = useState("instagram");
   const [mediaType, setMediaType] = useState("photo");
+  const [magnaCinematic, setMagnaCinematic] = useState(true);
   const [brief, setBrief] = useState("");
   const [caption, setCaption] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
@@ -48,9 +49,13 @@ export default function SocialStudio({ isAdmin, user, conversationId }) {
     setGenMedia(true);
     try {
       if (mediaType === "video" || mediaType === "reel") {
-        const res = await base44.integrations.Core.GenerateVideo({
-          prompt: `${brief}. Vertical social ${mediaType}, polished, branded, engaging, cinematic.`,
-        });
+        const prompt = magnaCinematic
+          ? `${brief}. MAGNA CINEMATIC MODE — a premium vertical social ${mediaType} for the Alt+Shift+X marketplace. `
+            + `Cinematic film look: dramatic lighting, shallow depth of field, smooth camera motion (dolly/crane/parallax), `
+            + `rich color grade, elegant on-brand motion graphics and kinetic typography, tasteful transitions, high production value. `
+            + `Polished, confident, editorial — feels like a flagship brand launch spot.`
+          : `${brief}. Vertical social ${mediaType}, polished, branded, engaging, cinematic.`;
+        const res = await base44.integrations.Core.GenerateVideo({ prompt, aspect_ratio: "9:16" });
         setMediaUrl(res?.url || res?.video_url || "");
       } else {
         const res = await base44.integrations.Core.GenerateImage({
@@ -145,6 +150,21 @@ export default function SocialStudio({ isAdmin, user, conversationId }) {
             ))}
           </div>
         </div>
+
+        {/* Magna Cinematic — video/reel only */}
+        {(mediaType === "video" || mediaType === "reel") && (
+          <button onClick={() => setMagnaCinematic((v) => !v)}
+            className={`w-full flex items-center gap-2.5 text-left px-3 py-2 rounded-lg border transition-all ${magnaCinematic ? "bg-gradient-to-r from-amber-900/40 to-orange-900/40 border-amber-600/60" : "bg-[#2a1d16] border-orange-900/40 hover:border-orange-700"}`}>
+            <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${magnaCinematic ? "bg-amber-500/20" : "bg-orange-900/40"}`}>
+              <Video className={`w-4 h-4 ${magnaCinematic ? "text-amber-300" : "text-orange-300"}`} />
+            </span>
+            <div className="flex-1">
+              <p className="text-[11px] font-bold text-orange-100">Magna Cinematic Generator</p>
+              <p className="text-[10px] text-orange-200/50">Flagship film-grade look — lighting, camera motion, motion graphics</p>
+            </div>
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${magnaCinematic ? "bg-amber-500 text-black" : "bg-orange-900/60 text-orange-300"}`}>{magnaCinematic ? "ON" : "OFF"}</span>
+          </button>
+        )}
 
         {/* Brief */}
         <div>
