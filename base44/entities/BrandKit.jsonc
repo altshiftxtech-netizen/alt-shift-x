@@ -1,0 +1,76 @@
+{
+  "name": "BrandKit",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the operator who owns this brand kit"
+    },
+    "brand_name": {
+      "type": "string",
+      "description": "The brand / company name"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Uploaded logo image URL"
+    },
+    "colors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Brand hex colors, e.g. ['#0A0A0C', '#C8A95B']",
+      "default": []
+    },
+    "fonts": {
+      "type": "string",
+      "description": "Preferred font families / typographic direction"
+    },
+    "tone": {
+      "type": "string",
+      "description": "Brand voice & tone, e.g. 'confident, editorial, premium'"
+    },
+    "style_notes": {
+      "type": "string",
+      "description": "Visual style direction the studio should enforce on every production"
+    },
+    "reference_image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Uploaded style reference images",
+      "default": []
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "The operator's currently-active brand kit"
+    }
+  },
+  "required": [
+    "brand_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

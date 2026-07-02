@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Send, Sparkles, Loader2, Paperclip, Mic, MicOff, X, ArrowRight,
-  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History, Mail, Newspaper
+  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History, Mail, Newspaper, Clapperboard
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
@@ -11,6 +11,7 @@ import { buildDocContext } from "@/lib/extractDocText";
 import UpKeeperMessage from "@/components/upkeeper/UpKeeperMessage";
 import UpKeeperGate from "@/components/upkeeper/UpKeeperGate";
 import SocialStudio from "@/components/upkeeper/SocialStudio";
+import CommercialStudio from "@/components/upkeeper/CommercialStudio";
 import EmailCampaignStudio from "@/components/upkeeper/EmailCampaignStudio";
 import ArticleStudio from "@/components/upkeeper/ArticleStudio";
 import BlogManager from "@/components/upkeeper/BlogManager";
@@ -283,6 +284,20 @@ export default function UpKeeper() {
           <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-400" />
         </button>
 
+        {isAdmin && (
+          <button onClick={() => { setLaunched(true); setActiveTab("commercial"); initConv(); }}
+            className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-gradient-to-r from-amber-900/40 to-orange-900/30 hover:from-amber-800/50 border border-amber-700/50 hover:border-amber-500 text-amber-100/90 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
+            <span className="w-8 h-8 rounded-lg bg-amber-800/60 flex items-center justify-center flex-shrink-0">
+              <Clapperboard className="w-4 h-4 text-amber-300" />
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold">Open Commercial Studio</p>
+              <p className="text-[11px] text-amber-200/50">Brand-locked, governance-certified commercial production</p>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-amber-400" />
+          </button>
+        )}
+
         <div className="mt-3 w-full max-w-2xl">
           <ApproveComponentsButton variant="splash" />
         </div>
@@ -312,6 +327,7 @@ export default function UpKeeper() {
   const TABS = [
     { id: "chat", label: "UpKeeper Chat", icon: Bot },
     { id: "social", label: "Social Studio", icon: Share2 },
+    ...(isAdmin ? [{ id: "commercial", label: "Commercial Studio", icon: Clapperboard }] : []),
     { id: "email", label: "Email Studio", icon: Mail },
     { id: "articles", label: "Article Studio", icon: Newspaper },
     { id: "blog", label: "Blog Manager", icon: MessageSquare },
@@ -452,6 +468,8 @@ export default function UpKeeper() {
         {activeTab === "social" && (
           <SocialStudio isAdmin={isAdmin} user={user} conversationId={convId} />
         )}
+
+        {activeTab === "commercial" && isAdmin && <CommercialStudio user={user} />}
 
         {activeTab === "email" && <EmailCampaignStudio user={user} />}
 

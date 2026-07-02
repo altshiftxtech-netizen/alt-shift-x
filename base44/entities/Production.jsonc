@@ -1,0 +1,170 @@
+{
+  "name": "Production",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the operator who created this production"
+    },
+    "brand_kit_id": {
+      "type": "string",
+      "description": "The BrandKit that steered this production"
+    },
+    "brand_name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "description": "Production title"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "default": "image",
+      "description": "Deliverable format"
+    },
+    "brief": {
+      "type": "string",
+      "description": "The operator's natural-language production brief"
+    },
+    "platform_target": {
+      "type": "string",
+      "description": "Intended platform, e.g. Instagram, YouTube, LinkedIn"
+    },
+    "scene_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scene": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "The AI-decomposed scene breakdown (intent lock)",
+      "default": []
+    },
+    "media_url": {
+      "type": "string",
+      "description": "The generated deliverable (image or video URL)"
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "default": "16:9"
+    },
+    "certificate": {
+      "type": "object",
+      "description": "The honest Zero-Defect Certificate \u2014 the checks that actually ran and passed",
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "brand_consistency": {
+          "type": "number"
+        },
+        "prompt_fidelity": {
+          "type": "number"
+        },
+        "governance_pass": {
+          "type": "boolean"
+        },
+        "ai_disclosure": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "description": "NetGood seven-question governance gate results",
+      "properties": {
+        "score": {
+          "type": "number"
+        },
+        "verdict": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "audit_trail": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Operator-visible log of every generation decision",
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "planned",
+        "rendered",
+        "certified",
+        "published"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title",
+    "format",
+    "brief"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
