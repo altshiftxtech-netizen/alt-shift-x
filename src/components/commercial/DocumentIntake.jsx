@@ -3,6 +3,33 @@ import { base44 } from "@/api/base44Client";
 import { extractDocText, isDocFile } from "@/lib/extractDocText";
 import { Loader2, Upload, FileText, Wand2, X, Check } from "lucide-react";
 
+// One upload slot. Defined at module level (not inside DocumentIntake) so the
+// file <input> keeps a stable identity across re-renders — re-creating it on
+// every render remounts the input mid-selection and drops the upload.
+function FileRow({ label, file, onPick, onClear, inputRef, hint, uploading }) {
+  return (
+    <div>
+      <label className="text-[11px] font-semibold text-amber-200/60 block mb-1.5">{label}</label>
+      {file ? (
+        <div className="flex items-center gap-2 bg-black/40 border border-amber-900/30 rounded-lg px-2.5 py-2">
+          <FileText className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+          <span className="text-[11px] text-amber-100 truncate flex-1">{file.name}</span>
+          <button onClick={onClear} className="text-amber-400/70 hover:text-white"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      ) : (
+        <>
+          <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.txt,.rtf,.md,image/*" className="hidden" onChange={onPick} />
+          <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+            className="w-full flex items-center gap-2 text-[11px] font-semibold text-amber-200 bg-black/40 hover:bg-black/60 border border-dashed border-amber-700/50 hover:border-amber-500 px-2.5 py-2 rounded-lg disabled:opacity-50">
+            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Upload
+          </button>
+          {hint && <p className="text-[10px] text-amber-200/40 mt-1">{hint}</p>}
+        </>
+      )}
+    </div>
+  );
+}
+
 // Upload a brand document + optional script → AI extracts brand kit fields and a
 // production brief → auto-populates the studio. The operator edits everything
 // before anything is saved. Fields the doc doesn't mention are still populated
@@ -19,12 +46,19 @@ export default function DocumentIntake({ onExtracted }) {
 
   const pickFile = async (e, setter) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     setUploading(true); setError(""); setDone(false);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setter({ name: file.name, url: file_url });
-    setUploading(false);
-    e.target.value = "";
+    try {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const url = res?.file_url || res?.data?.file_url;
+      if (!url) throw new Error("Upload did not return a file URL");
+      setter({ name: file.name, url });
+    } catch (err) {
+      setError(`Upload failed: ${err.message || "please try again"}`);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const run = async () => {
@@ -50,36 +84,14 @@ export default function DocumentIntake({ onExtracted }) {
     }
   };
 
-  const FileRow = ({ label, file, onPick, onClear, inputRef, hint }) => (
-    <div>
-      <label className="text-[11px] font-semibold text-amber-200/60 block mb-1.5">{label}</label>
-      {file ? (
-        <div className="flex items-center gap-2 bg-black/40 border border-amber-900/30 rounded-lg px-2.5 py-2">
-          <FileText className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-          <span className="text-[11px] text-amber-100 truncate flex-1">{file.name}</span>
-          <button onClick={onClear} className="text-amber-400/70 hover:text-white"><X className="w-3.5 h-3.5" /></button>
-        </div>
-      ) : (
-        <>
-          <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.txt,.rtf,.md,image/*" className="hidden" onChange={onPick} />
-          <button onClick={() => inputRef.current?.click()} disabled={uploading}
-            className="w-full flex items-center gap-2 text-[11px] font-semibold text-amber-200 bg-black/40 hover:bg-black/60 border border-dashed border-amber-700/50 hover:border-amber-500 px-2.5 py-2 rounded-lg">
-            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Upload
-          </button>
-          {hint && <p className="text-[10px] text-amber-200/40 mt-1">{hint}</p>}
-        </>
-      )}
-    </div>
-  );
-
   return (
     <div className="bg-[#12100f] border border-amber-900/30 rounded-2xl p-4 space-y-3">
       <p className="text-sm font-bold text-amber-50 flex items-center gap-2"><FileText className="w-4 h-4 text-amber-400" /> Document Intake</p>
       <p className="text-[11px] text-amber-200/50 -mt-1">Upload a brand doc &amp; script — we auto-fill every field for you to review and edit.</p>
 
       <div className="grid sm:grid-cols-2 gap-3">
-        <FileRow label="Brand document" file={brandFile} onPick={(e) => pickFile(e, setBrandFile)} onClear={() => setBrandFile(null)} inputRef={brandRef} hint="Colors, fonts, tone, style" />
-        <FileRow label="Script (optional)" file={scriptFile} onPick={(e) => pickFile(e, setScriptFile)} onClear={() => setScriptFile(null)} inputRef={scriptRef} hint="Becomes the production brief" />
+        <FileRow label="Brand document" file={brandFile} onPick={(e) => pickFile(e, setBrandFile)} onClear={() => setBrandFile(null)} inputRef={brandRef} hint="Colors, fonts, tone, style" uploading={uploading} />
+        <FileRow label="Script (optional)" file={scriptFile} onPick={(e) => pickFile(e, setScriptFile)} onClear={() => setScriptFile(null)} inputRef={scriptRef} hint="Becomes the production brief" uploading={uploading} />
       </div>
 
       {error && <p className="text-[11px] text-red-400">{error}</p>}
