@@ -14,7 +14,7 @@ const BAR_IMG =
 export default function ProxyBarScene({ style, onAskBartender }) {
   return (
     <div className="absolute -translate-x-1/2 z-10 select-none" style={{ width: "13%", maxWidth: 200, minWidth: 120, ...style }}>
-      <div className="relative">
+      <div className="relative" style={{ background: "#241a12", borderRadius: "6px" }}>
         <img
           src={BAR_IMG}
           alt="The Founders' Room bar with the robot barkeep"
