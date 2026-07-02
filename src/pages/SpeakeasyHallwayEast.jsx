@@ -34,7 +34,11 @@ function HallwayEastInner() {
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#04070f" }}>
       <div className="absolute inset-0 z-10">
-        <HallwayScene onDoor={() => navigate("/speakeasy/social")}>
+        <HallwayScene
+          onDoor={() => navigate("/speakeasy/social")}
+          wallLeft="linear-gradient(100deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
+          wallRight="linear-gradient(260deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
+        >
           <div
             className="absolute top-[24%] left-[2%] flex gap-4 sm:gap-6 items-start"
             style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}

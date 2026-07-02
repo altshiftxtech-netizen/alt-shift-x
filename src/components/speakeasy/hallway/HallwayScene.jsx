@@ -7,7 +7,9 @@ import React from "react";
  * point. Purely visual; framed gateways and avatars are layered on top by the
  * page. `door` renders the far door as a button when onDoor is provided.
  */
-export default function HallwayScene({ children, onDoor }) {
+export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) {
+  const leftWall = wallLeft || "linear-gradient(100deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)";
+  const rightWall = wallRight || "linear-gradient(260deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)";
   return (
     <div className="relative w-full h-full overflow-hidden rounded-2xl" style={{ perspective: "1100px", background: "#0d0b12" }}>
       {/* Ceiling */}
@@ -41,7 +43,7 @@ export default function HallwayScene({ children, onDoor }) {
         className="absolute top-[8%] bottom-[22%] left-0"
         style={{
           width: "34%",
-          background: "linear-gradient(100deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)",
+          background: leftWall,
           transform: "rotateY(42deg)",
           transformOrigin: "left center",
           boxShadow: "inset -40px 0 60px rgba(0,0,0,0.25)",
@@ -52,7 +54,7 @@ export default function HallwayScene({ children, onDoor }) {
         className="absolute top-[8%] bottom-[22%] right-0"
         style={{
           width: "34%",
-          background: "linear-gradient(260deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)",
+          background: rightWall,
           transform: "rotateY(-42deg)",
           transformOrigin: "right center",
           boxShadow: "inset 40px 0 60px rgba(0,0,0,0.25)",
