@@ -18,15 +18,19 @@ const FOUNDERS = {
   bobB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/de6700d7f_generated_image.png",
   keeperA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/124ad03c2_generated_image.png",
   keeperB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d04130e10_generated_image.png",
+  extraM: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f3a7de0ad_generated_image.png",
+  extraF: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d6f73beaf_generated_image.png",
 };
 
 const LEFT_FRAMES = [
   { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", image: FOUNDERS.bobA, founder: "Elias Bytewell" },
   { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", image: FOUNDERS.bobB, founder: "Marin Codell" },
+  { label: "Market", sublabel: "Components", accent: "#C89B5E", to: "/marketplace", image: FOUNDERS.extraM, founder: "Dorian Stackwell" },
 ];
 const RIGHT_FRAMES = [
   { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", image: FOUNDERS.keeperA, founder: "Thane Circuit" },
   { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", image: FOUNDERS.keeperB, founder: "Jax Kernel" },
+  { label: "Tutorials", sublabel: "Learn", accent: "#B87FB8", to: "/tutorials", image: FOUNDERS.extraF, founder: "Isolde Cachet" },
 ];
 
 function HallwayInner() {

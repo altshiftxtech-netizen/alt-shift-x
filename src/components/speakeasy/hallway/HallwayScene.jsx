@@ -76,26 +76,35 @@ export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) 
       {/* floor darkening gradient overlay for depth */}
       <div className="absolute bottom-0 left-0 right-0" style={{ height: "30%", background: "linear-gradient(to top, transparent, rgba(13,11,18,0.55))", pointerEvents: "none" }} />
 
-      {/* Far wall + door at the vanishing point */}
-      <div className="absolute left-1/2 top-[24%] -translate-x-1/2 flex flex-col items-center" style={{ width: "16%" }}>
+      {/* Far wall + door at the vanishing point — larger, planted on the floor */}
+      <div className="absolute left-1/2 top-[20%] bottom-[26%] -translate-x-1/2 flex flex-col items-center" style={{ width: "20%" }}>
         <button
           onClick={onDoor}
-          className="group relative w-full focus:outline-none"
-          style={{ height: "150px" }}
+          className="group relative w-full flex-1 focus:outline-none"
           aria-label="Enter the far door"
         >
+          {/* ornate gold arch frame around the door */}
+          <div
+            className="absolute -inset-[6px] rounded-t-[14px] pointer-events-none"
+            style={{
+              background: "linear-gradient(180deg, #e8d29a 0%, #C8A95B 45%, #8a6d34 100%)",
+              boxShadow: "0 0 30px rgba(0,0,0,0.7), inset 0 0 8px rgba(255,245,210,0.6)",
+            }}
+          />
           <img
             src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cea7604d9_generated_image.png"
             alt="Ornate carved door"
-            className="w-full h-full object-cover rounded-t-sm"
+            className="relative w-full h-full object-cover rounded-t-[10px]"
             style={{
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 0 30px rgba(0,0,0,0.7), 0 0 22px rgba(255,240,205,0.12)",
+              border: "2px solid #14110d",
+              boxShadow: "inset 0 0 30px rgba(0,0,0,0.6)",
             }}
           />
-          <div className="absolute inset-0 rounded-t-sm opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 30px 4px rgba(200,169,91,0.5)" }} />
+          {/* warm light spilling from under the door */}
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[80%] h-3 rounded-full" style={{ background: "radial-gradient(ellipse, rgba(255,225,160,0.55), transparent 70%)", filter: "blur(3px)" }} />
+          <div className="absolute inset-0 rounded-t-[10px] opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 34px 6px rgba(200,169,91,0.6)" }} />
         </button>
-        <p className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-[#C8A95B]/70 whitespace-nowrap">Powder Room</p>
+        <p className="mt-2 text-[9px] uppercase tracking-[0.2em] text-[#C8A95B]/80 whitespace-nowrap">Powder Room</p>
       </div>
 
       {/* framed gateways + avatars layered on top */}

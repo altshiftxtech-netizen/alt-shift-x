@@ -20,28 +20,32 @@ export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A9
           {founder}
         </p>
       )}
-      {/* framed canvas — flat; the parent wall provides the perspective tilt */}
+      {/* framed canvas — flat; the parent wall provides the perspective tilt.
+          Ornate gold outer frame + dark inner mat with a thin accent bevel. */}
       <div
-        className="relative w-20 h-28 sm:w-24 sm:h-32 transition-all duration-300 group-hover:-translate-y-1"
+        className="relative w-20 h-28 sm:w-24 sm:h-32 transition-all duration-300 group-hover:-translate-y-1 p-[3px]"
         style={{
-          borderRadius: "3px",
-          border: "3px solid #14110d",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
-          background: "#14110d",
+          borderRadius: "4px",
+          background: "linear-gradient(150deg, #e8d29a 0%, #C8A95B 45%, #8a6d34 100%)",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.55), inset 0 0 6px rgba(255,245,210,0.5)",
         }}
       >
-        {image ? (
-          <img src={image} alt={label} className="absolute inset-[3px] object-cover rounded-[2px]" style={{ width: "calc(100% - 6px)", height: "calc(100% - 6px)" }} />
-        ) : (
-          <div
-            className="absolute inset-[3px] rounded-[2px]"
-            style={{
-              background: `radial-gradient(circle at 30% 25%, ${accent}66, transparent 55%), radial-gradient(circle at 75% 70%, #6d6fb855, transparent 60%), linear-gradient(160deg, #efe9df, #cfd2e2)`,
-            }}
-          />
-        )}
+        <div className="relative w-full h-full rounded-[2px]" style={{ border: "2px solid #14110d", background: "#14110d" }}>
+          {image ? (
+            <img src={image} alt={label} className="absolute inset-[2px] object-cover rounded-[1px]" style={{ width: "calc(100% - 4px)", height: "calc(100% - 4px)" }} />
+          ) : (
+            <div
+              className="absolute inset-[2px] rounded-[1px]"
+              style={{
+                background: `radial-gradient(circle at 30% 25%, ${accent}66, transparent 55%), radial-gradient(circle at 75% 70%, #6d6fb855, transparent 60%), linear-gradient(160deg, #efe9df, #cfd2e2)`,
+              }}
+            />
+          )}
+          {/* thin inner accent bevel */}
+          <span className="absolute inset-[2px] rounded-[1px] pointer-events-none" style={{ border: `1px solid ${accent}55` }} />
+        </div>
         {/* hover glow */}
-        <div className="absolute inset-0 rounded-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: `0 0 26px 4px ${accent}66` }} />
+        <div className="absolute inset-0 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: `0 0 28px 5px ${accent}77` }} />
       </div>
       {/* label plate beneath the frame */}
       <div className="mt-2 text-center w-28 px-1.5 py-1 rounded bg-black/55 backdrop-blur-sm">
