@@ -97,15 +97,20 @@ export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) 
           className="group relative w-full flex-1 focus:outline-none"
           aria-label="Enter the far door"
         >
-          <img
-            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cea7604d9_generated_image.png"
-            alt="Ornate carved door"
-            className="relative w-full h-full object-cover rounded-t-[10px]"
+          <div
+            className="relative w-full h-full rounded-t-[10px]"
             style={{
-              border: "2px solid #14110d",
-              boxShadow: "inset 0 0 30px rgba(0,0,0,0.6)",
+              background: "linear-gradient(180deg, #1c1c1c 0%, #0d0d0d 100%)",
+              border: "2px solid #000000",
+              boxShadow: "inset 0 0 30px rgba(0,0,0,0.7)",
             }}
-          />
+          >
+            {/* recessed matte-black panels */}
+            <div className="absolute inset-x-[18%] top-[10%] h-[38%] rounded-sm" style={{ border: "1px solid rgba(255,255,255,0.05)", background: "linear-gradient(180deg, #161616, #0a0a0a)" }} />
+            <div className="absolute inset-x-[18%] bottom-[10%] h-[38%] rounded-sm" style={{ border: "1px solid rgba(255,255,255,0.05)", background: "linear-gradient(180deg, #161616, #0a0a0a)" }} />
+            {/* brass handle */}
+            <div className="absolute right-[22%] top-1/2 -translate-y-1/2 w-1.5 h-4 rounded-full" style={{ background: "linear-gradient(180deg, #C8A95B, #6b5426)" }} />
+          </div>
           {/* warm light spilling from under the door */}
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[80%] h-3 rounded-full" style={{ background: "radial-gradient(ellipse, rgba(255,225,160,0.55), transparent 70%)", filter: "blur(3px)" }} />
           <div className="absolute inset-0 rounded-t-[10px] opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 34px 6px rgba(200,169,91,0.6)" }} />
