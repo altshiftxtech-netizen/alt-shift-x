@@ -130,8 +130,8 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
-        {/* Wooden double-door — the centerpiece mounted on the back wall. */}
-        <ProxyBar style={{ left: "50%", top: "30%", transform: "translate(-50%, 0) scale(0.62)" }} />
+        {/* Finished-wood bar — the centerpiece mounted on the back wall. */}
+        <ProxyBar style={{ left: "50%", top: "26%", transform: "translate(-50%, 0) scale(0.85)" }} />
 
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
