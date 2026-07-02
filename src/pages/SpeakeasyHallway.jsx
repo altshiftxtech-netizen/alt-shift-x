@@ -21,12 +21,12 @@ const FOUNDERS = {
 };
 
 const LEFT_FRAMES = [
-  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", image: FOUNDERS.bobA },
-  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", image: FOUNDERS.bobB },
+  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", image: FOUNDERS.bobA, founder: "Elias Bytewell" },
+  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", image: FOUNDERS.bobB, founder: "Marin Codell" },
 ];
 const RIGHT_FRAMES = [
-  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", image: FOUNDERS.keeperA },
-  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", image: FOUNDERS.keeperB },
+  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", image: FOUNDERS.keeperA, founder: "Thane Circuit" },
+  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", image: FOUNDERS.keeperB, founder: "Jax Kernel" },
 ];
 
 function HallwayInner() {
@@ -56,7 +56,7 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}
           >
             {LEFT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
             ))}
           </div>
           {/* Right wall — mirror tilt */}
@@ -65,7 +65,7 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(-34deg)", transformOrigin: "right center" }}
           >
             {RIGHT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
             ))}
           </div>
           <div className="absolute inset-0 z-30 pointer-events-none">

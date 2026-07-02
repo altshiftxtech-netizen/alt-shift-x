@@ -7,13 +7,19 @@ import React from "react";
  * frame stays flat and the whole row shares one consistent angle.
  * Optional `image` fills the canvas; otherwise a soft nebula gradient shows.
  */
-export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A95B", image }) {
+export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A95B", image, founder }) {
   return (
     <button
       onClick={onClick}
       className="group flex flex-col items-center focus:outline-none flex-shrink-0"
       aria-label={`Enter ${label}`}
     >
+      {/* founder nameplate above the portrait */}
+      {founder && (
+        <p className="mb-1.5 text-[9px] sm:text-[10px] font-semibold italic tracking-wide whitespace-nowrap" style={{ color: accent, fontFamily: "'Playfair Display', serif", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
+          {founder}
+        </p>
+      )}
       {/* framed canvas — flat; the parent wall provides the perspective tilt */}
       <div
         className="relative w-20 h-28 sm:w-24 sm:h-32 transition-all duration-300 group-hover:-translate-y-1"

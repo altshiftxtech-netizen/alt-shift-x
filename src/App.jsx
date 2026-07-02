@@ -76,6 +76,7 @@ import SpeakeasyGroups from './pages/SpeakeasyGroups';
 import SpeakeasyGroup from './pages/SpeakeasyGroup';
 import SpeakeasyMeet from './pages/SpeakeasyMeet';
 import SpeakeasyHallway from './pages/SpeakeasyHallway';
+import SpeakeasyHallwayEast from './pages/SpeakeasyHallwayEast';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import UpKeeper from './pages/UpKeeper';
 import TaxCompliance from './pages/TaxCompliance';
@@ -181,6 +182,7 @@ const AuthenticatedApp = () => {
       <Route path="/speakeasy/groups/:slug" element={<SpeakeasyGroup />} />
       <Route path="/speakeasy/meet" element={<SpeakeasyMeet />} />
       <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
+      <Route path="/speakeasy/hallway-east" element={<SpeakeasyHallwayEast />} />
       <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
 
       {/* ── Protected routes — login required ── */}
