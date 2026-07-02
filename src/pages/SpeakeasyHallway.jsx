@@ -34,21 +34,8 @@ function HallwayInner() {
   const { members, me } = useSpeakeasyPresence("hallway");
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "#050814" }}>
-      <div className="relative z-30 flex items-center justify-between px-5 py-4">
-        <button onClick={() => navigate("/speakeasy/proxy-room")} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
-          <ArrowLeft className="w-4 h-4" /> Back to the Room
-        </button>
-        <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">Expansion</p>
-          <h1 className="text-lg font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>The Hallway</h1>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/20 rounded-full px-3 py-1">
-          <Users className="w-3.5 h-3.5" /> {members.length}
-        </div>
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-4xl h-[calc(100vh-180px)] min-h-[480px] px-4">
+    <div className="fixed inset-0 overflow-hidden" style={{ background: "#050814" }}>
+      <div className="absolute inset-0 z-10">
         <HallwayScene onDoor={() => navigate("/speakeasy/bathroom")}>
           {/* Left wall — a row of frames tilted into the corridor perspective */}
           <div
@@ -76,7 +63,18 @@ function HallwayInner() {
         </HallwayScene>
       </div>
 
-      <p className="relative z-30 text-center pb-4 text-[11px] text-white/40">A quiet corridor connecting the rooms of the Speakeasy. Step through any picture to enter a room.</p>
+      {/* Floating chrome — matches the Proxy Room */}
+      <button onClick={() => navigate("/speakeasy/proxy-room")}
+        className="absolute top-4 left-4 z-30 flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-black/40 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
+        <ArrowLeft className="w-4 h-4" /> Back to the Room
+      </button>
+      <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 text-xs text-[#C8A95B] bg-black/40 border border-[#C8A95B]/25 rounded-full px-3 py-1.5 backdrop-blur-sm">
+        <Users className="w-3.5 h-3.5" /> {members.length}
+      </div>
+      <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">Expansion</p>
+        <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The Hallway</h1>
+      </div>
     </div>
   );
 }
