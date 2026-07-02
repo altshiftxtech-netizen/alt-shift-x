@@ -76,21 +76,27 @@ export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) 
       {/* floor darkening gradient overlay for depth */}
       <div className="absolute bottom-0 left-0 right-0" style={{ height: "30%", background: "linear-gradient(to top, transparent, rgba(13,11,18,0.55))", pointerEvents: "none" }} />
 
-      {/* Far wall + door at the vanishing point — larger, planted on the floor */}
+      {/* Far wall at the vanishing point — dark recessed panel like the Proxy Room back wall */}
+      <div
+        className="absolute left-1/2 top-[10%] bottom-[24%] -translate-x-1/2 pointer-events-none"
+        style={{
+          width: "30%",
+          background: "linear-gradient(180deg, #14100a 0%, #0b0805 100%)",
+          boxShadow: "inset 0 0 70px rgba(0,0,0,0.75), 0 0 50px rgba(0,0,0,0.6)",
+          borderRadius: "6px",
+        }}
+      >
+        {/* warm ambient glow bleeding from the back wall */}
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 70%, rgba(255,210,150,0.12), transparent 65%)", borderRadius: "6px" }} />
+      </div>
+
+      {/* Door at the vanishing point — larger, planted on the floor */}
       <div className="absolute left-1/2 top-[20%] bottom-[26%] -translate-x-1/2 flex flex-col items-center" style={{ width: "20%" }}>
         <button
           onClick={onDoor}
           className="group relative w-full flex-1 focus:outline-none"
           aria-label="Enter the far door"
         >
-          {/* ornate gold arch frame around the door */}
-          <div
-            className="absolute -inset-[6px] rounded-t-[14px] pointer-events-none"
-            style={{
-              background: "linear-gradient(180deg, #e8d29a 0%, #C8A95B 45%, #8a6d34 100%)",
-              boxShadow: "0 0 30px rgba(0,0,0,0.7), inset 0 0 8px rgba(255,245,210,0.6)",
-            }}
-          />
           <img
             src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cea7604d9_generated_image.png"
             alt="Ornate carved door"
