@@ -92,36 +92,6 @@ export default function ProxyScene({ children }) {
               top: "62%", background: "linear-gradient(180deg, #2c2015, #1c140c)",
             }} />
 
-            {/* Central bar with arched bottle shelf */}
-            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: "20%", width: "22%", height: "44%" }}>
-              {/* arched back shelf */}
-              <div className="absolute inset-x-0 top-0 h-[64%] overflow-hidden"
-                style={{
-                  borderRadius: "50% 50% 6px 6px / 70% 70% 6px 6px",
-                  background: "linear-gradient(180deg, #1a120b, #2a1d12)",
-                  border: `1px solid ${GOLD}44`,
-                  boxShadow: `inset 0 0 24px ${LAMP}22`,
-                }}>
-                {/* bottle rows */}
-                {[26, 44, 62].map((t) => (
-                  <div key={t} className="absolute inset-x-2 flex justify-between" style={{ top: `${t}%` }}>
-                    {Array.from({ length: 9 }).map((_, i) => (
-                      <span key={i} className="w-1.5 rounded-sm"
-                        style={{ height: 14, background: `linear-gradient(180deg, ${GOLD}cc, #5a3f1f)`, opacity: 0.85 }} />
-                    ))}
-                  </div>
-                ))}
-              </div>
-              {/* bar counter */}
-              <div className="absolute inset-x-0 bottom-0 h-[30%]"
-                style={{ background: "linear-gradient(180deg, #3a2818, #221710)", borderTop: `1px solid ${GOLD}66`, boxShadow: "0 8px 20px rgba(0,0,0,.5)" }} />
-              {/* two bar lamps */}
-              {[28, 72].map((l) => (
-                <div key={l} className="absolute" style={{ left: `${l}%`, top: "52%", transform: "translateX(-50%)" }}>
-                  <div className="w-5 h-5 rounded-full" style={{ background: `radial-gradient(circle, ${LAMP}, ${GOLD})`, boxShadow: `0 0 26px 10px ${LAMP}88` }} />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
