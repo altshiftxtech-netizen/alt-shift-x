@@ -33,24 +33,27 @@ export default function BrandKitPanel({ kit, prefill, onSaved }) {
   const logoRef = useRef(null);
   const refRef = useRef(null);
 
+  const doUpload = async (file) => {
+    const res = await base44.integrations.Core.UploadFile({ file });
+    const url = res?.file_url || res?.data?.file_url;
+    if (!url) throw new Error("Upload did not return a file URL");
+    return url;
+  };
+
   const uploadLogo = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setLogoUrl(file_url);
-    setUploading(false);
-    e.target.value = "";
+    try { setLogoUrl(await doUpload(file)); } finally { setUploading(false); }
   };
 
   const uploadRef = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setRefs((prev) => [...prev, file_url]);
-    setUploading(false);
-    e.target.value = "";
+    try { const url = await doUpload(file); setRefs((prev) => [...prev, url]); } finally { setUploading(false); }
   };
 
   const save = async () => {
