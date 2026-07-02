@@ -97,31 +97,43 @@ export default function Marketplace() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchAll = async () => {
+      // Load the components (the core of the page) on their OWN error boundary so
+      // a later failure in the user/installs step can never wipe an already-loaded
+      // grid. Only clear components if the components fetch itself fails.
       try {
-        const [data, kits] = await Promise.all([
-          base44.entities.Component.filter({ status: "published" }),
-          base44.entities.FeaturedKit.filter({ active: true }, "-created_date", 1).catch(() => []),
-        ]);
-        setComponents(data || []);
-        setFeaturedKit((kits && kits[0]) || null);
+        const data = await base44.entities.Component.filter({ status: "published" });
+        if (!cancelled && Array.isArray(data)) setComponents(data);
+      } catch {
+        // Keep whatever is already rendered instead of blanking the grid.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
 
-        // Fetch user + installs in parallel after components load
+      // Featured kit — best-effort, never affects components.
+      base44.entities.FeaturedKit
+        .filter({ active: true }, "-created_date", 1)
+        .then((kits) => { if (!cancelled) setFeaturedKit((kits && kits[0]) || null); })
+        .catch(() => {});
+
+      // User + installs — fully isolated; any failure here leaves components intact.
+      try {
         const user = await base44.auth.me().catch(() => null);
+        if (cancelled) return;
         setCurrentUser(user);
         if (user) {
           const installed = await base44.entities.InstalledComponent.filter({ user_id: user.id });
           const map = {};
           (installed || []).forEach(r => { map[r.component_id] = r; });
-          setInstalledMap(map);
+          if (!cancelled) setInstalledMap(map);
         }
       } catch {
-        setComponents([]);
-      } finally {
-        setLoading(false);
+        /* installs are non-critical — leave the grid as-is */
       }
     };
     fetchAll();
+    return () => { cancelled = true; };
   }, []);
 
   const handleBundleInstall = async (bundleComponents) => {
