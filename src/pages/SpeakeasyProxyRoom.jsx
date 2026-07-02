@@ -133,11 +133,12 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
+        {/* Robot barkeep behind the bar — the counter/apron hides its lower body.
+            Rendered before ProxyBar and at a lower z-index so the apron overlaps it. */}
+        <BartenderRobot style={{ left: "50%", top: "31%" }} onClick={() => setBartenderOpen(true)} />
+
         {/* Finished-wood bar — the centerpiece mounted on the back wall. */}
         <ProxyBar style={{ left: "50%", top: "26%", transform: "translate(-50%, 0) scale(0.85)" }} />
-
-        {/* Robot barkeep standing at the bar — opens the Speakeasy info chat. */}
-        <BartenderRobot style={{ left: "50%", top: "42%" }} onClick={() => setBartenderOpen(true)} />
 
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (

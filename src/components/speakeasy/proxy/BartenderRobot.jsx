@@ -16,7 +16,7 @@ export default function BartenderRobot({ style, onClick }) {
     <button
       onClick={onClick}
       aria-label="Ask the bartender robot"
-      className="group absolute -translate-x-1/2 z-20 select-none focus:outline-none"
+      className="group absolute -translate-x-1/2 z-[5] select-none focus:outline-none"
       style={style}
     >
       {/* soft ground glow */}
