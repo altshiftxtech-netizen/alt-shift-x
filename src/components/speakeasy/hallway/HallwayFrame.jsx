@@ -2,25 +2,22 @@ import React from "react";
 
 /**
  * A framed picture mounted on a hallway side wall that acts as a gateway to a
- * page — the hallway equivalent of ProxyDoor. The `side` prop skews the frame
- * into the corridor's perspective so it reads as hanging flat on the wall.
+ * page — the hallway equivalent of ProxyDoor. Frames are laid out side by side
+ * inside a wall container that carries the corridor's perspective, so each
+ * frame stays flat and the whole row shares one consistent angle.
  * Optional `image` fills the canvas; otherwise a soft nebula gradient shows.
  */
-export default function HallwayFrame({ label, sublabel, onClick, side = "left", accent = "#C8A95B", image, style }) {
-  const skew = side === "left" ? "perspective(700px) rotateY(38deg)" : "perspective(700px) rotateY(-38deg)";
+export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A95B", image }) {
   return (
     <button
       onClick={onClick}
-      style={style}
-      className="group absolute flex flex-col items-center focus:outline-none"
+      className="group flex flex-col items-center focus:outline-none flex-shrink-0"
       aria-label={`Enter ${label}`}
     >
-      {/* framed canvas — skewed into the wall plane */}
+      {/* framed canvas — flat; the parent wall provides the perspective tilt */}
       <div
-        className="relative w-24 h-32 sm:w-28 sm:h-40 transition-all duration-300 group-hover:-translate-y-1"
+        className="relative w-20 h-28 sm:w-24 sm:h-32 transition-all duration-300 group-hover:-translate-y-1"
         style={{
-          transform: skew,
-          transformOrigin: side === "left" ? "left center" : "right center",
           borderRadius: "3px",
           border: "3px solid #14110d",
           boxShadow: "0 8px 24px rgba(0,0,0,0.45)",

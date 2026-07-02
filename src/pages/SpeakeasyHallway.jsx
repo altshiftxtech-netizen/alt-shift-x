@@ -13,12 +13,12 @@ const GOLD = "#C8A95B";
 // to a page, the hallway equivalent of the proxy room's doors. Add more here
 // as new rooms/pages open up.
 const LEFT_FRAMES = [
-  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", top: "20%", left: "9%" },
-  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", top: "46%", left: "14%" },
+  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups" },
+  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social" },
 ];
 const RIGHT_FRAMES = [
-  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", top: "20%", right: "9%" },
-  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", top: "46%", right: "14%" },
+  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet" },
+  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room" },
 ];
 
 function HallwayInner() {
@@ -42,14 +42,24 @@ function HallwayInner() {
 
       <div className="relative z-10 mx-auto max-w-4xl h-[calc(100vh-180px)] min-h-[480px] px-4">
         <HallwayScene onDoor={() => navigate("/speakeasy/bathroom")}>
-          {LEFT_FRAMES.map((f) => (
-            <HallwayFrame key={f.label} side="left" label={f.label} sublabel={f.sublabel} accent={f.accent}
-              onClick={() => navigate(f.to)} style={{ top: f.top, left: f.left }} />
-          ))}
-          {RIGHT_FRAMES.map((f) => (
-            <HallwayFrame key={f.label} side="right" label={f.label} sublabel={f.sublabel} accent={f.accent}
-              onClick={() => navigate(f.to)} style={{ top: f.top, right: f.right }} />
-          ))}
+          {/* Left wall — a row of frames tilted into the corridor perspective */}
+          <div
+            className="absolute top-[24%] left-[2%] flex gap-4 sm:gap-6 items-start"
+            style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}
+          >
+            {LEFT_FRAMES.map((f) => (
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} onClick={() => navigate(f.to)} />
+            ))}
+          </div>
+          {/* Right wall — mirror tilt */}
+          <div
+            className="absolute top-[24%] right-[2%] flex gap-4 sm:gap-6 items-start"
+            style={{ transform: "perspective(900px) rotateY(-34deg)", transformOrigin: "right center" }}
+          >
+            {RIGHT_FRAMES.map((f) => (
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} onClick={() => navigate(f.to)} />
+            ))}
+          </div>
           <div className="absolute inset-0 z-30 pointer-events-none">
             <div className="pointer-events-auto">
               <AvatarCluster members={members} meId={me?.id} />
