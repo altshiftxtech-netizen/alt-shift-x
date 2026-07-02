@@ -42,7 +42,7 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
     setSegments((prev) => prev.map((s, i) => (i === idx ? { ...s, generating: true } : s)));
     try {
       const res = await base44.integrations.Core.GenerateVideo({
-        prompt: segments[idx].prompt, aspect_ratio: aspect,
+        prompt: segments[idx].prompt, aspect_ratio: aspect, duration: 8,
       });
       const url = res?.url || res?.video_url || "";
       setSegments((prev) => prev.map((s, i) => (i === idx ? { ...s, media_url: url, generating: false } : s)));
