@@ -149,6 +149,14 @@ function ProxyRoomInner() {
 
         {/* Live member avatars */}
         <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
+
+        {/* Yellow arrows pointing to the Hallway doorways on each side wall */}
+        <svg className="absolute z-20 pointer-events-none" style={{ left: "22%", top: "52%" }} width="70" height="40" viewBox="0 0 70 40" fill="none">
+          <path d="M68 20 H10 M22 8 L8 20 L22 32" stroke="#F5D302" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <svg className="absolute z-20 pointer-events-none" style={{ left: "72%", top: "52%" }} width="70" height="40" viewBox="0 0 70 40" fill="none">
+          <path d="M2 20 H60 M48 8 L62 20 L48 32" stroke="#F5D302" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </ProxyScene>
 
       {/* Minimal floating chrome */}
