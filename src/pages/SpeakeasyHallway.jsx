@@ -2,24 +2,31 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
-import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
-import RoomWallpaper from "@/components/speakeasy/RoomWallpaper";
+import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
+import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
 const GOLD = "#C8A95B";
+
+// Framed-picture gateways lining the corridor walls — each frame is an avenue
+// to a page, the hallway equivalent of the proxy room's doors. Add more here
+// as new rooms/pages open up.
+const LEFT_FRAMES = [
+  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", top: "20%", left: "9%" },
+  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", top: "46%", left: "14%" },
+];
+const RIGHT_FRAMES = [
+  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", top: "20%", right: "9%" },
+  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", top: "46%", right: "14%" },
+];
 
 function HallwayInner() {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <RoomWallpaper room="hallway" />
-      {/* Gold sconce glow down the sides */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 pointer-events-none" style={{ background: "radial-gradient(circle at 0% 40%, rgba(200,169,91,0.12), transparent 70%)" }} />
-      <div className="absolute right-0 top-0 bottom-0 w-32 pointer-events-none" style={{ background: "radial-gradient(circle at 100% 40%, rgba(139,71,137,0.14), transparent 70%)" }} />
-
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "#050814" }}>
       <div className="relative z-30 flex items-center justify-between px-5 py-4">
         <button onClick={() => navigate("/speakeasy/proxy-room")} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
           <ArrowLeft className="w-4 h-4" /> Back to the Room
@@ -33,24 +40,25 @@ function HallwayInner() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl h-[calc(100vh-180px)] min-h-[460px] px-4">
-        {/* Live destination doors down the corridor */}
-        <ProxyDoor label="Circles" sublabel="Community Groups" accent="#8B6FB8" onClick={() => navigate("/speakeasy/groups")} style={{ left: "6%", top: "30%" }} />
-        <ProxyDoor label="The Feed" sublabel="Social" accent={GOLD} onClick={() => navigate("/speakeasy/social")} style={{ right: "6%", top: "30%", left: "auto" }} />
-        <ProxyDoor label="Powder Room" sublabel="Private" accent="#e0719c" onClick={() => navigate("/speakeasy/bathroom")} style={{ left: "50%", top: "16%", transform: "translateX(-50%)" }} />
-
-        {/* Lounge seating area */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[20%] flex gap-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="w-16 h-12 rounded-xl rounded-b-sm" style={{ background: "linear-gradient(180deg, #241b2e, #15101c)", border: "1px solid rgba(200,169,91,0.25)" }} />
+      <div className="relative z-10 mx-auto max-w-4xl h-[calc(100vh-180px)] min-h-[480px] px-4">
+        <HallwayScene onDoor={() => navigate("/speakeasy/bathroom")}>
+          {LEFT_FRAMES.map((f) => (
+            <HallwayFrame key={f.label} side="left" label={f.label} sublabel={f.sublabel} accent={f.accent}
+              onClick={() => navigate(f.to)} style={{ top: f.top, left: f.left }} />
           ))}
-        </div>
-        <p className="absolute left-1/2 -translate-x-1/2 bottom-[14%] text-[10px] uppercase tracking-[0.3em] text-[#C8A95B]/50">Lounge</p>
-
-        <AvatarCluster members={members} meId={me?.id} />
+          {RIGHT_FRAMES.map((f) => (
+            <HallwayFrame key={f.label} side="right" label={f.label} sublabel={f.sublabel} accent={f.accent}
+              onClick={() => navigate(f.to)} style={{ top: f.top, right: f.right }} />
+          ))}
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            <div className="pointer-events-auto">
+              <AvatarCluster members={members} meId={me?.id} />
+            </div>
+          </div>
+        </HallwayScene>
       </div>
 
-      <p className="relative z-30 text-center pb-4 text-[11px] text-white/40">A quiet corridor connecting the rooms of the Speakeasy.</p>
+      <p className="relative z-30 text-center pb-4 text-[11px] text-white/40">A quiet corridor connecting the rooms of the Speakeasy. Step through any picture to enter a room.</p>
     </div>
   );
 }
