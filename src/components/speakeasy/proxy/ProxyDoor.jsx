@@ -7,7 +7,19 @@ import React from "react";
  * skews the panel into the wall's perspective (side walls); back-wall doors use
  * a plain scale.
  */
-export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "", image, founder }) {
+export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "", image, founder, labelAbove = false }) {
+  const nameplate = (
+    <div className="text-center w-20 px-1 py-0.5 rounded bg-black/55 backdrop-blur-sm">
+      <p
+        className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.12em] leading-tight whitespace-nowrap"
+        style={{ color: accent, fontFamily: "'Playfair Display', serif" }}
+      >
+        {label}
+      </p>
+      {sublabel && <p className="text-[9px] text-white/55 leading-tight whitespace-nowrap">{sublabel}</p>}
+    </div>
+  );
+
   return (
     <button
       onClick={onClick}
@@ -21,6 +33,8 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           {founder}
         </p>
       )}
+      {/* back-wall doors render the label above the panel so the bar doesn't clip it */}
+      {labelAbove && <div className="mb-1.5">{nameplate}</div>}
       {/* recessed dark poster panel with thin frame — tilt skews it into wall perspective */}
       <div
         className="relative w-16 h-28 sm:w-20 sm:h-36 transition-all duration-300 group-hover:-translate-y-1"
@@ -51,15 +65,7 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
         />
       </div>
       {/* label beneath the door — capped width + background so neighbors don't bleed together */}
-      <div className="mt-1.5 text-center w-20 px-1 py-0.5 rounded bg-black/55 backdrop-blur-sm">
-        <p
-          className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.12em] leading-tight whitespace-nowrap"
-          style={{ color: accent, fontFamily: "'Playfair Display', serif" }}
-        >
-          {label}
-        </p>
-        {sublabel && <p className="text-[9px] text-white/55 leading-tight whitespace-nowrap">{sublabel}</p>}
-      </div>
+      {!labelAbove && <div className="mt-1.5">{nameplate}</div>}
     </button>
   );
 }

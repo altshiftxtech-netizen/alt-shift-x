@@ -44,13 +44,13 @@ const DOORS = [
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora" },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Market", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford" },
+    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford", labelAbove: true },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton" },
+    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton", labelAbove: true },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley" },
+    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley", labelAbove: true },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart" },
+    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart", labelAbove: true },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
     style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[6], founder: "Dorian Nodefield" },
@@ -137,7 +137,7 @@ function ProxyRoomInner() {
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
-            label={d.label} sublabel={d.sublabel} accent={FRAME} founder={d.founder}
+            label={d.label} sublabel={d.sublabel} accent={FRAME} founder={d.founder} labelAbove={d.labelAbove}
             onClick={() => navigate(d.to)} />
         ))}
 
