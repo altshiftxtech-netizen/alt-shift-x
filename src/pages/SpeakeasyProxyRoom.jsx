@@ -5,6 +5,8 @@ import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
 import ProxyBar from "@/components/speakeasy/proxy/ProxyBar";
+import BartenderRobot from "@/components/speakeasy/proxy/BartenderRobot";
+import BartenderChat from "@/components/speakeasy/proxy/BartenderChat";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import HallwayArrow from "@/components/speakeasy/proxy/HallwayArrow";
@@ -76,6 +78,7 @@ function ProxyRoomInner() {
   const [foundFixtures, setFoundFixtures] = useState([]);
 
   const [msgTarget, setMsgTarget] = useState(null);
+  const [bartenderOpen, setBartenderOpen] = useState(false);
 
   // Load which fixtures this member has already found (so they render as found).
   useEffect(() => {
@@ -133,6 +136,9 @@ function ProxyRoomInner() {
         {/* Finished-wood bar — the centerpiece mounted on the back wall. */}
         <ProxyBar style={{ left: "50%", top: "26%", transform: "translate(-50%, 0) scale(0.85)" }} />
 
+        {/* Robot barkeep standing at the bar — opens the Speakeasy info chat. */}
+        <BartenderRobot style={{ left: "50%", top: "42%" }} onClick={() => setBartenderOpen(true)} />
+
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
@@ -170,6 +176,8 @@ function ProxyRoomInner() {
 
       <HuntUnlockModal open={huntOpen} state={huntState} result={huntResult} onClose={() => setHuntOpen(false)} />
       <MessageModal open={!!msgTarget} target={msgTarget} onClose={() => setMsgTarget(null)} onSend={sendNote} />
+
+      {bartenderOpen && <BartenderChat onClose={() => setBartenderOpen(false)} />}
     </div>
   );
 }
