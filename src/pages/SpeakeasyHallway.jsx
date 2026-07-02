@@ -12,13 +12,21 @@ const GOLD = "#C8A95B";
 // Framed-picture gateways lining the corridor walls — each frame is an avenue
 // to a page, the hallway equivalent of the proxy room's doors. Add more here
 // as new rooms/pages open up.
+// Founder portraits (BOB-style builders on the left, Upkeeper-style masters on the right).
+const FOUNDERS = {
+  bobA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/83bd1b5a7_generated_image.png",
+  bobB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ce87af57b_generated_image.png",
+  keeperA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/c2708bb4b_generated_image.png",
+  keeperB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/fd8b6217d_generated_image.png",
+};
+
 const LEFT_FRAMES = [
-  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups" },
-  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social" },
+  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", image: FOUNDERS.bobA },
+  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", image: FOUNDERS.bobB },
 ];
 const RIGHT_FRAMES = [
-  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet" },
-  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room" },
+  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", image: FOUNDERS.keeperA },
+  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", image: FOUNDERS.keeperB },
 ];
 
 function HallwayInner() {
@@ -48,7 +56,7 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}
           >
             {LEFT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} onClick={() => navigate(f.to)} />
             ))}
           </div>
           {/* Right wall — mirror tilt */}
@@ -57,7 +65,7 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(-34deg)", transformOrigin: "right center" }}
           >
             {RIGHT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} onClick={() => navigate(f.to)} />
             ))}
           </div>
           <div className="absolute inset-0 z-30 pointer-events-none">
