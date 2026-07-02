@@ -44,13 +44,13 @@ const DOORS = [
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora" },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Market", sublabel: "Components", to: "/marketplace",
-    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford", labelAbove: true },
+    style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford" },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
-    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton", labelAbove: true },
+    style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
-    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley", labelAbove: true },
+    style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley" },
   { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
-    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart", labelAbove: true },
+    style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart" },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
     style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[6], founder: "Dorian Nodefield" },

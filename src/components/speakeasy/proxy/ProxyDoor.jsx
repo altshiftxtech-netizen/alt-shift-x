@@ -8,6 +8,8 @@ import React from "react";
  * a plain scale.
  */
 export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#D8C18A", tilt = "", image, founder, labelAbove = false }) {
+  // Back-wall doors are scaled down; pull their label up to sit right under the portrait.
+  const scaledDown = /scale\(0?\.\d+\)/.test(tilt) && !tilt.includes("rotateY");
   const nameplate = (
     <div className="text-center w-20 px-1 py-0.5 rounded bg-black/55 backdrop-blur-sm">
       <p
@@ -64,8 +66,10 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
           style={{ boxShadow: `0 0 22px 3px ${accent}55` }}
         />
       </div>
-      {/* label beneath the door — capped width + background so neighbors don't bleed together */}
-      {!labelAbove && <div className="mt-1.5">{nameplate}</div>}
+      {/* label beneath the door — capped width + background so neighbors don't bleed together.
+          When the frame is scaled down (back wall), pull the label up so it tucks directly
+          under the portrait instead of leaving a gap from the un-scaled layout box. */}
+      {!labelAbove && <div className={scaledDown ? "-mt-5" : "mt-1.5"}>{nameplate}</div>}
     </button>
   );
 }
