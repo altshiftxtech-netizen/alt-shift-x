@@ -50,9 +50,28 @@
       "description": "The AI-decomposed scene breakdown (intent lock)",
       "default": []
     },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "media_url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ordered video segments (each ~8s) that were generated individually and stitched into one continuous production",
+      "default": []
+    },
     "media_url": {
       "type": "string",
-      "description": "The generated deliverable (image or video URL)"
+      "description": "The generated deliverable (image or video URL). For multi-segment productions this is the final stitched video."
     },
     "aspect_ratio": {
       "type": "string",

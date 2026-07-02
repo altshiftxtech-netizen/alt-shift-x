@@ -60,6 +60,44 @@ Produce:
       return Response.json({ ok: true, ...result });
     }
 
+    if (action === 'segments') {
+      // Decompose a brief into an ordered list of short video segments that will
+      // be generated individually (each ~8s) then stitched into one continuous
+      // production. Works for any length: more segments = longer final video.
+      if (!brief) return Response.json({ error: 'Brief required' }, { status: 400 });
+
+      const targetSeconds = Math.max(8, Math.min(600, Number(body.target_seconds) || 24));
+      const segCount = Math.max(2, Math.min(60, Math.ceil(targetSeconds / 8)));
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are the Commercial Studio segment director. Break this brief into a continuous, story-flowing sequence of EXACTLY ${segCount} video segments, each roughly 8 seconds, that stitch together into one seamless ${targetSeconds}-second commercial${platform ? ` for ${platform}` : ''}.
+
+${brandBlock}
+
+BRIEF: "${brief}"
+
+Rules:
+- The segments must flow as ONE continuous narrative — segment N should visually and thematically continue from N-1 (matching lighting, palette, subject, motion) so the stitched result feels like a single film, not disconnected clips.
+- Each segment needs a short "label" and a fully self-contained "prompt" that a video model will use to render just that 8-second segment. Every prompt MUST bake in the brand colors, tone, and style direction and reference continuity from the previous segment.
+- Keep continuity cues explicit (e.g. "continuing the same golden-hour lighting and the same product from the previous shot").`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            segments: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: { label: { type: 'string' }, prompt: { type: 'string' } },
+              },
+            },
+            ambiguities: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      });
+
+      return Response.json({ ok: true, ...result });
+    }
+
     if (action === 'certify') {
       // Run the real governance + fidelity gate. This genuinely evaluates the brief/plan text.
       const generationPrompt = (body.generation_prompt || brief).toString();

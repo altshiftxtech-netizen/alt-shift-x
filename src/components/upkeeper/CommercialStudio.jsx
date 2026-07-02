@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Loader2, Sparkles, Film, ImageIcon, Wand2, ShieldCheck, RefreshCw, AlertTriangle, ArrowRight,
+  Loader2, Sparkles, Film, ImageIcon, Wand2, ShieldCheck, RefreshCw, AlertTriangle, ArrowRight, ChevronDown, History,
 } from "lucide-react";
 import BrandSelectorPanel from "@/components/commercial/BrandSelectorPanel";
 import ProductionCard from "@/components/commercial/ProductionCard";
 import ZeroDefectCertificate from "@/components/commercial/ZeroDefectCertificate";
 import DocumentIntake from "@/components/commercial/DocumentIntake";
+import SegmentProducer from "@/components/commercial/SegmentProducer";
 
 const FORMATS = [
   { key: "image", label: "Image", icon: ImageIcon },
@@ -39,6 +40,9 @@ export default function CommercialStudio({ user }) {
   const [saving, setSaving] = useState(false);
 
   const [productions, setProductions] = useState([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [videoMode, setVideoMode] = useState("single"); // single | segments
+  const [segList, setSegList] = useState([]); // stitched segment records to persist
 
   // Document Intake → auto-populate production fields. Brand setup now lives in
   // the multi-brand selector on the left. The operator edits everything before
@@ -127,6 +131,7 @@ export default function CommercialStudio({ user }) {
       brief,
       platform_target: platform || undefined,
       scene_plan: plan?.scene_plan || [],
+      segments: segList,
       media_url: mediaUrl || undefined,
       aspect_ratio: aspect,
       certificate: cert?.certificate,
@@ -135,7 +140,7 @@ export default function CommercialStudio({ user }) {
       audit_trail: finalAudit,
       status: cert?.certificate?.passed ? "certified" : mediaUrl ? "rendered" : "planned",
     });
-    setTitle(""); setBrief(""); setPlan(null); setMediaUrl(""); setCert(null); setAudit([]);
+    setTitle(""); setBrief(""); setPlan(null); setMediaUrl(""); setCert(null); setAudit([]); setSegList([]);
     await loadProductions();
     setSaving(false);
   };
@@ -146,6 +151,8 @@ export default function CommercialStudio({ user }) {
     setPlan(p.scene_plan?.length ? { scene_plan: p.scene_plan, generation_prompt: p.brief, ambiguities: [] } : null);
     setMediaUrl(p.media_url || ""); setCert(p.certificate ? { certificate: p.certificate, governance: p.governance } : null);
     setAudit(p.audit_trail || []);
+    setSegList(p.segments || []);
+    setVideoMode(p.segments?.length ? "segments" : "single");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -168,16 +175,26 @@ export default function CommercialStudio({ user }) {
         <div className="space-y-4">
           <BrandSelectorPanel selectedKit={kit} onSelect={(k) => setKit(k)} />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-amber-100">Production History</h3>
-              <button onClick={loadProductions} className="text-amber-300 hover:text-white p-1 rounded-lg hover:bg-amber-900/20"><RefreshCw className="w-3.5 h-3.5" /></button>
+          <div className="bg-[#12100f] border border-amber-900/30 rounded-2xl overflow-hidden">
+            <div className="flex items-center">
+              <button onClick={() => setHistoryOpen((o) => !o)}
+                className="flex-1 flex items-center gap-2 px-4 py-3 text-left hover:bg-amber-900/10">
+                <History className="w-4 h-4 text-amber-400" />
+                <span className="text-sm font-bold text-amber-100">Production History</span>
+                <span className="text-[10px] text-amber-200/40">({productions.length})</span>
+                <ChevronDown className={`w-4 h-4 text-amber-300 ml-auto transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+              </button>
+              <button onClick={loadProductions} className="text-amber-300 hover:text-white p-2 mr-2 rounded-lg hover:bg-amber-900/20"><RefreshCw className="w-3.5 h-3.5" /></button>
             </div>
-            {productions.length === 0 ? (
-              <p className="text-xs text-amber-200/40 py-4 text-center">No productions yet.</p>
-            ) : (
-              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
-                {productions.map((p) => <ProductionCard key={p.id} production={p} onReopen={reopen} />)}
+            {historyOpen && (
+              <div className="border-t border-amber-900/30 p-3">
+                {productions.length === 0 ? (
+                  <p className="text-xs text-amber-200/40 py-4 text-center">No productions yet.</p>
+                ) : (
+                  <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                    {productions.map((p) => <ProductionCard key={p.id} production={p} onReopen={reopen} />)}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -218,16 +235,44 @@ export default function CommercialStudio({ user }) {
               className="w-full bg-black/40 text-amber-50 text-sm px-3 py-2 rounded-lg border border-amber-900/30 outline-none focus:border-amber-600" />
           </div>
 
+          {/* Video mode toggle — single clip vs stitched multi-segment film */}
+          {format === "video" && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-amber-200/60">Video mode:</span>
+              <button onClick={() => setVideoMode("single")}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all ${videoMode === "single" ? "bg-amber-500 text-black border-amber-400" : "bg-black/40 text-amber-200/70 border-amber-900/30 hover:border-amber-700"}`}>Single clip</button>
+              <button onClick={() => setVideoMode("segments")}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all ${videoMode === "segments" ? "bg-amber-500 text-black border-amber-400" : "bg-black/40 text-amber-200/70 border-amber-900/30 hover:border-amber-700"}`}>Multi-segment film</button>
+            </div>
+          )}
+
           <div>
             <label className="text-[11px] font-semibold text-amber-200/60 block mb-1.5">Production brief</label>
             <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={3}
               placeholder="Describe the commercial. e.g. A 60-second launch spot for our new AI Governance certification — premium, cinematic, ending on the logo."
               className="w-full bg-black/40 text-amber-50 text-sm px-3 py-2 rounded-lg border border-amber-900/30 outline-none focus:border-amber-600 resize-none" />
-            <button onClick={runPlan} disabled={planning || !brief.trim()}
-              className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-black bg-gradient-to-r from-amber-300 to-amber-500 hover:opacity-90 px-3 py-1.5 rounded-lg disabled:opacity-50">
-              {planning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} Lock intent & plan scenes
-            </button>
+            {!(format === "video" && videoMode === "segments") && (
+              <button onClick={runPlan} disabled={planning || !brief.trim()}
+                className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-black bg-gradient-to-r from-amber-300 to-amber-500 hover:opacity-90 px-3 py-1.5 rounded-lg disabled:opacity-50">
+                {planning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} Lock intent & plan scenes
+              </button>
+            )}
           </div>
+
+          {/* Multi-segment producer — generate segments then stitch into one film */}
+          {format === "video" && videoMode === "segments" && (
+            <SegmentProducer
+              brief={brief}
+              platform={platform}
+              aspect={aspect}
+              brand={brandPayload()}
+              onStitched={(url, segs) => {
+                setMediaUrl(url);
+                setSegList(segs.map((s) => ({ label: s.label, prompt: s.prompt, media_url: s.media_url })));
+                logStep("Stitched", `${segs.length} segments assembled into one continuous film`);
+              }}
+            />
+          )}
 
           {/* Plan */}
           {plan && (
