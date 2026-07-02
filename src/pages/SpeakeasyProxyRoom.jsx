@@ -49,7 +49,7 @@ const DOORS = [
     style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
     style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley" },
-  { label: "Powder Room", sublabel: "Private", to: "/speakeasy/bathroom",
+  { label: "Gamers", sublabel: "Private", to: "/speakeasy/bathroom",
     style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart" },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
@@ -153,7 +153,7 @@ function ProxyRoomInner() {
 
         {/* Fashionable clickable Hallway signposts at the yellow X spots flanking the bar */}
         <HallwayArrow dir="left" label="West Wing" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />
-        <HallwayArrow dir="right" onClick={() => navigate("/speakeasy/hallway-east")} style={{ right: "30%", top: "66%" }} />
+        <HallwayArrow dir="right" label="East Wing" onClick={() => navigate("/speakeasy/hallway-east")} style={{ right: "30%", top: "66%" }} />
       </ProxyScene>
 
       {/* Minimal floating chrome */}
