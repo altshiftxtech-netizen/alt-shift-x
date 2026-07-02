@@ -12,12 +12,12 @@ const GOLD = "#C8A95B";
 // The East Wing — a second, cooler-toned corridor. Same architecture as the
 // main hallway, but its own set of framed gateways, founders, and accents.
 const FOUNDERS = {
-  a: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b20053b5a_generated_image.png",
-  b: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/de6700d7f_generated_image.png",
-  c: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/124ad03c2_generated_image.png",
-  d: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d04130e10_generated_image.png",
-  extraM: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f3a7de0ad_generated_image.png",
-  extraF: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d6f73beaf_generated_image.png",
+  a: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c99b709_generated_image.png",
+  b: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
+  c: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bc1013179_generated_image.png",
+  d: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ae6533818_generated_image.png",
+  extraM: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c99b709_generated_image.png",
+  extraF: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
 };
 
 const LEFT_FRAMES = [
