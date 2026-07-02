@@ -135,7 +135,7 @@ function ProxyRoomInner() {
       <ProxyScene>
         {/* Robot barkeep behind the bar — the counter/apron hides its lower body.
             Rendered before ProxyBar and at a lower z-index so the apron overlaps it. */}
-        <BartenderRobot style={{ left: "50%", top: "31%", transform: "translateX(-50%) scale(0.62)", transformOrigin: "bottom center" }} onClick={() => setBartenderOpen(true)} />
+        <BartenderRobot style={{ left: "50%", top: "22%", transform: "translateX(-50%) scale(0.85)", transformOrigin: "bottom center" }} onClick={() => setBartenderOpen(true)} />
 
         {/* Finished-wood bar — the centerpiece mounted on the back wall. */}
         <ProxyBar style={{ left: "50%", top: "26%", transform: "translate(-50%, 0) scale(0.85)" }} />
