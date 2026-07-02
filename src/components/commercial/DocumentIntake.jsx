@@ -44,18 +44,37 @@ export default function DocumentIntake({ onExtracted }) {
   const brandRef = useRef(null);
   const scriptRef = useRef(null);
 
+  // Upload with automatic retry on 429 (rate limit) — waits and tries again a
+  // few times with growing backoff before giving up.
+  const uploadWithRetry = async (file, attempt = 0) => {
+    try {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const url = res?.file_url || res?.data?.file_url;
+      if (!url) throw new Error("Upload did not return a file URL");
+      return url;
+    } catch (err) {
+      const status = err?.response?.status || err?.status;
+      if (status === 429 && attempt < 3) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        return uploadWithRetry(file, attempt + 1);
+      }
+      throw err;
+    }
+  };
+
   const pickFile = async (e, setter) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     setUploading(true); setError(""); setDone(false);
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
-      const url = res?.file_url || res?.data?.file_url;
-      if (!url) throw new Error("Upload did not return a file URL");
+      const url = await uploadWithRetry(file);
       setter({ name: file.name, url });
     } catch (err) {
-      setError(`Upload failed: ${err.message || "please try again"}`);
+      const status = err?.response?.status || err?.status;
+      setError(status === 429
+        ? "Too many uploads right now — wait a few seconds and try again."
+        : `Upload failed: ${err.message || "please try again"}`);
     } finally {
       setUploading(false);
     }
