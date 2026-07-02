@@ -90,8 +90,9 @@ export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) 
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 70%, rgba(255,210,150,0.12), transparent 65%)", borderRadius: "6px" }} />
       </div>
 
-      {/* Door at the vanishing point — larger, planted on the floor */}
-      <div className="absolute left-1/2 top-[20%] bottom-[26%] -translate-x-1/2 flex flex-col items-center" style={{ width: "20%" }}>
+      {/* Door at the vanishing point — larger, planted on the floor.
+          z-30 keeps it above the framed-gateway walls so its click always lands. */}
+      <div className="absolute left-1/2 top-[20%] bottom-[26%] -translate-x-1/2 flex flex-col items-center z-30" style={{ width: "20%" }}>
         <button
           onClick={onDoor}
           className="group relative w-full flex-1 focus:outline-none"
