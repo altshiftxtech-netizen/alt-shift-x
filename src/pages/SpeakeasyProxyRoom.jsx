@@ -6,7 +6,6 @@ import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
 import ProxyBar from "@/components/speakeasy/proxy/ProxyBar";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
-import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import HallwayArrow from "@/components/speakeasy/proxy/HallwayArrow";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
@@ -69,7 +68,7 @@ const FIXTURES = [
 
 function ProxyRoomInner() {
   const navigate = useNavigate();
-  const { members, me } = useSpeakeasyPresence("proxy_room");
+  const { members } = useSpeakeasyPresence("proxy_room");
 
   const [huntOpen, setHuntOpen] = useState(false);
   const [huntState, setHuntState] = useState("claiming"); // claiming | success | already | error
@@ -147,9 +146,6 @@ function ProxyRoomInner() {
             found={foundFixtures.includes(f.fixture_id)}
             onClick={() => inspectFixture(f.fixture_id)} />
         ))}
-
-        {/* Live member avatars */}
-        <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
 
         {/* Fashionable clickable Hallway signposts at the yellow X spots flanking the bar */}
         <HallwayArrow dir="left" label="West Wing" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />

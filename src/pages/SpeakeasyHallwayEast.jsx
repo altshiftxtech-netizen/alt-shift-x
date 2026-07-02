@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
-import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
 import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
@@ -58,11 +57,6 @@ function HallwayEastInner() {
             {RIGHT_FRAMES.map((f) => (
               <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
             ))}
-          </div>
-          <div className="absolute inset-0 z-30 pointer-events-none">
-            <div className="pointer-events-auto">
-              <AvatarCluster members={members} meId={me?.id} />
-            </div>
           </div>
         </HallwayScene>
       </div>
