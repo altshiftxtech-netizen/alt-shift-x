@@ -4,8 +4,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import ProxyScene from "@/components/speakeasy/proxy/ProxyScene";
-import ProxyBar from "@/components/speakeasy/proxy/ProxyBar";
-import BartenderRobot from "@/components/speakeasy/proxy/BartenderRobot";
+import ProxyBarScene from "@/components/speakeasy/proxy/ProxyBarScene";
 import BartenderChat from "@/components/speakeasy/proxy/BartenderChat";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
@@ -133,12 +132,9 @@ function ProxyRoomInner() {
     <div className="fixed inset-0 overflow-hidden bg-[#07050b]">
       {/* Full-bleed scene */}
       <ProxyScene>
-        {/* Robot barkeep behind the bar — the counter/apron hides its lower body.
-            Rendered before ProxyBar and at a lower z-index so the apron overlaps it. */}
-        <BartenderRobot style={{ left: "50%", top: "30%", transform: "translateX(-50%) scale(0.72)", transformOrigin: "bottom center" }} onClick={() => setBartenderOpen(true)} />
-
-        {/* Finished-wood bar — the centerpiece mounted on the back wall. */}
-        <ProxyBar style={{ left: "50%", top: "26%", transform: "translate(-50%, 0) scale(0.85)" }} />
+        {/* The full bar scene — robot barkeep + lit back-bar + glowing counter.
+            The robot torso is a clickable hotspot that opens the Bartender chat. */}
+        <ProxyBarScene style={{ left: "50%", top: "20%" }} onAskBartender={() => setBartenderOpen(true)} />
 
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
