@@ -82,17 +82,15 @@ export default function HallwayScene({ children, onDoor }) {
           style={{ height: "150px" }}
           aria-label="Enter the far door"
         >
-          <div
-            className="w-full h-full rounded-t-sm"
+          <img
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cea7604d9_generated_image.png"
+            alt="Ornate carved door"
+            className="w-full h-full object-cover rounded-t-sm"
             style={{
-              background: "linear-gradient(180deg, #2a2a30, #17171b)",
               border: "1px solid rgba(255,255,255,0.08)",
               boxShadow: "0 0 30px rgba(0,0,0,0.7), 0 0 22px rgba(255,240,205,0.12)",
             }}
-          >
-            <span className="absolute inset-2 rounded-sm border border-white/5" />
-            <span className="absolute right-2 top-1/2 w-1.5 h-1.5 rounded-full bg-white/40" />
-          </div>
+          />
           <div className="absolute inset-0 rounded-t-sm opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 30px 4px rgba(200,169,91,0.5)" }} />
         </button>
         <p className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-[#C8A95B]/70 whitespace-nowrap">Powder Room</p>
