@@ -150,21 +150,23 @@ function ProxyRoomInner() {
         {/* Live member avatars */}
         <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
 
-        {/* Elegant gold arrows pointing to the Hallway doorways on each side wall */}
-        <div className="absolute z-20 pointer-events-none flex flex-col items-center gap-1" style={{ left: "22%", top: "44%" }}>
-          <svg width="76" height="26" viewBox="0 0 76 26" fill="none" style={{ filter: "drop-shadow(0 0 6px rgba(230,200,120,0.6))" }}>
-            <path d="M74 13 H14" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M22 4 L6 13 L22 22" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* Clickable gold arrows to the Hallway — placed at the yellow X spots flanking the bar */}
+        <button onClick={() => navigate("/speakeasy/hallway")} aria-label="Enter the Hallway"
+          className="group absolute z-20 flex flex-col items-center gap-1 focus:outline-none transition-transform hover:-translate-y-0.5" style={{ left: "30%", top: "66%" }}>
+          <svg width="80" height="28" viewBox="0 0 80 28" fill="none" className="transition-all" style={{ filter: "drop-shadow(0 0 6px rgba(230,200,120,0.55))" }}>
+            <path d="M78 14 H16" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" className="group-hover:stroke-[#F5D890]" />
+            <path d="M24 5 L7 14 L24 23" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="group-hover:stroke-[#F5D890]" />
           </svg>
-          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#E6C878]" style={{ fontFamily: "'Playfair Display', serif" }}>Hallway</span>
-        </div>
-        <div className="absolute z-20 pointer-events-none flex flex-col items-center gap-1" style={{ right: "22%", top: "44%" }}>
-          <svg width="76" height="26" viewBox="0 0 76 26" fill="none" style={{ filter: "drop-shadow(0 0 6px rgba(230,200,120,0.6))" }}>
-            <path d="M2 13 H62" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M54 4 L70 13 L54 22" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E6C878] group-hover:text-[#F5D890]" style={{ fontFamily: "'Playfair Display', serif" }}>Hallway</span>
+        </button>
+        <button onClick={() => navigate("/speakeasy/hallway")} aria-label="Enter the Hallway"
+          className="group absolute z-20 flex flex-col items-center gap-1 focus:outline-none transition-transform hover:-translate-y-0.5" style={{ right: "30%", top: "66%" }}>
+          <svg width="80" height="28" viewBox="0 0 80 28" fill="none" className="transition-all" style={{ filter: "drop-shadow(0 0 6px rgba(230,200,120,0.55))" }}>
+            <path d="M2 14 H64" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" className="group-hover:stroke-[#F5D890]" />
+            <path d="M56 5 L73 14 L56 23" stroke="#E6C878" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="group-hover:stroke-[#F5D890]" />
           </svg>
-          <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#E6C878]" style={{ fontFamily: "'Playfair Display', serif" }}>Hallway</span>
-        </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E6C878] group-hover:text-[#F5D890]" style={{ fontFamily: "'Playfair Display', serif" }}>Hallway</span>
+        </button>
       </ProxyScene>
 
       {/* Minimal floating chrome */}
