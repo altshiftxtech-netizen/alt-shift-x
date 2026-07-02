@@ -13,7 +13,7 @@ export default function ProxyBar({ style }) {
   return (
     <div
       className="absolute -translate-x-1/2 z-10 pointer-events-none select-none"
-      style={{ width: "30%", maxWidth: 420, minWidth: 240, ...style }}
+      style={{ width: "20%", maxWidth: 300, minWidth: 170, ...style }}
     >
       {/* Back bottle shelf */}
       <div
