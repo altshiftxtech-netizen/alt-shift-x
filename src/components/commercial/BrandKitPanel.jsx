@@ -6,7 +6,7 @@ import { Loader2, Upload, Palette, X, Check, Pencil } from "lucide-react";
 // every production and survives across sessions. Brand Consistency Lock is
 // active by default the moment a kit exists. `prefill` (from Document Intake)
 // auto-populates the fields and opens the editor for review.
-export default function BrandKitPanel({ kit, prefill, onSaved }) {
+export default function BrandKitPanel({ kit, prefill, onSaved, onCancel }) {
   const [editing, setEditing] = useState(!kit);
   const [brandName, setBrandName] = useState(kit?.brand_name || "");
   const [logoUrl, setLogoUrl] = useState(kit?.logo_url || "");
@@ -180,8 +180,8 @@ export default function BrandKitPanel({ kit, prefill, onSaved }) {
           className="flex-1 flex items-center justify-center gap-2 text-sm font-bold text-black bg-gradient-to-r from-amber-300 to-amber-500 hover:opacity-90 px-4 py-2 rounded-xl disabled:opacity-50">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Save Brand Kit
         </button>
-        {kit && (
-          <button onClick={() => setEditing(false)} className="text-amber-200/60 hover:text-amber-200 px-3 py-2 rounded-xl border border-amber-900/30">Cancel</button>
+        {(kit || onCancel) && (
+          <button onClick={() => { setEditing(false); onCancel?.(); }} className="text-amber-200/60 hover:text-amber-200 px-3 py-2 rounded-xl border border-amber-900/30">Cancel</button>
         )}
       </div>
     </div>

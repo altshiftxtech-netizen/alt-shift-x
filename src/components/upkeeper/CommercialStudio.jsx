@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Loader2, Sparkles, Film, ImageIcon, Wand2, ShieldCheck, RefreshCw, AlertTriangle, ArrowRight,
 } from "lucide-react";
-import BrandKitPanel from "@/components/commercial/BrandKitPanel";
+import BrandSelectorPanel from "@/components/commercial/BrandSelectorPanel";
 import ProductionCard from "@/components/commercial/ProductionCard";
 import ZeroDefectCertificate from "@/components/commercial/ZeroDefectCertificate";
 import DocumentIntake from "@/components/commercial/DocumentIntake";
@@ -39,23 +39,23 @@ export default function CommercialStudio({ user }) {
   const [saving, setSaving] = useState(false);
 
   const [productions, setProductions] = useState([]);
-  const [brandPrefill, setBrandPrefill] = useState(null);
 
-  // Document Intake → auto-populate production fields + hand brand fields to the
-  // Brand Kit panel. The operator edits everything before saving/rendering.
+  // Document Intake → auto-populate production fields. Brand setup now lives in
+  // the multi-brand selector on the left. The operator edits everything before
+  // saving/rendering.
   const applyIntake = (data) => {
-    const b = data?.brand || {};
     const p = data?.production || {};
     if (p.title) setTitle(p.title);
     if (p.platform_target) setPlatform(p.platform_target);
     if (p.format) setFormat(p.format === "image" ? "image" : "video");
     if (p.brief) setBrief(p.brief);
-    setBrandPrefill({ ...b, _t: Date.now() });
   };
 
   const loadKit = async () => {
     setLoadingKit(true);
-    const kits = await base44.entities.BrandKit.filter({ is_active: true }, "-updated_date", 1);
+    // Pre-select the most recently used brand as the active one; the operator
+    // can switch to any other brand in the selector.
+    const kits = await base44.entities.BrandKit.list("-updated_date", 1);
     setKit(kits[0] || null);
     setLoadingKit(false);
   };
@@ -164,9 +164,9 @@ export default function CommercialStudio({ user }) {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* LEFT — Brand kit + history */}
+        {/* LEFT — Brand selector + history */}
         <div className="space-y-4">
-          <BrandKitPanel kit={kit} prefill={brandPrefill} onSaved={(k) => setKit(k)} />
+          <BrandSelectorPanel selectedKit={kit} onSelect={(k) => setKit(k)} />
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
