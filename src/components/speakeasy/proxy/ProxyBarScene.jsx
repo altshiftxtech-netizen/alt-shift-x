@@ -18,8 +18,16 @@ export default function ProxyBarScene({ style, onAskBartender }) {
         <img
           src={BAR_IMG}
           alt="The Founders' Room bar with the robot barkeep"
-          className="w-full object-contain rounded-lg"
-          style={{ filter: "drop-shadow(0 20px 50px rgba(0,0,0,0.7))" }}
+          className="w-full object-contain"
+          style={{
+            filter: "drop-shadow(0 20px 50px rgba(0,0,0,0.7))",
+            // Soft feathered edges so the bar melts into the back wall instead of
+            // sitting on top as a hard rectangle.
+            WebkitMaskImage:
+              "radial-gradient(120% 120% at 50% 45%, #000 55%, transparent 92%)",
+            maskImage:
+              "radial-gradient(120% 120% at 50% 45%, #000 55%, transparent 92%)",
+          }}
         />
 
         {/* Clickable robot hotspot — centered over the bartender's torso/head. */}
