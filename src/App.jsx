@@ -80,6 +80,7 @@ import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import SpeakeasyBallroom from './pages/SpeakeasyBallroom';
 import SpeakeasyBallroomEast from './pages/SpeakeasyBallroomEast';
 import UpKeeper from './pages/UpKeeper';
+import Crm from './pages/Crm';
 import TaxCompliance from './pages/TaxCompliance';
 import Pipelines from './pages/Pipelines';
 import PipelineKeyReveal from './pages/PipelineKeyReveal';
@@ -223,6 +224,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/upkeeper" element={<UpKeeper />} />
+        <Route path="/admin/crm" element={<Crm />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />
         <Route path="/admin/health" element={<SystemHealth />} />

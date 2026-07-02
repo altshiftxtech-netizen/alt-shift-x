@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Send, Sparkles, Loader2, Paperclip, Mic, MicOff, X, ArrowRight,
-  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History, Mail, Newspaper, Clapperboard
+  ShieldCheck, Activity, Share2, Bot, MessageSquare, LayoutDashboard, History, Mail, Newspaper, Clapperboard, Contact2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
@@ -307,6 +307,18 @@ export default function UpKeeper() {
             <InviteAdminButton variant="splash" />
           </div>
         )}
+
+        <Link to="/admin/crm"
+          className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-orange-900/30 hover:bg-orange-800/40 border border-orange-700/50 hover:border-orange-500 text-orange-200/80 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">
+          <span className="w-8 h-8 rounded-lg bg-orange-800/60 flex items-center justify-center flex-shrink-0">
+            <Contact2 className="w-4 h-4 text-orange-300" />
+          </span>
+          <div className="flex-1">
+            <p className="font-semibold">Open Relationship CRM</p>
+            <p className="text-[11px] text-orange-200/50">Contacts, companies, deal pipeline, activity &amp; Google Meet calls</p>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-400" />
+        </Link>
 
         <button onClick={openHistory}
           className="flex items-center gap-3 mt-3 w-full max-w-2xl bg-orange-900/30 hover:bg-orange-800/40 border border-orange-700/50 hover:border-orange-500 text-orange-200/80 hover:text-white text-sm px-4 py-3 rounded-xl transition-all text-left group">

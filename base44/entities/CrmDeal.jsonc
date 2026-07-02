@@ -1,0 +1,88 @@
+{
+  "name": "CrmDeal",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the admin/staff who owns this deal"
+    },
+    "title": {
+      "type": "string",
+      "description": "Deal name / opportunity title"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "CrmContact id this deal is associated with"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Denormalized contact name for quick display"
+    },
+    "value": {
+      "type": "number",
+      "default": 0,
+      "description": "Deal value in USD"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost"
+      ],
+      "default": "lead"
+    },
+    "expected_close": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

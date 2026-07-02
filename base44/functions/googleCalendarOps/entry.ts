@@ -19,10 +19,37 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden — admin only' }, { status: 403 });
 
-    const { action, eventId, summary, description, start, end, allDay, colorId, timeMin, timeMax, query, confirm } = await req.json();
+    const { action, eventId, summary, description, start, end, allDay, colorId, timeMin, timeMax, query, confirm, attendees } = await req.json();
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
     const auth = { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
     const cal = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
+    // Create a calendar event WITH a Google Meet video link attached.
+    if (action === 'create_meet') {
+      if (!summary || !start) return Response.json({ error: 'summary and start required' }, { status: 400 });
+      const startIso = new Date(start).toISOString();
+      const endIso = new Date(end || new Date(new Date(start).getTime() + 30 * 60000)).toISOString();
+      const body = {
+        summary,
+        description: description || '',
+        start: { dateTime: startIso },
+        end: { dateTime: endIso },
+        conferenceData: {
+          createRequest: {
+            requestId: `meet-${Date.now()}`,
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
+      };
+      if (Array.isArray(attendees) && attendees.length) {
+        body.attendees = attendees.filter(Boolean).map((e) => ({ email: e }));
+      }
+      const res = await fetch(`${cal}?conferenceDataVersion=1&sendUpdates=all`, { method: 'POST', headers: auth, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) { console.error('Calendar create_meet error', data); return Response.json({ error: data }, { status: res.status }); }
+      const meetLink = data.hangoutLink || (data.conferenceData?.entryPoints || []).find((p) => p.entryPointType === 'video')?.uri || '';
+      return Response.json({ event: { id: data.id, htmlLink: data.htmlLink, summary: data.summary, meetLink } });
+    }
 
     const buildTime = (val, isAllDay) => isAllDay ? { date: String(val).slice(0, 10) } : { dateTime: new Date(val).toISOString() };
 

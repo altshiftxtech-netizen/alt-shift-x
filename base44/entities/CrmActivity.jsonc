@@ -1,0 +1,108 @@
+{
+  "name": "CrmActivity",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the admin/staff who logged this activity"
+    },
+    "contact_id": {
+      "type": "string",
+      "description": "CrmContact id this activity relates to"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Denormalized contact name for the timeline"
+    },
+    "deal_id": {
+      "type": "string",
+      "description": "Optional CrmDeal id this activity relates to"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "note",
+        "call",
+        "fax",
+        "email",
+        "meeting",
+        "task"
+      ],
+      "default": "note",
+      "description": "Kind of activity. call/fax are log-only until Twilio is connected."
+    },
+    "subject": {
+      "type": "string",
+      "description": "Short summary line"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full detail / notes"
+    },
+    "meeting_url": {
+      "type": "string",
+      "description": "Google Meet link, when type is meeting"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound",
+        "internal"
+      ],
+      "default": "outbound"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "For tasks: when it's due"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "type",
+    "subject"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
