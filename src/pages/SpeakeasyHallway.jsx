@@ -41,7 +41,7 @@ function HallwayInner() {
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#050814" }}>
       <div className="absolute inset-0 z-10">
         <HallwayScene
-          onDoor={() => navigate("/speakeasy/bathroom")}
+          onDoor={() => navigate("/speakeasy/ballroom")}
           wallLeft="linear-gradient(100deg, #3a2a1a 0%, #241a10 60%, #140d07 100%)"
           wallRight="linear-gradient(260deg, #3a2a1a 0%, #241a10 60%, #140d07 100%)"
         >

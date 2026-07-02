@@ -39,7 +39,7 @@ function HallwayEastInner() {
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#04070f" }}>
       <div className="absolute inset-0 z-10">
         <HallwayScene
-          onDoor={() => navigate("/speakeasy/social")}
+          onDoor={() => navigate("/speakeasy/ballroom-east")}
           wallLeft="linear-gradient(100deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
           wallRight="linear-gradient(260deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
         >
