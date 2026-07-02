@@ -6,6 +6,7 @@ import {
 import BrandKitPanel from "@/components/commercial/BrandKitPanel";
 import ProductionCard from "@/components/commercial/ProductionCard";
 import ZeroDefectCertificate from "@/components/commercial/ZeroDefectCertificate";
+import DocumentIntake from "@/components/commercial/DocumentIntake";
 
 const FORMATS = [
   { key: "image", label: "Image", icon: ImageIcon },
@@ -38,6 +39,19 @@ export default function CommercialStudio({ user }) {
   const [saving, setSaving] = useState(false);
 
   const [productions, setProductions] = useState([]);
+  const [brandPrefill, setBrandPrefill] = useState(null);
+
+  // Document Intake → auto-populate production fields + hand brand fields to the
+  // Brand Kit panel. The operator edits everything before saving/rendering.
+  const applyIntake = (data) => {
+    const b = data?.brand || {};
+    const p = data?.production || {};
+    if (p.title) setTitle(p.title);
+    if (p.platform_target) setPlatform(p.platform_target);
+    if (p.format) setFormat(p.format === "image" ? "image" : "video");
+    if (p.brief) setBrief(p.brief);
+    setBrandPrefill({ ...b, _t: Date.now() });
+  };
 
   const loadKit = async () => {
     setLoadingKit(true);
@@ -152,7 +166,7 @@ export default function CommercialStudio({ user }) {
       <div className="grid lg:grid-cols-3 gap-4">
         {/* LEFT — Brand kit + history */}
         <div className="space-y-4">
-          <BrandKitPanel kit={kit} onSaved={(k) => setKit(k)} />
+          <BrandKitPanel kit={kit} prefill={brandPrefill} onSaved={(k) => setKit(k)} />
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -172,6 +186,8 @@ export default function CommercialStudio({ user }) {
         {/* RIGHT — Production interface */}
         <div className="lg:col-span-2 bg-[#12100f] border border-amber-900/30 rounded-2xl p-4 space-y-4">
           <h3 className="text-sm font-bold text-amber-50 flex items-center gap-2"><Wand2 className="w-4 h-4 text-amber-400" /> New Production</h3>
+
+          <DocumentIntake onExtracted={applyIntake} />
 
           {noKit && (
             <div className="flex items-start gap-2 text-[11px] text-amber-300 bg-amber-950/30 border border-amber-800/40 rounded-lg p-2.5">

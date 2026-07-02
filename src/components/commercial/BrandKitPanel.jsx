@@ -1,11 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Upload, Palette, X, Check, Pencil } from "lucide-react";
 
 // Brand Kit onboarding + editor. Persists to the BrandKit entity so it steers
 // every production and survives across sessions. Brand Consistency Lock is
-// active by default the moment a kit exists.
-export default function BrandKitPanel({ kit, onSaved }) {
+// active by default the moment a kit exists. `prefill` (from Document Intake)
+// auto-populates the fields and opens the editor for review.
+export default function BrandKitPanel({ kit, prefill, onSaved }) {
   const [editing, setEditing] = useState(!kit);
   const [brandName, setBrandName] = useState(kit?.brand_name || "");
   const [logoUrl, setLogoUrl] = useState(kit?.logo_url || "");
@@ -14,6 +15,19 @@ export default function BrandKitPanel({ kit, onSaved }) {
   const [tone, setTone] = useState(kit?.tone || "");
   const [styleNotes, setStyleNotes] = useState(kit?.style_notes || "");
   const [refs, setRefs] = useState(kit?.reference_image_urls || []);
+
+  // When Document Intake extracts brand info, fill any field it found and open
+  // the editor so the operator can review/edit before saving. Fields the doc
+  // didn't mention are left as-is (already populated / defaults).
+  useEffect(() => {
+    if (!prefill) return;
+    if (prefill.brand_name) setBrandName(prefill.brand_name);
+    if (prefill.colors?.length) setColors(prefill.colors);
+    if (prefill.fonts) setFonts(prefill.fonts);
+    if (prefill.tone) setTone(prefill.tone);
+    if (prefill.style_notes) setStyleNotes(prefill.style_notes);
+    setEditing(true);
+  }, [prefill]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const logoRef = useRef(null);
