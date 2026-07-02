@@ -31,7 +31,7 @@ export default function ProxyDoor({ label, sublabel, onClick, style, accent = "#
     >
       {/* founder nameplate above the portrait */}
       {founder && (
-        <p className="mb-1 text-[9px] sm:text-[10px] font-semibold italic tracking-wide whitespace-nowrap" style={{ color: accent, fontFamily: "'Playfair Display', serif", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
+        <p className={`${scaledDown ? "-mb-4" : "mb-1"} text-[9px] sm:text-[10px] font-semibold italic tracking-wide whitespace-nowrap`} style={{ color: accent, fontFamily: "'Playfair Display', serif", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
           {founder}
         </p>
       )}
