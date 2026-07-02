@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { stitchVideos } from "@/lib/stitchVideos";
 import {
-  Loader2, Sparkles, Film, RefreshCw, Check, Layers, Play, Combine, Clock,
+  Loader2, Sparkles, Film, RefreshCw, Check, Layers, Play, Combine, Clock, ThumbsUp, X,
 } from "lucide-react";
 
 // Multi-segment video producer. The agent decomposes the brief into an ordered
@@ -18,6 +18,9 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
   const [stitchProgress, setStitchProgress] = useState(null);
   const [finalUrl, setFinalUrl] = useState("");
   const [error, setError] = useState("");
+  // Approval gate — segments only auto-connect once the operator has reviewed
+  // every clip and explicitly confirmed they're satisfied.
+  const [reviewing, setReviewing] = useState(false);
 
   const estCount = Math.max(2, Math.ceil(targetSeconds / 8));
   const allRendered = segments.length > 0 && segments.every((s) => s.media_url);
@@ -88,6 +91,7 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
   };
 
   const stitch = async () => {
+    setReviewing(false);
     setStitching(true); setError(""); setStitchProgress(null); setFinalUrl("");
     try {
       const urls = segments.map((s) => s.media_url).filter(Boolean);
@@ -166,12 +170,35 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
               {genAllRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               {allRendered ? "All segments ready" : "Generate all segments"}
             </button>
-            <button onClick={stitch} disabled={!allRendered || stitching}
+            <button onClick={() => { setReviewing(true); setError(""); }} disabled={!allRendered || stitching}
               className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-emerald-50 bg-emerald-700 hover:bg-emerald-600 px-3 py-2 rounded-lg disabled:opacity-50">
               {stitching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Combine className="w-3.5 h-3.5" />}
-              Stitch into one film
+              {stitching ? "Connecting…" : "Review & connect"}
             </button>
           </div>
+
+          {/* Approval gate — auto-connect only runs after the operator confirms
+              they're satisfied with all the segments. */}
+          {reviewing && !stitching && (
+            <div className="border border-emerald-800/50 bg-emerald-950/30 rounded-xl p-3 space-y-2.5">
+              <p className="text-[11px] font-bold text-emerald-200 flex items-center gap-1.5">
+                <ThumbsUp className="w-3.5 h-3.5" /> Ready to auto-connect {segments.length} segments
+              </p>
+              <p className="text-[10px] text-emerald-100/70">
+                All {segments.length} segments are rendered and shown above in order. Once you approve, they'll be automatically connected into one continuous {Math.floor(targetSeconds / 60)}m {targetSeconds % 60}s film. Regenerate any segment first if you're not satisfied.
+              </p>
+              <div className="flex gap-2">
+                <button onClick={stitch}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold text-emerald-50 bg-emerald-700 hover:bg-emerald-600 px-3 py-2 rounded-lg">
+                  <Check className="w-3.5 h-3.5" /> Approve & connect segments
+                </button>
+                <button onClick={() => setReviewing(false)}
+                  className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-emerald-200/70 hover:text-emerald-100 border border-emerald-800/50 px-3 py-2 rounded-lg">
+                  <X className="w-3.5 h-3.5" /> Not yet
+                </button>
+              </div>
+            </div>
+          )}
 
           {stitching && stitchProgress && (
             <p className="text-[10px] text-amber-200/60 text-center">
