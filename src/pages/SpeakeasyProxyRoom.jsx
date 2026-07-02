@@ -134,7 +134,7 @@ function ProxyRoomInner() {
       <ProxyScene>
         {/* The full bar scene — robot barkeep + lit back-bar + glowing counter.
             The robot torso is a clickable hotspot that opens the Bartender chat. */}
-        <ProxyBarScene style={{ left: "50%", top: "34%" }} onAskBartender={() => setBartenderOpen(true)} />
+        <ProxyBarScene style={{ left: "50%", top: "44%" }} onAskBartender={() => setBartenderOpen(true)} />
 
         {/* Gates placed in the room's perspective — back wall + angled side walls. */}
         {DOORS.map((d) => (
