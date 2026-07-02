@@ -14,10 +14,10 @@ const GOLD = "#C8A95B";
 // as new rooms/pages open up.
 // Founder portraits (BOB-style builders on the left, Upkeeper-style masters on the right).
 const FOUNDERS = {
-  bobA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/83bd1b5a7_generated_image.png",
-  bobB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ce87af57b_generated_image.png",
-  keeperA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/c2708bb4b_generated_image.png",
-  keeperB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/fd8b6217d_generated_image.png",
+  bobA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b20053b5a_generated_image.png",
+  bobB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/de6700d7f_generated_image.png",
+  keeperA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/124ad03c2_generated_image.png",
+  keeperB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d04130e10_generated_image.png",
 };
 
 const LEFT_FRAMES = [
