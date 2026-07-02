@@ -26,11 +26,27 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
     if (!brief?.trim()) return;
     setPlanning(true); setError(""); setSegments([]); setFinalUrl("");
     try {
-      const res = await base44.functions.invoke("commercialStudioPlan", {
-        action: "segments", brief, platform, brand, target_seconds: targetSeconds,
-      });
-      if (res.data?.error) { setError(res.data.error); return; }
-      setSegments((res.data.segments || []).map((s) => ({ ...s, media_url: "", generating: false })));
+      // Long films are planned in chunks of ~80s (10 segments) per LLM call so a
+      // single request never has to emit dozens of detailed prompts (which
+      // truncate/degrade). Chunks are merged in order into one continuous plan.
+      const CHUNK = 80; // seconds per planning call
+      const all = [];
+      for (let start = 0; start < targetSeconds; start += CHUNK) {
+        const remaining = targetSeconds - start;
+        const chunkSeconds = Math.min(CHUNK, remaining);
+        // eslint-disable-next-line no-await-in-loop
+        const res = await base44.functions.invoke("commercialStudioPlan", {
+          action: "segments", brief, platform, brand,
+          target_seconds: chunkSeconds,
+          part_index: Math.floor(start / CHUNK),
+          part_start_seconds: start,
+          total_seconds: targetSeconds,
+          continues_from: all.length ? all[all.length - 1].prompt : "",
+        });
+        if (res.data?.error) { setError(res.data.error); break; }
+        (res.data.segments || []).forEach((s) => all.push(s));
+        setSegments(all.map((s) => ({ ...s, media_url: "", generating: false })));
+      }
     } catch (err) {
       setError(err.message || "Could not plan segments.");
     } finally {
@@ -46,21 +62,28 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
       });
       const url = res?.url || res?.video_url || "";
       setSegments((prev) => prev.map((s, i) => (i === idx ? { ...s, media_url: url, generating: false } : s)));
-    } catch (err) {
+      return !!url;
+    } catch {
       setSegments((prev) => prev.map((s, i) => (i === idx ? { ...s, generating: false } : s)));
-      setError(`Segment ${idx + 1} failed: ${err.message || "please retry"}`);
+      return false;
     }
   };
 
   const generateAll = async () => {
     setGenAllRunning(true); setError("");
     // Sequential — video generation is heavy; one at a time avoids rate limits.
+    // Resumable: skips already-rendered segments and CONTINUES past any failure
+    // so a single hiccup never loses the whole long-film run. Failed ones are
+    // reported at the end and can be retried with their own Regenerate button.
+    const failed = [];
     for (let i = 0; i < segments.length; i++) {
       if (!segments[i].media_url) {
         // eslint-disable-next-line no-await-in-loop
-        await generateOne(i);
+        const ok = await generateOne(i);
+        if (!ok) failed.push(i + 1);
       }
     }
+    if (failed.length) setError(`Segments ${failed.join(", ")} didn't render — retry those, then stitch.`);
     setGenAllRunning(false);
   };
 
@@ -96,11 +119,11 @@ export default function SegmentProducer({ brief, platform, aspect, brand, onStit
         <div className="flex items-center gap-1.5 text-[11px] text-amber-200/60">
           <Clock className="w-3.5 h-3.5" /> Target length
         </div>
-        <input type="range" min={16} max={240} step={8} value={targetSeconds}
+        <input type="range" min={16} max={600} step={8} value={targetSeconds}
           onChange={(e) => setTargetSeconds(Number(e.target.value))}
           className="flex-1 accent-amber-500" />
-        <span className="text-[11px] font-bold text-amber-100 w-24 text-right">
-          {targetSeconds}s · ~{estCount} segs
+        <span className="text-[11px] font-bold text-amber-100 w-28 text-right">
+          {Math.floor(targetSeconds / 60)}m {targetSeconds % 60}s · ~{estCount} segs
         </span>
       </div>
 

@@ -67,17 +67,28 @@ Produce:
       if (!brief) return Response.json({ error: 'Brief required' }, { status: 400 });
 
       const targetSeconds = Math.max(8, Math.min(600, Number(body.target_seconds) || 24));
-      const segCount = Math.max(2, Math.min(60, Math.ceil(targetSeconds / 8)));
+      const segCount = Math.max(1, Math.min(12, Math.ceil(targetSeconds / 8)));
+
+      // Long films are planned in chunks by the frontend. These fields let each
+      // chunk continue seamlessly from the previous one so the merged plan reads
+      // as a single continuous narrative rather than restarting each batch.
+      const totalSeconds = Math.max(targetSeconds, Number(body.total_seconds) || targetSeconds);
+      const partStart = Number(body.part_start_seconds) || 0;
+      const continuesFrom = (body.continues_from || '').toString();
+      const isContinuation = partStart > 0 && continuesFrom;
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are the Commercial Studio segment director. Break this brief into a continuous, story-flowing sequence of EXACTLY ${segCount} video segments, each roughly 8 seconds, that stitch together into one seamless ${targetSeconds}-second commercial${platform ? ` for ${platform}` : ''}.
+        prompt: `You are the Commercial Studio segment director. Produce EXACTLY ${segCount} video segments, each roughly 8 seconds, that form part of one seamless ${totalSeconds}-second commercial${platform ? ` for ${platform}` : ''}.
+${isContinuation
+  ? `\nThis is a CONTINUATION covering seconds ${partStart}–${partStart + targetSeconds} of the full film. The immediately preceding segment ended with: "${continuesFrom}". Your FIRST segment must pick up directly from that moment — same setting, lighting, palette, and subject — with no reset or re-introduction. Continue the story forward toward its conclusion.`
+  : `\nThis is the OPENING stretch of the full ${totalSeconds}-second film. Establish the setting and subject and begin the narrative.`}
 
 ${brandBlock}
 
 BRIEF: "${brief}"
 
 Rules:
-- The segments must flow as ONE continuous narrative — segment N should visually and thematically continue from N-1 (matching lighting, palette, subject, motion) so the stitched result feels like a single film, not disconnected clips.
+- The segments must flow as ONE continuous narrative — segment N visually and thematically continues from N-1 (matching lighting, palette, subject, motion) so the stitched result feels like a single film, not disconnected clips.
 - Each segment needs a short "label" and a fully self-contained "prompt" that a video model will use to render just that 8-second segment. Every prompt MUST bake in the brand colors, tone, and style direction and reference continuity from the previous segment.
 - Keep continuity cues explicit (e.g. "continuing the same golden-hour lighting and the same product from the previous shot").`,
         response_json_schema: {
