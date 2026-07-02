@@ -26,8 +26,8 @@ export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A9
         className="relative w-20 h-28 sm:w-24 sm:h-32 transition-all duration-300 group-hover:-translate-y-1 p-[3px]"
         style={{
           borderRadius: "4px",
-          background: "linear-gradient(150deg, #e8d29a 0%, #C8A95B 45%, #8a6d34 100%)",
-          boxShadow: "0 10px 26px rgba(0,0,0,0.55), inset 0 0 6px rgba(255,245,210,0.5)",
+          background: "linear-gradient(150deg, #2a2a2a 0%, #141414 45%, #000000 100%)",
+          boxShadow: "0 10px 26px rgba(0,0,0,0.6), inset 0 0 6px rgba(255,255,255,0.04)",
         }}
       >
         <div className="relative w-full h-full rounded-[2px]" style={{ border: "2px solid #14110d", background: "#14110d" }}>
