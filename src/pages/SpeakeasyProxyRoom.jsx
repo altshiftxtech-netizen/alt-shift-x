@@ -152,7 +152,7 @@ function ProxyRoomInner() {
         <AvatarCluster members={members} meId={me?.id} onMessage={(m) => setMsgTarget(m)} />
 
         {/* Fashionable clickable Hallway signposts at the yellow X spots flanking the bar */}
-        <HallwayArrow dir="left" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />
+        <HallwayArrow dir="left" label="West Wing" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />
         <HallwayArrow dir="right" onClick={() => navigate("/speakeasy/hallway-east")} style={{ right: "30%", top: "66%" }} />
       </ProxyScene>
 
@@ -168,7 +168,7 @@ function ProxyRoomInner() {
         <SpeakeasyLogo size={26} />
         <div className="text-center">
           <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E6C878]">The Speakeasy</p>
-          <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>Proxy Room</h1>
+          <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>Founders' Room</h1>
         </div>
       </div>
 

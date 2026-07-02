@@ -1,72 +1,86 @@
 import React from "react";
 
-const GOLD = "#E6C878";
-const LAMP = "#FFE6A6";
+const WOOD_LIGHT = "#8a5a30";
+const WOOD_DARK = "#3a2414";
+const BRASS = "#C8A95B";
 
 /**
- * ProxyBar — a freestanding lit bar counter sitting on the floor in the
- * foreground of the room. Rendered in screen space (not the 3D stage) so it
- * reads as a solid centerpiece: a back shelf of bottles, a glowing under-bar
- * light, and a polished wood counter with a brass foot rail.
+ * The room's back centerpiece — a grand wooden double door with a warm,
+ * interior-matching finish. Two paneled leaves meet at the center, framed by a
+ * dark timber surround with a brass handle set and a soft warm glow spilling
+ * from the seam. Clickable when onClick is provided.
  */
-export default function ProxyBar({ style }) {
-  return (
+export default function ProxyBar({ style, onClick }) {
+  const Leaf = ({ side }) => (
     <div
-      className="absolute -translate-x-1/2 z-10 pointer-events-none select-none"
-      style={{ width: "20%", maxWidth: 300, minWidth: 170, ...style }}
+      className="relative flex-1 h-full"
+      style={{
+        background: `repeating-linear-gradient(180deg, ${WOOD_LIGHT} 0px, ${WOOD_LIGHT} 6px, ${WOOD_DARK} 6px, ${WOOD_DARK} 9px)`,
+        backgroundColor: WOOD_LIGHT,
+        boxShadow: "inset 0 0 26px rgba(0,0,0,0.55)",
+        borderRight: side === "left" ? "1px solid rgba(0,0,0,0.6)" : "none",
+        borderLeft: side === "right" ? "1px solid rgba(0,0,0,0.6)" : "none",
+      }}
     >
-      {/* Back bottle shelf */}
+      {/* two recessed raised panels per leaf */}
       <div
-        className="relative mx-auto w-[78%] h-20 rounded-t-md overflow-hidden"
-        style={{
-          background: "linear-gradient(180deg, #1a120b, #2a1d12)",
-          border: `1px solid ${GOLD}44`,
-          boxShadow: `inset 0 0 24px ${LAMP}22`,
-        }}
-      >
-        {[24, 50, 76].map((t) => (
-          <div key={t} className="absolute inset-x-3 flex justify-between" style={{ top: `${t}%` }}>
-            {Array.from({ length: 11 }).map((_, i) => (
-              <span key={i} className="w-1.5 rounded-sm"
-                style={{ height: 13, background: `linear-gradient(180deg, ${GOLD}cc, #5a3f1f)`, opacity: 0.85 }} />
-            ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Counter body */}
+        className="absolute inset-x-[16%] top-[8%] h-[40%] rounded-sm"
+        style={{ border: `2px solid ${WOOD_DARK}`, boxShadow: `inset 0 0 10px rgba(0,0,0,0.5), 0 1px 0 ${BRASS}22` }}
+      />
       <div
-        className="relative w-full h-24"
+        className="absolute inset-x-[16%] bottom-[8%] h-[40%] rounded-sm"
+        style={{ border: `2px solid ${WOOD_DARK}`, boxShadow: `inset 0 0 10px rgba(0,0,0,0.5), 0 1px 0 ${BRASS}22` }}
+      />
+      {/* brass handle near the center seam */}
+      <div
+        className="absolute top-1/2 -translate-y-1/2 w-2 h-6 rounded-full"
         style={{
-          background: "linear-gradient(180deg, #3a2818 0%, #2a1d11 55%, #1c130b 100%)",
-          borderTop: `2px solid ${GOLD}88`,
-          borderLeft: `1px solid ${GOLD}33`,
-          borderRight: `1px solid ${GOLD}33`,
-          boxShadow: "0 18px 40px rgba(0,0,0,0.55)",
-          backgroundImage:
-            "repeating-linear-gradient(90deg, rgba(255,220,160,0.05) 0px, rgba(255,220,160,0.05) 2px, transparent 2px, transparent 18px)",
+          [side === "left" ? "right" : "left"]: "6%",
+          background: `linear-gradient(180deg, ${BRASS}, #6b5426)`,
+          boxShadow: `0 0 8px ${BRASS}77`,
         }}
-      >
-        {/* warm under-counter glow */}
-        <div className="absolute inset-x-6 top-2 h-3 rounded-full"
-          style={{ background: `radial-gradient(ellipse at 50% 50%, ${LAMP}66, transparent 70%)` }} />
-
-        {/* polished counter top highlight */}
-        <div className="absolute inset-x-0 top-0 h-1.5"
-          style={{ background: `linear-gradient(180deg, ${LAMP}aa, transparent)` }} />
-
-        {/* brass foot rail */}
-        <div className="absolute inset-x-3 bottom-3 h-1 rounded-full"
-          style={{ background: `linear-gradient(180deg, ${GOLD}, rgba(150,115,55,0.7))`, boxShadow: `0 0 10px ${GOLD}66` }} />
-
-        {/* two bar lamps glowing on the counter */}
-        {[26, 74].map((l) => (
-          <div key={l} className="absolute" style={{ left: `${l}%`, top: "18%", transform: "translateX(-50%)" }}>
-            <div className="w-4 h-4 rounded-full"
-              style={{ background: `radial-gradient(circle, ${LAMP}, ${GOLD})`, boxShadow: `0 0 22px 8px ${LAMP}88` }} />
-          </div>
-        ))}
-      </div>
+      />
     </div>
+  );
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={!onClick}
+      aria-label="Wooden double door"
+      className="group absolute -translate-x-1/2 z-10 select-none focus:outline-none"
+      style={{ width: "22%", maxWidth: 320, minWidth: 180, ...style }}
+    >
+      {/* timber surround / frame */}
+      <div
+        className="relative w-full h-44 p-2 rounded-t-md"
+        style={{
+          background: `linear-gradient(180deg, ${WOOD_DARK}, #1c130b)`,
+          border: `2px solid ${BRASS}55`,
+          boxShadow: "0 18px 40px rgba(0,0,0,0.6)",
+        }}
+      >
+        {/* the two door leaves */}
+        <div className="relative flex w-full h-full rounded-sm overflow-hidden">
+          <Leaf side="left" />
+          <Leaf side="right" />
+          {/* warm light glowing from the center seam */}
+          <div
+            className="absolute left-1/2 top-0 bottom-0 w-2 -translate-x-1/2 pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${BRASS}55, transparent)` }}
+          />
+        </div>
+        {/* hover glow */}
+        <div
+          className="absolute inset-0 rounded-t-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ boxShadow: `0 0 30px 6px ${BRASS}66` }}
+        />
+      </div>
+      {/* warm light spilling under the doors */}
+      <div
+        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[80%] h-3 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(ellipse, ${BRASS}66, transparent 70%)`, filter: "blur(3px)" }}
+      />
+    </button>
   );
 }
