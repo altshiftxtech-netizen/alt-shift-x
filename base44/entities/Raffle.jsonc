@@ -1,0 +1,130 @@
+{
+  "name": "Raffle",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Raffle name, e.g. 'AI Developer Starter Kit'"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique id used at /speakeasy/raffles/:slug"
+    },
+    "description": {
+      "type": "string"
+    },
+    "hero_image_url": {
+      "type": "string"
+    },
+    "age_policy_id": {
+      "type": "string",
+      "description": "The AgePolicy id enforced on entry."
+    },
+    "rules_text": {
+      "type": "string",
+      "description": "Reusable rules block shown on the raffle page."
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Raffle end date \u2014 used as the 'as-of' date for DOB age checks."
+    },
+    "prizes": {
+      "type": "array",
+      "description": "Prizes for this raffle.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "fulfillment_mode": {
+            "type": "string",
+            "enum": [
+              "ship",
+              "email_voucher"
+            ],
+            "default": "ship"
+          },
+          "claim_required": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "default": []
+    },
+    "num_winners": {
+      "type": "number",
+      "default": 1
+    },
+    "num_alternates": {
+      "type": "number",
+      "default": 1
+    },
+    "selection_deadline": {
+      "type": "string",
+      "format": "date"
+    },
+    "claim_flow_mode": {
+      "type": "string",
+      "enum": [
+        "no_claim",
+        "claim_required",
+        "either_enabled"
+      ],
+      "default": "either_enabled"
+    },
+    "claim_deadline_days": {
+      "type": "number",
+      "default": 7
+    },
+    "claim_contact_method": {
+      "type": "string",
+      "enum": [
+        "email",
+        "email_plus_dashboard"
+      ],
+      "default": "email"
+    },
+    "auto_promote_on_claim_failure": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "closed",
+        "drawn"
+      ],
+      "default": "open"
+    }
+  },
+  "required": [
+    "title",
+    "slug"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ const DOORS = [
   // ── Left side wall — Tutorials & Hallway, skewed into the wall perspective ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
     style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", image: PORTRAITS[0], founder: "Corin Bitwright" },
-  { label: "Raffles", sublabel: "Expansion", to: "/speakeasy/hallway",
+  { label: "Raffles", sublabel: "Prizes", to: "/speakeasy/raffles",
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora", cosmic: true },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Market", sublabel: "Components", to: "/marketplace",

@@ -75,6 +75,8 @@ import SpeakeasyGroups from './pages/SpeakeasyGroups';
 import SpeakeasyGroup from './pages/SpeakeasyGroup';
 import SpeakeasyMeet from './pages/SpeakeasyMeet';
 import SpeakeasyHallway from './pages/SpeakeasyHallway';
+import SpeakeasyRaffles from './pages/SpeakeasyRaffles';
+import SpeakeasyRaffleDetail from './pages/SpeakeasyRaffleDetail';
 import SpeakeasyHallwayEast from './pages/SpeakeasyHallwayEast';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import SpeakeasyBallroom from './pages/SpeakeasyBallroom';
@@ -184,6 +186,8 @@ const AuthenticatedApp = () => {
       <Route path="/speakeasy/groups/:slug" element={<SpeakeasyGroup />} />
       <Route path="/speakeasy/meet" element={<SpeakeasyMeet />} />
       <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
+      <Route path="/speakeasy/raffles" element={<SpeakeasyRaffles />} />
+      <Route path="/speakeasy/raffles/:slug" element={<SpeakeasyRaffleDetail />} />
       <Route path="/speakeasy/hallway-east" element={<SpeakeasyHallwayEast />} />
       <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
       <Route path="/speakeasy/ballroom" element={<SpeakeasyBallroom />} />

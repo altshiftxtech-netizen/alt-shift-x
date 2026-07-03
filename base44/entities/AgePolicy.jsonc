@@ -1,0 +1,88 @@
+{
+  "name": "AgePolicy",
+  "type": "object",
+  "properties": {
+    "policy_name": {
+      "type": "string",
+      "description": "Admin-facing name, e.g. 'Hard Stop <16'"
+    },
+    "min_age": {
+      "type": "number",
+      "description": "Minimum age required to enter (inclusive)."
+    },
+    "max_age": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Optional maximum age; null = no upper bound.",
+      "default": null
+    },
+    "minor_handling": {
+      "type": "string",
+      "enum": [
+        "no_minor_entries",
+        "consent_required"
+      ],
+      "default": "no_minor_entries",
+      "description": "no_minor_entries = hard block anyone under min_age."
+    },
+    "consent_method": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parental"
+      ],
+      "default": "none"
+    },
+    "age_proof_method": {
+      "type": "string",
+      "enum": [
+        "self_asserted",
+        "dob_based"
+      ],
+      "default": "dob_based",
+      "description": "dob_based = compute age from DOB against the as_of date."
+    },
+    "as_of": {
+      "type": "string",
+      "enum": [
+        "entry_submission",
+        "raffle_end_date"
+      ],
+      "default": "raffle_end_date",
+      "description": "Which date to compute age as-of."
+    },
+    "public_entry_message": {
+      "type": "string",
+      "default": "Entry requires participants to be 16 or older.",
+      "description": "Standardized message shown on public pages and on block."
+    },
+    "display_on_public_pages": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "policy_name",
+    "min_age"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
