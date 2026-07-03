@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Cloud, Code2, Shapes, BookOpen, Keyboard, CreditCard, Package,
-  HeartHandshake, Gift, BarChart3, Users } from "lucide-react";
+  HeartHandshake, Gift, BarChart3, Users, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ShopShell from "@/components/shop/ShopNav";
 import FeaturedCarousel from "@/components/shop/FeaturedCarousel";
@@ -41,6 +41,10 @@ export default function ShopHome() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1A1A2E 0%,#0d1030 50%,#0066FF 140%)" }} />
         <div className="relative max-w-6xl mx-auto px-4 py-16 text-center text-white">
+          <Link to="/speakeasy/proxy-room"
+            className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white mb-6 border border-white/20 rounded-full px-4 py-1.5 hover:bg-white/10 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to the Speakeasy
+          </Link>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">The Speakeasy Shop</h1>
           <p className="text-white/70 mt-3 text-lg max-w-xl mx-auto">Curated tools for builders. Every purchase funds the community.</p>
           <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
