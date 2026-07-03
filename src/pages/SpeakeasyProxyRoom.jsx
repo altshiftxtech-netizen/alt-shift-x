@@ -43,7 +43,7 @@ const DOORS = [
   { label: "Raffles", sublabel: "Prizes", to: "/speakeasy/raffles",
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora", cosmic: true },
   // ── Back wall — four small doorway slots flanking the bar ──
-  { label: "Market", sublabel: "Components", to: "/marketplace",
+  { label: "Market", sublabel: "Affiliate Shop", to: "/shop",
     style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford" },
   { label: "The Feed", sublabel: "Social", to: "/speakeasy/social",
     style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton" },

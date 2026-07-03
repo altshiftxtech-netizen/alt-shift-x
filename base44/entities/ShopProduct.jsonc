@@ -1,0 +1,96 @@
+{
+  "name": "ShopProduct",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product name, e.g. 'Figma'"
+    },
+    "partner": {
+      "type": "string",
+      "description": "Partner/brand company, e.g. 'Figma Inc.'"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "One-line description, e.g. 'Collaborative design & prototyping'"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Hosting & Cloud",
+        "IDEs & Dev Tools",
+        "Design Tools",
+        "Learning & Books",
+        "Hardware & Setup",
+        "Payments & SaaS"
+      ],
+      "description": "Which browse category this product belongs to"
+    },
+    "collection_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ShopCollection ids this product is featured in",
+      "default": []
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Product/lifestyle image"
+    },
+    "price_label": {
+      "type": "string",
+      "description": "Human-readable price, e.g. 'Free - $12/user/mo'"
+    },
+    "affiliate_url": {
+      "type": "string",
+      "description": "Outbound affiliate link opened on 'Get Deal'"
+    },
+    "exclusive_deal": {
+      "type": "string",
+      "description": "Exclusive offer text, e.g. 'Free team license for members'. Empty = no exclusive badge."
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, appears in the homepage featured-deals carousel"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "name": "CommunityFund",
+  "type": "object",
+  "properties": {
+    "month_label": {
+      "type": "string",
+      "description": "Human month label, e.g. 'June 2026'"
+    },
+    "period": {
+      "type": "string",
+      "description": "Sortable period key, e.g. '2026-06'"
+    },
+    "total_raised": {
+      "type": "number",
+      "default": 0,
+      "description": "Dollars raised this month"
+    },
+    "growth_pct": {
+      "type": "number",
+      "default": 0,
+      "description": "Percent growth vs previous month"
+    },
+    "contributors": {
+      "type": "number",
+      "default": 0
+    },
+    "purchases": {
+      "type": "number",
+      "default": 0
+    },
+    "allocations": {
+      "type": "array",
+      "description": "How the fund is being spent this month",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "pct": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
+    "funded_items": {
+      "type": "array",
+      "description": "What was actually funded this month",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number"
+          }
+        }
+      },
+      "default": []
+    },
+    "is_current": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marks the month shown as the current headline stats"
+    }
+  },
+  "required": [
+    "month_label",
+    "period"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

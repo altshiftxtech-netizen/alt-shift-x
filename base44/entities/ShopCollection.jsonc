@@ -1,0 +1,65 @@
+{
+  "name": "ShopCollection",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Collection name, e.g. 'Frontend Dev Stack'"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique id used at /shop/collections/:slug"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short one-line description shown under the title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Longer 'why we picked these' body"
+    },
+    "emoji": {
+      "type": "string",
+      "default": "\ud83d\ude80",
+      "description": "Emoji shown on the collection card/header"
+    },
+    "hero_image_url": {
+      "type": "string"
+    },
+    "accent": {
+      "type": "string",
+      "default": "#0066FF"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Lower numbers appear first"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "title",
+    "slug"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

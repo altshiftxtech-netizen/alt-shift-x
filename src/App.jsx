@@ -15,6 +15,11 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import Marketplace from './pages/Marketplace';
+import ShopHome from './pages/ShopHome';
+import ShopCollections from './pages/ShopCollections';
+import ShopCollectionDetail from './pages/ShopCollectionDetail';
+import ShopFund from './pages/ShopFund';
+import ShopAdmin from './pages/ShopAdmin';
 import ComponentDetail from './pages/ComponentDetail';
 import UserDashboard from './pages/UserDashboard';
 import InstalledComponents from './pages/InstalledComponents';
@@ -136,6 +141,12 @@ const AuthenticatedApp = () => {
       {/* ── Public routes — no login required ── */}
       <Route path="/" element={<Home />} />
       <Route path="/marketplace" element={<Marketplace />} />
+      {/* Affiliate Speakeasy Shop */}
+      <Route path="/shop" element={<ShopHome />} />
+      <Route path="/shop/collections" element={<ShopCollections />} />
+      <Route path="/shop/collections/:slug" element={<ShopCollectionDetail />} />
+      <Route path="/shop/fund" element={<ShopFund />} />
+      <Route path="/shop/admin" element={<ShopAdmin />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
