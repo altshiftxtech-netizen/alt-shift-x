@@ -4,6 +4,7 @@ import { ArrowLeft, Gift, ScrollText, Truck, Mail } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import RaffleEntryForm from "@/components/speakeasy/raffles/RaffleEntryForm";
+import RaffleStarfield from "@/components/speakeasy/raffles/RaffleStarfield";
 
 function RaffleDetailInner() {
   const { slug } = useParams();
@@ -44,12 +45,13 @@ function RaffleDetailInner() {
 
   return (
     <div className="fixed inset-0 overflow-y-auto" style={{ background: "radial-gradient(120% 90% at 30% 10%, #24124a 0%, #0d1030 45%, #05030f 100%)" }}>
+      <RaffleStarfield />
       <button onClick={() => navigate("/speakeasy/raffles")}
         className="fixed top-4 left-4 z-30 flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-black/40 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
         <ArrowLeft className="w-4 h-4" /> All Raffles
       </button>
 
-      <div className="max-w-3xl mx-auto px-4 pt-20 pb-24">
+      <div className="relative z-10 max-w-3xl mx-auto px-4 pt-20 pb-24">
         <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>{raffle.title}</h1>
         <p className="text-white/60 mt-2">{raffle.description}</p>
         <p className="text-[12px] text-white/40 mt-1">Ends {raffle.end_date}</p>

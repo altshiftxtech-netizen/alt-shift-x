@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Ticket, Sparkles, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
+import RaffleStarfield from "@/components/speakeasy/raffles/RaffleStarfield";
 
 function RafflesInner() {
   const navigate = useNavigate();
@@ -19,13 +20,14 @@ function RafflesInner() {
 
   return (
     <div className="fixed inset-0 overflow-y-auto" style={{ background: "radial-gradient(120% 90% at 30% 10%, #24124a 0%, #0d1030 45%, #05030f 100%)" }}>
+      <RaffleStarfield />
       {/* chrome */}
       <button onClick={() => navigate("/speakeasy/proxy-room")}
         className="fixed top-4 left-4 z-30 flex items-center gap-1.5 text-xs text-white/70 hover:text-white bg-black/40 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
         <ArrowLeft className="w-4 h-4" /> Back to the Room
       </button>
 
-      <div className="max-w-5xl mx-auto px-4 pt-20 pb-24">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 pt-20 pb-24">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8FD8FF]/10 border border-[#8FD8FF]/30 mb-4">
             <Sparkles className="w-3.5 h-3.5 text-[#8FD8FF]" />
