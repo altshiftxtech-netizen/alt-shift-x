@@ -77,6 +77,7 @@ import SpeakeasyMeet from './pages/SpeakeasyMeet';
 import SpeakeasyHallway from './pages/SpeakeasyHallway';
 import SpeakeasyRaffles from './pages/SpeakeasyRaffles';
 import SpeakeasyRaffleDetail from './pages/SpeakeasyRaffleDetail';
+import RaffleAdmin from './pages/RaffleAdmin';
 import SpeakeasyHallwayEast from './pages/SpeakeasyHallwayEast';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import SpeakeasyBallroom from './pages/SpeakeasyBallroom';
@@ -228,6 +229,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/upkeeper" element={<UpKeeper />} />
+        <Route path="/admin/raffles" element={<RaffleAdmin />} />
         <Route path="/admin/crm" element={<Crm />} />
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />

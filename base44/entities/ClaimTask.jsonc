@@ -1,0 +1,101 @@
+{
+  "name": "ClaimTask",
+  "type": "object",
+  "properties": {
+    "raffle_id": {
+      "type": "string"
+    },
+    "raffle_title": {
+      "type": "string"
+    },
+    "entry_id": {
+      "type": "string",
+      "description": "The winning RaffleEntry this claim belongs to."
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "prize_name": {
+      "type": "string"
+    },
+    "prize_id": {
+      "type": "string",
+      "description": "Index of the prize within the raffle's prizes array."
+    },
+    "fulfillment_mode": {
+      "type": "string",
+      "enum": [
+        "ship",
+        "email_voucher"
+      ]
+    },
+    "shipping_address_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "opened",
+        "completed",
+        "expired",
+        "failed"
+      ],
+      "default": "sent"
+    },
+    "claim_deadline_datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shipping_address": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "raffle_id",
+    "entry_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
