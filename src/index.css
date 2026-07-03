@@ -89,6 +89,14 @@
   }
 }
 
+/* Cosmic "Raffles" doorway — slow comet streak drifting across the nebula */
+@keyframes raffles-comet {
+  0%   { transform: translateX(0) rotate(28deg); opacity: 0; }
+  15%  { opacity: 1; }
+  60%  { opacity: 0.8; }
+  100% { transform: translateX(320%) rotate(28deg); opacity: 0; }
+}
+
 /* Hide scrollbar for horizontally-scrollable nav rows while keeping scroll behavior */
 @layer utilities {
   .no-scrollbar {

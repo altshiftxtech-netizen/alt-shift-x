@@ -40,8 +40,8 @@ const DOORS = [
   // ── Left side wall — Tutorials & Hallway, skewed into the wall perspective ──
   { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
     style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", image: PORTRAITS[0], founder: "Corin Bitwright" },
-  { label: "Hallway", sublabel: "Expansion", to: "/speakeasy/hallway",
-    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora" },
+  { label: "Raffles", sublabel: "Expansion", to: "/speakeasy/hallway",
+    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora", cosmic: true },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Market", sublabel: "Components", to: "/marketplace",
     style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford" },
@@ -140,7 +140,7 @@ function ProxyRoomInner() {
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
             label={d.label} sublabel={d.sublabel} accent={FRAME} founder={d.founder} labelAbove={d.labelAbove}
-            onClick={() => navigate(d.to)} />
+            cosmic={d.cosmic} onClick={() => navigate(d.to)} />
         ))}
 
         {/* Hidden scavenger fixtures */}
