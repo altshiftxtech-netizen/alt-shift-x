@@ -12,7 +12,7 @@ import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 // to sit at the far end, larger and gold-trimmed.
 const ELIAS = WING_B[WING_B.length - 1];
 const LEFT_FRAMES = WING_B.slice(0, 3);        // P7–P9
-const RIGHT_FRAMES = WING_B.slice(3, 5);       // P10–P11
+const RIGHT_FRAMES = WING_B.slice(3, 5);       // P10–P11 (Elias mounts on the right wall too)
 
 function HallwayEastInner() {
   const navigate = useNavigate();
@@ -47,13 +47,10 @@ function HallwayEastInner() {
                 hoverPrice={f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
                 onClick={() => setSelected(f)} />
             ))}
-          </div>
-
-          {/* Elias Bytewell — the crown-jewel portrait at the far end, larger with a
-              gold-trim halo. Hides the free Legacy Kit behind the "eb" keystroke. */}
-          <div className="absolute left-1/2 top-[16%] -translate-x-1/2 z-40 flex flex-col items-center"
-            style={{ filter: `drop-shadow(0 0 24px ${ELIAS.accent}88)` }}>
-            <div className="scale-125 sm:scale-150 origin-top">
+            {/* Elias Bytewell — the crown-jewel portrait mounts on the wall alongside
+                its neighbors, with a larger gold-trim halo. Hides the free Legacy Kit
+                behind the "eb" keystroke. */}
+            <div style={{ filter: `drop-shadow(0 0 24px ${ELIAS.accent}88)` }}>
               <HallwayFrame label={ELIAS.label} sublabel={ELIAS.feature.split(" — ")[0]} accent={ELIAS.accent} image={ELIAS.image} founder={ELIAS.founder}
                 hoverPrice={`$${ELIAS.price}/mo`} hoverFeature={ELIAS.feature}
                 onClick={() => setSelected(ELIAS)} />
