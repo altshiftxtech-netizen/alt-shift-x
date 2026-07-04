@@ -7,13 +7,21 @@ import React from "react";
  * frame stays flat and the whole row shares one consistent angle.
  * Optional `image` fills the canvas; otherwise a soft nebula gradient shows.
  */
-export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A95B", image, founder }) {
+export default function HallwayFrame({ label, sublabel, onClick, accent = "#C8A95B", image, founder, hoverPrice, hoverFeature }) {
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col items-center focus:outline-none flex-shrink-0"
+      className="group relative flex flex-col items-center focus:outline-none flex-shrink-0"
       aria-label={`Enter ${label}`}
     >
+      {/* hover tooltip — price + catchy feature line */}
+      {hoverFeature && (
+        <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-44 rounded-lg px-3 py-2 text-center"
+          style={{ background: "rgba(6,4,10,0.95)", border: `1px solid ${accent}66`, boxShadow: `0 8px 24px rgba(0,0,0,0.6)` }}>
+          {hoverPrice && <p className="text-[11px] font-bold" style={{ color: accent }}>{hoverPrice}</p>}
+          <p className="text-[10px] text-white/70 leading-snug">{hoverFeature}</p>
+        </div>
+      )}
       {/* founder nameplate above the portrait */}
       {founder && (
         <p className="mb-1.5 text-[9px] sm:text-[10px] font-semibold italic tracking-wide whitespace-nowrap" style={{ color: accent, fontFamily: "'Playfair Display', serif", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>

@@ -1,38 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
 import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
+import PortraitModal from "@/components/speakeasy/hallway/PortraitModal";
+import { WING_B } from "@/components/speakeasy/hallway/portraitRegistry";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
-const GOLD = "#C8A95B";
-
-// The East Wing — a second, cooler-toned corridor. Same architecture as the
-// main hallway, but its own set of framed gateways, founders, and accents.
-const FOUNDERS = {
-  a: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c99b709_generated_image.png",
-  b: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
-  c: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bc1013179_generated_image.png",
-  d: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ae6533818_generated_image.png",
-  extraM: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c99b709_generated_image.png",
-  extraF: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
-};
-
-const LEFT_FRAMES = [
-  { label: "Pipelines", sublabel: "Enterprise", accent: "#5EA9C8", to: "/pipelines", image: FOUNDERS.a, founder: "Orrin Datamore" },
-  { label: "The Table", sublabel: "Meetups", accent: "#7FB3D5", to: "/speakeasy/meet", image: FOUNDERS.b, founder: "Vera Logicson" },
-  { label: "Circles", sublabel: "Groups", accent: "#6F9BC8", to: "/speakeasy/groups", image: FOUNDERS.extraM, founder: "Cassian Verge" },
-];
-const RIGHT_FRAMES = [
-  { label: "Tutorials", sublabel: "Learn", accent: "#8B9DC8", to: "/tutorials", image: FOUNDERS.c, founder: "Soren Patchley" },
-  { label: "The Room", sublabel: "Proxy Room", accent: "#A9C8E0", to: "/speakeasy/proxy-room", image: FOUNDERS.d, founder: "Nira Loopin" },
-  { label: "The Feed", sublabel: "Social", accent: "#9DB8D5", to: "/speakeasy/social", image: FOUNDERS.extraF, founder: "Lira Frostwell" },
-];
+// East Wing = Hallway B → portraits P7–P12. Elias Bytewell (P12) is pulled out
+// to sit at the far end, larger and gold-trimmed.
+const ELIAS = WING_B[WING_B.length - 1];
+const LEFT_FRAMES = WING_B.slice(0, 3);        // P7–P9
+const RIGHT_FRAMES = WING_B.slice(3, 5);       // P10–P11
 
 function HallwayEastInner() {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
+  const [selected, setSelected] = useState(null);
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#04070f" }}>
@@ -48,7 +33,9 @@ function HallwayEastInner() {
             style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}
           >
             {LEFT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
+                hoverPrice={f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                onClick={() => setSelected(f)} />
             ))}
           </div>
           <div
@@ -56,8 +43,21 @@ function HallwayEastInner() {
             style={{ transform: "perspective(900px) rotateY(-34deg)", transformOrigin: "right center" }}
           >
             {RIGHT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
+                hoverPrice={f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                onClick={() => setSelected(f)} />
             ))}
+          </div>
+
+          {/* Elias Bytewell — the crown-jewel portrait at the far end, larger with a
+              gold-trim halo. Hides the free Legacy Kit behind the "eb" keystroke. */}
+          <div className="absolute left-1/2 top-[16%] -translate-x-1/2 z-40 flex flex-col items-center"
+            style={{ filter: `drop-shadow(0 0 24px ${ELIAS.accent}88)` }}>
+            <div className="scale-125 sm:scale-150 origin-top">
+              <HallwayFrame label={ELIAS.label} sublabel={ELIAS.feature.split(" — ")[0]} accent={ELIAS.accent} image={ELIAS.image} founder={ELIAS.founder}
+                hoverPrice={`$${ELIAS.price}/mo`} hoverFeature={ELIAS.feature}
+                onClick={() => setSelected(ELIAS)} />
+            </div>
           </div>
         </HallwayScene>
       </div>
@@ -72,8 +72,10 @@ function HallwayEastInner() {
       </div>
       <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 text-center">
         <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#7FB3D5]">Expansion</p>
-        <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The East Wing</h1>
+        <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>East Wing</h1>
       </div>
+
+      {selected && <PortraitModal portrait={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }

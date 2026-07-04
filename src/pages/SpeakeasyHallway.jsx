@@ -1,40 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
 import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
+import PortraitModal from "@/components/speakeasy/hallway/PortraitModal";
+import { WING_A } from "@/components/speakeasy/hallway/portraitRegistry";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
 
-const GOLD = "#C8A95B";
-
-// Framed-picture gateways lining the corridor walls — each frame is an avenue
-// to a page, the hallway equivalent of the proxy room's doors. Add more here
-// as new rooms/pages open up.
-// Founder portraits (BOB-style builders on the left, Upkeeper-style masters on the right).
-const FOUNDERS = {
-  bobA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ae6533818_generated_image.png",
-  bobB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bc1013179_generated_image.png",
-  keeperA: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/31c99b709_generated_image.png",
-  keeperB: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
-  extraM: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/ae6533818_generated_image.png",
-  extraF: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6bc2448d5_generated_image.png",
-};
-
-const LEFT_FRAMES = [
-  { label: "Circles", sublabel: "Community Groups", accent: "#8B6FB8", to: "/speakeasy/groups", image: FOUNDERS.bobA, founder: "Elias Bytewell" },
-  { label: "The Feed", sublabel: "Social", accent: GOLD, to: "/speakeasy/social", image: FOUNDERS.bobB, founder: "Marin Codell" },
-  { label: "Market", sublabel: "Components", accent: "#C89B5E", to: "/marketplace", image: FOUNDERS.extraM, founder: "Dorian Stackwell" },
-];
-const RIGHT_FRAMES = [
-  { label: "Meet", sublabel: "Live Sessions", accent: "#5EA9C8", to: "/speakeasy/meet", image: FOUNDERS.keeperA, founder: "Thane Circuit" },
-  { label: "The Room", sublabel: "Proxy Room", accent: "#e0719c", to: "/speakeasy/proxy-room", image: FOUNDERS.keeperB, founder: "Jax Kernel" },
-  { label: "Tutorials", sublabel: "Learn", accent: "#B87FB8", to: "/tutorials", image: FOUNDERS.extraF, founder: "Isolde Cachet" },
-];
+// West Wing = Hallway A → portraits P1–P6 from the registry, split across the
+// two corridor walls.
+const LEFT_FRAMES = WING_A.slice(0, 3);
+const RIGHT_FRAMES = WING_A.slice(3, 6);
 
 function HallwayInner() {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
+  const [selected, setSelected] = useState(null);
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#050814" }}>
@@ -51,7 +33,9 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(34deg)", transformOrigin: "left center" }}
           >
             {LEFT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
+                hoverPrice={f.gate ? "Vault Access" : f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                onClick={() => setSelected(f)} />
             ))}
           </div>
           {/* Right wall — mirror tilt */}
@@ -60,7 +44,9 @@ function HallwayInner() {
             style={{ transform: "perspective(900px) rotateY(-34deg)", transformOrigin: "right center" }}
           >
             {RIGHT_FRAMES.map((f) => (
-              <HallwayFrame key={f.label} label={f.label} sublabel={f.sublabel} accent={f.accent} image={f.image} founder={f.founder} onClick={() => navigate(f.to)} />
+              <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
+                hoverPrice={f.gate ? "Vault Access" : f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                onClick={() => setSelected(f)} />
             ))}
           </div>
         </HallwayScene>
@@ -78,6 +64,8 @@ function HallwayInner() {
         <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">Expansion</p>
         <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>West Wing</h1>
       </div>
+
+      {selected && <PortraitModal portrait={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
