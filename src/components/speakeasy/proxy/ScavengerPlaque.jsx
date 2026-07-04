@@ -15,6 +15,7 @@ export default function ScavengerPlaque({ style }) {
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -31,9 +32,14 @@ export default function ScavengerPlaque({ style }) {
 
   return (
     <div
-      className="absolute z-20 w-[248px] rounded-md overflow-hidden select-none"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="absolute z-20 w-[248px] rounded-md overflow-hidden select-none origin-top-left transition-transform duration-300 ease-out"
       style={{
         ...style,
+        // Small by default, expands to full size on hover.
+        transform: `${style?.transform || ""} scale(${hovered ? 1 : 0.42})`,
+        zIndex: hovered ? 40 : 20,
         // Brushed dark-metal background with a subtle vertical grain.
         background:
           "linear-gradient(180deg,#20180f,#181109), repeating-linear-gradient(90deg, rgba(255,225,160,.04) 0px, rgba(255,225,160,.04) 1px, transparent 1px, transparent 3px)",
