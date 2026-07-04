@@ -11,6 +11,7 @@ import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
 import ScavengerPlaque from "@/components/speakeasy/proxy/ScavengerPlaque";
 import HallwayArrow from "@/components/speakeasy/proxy/HallwayArrow";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
+import DiscordGateModal from "@/components/speakeasy/proxy/DiscordGateModal";
 import MessageModal from "@/components/speakeasy/proxy/MessageModal";
 import SpeakeasyLogo from "@/components/speakeasy/SpeakeasyLogo";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
@@ -53,7 +54,7 @@ const DOORS = [
     style: { left: "39%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[3], founder: "Bram Cacheton" },
   { label: "Circles", sublabel: "Groups", to: "/speakeasy/groups",
     style: { left: "61%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[4], founder: "Tavin Gridley" },
-  { label: "Gamers", sublabel: "Private", to: "/speakeasy/bathroom",
+  { label: "Gamers", sublabel: "Private", discordGate: true,
     style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart" },
   // ── Right side wall — mirror of the left ──
   { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
@@ -89,6 +90,7 @@ function ProxyRoomInner() {
 
   const [msgTarget, setMsgTarget] = useState(null);
   const [bartenderOpen, setBartenderOpen] = useState(false);
+  const [discordOpen, setDiscordOpen] = useState(false);
 
   // Load which fixtures this member has already found (so they render as found).
   useEffect(() => {
@@ -151,7 +153,7 @@ function ProxyRoomInner() {
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
             label={d.label} sublabel={d.sublabel} accent={FRAME} founder={d.founder} labelAbove={d.labelAbove}
-            cosmic={d.cosmic} onClick={() => (d.expertmindsGate ? enterExpertminds() : navigate(d.to))} />
+            cosmic={d.cosmic} onClick={() => (d.expertmindsGate ? enterExpertminds() : d.discordGate ? setDiscordOpen(true) : navigate(d.to))} />
         ))}
 
         {/* Hidden scavenger fixtures */}
@@ -189,6 +191,7 @@ function ProxyRoomInner() {
       <MessageModal open={!!msgTarget} target={msgTarget} onClose={() => setMsgTarget(null)} onSend={sendNote} />
 
       {bartenderOpen && <BartenderChat onClose={() => setBartenderOpen(false)} />}
+      <DiscordGateModal open={discordOpen} onClose={() => setDiscordOpen(false)} />
     </div>
   );
 }
