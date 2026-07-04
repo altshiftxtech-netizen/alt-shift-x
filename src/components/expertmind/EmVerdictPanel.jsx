@@ -2,6 +2,7 @@ import React from "react";
 import { ShieldCheck, Activity, GitBranch, AlertTriangle, CheckCircle2, Gauge } from "lucide-react";
 import { EM } from "./emTokens";
 import { parseBobEmResponse } from "@/lib/gspParser";
+import EmQrSeal from "./EmQrSeal";
 
 // Tone → color mapping for verdict chips/badges.
 const TONE = {
@@ -65,9 +66,7 @@ function ClinicalVerdict({ v }) {
         {v.eligibility.tone === "green" ? <CheckCircle2 className="w-4 h-4" style={{ color: TONE.green.border }} /> : null}
         <Chip tone={v.eligibility.tone}>{v.eligibility.label}</Chip>
       </div>
-      {v.auditHash && (
-        <p className="text-[10px] font-mono mt-3" style={{ color: EM.muted }}>QR-Seal · evidence …{v.auditHash}</p>
-      )}
+      <EmQrSeal hash={v.auditHash} />
     </Card>
   );
 }
