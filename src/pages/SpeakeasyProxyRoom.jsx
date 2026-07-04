@@ -166,7 +166,7 @@ function ProxyRoomInner() {
 
         {/* Fashionable clickable Hallway signposts at the yellow X spots flanking the bar */}
         <HallwayArrow dir="left" label="West Wing" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />
-        <HallwayArrow dir="right" label="Business Center" onClick={() => navigate("/biz-center")} style={{ right: "30%", top: "66%" }} />
+        <HallwayArrow dir="right" label="East Wing" onClick={() => navigate("/speakeasy/hallway-east")} style={{ right: "30%", top: "66%" }} />
       </ProxyScene>
 
       {/* Minimal floating chrome */}
