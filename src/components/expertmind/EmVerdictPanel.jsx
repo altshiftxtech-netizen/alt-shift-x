@@ -94,8 +94,8 @@ function IdentityVerdict({ v }) {
   return (
     <Card icon={GitBranch} title="Lineage & Governance" source="BOB-EM-1.0">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[12px]" style={{ color: EM.text }}>Gen-2 Lineage</span>
-        <span className="text-[12px] font-mono font-semibold" style={{ color: EM.accent }}>{v.genToken}</span>
+        <span className="text-[12px]" style={{ color: EM.text }}>{v.lineageLabel}</span>
+        <span className="text-[11px] font-mono font-semibold" style={{ color: EM.accent }}>{v.genToken}</span>
       </div>
       <p className="text-[11px] font-semibold mb-1.5" style={{ color: EM.muted }}>Active Protocols</p>
       <div className="flex flex-wrap gap-1.5 mb-3">

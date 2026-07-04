@@ -1,11 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles, Loader2, Mic, Square } from "lucide-react";
+import { X, Send, Sparkles, Loader2, Mic, Square, FlaskConical } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { base44 } from "@/api/base44Client";
 import useVoiceInput from "@/hooks/useVoiceInput";
 import { EM } from "./emTokens";
 import { DEFAULT_MODEL } from "./emModels";
 import EmModelSwitcher from "./EmModelSwitcher";
+import EmVerdictPanel from "./EmVerdictPanel";
+
+// Sample BOB-EM-1.0 adjudication payload (GPM-V2.1 test fixture) — lets a dev
+// preview how the Super-Tokens "unzip" into the verdict dashboard.
+const SAMPLE_VERDICT = {
+  gsp_lineage_audit_supertoken: "G2-EM-APEX|SC-OE-HP-BS|98.2",
+  gsp_master_evaluation_hash: "12.04-4.3.4.2|C1|7f3a9",
+  gsp_longitudinal_summary_hash: "180d|DRIFT.92",
+};
 
 const GREETING = {
   role: "assistant",
@@ -33,6 +42,14 @@ export default function EmExtractionConsole({ onClose }) {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
+
+  const loadSampleVerdict = () => {
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "Adjudication complete — structured verdict below." },
+      { role: "verdict", verdict: SAMPLE_VERDICT },
+    ]);
+  };
 
   const send = async () => {
     const text = input.trim();
@@ -78,22 +95,26 @@ export default function EmExtractionConsole({ onClose }) {
 
         {/* Transcript */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4" style={{ background: EM.bg }}>
-          {messages.map((m, i) => (
-            <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              <div
-                className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
-                style={
-                  m.role === "user"
-                    ? { background: EM.primary, color: "#fff" }
-                    : { background: EM.surface, color: EM.text, border: `1px solid ${EM.border}` }
-                }
-              >
-                {m.role === "assistant"
-                  ? <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold"><ReactMarkdown>{m.content}</ReactMarkdown></div>
-                  : m.content}
+          {messages.map((m, i) =>
+            m.role === "verdict" ? (
+              <EmVerdictPanel key={i} response={m.verdict} />
+            ) : (
+              <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                <div
+                  className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed"
+                  style={
+                    m.role === "user"
+                      ? { background: EM.primary, color: "#fff" }
+                      : { background: EM.surface, color: EM.text, border: `1px solid ${EM.border}` }
+                  }
+                >
+                  {m.role === "assistant"
+                    ? <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-strong:font-semibold"><ReactMarkdown>{m.content}</ReactMarkdown></div>
+                    : m.content}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
           {busy && (
             <div className="flex justify-start">
               <div className="rounded-2xl px-4 py-3 flex items-center gap-2 text-[13px]" style={{ background: EM.surface, border: `1px solid ${EM.border}`, color: EM.muted }}>
@@ -114,6 +135,16 @@ export default function EmExtractionConsole({ onClose }) {
             className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-[14px] focus:outline-none focus:ring-2"
             style={{ border: `1px solid ${EM.border}`, background: EM.bg, color: EM.text }}
           />
+          {/* Demo: unzip the sample BOB-EM-1.0 verdict payload */}
+          <button
+            onClick={loadSampleVerdict}
+            disabled={busy}
+            title="Load sample verdict (GPM-V2.1 test payload)"
+            className="p-2.5 rounded-xl disabled:opacity-40 transition-all"
+            style={{ border: `1px solid ${EM.border}`, color: EM.accent, background: EM.surface }}
+          >
+            <FlaskConical className="w-4 h-4" />
+          </button>
           {/* Talk-to-text mic */}
           <button
             onClick={toggle}

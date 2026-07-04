@@ -36,6 +36,12 @@ const PROTOCOL_NAMES = {
   SC: "Sentinel",
   OE: "Operational",
   HP: "Hippocrates",
+  BS: "Blackstone",
+};
+
+// Friendly lineage labels for known Gen tokens (falls back to the raw token).
+const LINEAGE_LABELS = {
+  "G2-EM-APEX": "Gen-2 Apex",
 };
 
 // ── A. Clinical Verdict — gsp_master_evaluation_hash ──────────────────────────
@@ -117,6 +123,7 @@ export function parseLineageAudit(hash) {
   return {
     kind: "identity",
     genToken,
+    lineageLabel: LINEAGE_LABELS[genToken] || genToken,
     protocols,
     concordance: concordanceRaw ? Number(concordanceRaw) : null,
   };
