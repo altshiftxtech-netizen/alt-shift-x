@@ -410,7 +410,7 @@ export default function Pricing() {
                   The Speakeasy — a members-only Founders' Room
                 </p>
                 <p className="text-xs text-[#9CA0A8] leading-relaxed">
-                  Every paid tier unlocks the Speakeasy: an immersive Founders' Room with a robot barkeep, portrait hallways, business meetups at The Table, Circles, Raffles, and the Expertminds Vault. Explore for an invisible scavenger hunt — hidden seeds with no on-screen markers — and climb the Brass &amp; Noir <strong className="text-[#E6C878]">Founder's Board</strong> leaderboard, ranked by seeds found and tie-broken by your Platform Trust Score.
+                  Every paid tier unlocks the Speakeasy: an immersive Founders' Room with a robot barkeep, portrait hallways, business meetups at The Table, Circles, Raffles, the exclusive <strong className="text-[#E6C878]">Pipelines</strong> quartet, and the Expertminds Vault. Explore for an invisible scavenger hunt — hidden seeds with no on-screen markers — and climb the Brass &amp; Noir <strong className="text-[#E6C878]">Founder's Board</strong> leaderboard, ranked by seeds found and tie-broken by your Platform Trust Score.
                 </p>
               </div>
             </div>

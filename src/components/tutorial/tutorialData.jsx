@@ -484,6 +484,14 @@ export const TUTORIALS = [
         ],
       },
       {
+        title: "The exclusive Pipelines quartet",
+        steps: [
+          "Step through the 'Pipelines' portrait to reach the members-only Exclusive Pipelines room.",
+          "Four elite Gen-2 pipelines: KB Velocity ($499), Forum Governance ($799), Apex Deal Strategy ($599), and White-Label Factory ($999).",
+          "Grab the Speakeasy Master Suite bundle — all four under one key for $2,499 (13% off the $2,896 combined price).",
+        ],
+      },
+      {
         title: "Posting & the Front Man",
         steps: [
           "Share posts, videos, and memes with the community.",
