@@ -14,6 +14,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
+import ExpertMind from './pages/ExpertMind';
 import Marketplace from './pages/Marketplace';
 import ShopHome from './pages/ShopHome';
 import ShopCollections from './pages/ShopCollections';
@@ -148,6 +149,7 @@ const AuthenticatedApp = () => {
       <Route path="/shop/fund" element={<ShopFund />} />
       <Route path="/shop/admin" element={<ShopAdmin />} />
       <Route path="/about" element={<AboutUs />} />
+      <Route path="/expertmind" element={<ExpertMind />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/pipelines" element={<Pipelines />} />
