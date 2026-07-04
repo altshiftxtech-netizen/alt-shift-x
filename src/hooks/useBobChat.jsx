@@ -29,7 +29,7 @@ import { base44 } from "@/api/base44Client";
 const RUNNING = ["pending", "in_progress", "running"];
 // After the reply text stops changing, wait this long before calling the turn
 // done — prevents "your turn" flashing on a half-streamed sentence.
-const SETTLE_MS = 1600;
+const SETTLE_MS = 600;
 // Absolute ceiling: even a dead stream clears the indicator after this.
 const WATCHDOG_MS = 60000;
 
