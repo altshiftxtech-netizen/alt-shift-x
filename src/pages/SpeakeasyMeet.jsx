@@ -4,7 +4,6 @@ import { ArrowLeft, CalendarPlus, Loader2, Armchair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
-import SpeakeasyVideoBackground from "@/components/speakeasy/SpeakeasyVideoBackground";
 import SessionCard from "@/components/speakeasy/meet/SessionCard";
 import ScheduleSessionDialog from "@/components/speakeasy/meet/ScheduleSessionDialog";
 
@@ -43,7 +42,15 @@ function MeetInner() {
 
   return (
     <div className="min-h-screen relative">
-      <SpeakeasyVideoBackground />
+      {/* Modern Boardroom background — reminds members The Table is business. */}
+      <div className="fixed inset-0 z-0">
+        <img
+          src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/25f9c8578_generated_image.png"
+          alt="Modern executive boardroom"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0E1116]/80 via-[#0E1116]/70 to-[#0E1116]/90" />
+      </div>
 
       <header className="relative z-40 border-b border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-xl sticky top-0">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
