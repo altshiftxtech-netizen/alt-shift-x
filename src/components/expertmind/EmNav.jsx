@@ -26,7 +26,7 @@ export default function EmNav() {
             X
           </div>
           <div className="leading-none">
-            <span className="text-[15px] font-semibold" style={{ color: EM.primary }}>Alt+Shift+X</span>
+            <span className="text-[15px] font-semibold" style={{ color: EM.primary }}>Alt+Shift+X.tech</span>
             <span className="hidden sm:inline text-[11px] font-medium ml-2" style={{ color: EM.accent }}>ExpertMind™</span>
           </div>
         </div>
