@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { Home, DoorOpen } from "lucide-react";
 import { EM } from "./emTokens";
 import { useEmLaunch } from "./EmLaunchContext";
 
@@ -13,6 +15,9 @@ const LINKS = [
 /** Sticky executive top navigation — white, thin bottom border. */
 export default function EmNav() {
   const launch = useEmLaunch();
+  // Visitors who entered via the Founder's Room portrait carry a ?tier= flag —
+  // give them a door back into the Speakeasy. Everyone gets a door back home.
+  const cameFromPortrait = new URLSearchParams(window.location.search).has("tier");
   return (
     <header
       className="sticky top-0 z-40 backdrop-blur-sm"
@@ -42,8 +47,24 @@ export default function EmNav() {
           ))}
         </div>
 
-        {/* Right: login + primary control */}
+        {/* Right: return doors + login + primary control */}
         <div className="flex items-center gap-3">
+          {cameFromPortrait && (
+            <Link
+              to="/speakeasy/proxy-room"
+              className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors hover:opacity-70"
+              style={{ color: EM.accent }}
+            >
+              <DoorOpen className="w-4 h-4" /> Speakeasy
+            </Link>
+          )}
+          <Link
+            to="/"
+            className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors hover:opacity-70"
+            style={{ color: EM.muted }}
+          >
+            <Home className="w-4 h-4" /> Home
+          </Link>
           <button className="hidden sm:block text-[14px] font-medium transition-colors hover:opacity-70" style={{ color: EM.muted }}>
             Login
           </button>
