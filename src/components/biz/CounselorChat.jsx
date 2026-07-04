@@ -7,7 +7,6 @@ import { Send, Loader2, Search, MessageSquare } from "lucide-react";
 import { TEMPLATES, STRATEGY_MODULES } from "./bizData";
 import DraftingAidNotice from "./DraftingAidNotice";
 
-const TEMPLATE_CTX = TEMPLATES.map((t) => `${t.label} (${t.stage})`).join(", ");
 const STRATEGY_CTX = STRATEGY_MODULES.map((m) => `${m.title}: ${m.tagline}`).join("; ");
 
 /**
@@ -15,7 +14,10 @@ const STRATEGY_CTX = STRATEGY_MODULES.map((m) => `${m.title}: ${m.tagline}`).joi
  * routes a question to: (a) which template you need, (b) strategy explainers,
  * (c) tradeoffs and operating playbooks. Can jump the user to a template.
  */
-export default function CounselorChat({ onOpenTemplate }) {
+export default function CounselorChat({ onOpenTemplate, allowedKeys }) {
+  // Light BOB² only knows its allowed subset; Apex knows the full catalog.
+  const catalog = allowedKeys ? TEMPLATES.filter((t) => allowedKeys.includes(t.key)) : TEMPLATES;
+  const templateCtx = catalog.map((t) => `${t.label} (${t.stage})`).join(", ");
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -39,7 +41,7 @@ export default function CounselorChat({ onOpenTemplate }) {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `You are BOB² "BuilderOperatedBiz", a solutionist business counselor for software builders. You are NOT a lawyer; never give legal advice — give business/strategy guidance and point to drafting-aid templates.
 
-Available document templates: ${TEMPLATE_CTX}.
+Available document templates: ${templateCtx}.
 Strategy modules: ${STRATEGY_CTX}.
 
 If the user asks "what template do I need", recommend the single best-matching template by its exact label and set suggested_template_key.
@@ -56,7 +58,7 @@ User question: ${q}`,
         },
       });
       const key = res.suggested_template_key;
-      const tpl = TEMPLATES.find((t) => t.key === key);
+      const tpl = catalog.find((t) => t.key === key);
       setMessages((m) => [...m, { role: "assistant", content: res.answer, template: tpl }]);
     } catch {
       setMessages((m) => [...m, { role: "assistant", content: "I couldn't reach the reasoning engine. Try again in a moment." }]);

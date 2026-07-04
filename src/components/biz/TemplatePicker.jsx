@@ -9,13 +9,18 @@ const PAGE_SIZE = 4;
  * Paginated document picker, browsable by deal stage. Selecting a template
  * hands it up to the parent to open the field-completion form.
  */
-export default function TemplatePicker({ onPick }) {
+export default function TemplatePicker({ onPick, allowedKeys }) {
   const [stage, setStage] = useState("all");
   const [page, setPage] = useState(0);
 
+  // Two-tier: a Light BOB² only sees the allowed subset; Apex sees everything.
+  const catalog = useMemo(
+    () => (allowedKeys ? TEMPLATES.filter((t) => allowedKeys.includes(t.key)) : TEMPLATES),
+    [allowedKeys]
+  );
   const filtered = useMemo(
-    () => (stage === "all" ? TEMPLATES : TEMPLATES.filter((t) => t.stage === stage)),
-    [stage]
+    () => (stage === "all" ? catalog : catalog.filter((t) => t.stage === stage)),
+    [stage, catalog]
   );
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const current = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);

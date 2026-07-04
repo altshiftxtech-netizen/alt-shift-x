@@ -9,6 +9,9 @@ import DocumentForm from "@/components/biz/DocumentForm";
 import GeneratedDocument from "@/components/biz/GeneratedDocument";
 import StrategyCenter from "@/components/biz/StrategyCenter";
 import CounselorChat from "@/components/biz/CounselorChat";
+import MemoryGreeting from "@/components/biz/MemoryGreeting";
+import useBobTier, { LIGHT_TEMPLATE_KEYS } from "@/hooks/useBobTier";
+import { TEMPLATES } from "@/components/biz/bizData";
 
 const TABS = [
   { key: "documents", label: "Document Center", icon: FileText },
@@ -18,15 +21,30 @@ const TABS = [
 
 function BizCenterInner() {
   const navigate = useNavigate();
+  const { isApex } = useBobTier();
+  const allowedKeys = isApex ? null : LIGHT_TEMPLATE_KEYS;
   const [tab, setTab] = useState("documents");
   // Document flow: 'browse' → 'form' → 'result'
   const [docStep, setDocStep] = useState("browse");
   const [template, setTemplate] = useState(null);
+  const [resumeData, setResumeData] = useState(null); // { values, jurisdiction } when resuming a saved draft
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState(null);
 
   const openTemplate = (t) => {
     setTemplate(t);
+    setResumeData(null);
+    setDocStep("form");
+    setTab("documents");
+    setResult(null);
+  };
+
+  // Resume a saved draft from the memory greeting.
+  const resumeDraft = (doc) => {
+    const tpl = TEMPLATES.find((t) => t.key === doc.template_key);
+    if (!tpl) return;
+    setTemplate(tpl);
+    setResumeData({ values: doc.fields || {}, jurisdiction: doc.jurisdiction });
     setDocStep("form");
     setTab("documents");
     setResult(null);
@@ -115,8 +133,13 @@ function BizCenterInner() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Contextual memory greeting */}
       <div className="max-w-5xl mx-auto px-5 mt-6">
+        <MemoryGreeting onResume={resumeDraft} tierLabel={isApex ? "Apex" : "Light"} />
+      </div>
+
+      {/* Tabs */}
+      <div className="max-w-5xl mx-auto px-5 mt-2">
         <div className="flex gap-1 border-b border-white/10">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -137,9 +160,10 @@ function BizCenterInner() {
       <div className="max-w-5xl mx-auto px-5 py-6 pb-20">
         {tab === "documents" && (
           <>
-            {docStep === "browse" && <TemplatePicker onPick={openTemplate} />}
+            {docStep === "browse" && <TemplatePicker onPick={openTemplate} allowedKeys={allowedKeys} />}
             {docStep === "form" && template && (
               <DocumentForm template={template} generating={generating}
+                initialValues={resumeData?.values} initialJurisdiction={resumeData?.jurisdiction}
                 onBack={() => setDocStep("browse")} onGenerate={generate} />
             )}
             {docStep === "result" && result && (
@@ -159,7 +183,7 @@ function BizCenterInner() {
 
         {tab === "counselor" && (
           <div className="h-[62vh] rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-            <CounselorChat onOpenTemplate={openTemplate} />
+            <CounselorChat onOpenTemplate={openTemplate} allowedKeys={allowedKeys} />
           </div>
         )}
       </div>
