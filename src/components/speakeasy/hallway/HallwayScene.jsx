@@ -7,7 +7,7 @@ import React from "react";
  * point. Purely visual; framed gateways and avatars are layered on top by the
  * page. `door` renders the far door as a button when onDoor is provided.
  */
-export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) {
+export default function HallwayScene({ children, onDoor, wallLeft, wallRight, doorLabel = "Powder Room" }) {
   const leftWall = wallLeft || "linear-gradient(100deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)";
   const rightWall = wallRight || "linear-gradient(260deg, #efe9df 0%, #d9d3c8 60%, #b7b1a6 100%)";
   return (
@@ -116,7 +116,7 @@ export default function HallwayScene({ children, onDoor, wallLeft, wallRight }) 
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[80%] h-3 rounded-full" style={{ background: "radial-gradient(ellipse, rgba(255,225,160,0.55), transparent 70%)", filter: "blur(3px)" }} />
           <div className="absolute inset-0 rounded-t-[10px] opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 34px 6px rgba(200,169,91,0.6)" }} />
         </button>
-        <p className="mt-2 text-[9px] uppercase tracking-[0.2em] text-[#C8A95B]/80 whitespace-nowrap">Powder Room</p>
+        <p className="mt-2 text-[9px] uppercase tracking-[0.2em] text-[#C8A95B]/80 whitespace-nowrap">{doorLabel}</p>
       </div>
 
       {/* framed gateways + avatars layered on top */}

@@ -41,6 +41,7 @@ function HallwayInner() {
       <div className="absolute inset-0 z-10">
         <HallwayScene
           onDoor={() => navigate("/speakeasy/ballroom")}
+          doorLabel="Ballroom"
           wallLeft="linear-gradient(100deg, #3a2a1a 0%, #241a10 60%, #140d07 100%)"
           wallRight="linear-gradient(260deg, #3a2a1a 0%, #241a10 60%, #140d07 100%)"
         >
@@ -75,7 +76,7 @@ function HallwayInner() {
       </div>
       <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 text-center">
         <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B]">Expansion</p>
-        <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The Hallway</h1>
+        <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>West Wing</h1>
       </div>
     </div>
   );

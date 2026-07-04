@@ -39,6 +39,7 @@ function HallwayEastInner() {
       <div className="absolute inset-0 z-10">
         <HallwayScene
           onDoor={() => navigate("/speakeasy/ballroom-east")}
+          doorLabel="Ballroom"
           wallLeft="linear-gradient(100deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
           wallRight="linear-gradient(260deg, #26344a 0%, #1a2333 60%, #10151f 100%)"
         >
