@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles, Loader2 } from "lucide-react";
+import { X, Send, Sparkles, Loader2, Mic, Square } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { base44 } from "@/api/base44Client";
+import useVoiceInput from "@/hooks/useVoiceInput";
 import { EM } from "./emTokens";
 import { DEFAULT_MODEL } from "./emModels";
 import EmModelSwitcher from "./EmModelSwitcher";
@@ -23,6 +24,11 @@ export default function EmExtractionConsole({ onClose }) {
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef(null);
+
+  // Talk-to-text: transcribed speech is appended to whatever's already typed.
+  const { recording, transcribing, toggle } = useVoiceInput({
+    onTranscript: (t) => setInput((prev) => (prev ? `${prev} ${t}` : t)),
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -104,10 +110,24 @@ export default function EmExtractionConsole({ onClose }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             rows={1}
-            placeholder="Share your answer…"
+            placeholder={recording ? "Listening…" : transcribing ? "Transcribing…" : "Share your answer, or tap the mic…"}
             className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-[14px] focus:outline-none focus:ring-2"
             style={{ border: `1px solid ${EM.border}`, background: EM.bg, color: EM.text }}
           />
+          {/* Talk-to-text mic */}
+          <button
+            onClick={toggle}
+            disabled={busy || transcribing}
+            title={recording ? "Stop recording" : "Speak your answer"}
+            className="p-2.5 rounded-xl disabled:opacity-40 transition-all"
+            style={
+              recording
+                ? { background: "#EF4444", color: "#fff", boxShadow: "0 0 0 4px rgba(239,68,68,0.25)" }
+                : { border: `1px solid ${EM.border}`, color: EM.accent, background: EM.surface }
+            }
+          >
+            {transcribing ? <Loader2 className="w-4 h-4 animate-spin" /> : recording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
           <button
             onClick={send}
             disabled={busy || !input.trim()}

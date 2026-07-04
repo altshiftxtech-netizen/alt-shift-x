@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { EM } from "./emTokens";
 import { useEmLaunch } from "./EmLaunchContext";
 
@@ -18,12 +19,13 @@ export default function EmFinalCta() {
           >
             Launch ExpertMind Extraction
           </button>
-          <button
-            className="text-[15px] font-semibold px-6 py-3.5 rounded-lg text-white transition-colors hover:bg-white/10"
+          <Link
+            to="/pricing"
+            className="text-[15px] font-semibold px-6 py-3.5 rounded-lg text-white transition-colors hover:bg-white/10 inline-flex items-center justify-center"
             style={{ border: "1px solid rgba(255,255,255,0.4)" }}
           >
-            Request Enterprise Access
-          </button>
+            View Plans &amp; Pricing
+          </Link>
         </div>
       </div>
     </section>

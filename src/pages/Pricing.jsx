@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText } from "lucide-react";
+import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import Logo from "@/components/Logo";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
@@ -285,6 +285,19 @@ export default function Pricing() {
         <div className="flex items-center gap-3">
           <Link to="/marketplace" className="text-sm text-slate-500 hover:text-slate-800">Marketplace</Link>
           <PricingSharePanel />
+          <Link to="/expertmind">
+            <Button
+              size="sm"
+              className="text-xs gap-1.5 font-semibold text-[#062b27] border"
+              style={{
+                background: "#39E6B0",
+                borderColor: "#5CF2C4",
+                boxShadow: "0 0 12px rgba(57,230,176,0.6), 0 0 4px rgba(57,230,176,0.9) inset",
+              }}
+            >
+              <BrainCircuit className="w-3.5 h-3.5" /> ExpertMind
+            </Button>
+          </Link>
           <Link to="/dashboard"><Button size="sm" variant="outline" className="text-xs">Dashboard</Button></Link>
         </div>
       </nav>
