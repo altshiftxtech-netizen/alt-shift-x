@@ -8,6 +8,7 @@ import ProxyBarScene from "@/components/speakeasy/proxy/ProxyBarScene";
 import BartenderChat from "@/components/speakeasy/proxy/BartenderChat";
 import ProxyDoor from "@/components/speakeasy/proxy/ProxyDoor";
 import ScavengerFixture from "@/components/speakeasy/proxy/ScavengerFixture";
+import ScavengerPlaque from "@/components/speakeasy/proxy/ScavengerPlaque";
 import HallwayArrow from "@/components/speakeasy/proxy/HallwayArrow";
 import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
 import MessageModal from "@/components/speakeasy/proxy/MessageModal";
@@ -159,6 +160,9 @@ function ProxyRoomInner() {
             found={foundFixtures.includes(f.fixture_id)}
             onClick={() => inspectFixture(f.fixture_id)} />
         ))}
+
+        {/* Brass & Noir scavenger leaderboard — mounted on the wall by the entrance */}
+        <ScavengerPlaque style={{ left: "1.5%", top: "10%" }} />
 
         {/* Fashionable clickable Hallway signposts at the yellow X spots flanking the bar */}
         <HallwayArrow dir="left" label="West Wing" onClick={() => navigate("/speakeasy/hallway")} style={{ left: "30%", top: "66%" }} />
