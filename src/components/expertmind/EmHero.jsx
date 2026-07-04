@@ -1,6 +1,7 @@
 import React from "react";
 import { ShieldCheck, BadgeCheck, LayoutGrid, Lock, Building2 } from "lucide-react";
 import { EM } from "./emTokens";
+import { useEmLaunch } from "./EmLaunchContext";
 import KnowledgeCockpit from "./KnowledgeCockpit";
 
 const CHIPS = [
@@ -12,6 +13,7 @@ const CHIPS = [
 ];
 
 export default function EmHero() {
+  const launch = useEmLaunch();
   return (
     <section id="hero" style={{ background: EM.bg }}>
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24">
@@ -34,6 +36,7 @@ export default function EmHero() {
 
             <div className="flex flex-col sm:flex-row gap-3 mt-8">
               <button
+                onClick={launch}
                 className="text-[14px] font-semibold px-5 py-3 rounded-lg text-white transition-transform hover:-translate-y-px"
                 style={{ background: EM.primary, boxShadow: `0 1px 2px ${EM.shadow}` }}
               >

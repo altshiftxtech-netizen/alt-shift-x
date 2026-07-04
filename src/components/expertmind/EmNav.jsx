@@ -1,5 +1,6 @@
 import React from "react";
 import { EM } from "./emTokens";
+import { useEmLaunch } from "./EmLaunchContext";
 
 const LINKS = [
   { label: "Overview", href: "#hero" },
@@ -11,6 +12,7 @@ const LINKS = [
 
 /** Sticky executive top navigation — white, thin bottom border. */
 export default function EmNav() {
+  const launch = useEmLaunch();
   return (
     <header
       className="sticky top-0 z-40 backdrop-blur-sm"
@@ -46,6 +48,7 @@ export default function EmNav() {
             Login
           </button>
           <button
+            onClick={launch}
             className="text-[13px] font-semibold px-4 py-2 rounded-lg text-white transition-transform hover:-translate-y-px"
             style={{ background: EM.primary, boxShadow: `0 1px 2px ${EM.shadow}` }}
           >

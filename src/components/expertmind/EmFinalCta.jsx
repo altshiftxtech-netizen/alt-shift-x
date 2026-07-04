@@ -1,7 +1,9 @@
 import React from "react";
 import { EM } from "./emTokens";
+import { useEmLaunch } from "./EmLaunchContext";
 
 export default function EmFinalCta() {
+  const launch = useEmLaunch();
   return (
     <section id="final-cta" style={{ background: `linear-gradient(135deg, ${EM.primary} 0%, ${EM.primary2} 100%)` }}>
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-24 text-center">
@@ -10,6 +12,7 @@ export default function EmFinalCta() {
         </h2>
         <div className="flex flex-col sm:flex-row gap-3 justify-center mt-10">
           <button
+            onClick={launch}
             className="text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-transform hover:-translate-y-px"
             style={{ background: "#fff", color: EM.primary }}
           >
