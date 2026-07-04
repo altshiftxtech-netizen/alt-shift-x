@@ -57,7 +57,7 @@ const DOORS = [
   { label: "Gamers", sublabel: "Private", discordGate: true,
     style: { left: "70%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[5], founder: "Elowen Stackhart" },
   // ── Right side wall — mirror of the left ──
-  { label: "Pipelines", sublabel: "Enterprise", to: "/pipelines",
+  { label: "Pipelines", sublabel: "Exclusive", to: "/speakeasy/pipelines",
     style: { left: "82%", top: "46%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.8)", image: PORTRAITS[6], founder: "Dorian Nodefield" },
   { label: "The Table", sublabel: "Meetups", to: "/speakeasy/meet",
     style: { left: "95%", top: "48%" }, tilt: "perspective(700px) rotateY(-38deg) scale(0.92)", image: PORTRAITS[7], founder: "Selix Portwell" },

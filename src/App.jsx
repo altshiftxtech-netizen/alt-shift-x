@@ -88,6 +88,7 @@ import SpeakeasyHallwayEast from './pages/SpeakeasyHallwayEast';
 import SpeakeasyBathroom from './pages/SpeakeasyBathroom';
 import SpeakeasyBallroom from './pages/SpeakeasyBallroom';
 import SpeakeasyBallroomEast from './pages/SpeakeasyBallroomEast';
+import SpeakeasyPipelines from './pages/SpeakeasyPipelines';
 import UpKeeper from './pages/UpKeeper';
 import BizCenter from './pages/BizCenter';
 import Crm from './pages/Crm';
@@ -207,6 +208,7 @@ const AuthenticatedApp = () => {
       <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
       <Route path="/speakeasy/ballroom" element={<SpeakeasyBallroom />} />
       <Route path="/speakeasy/ballroom-east" element={<SpeakeasyBallroomEast />} />
+      <Route path="/speakeasy/pipelines" element={<SpeakeasyPipelines />} />
       <Route path="/biz-center" element={<BizCenter />} />
 
       {/* ── Protected routes — login required ── */}
