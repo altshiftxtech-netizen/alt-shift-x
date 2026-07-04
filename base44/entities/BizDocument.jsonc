@@ -1,0 +1,117 @@
+{
+  "name": "BizDocument",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "User who generated this document"
+    },
+    "template_key": {
+      "type": "string",
+      "description": "Which template category this was generated from, e.g. 'software_license'"
+    },
+    "template_label": {
+      "type": "string",
+      "description": "Human-readable template name, e.g. 'Software License Agreement'"
+    },
+    "deal_stage": {
+      "type": "string",
+      "enum": [
+        "pre_deal",
+        "execution",
+        "post_signature",
+        "compliance"
+      ],
+      "default": "execution"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title / party-and-product summary"
+    },
+    "fields": {
+      "type": "object",
+      "description": "The structured input values the user filled in",
+      "default": {}
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "Governing law / jurisdiction pack selected"
+    },
+    "draft_body": {
+      "type": "string",
+      "description": "The generated draft document body (markdown)"
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "What the generator assumed because a field wasn't provided",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "review_checklist": {
+      "type": "array",
+      "description": "Next-review checklist items shown before download",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "generated",
+        "downloaded"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "template_key",
+    "title"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
