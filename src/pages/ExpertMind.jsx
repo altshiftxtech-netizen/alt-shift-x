@@ -8,6 +8,7 @@ import EmProcess from "@/components/expertmind/EmProcess";
 import EmOutputs from "@/components/expertmind/EmOutputs";
 import EmEnterprise from "@/components/expertmind/EmEnterprise";
 import EmRevenue from "@/components/expertmind/EmRevenue";
+import EmVaultPricing from "@/components/expertmind/EmVaultPricing";
 import EmFinalCta from "@/components/expertmind/EmFinalCta";
 import EmFooter from "@/components/expertmind/EmFooter";
 import EmExtractionConsole from "@/components/expertmind/EmExtractionConsole";
@@ -31,6 +32,7 @@ export default function ExpertMind() {
           <EmOutputs />
           <EmEnterprise />
           <EmRevenue />
+          <EmVaultPricing />
           <EmFinalCta />
         </main>
         <EmFooter />

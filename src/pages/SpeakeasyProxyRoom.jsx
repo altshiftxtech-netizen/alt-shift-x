@@ -13,6 +13,7 @@ import HuntUnlockModal from "@/components/speakeasy/proxy/HuntUnlockModal";
 import MessageModal from "@/components/speakeasy/proxy/MessageModal";
 import SpeakeasyLogo from "@/components/speakeasy/SpeakeasyLogo";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
+import useSpeakeasyMembership from "@/hooks/useSpeakeasyMembership";
 
 const GOLD = "#C8A95B";
 
@@ -37,8 +38,10 @@ const PORTRAITS = [
 //  • Back-wall gates fill the four recessed doorway slots flanking the bar.
 //  • Side-wall gates are skewed + scaled to recede along the angled walls.
 const DOORS = [
-  // ── Left side wall — Tutorials & Hallway, skewed into the wall perspective ──
-  { label: "Tutorials", sublabel: "Learn", to: "/tutorials",
+  // ── Left side wall — Expertminds gate & Hallway, skewed into the wall perspective ──
+  // "Expertminds" overrides the technical SPEAKEASY-TUTORIAL-GATE-1.0 name — it's the
+  // top-tier Vault destination. onClick runs a member check and forks the tier flag.
+  { label: "Expertminds", sublabel: "The Vault", expertmindsGate: true,
     style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", image: PORTRAITS[0], founder: "Corin Bitwright" },
   { label: "Raffles", sublabel: "Prizes", to: "/speakeasy/raffles",
     style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora", cosmic: true },
@@ -70,6 +73,13 @@ const FIXTURES = [
 function ProxyRoomInner() {
   const navigate = useNavigate();
   const { members } = useSpeakeasyPresence("proxy_room");
+  const { isMember } = useSpeakeasyMembership();
+
+  // The Expertminds portrait forks by Speakeasy Club membership: members land on
+  // the $1,999 member rate, everyone else on the $2,499 public rate + join upsell.
+  const enterExpertminds = () => {
+    navigate(`/expertmind?tier=${isMember ? "member" : "public"}`);
+  };
 
   const [huntOpen, setHuntOpen] = useState(false);
   const [huntState, setHuntState] = useState("claiming"); // claiming | success | already | error
@@ -140,7 +150,7 @@ function ProxyRoomInner() {
         {DOORS.map((d) => (
           <ProxyDoor key={d.label} style={d.style} tilt={d.tilt} image={d.image}
             label={d.label} sublabel={d.sublabel} accent={FRAME} founder={d.founder} labelAbove={d.labelAbove}
-            cosmic={d.cosmic} onClick={() => navigate(d.to)} />
+            cosmic={d.cosmic} onClick={() => (d.expertmindsGate ? enterExpertminds() : navigate(d.to))} />
         ))}
 
         {/* Hidden scavenger fixtures */}
