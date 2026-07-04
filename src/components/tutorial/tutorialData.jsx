@@ -457,6 +457,33 @@ export const TUTORIALS = [
         ],
       },
       {
+        title: "Finding your way around the Founders' Room",
+        steps: [
+          "You enter through the Proxy Room — the central Founders' Room with the robot barkeep.",
+          "Each framed doorway is a destination: the Market, The Feed (Social), Circles (Groups), Gamers, Pipelines, The Table (business meetups), Raffles, and Expertminds (The Vault).",
+          "Click the West Wing and East Wing signposts flanking the bar to walk the portrait hallways.",
+          "Ask the robot barkeep for a drink or a hint — click him to open the chat.",
+        ],
+      },
+      {
+        title: "The invisible Scavenger Hunt",
+        steps: [
+          "Hidden seeds are tucked around the room — there are NO icons, sparkles, or glowing outlines marking them.",
+          "The cursor won't change over a seed, so rely on exploring and the barkeep's clues rather than pixel-hunting.",
+          "Click a hidden spot to discover a seed; found seeds are delivered to you and emailed automatically.",
+          "Keep exploring the hallways and wings — seeds are scattered across the whole Speakeasy.",
+        ],
+      },
+      {
+        title: "The Founder's Board (leaderboard)",
+        steps: [
+          "A Brass & Noir plaque on the Proxy Room wall ranks the top seed hunters.",
+          "Columns show Rank, your masked Builder handle, Seeds Found (e.g. 12/15), and the gold 'EB' Founder's Mark.",
+          "Ties are broken by Platform Trust Score — high-quality builders rank higher, so keep your components strong.",
+          "Hover a name to see their specialization; click it to open their public profile.",
+        ],
+      },
+      {
         title: "Posting & the Front Man",
         steps: [
           "Share posts, videos, and memes with the community.",

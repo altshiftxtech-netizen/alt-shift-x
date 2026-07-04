@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit } from "lucide-react";
+import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit, Sparkles } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import Logo from "@/components/Logo";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
@@ -396,6 +396,24 @@ export default function Pricing() {
             {BUILDER_PLANS.map(plan => (
               <PlanCard key={plan.key} plan={plan} onSubscribe={handleBuilderSubscribe} onPaypal={handleBuilderPaypal} loading={loading} />
             ))}
+          </div>
+
+          {/* Speakeasy perk — unlocked on any paid tier */}
+          <div className="max-w-4xl mx-auto px-4 pb-12">
+            <div className="rounded-2xl border border-[#C8A95B]/40 bg-gradient-to-br from-[#1a1109] to-[#0f0a06] px-6 py-6 flex items-start gap-4">
+              <div className="w-11 h-11 rounded-xl bg-[#C8A95B]/15 border border-[#C8A95B]/30 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-[#E6C878]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#C8A95B] mb-1">Platinum Perk · Included</p>
+                <p className="text-sm font-bold text-[#E8DFC8] mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  The Speakeasy — a members-only Founders' Room
+                </p>
+                <p className="text-xs text-[#9CA0A8] leading-relaxed">
+                  Every paid tier unlocks the Speakeasy: an immersive Founders' Room with a robot barkeep, portrait hallways, business meetups at The Table, Circles, Raffles, and the Expertminds Vault. Explore for an invisible scavenger hunt — hidden seeds with no on-screen markers — and climb the Brass &amp; Noir <strong className="text-[#E6C878]">Founder's Board</strong> leaderboard, ranked by seeds found and tie-broken by your Platform Trust Score.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Builder revenue matrix */}
