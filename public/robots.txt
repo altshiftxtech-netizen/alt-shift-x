@@ -1,6 +1,11 @@
 User-agent: *
+Allow: /
 
-# Private / authenticated areas
+# Members-only, gated, transactional, and internal tooling — never index
+Disallow: /speakeasy
+Disallow: /biz-center
+Disallow: /rollout-procedures
+Disallow: /shop/admin
 Disallow: /dashboard
 Disallow: /builder
 Disallow: /admin
@@ -10,16 +15,12 @@ Disallow: /api-partners
 Disallow: /spend-intelligence
 Disallow: /vendor-scores
 Disallow: /pipeline-key
-
-# Members-only / gated experiences
-Disallow: /speakeasy
-Disallow: /biz-center
-Disallow: /shop/admin
-
-# Internal ops & transactional pages
-Disallow: /rollout-procedures
-Disallow: /success
 Disallow: /onboarding
 Disallow: /unsubscribe
+Disallow: /success
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
 
-Allow: /
+Sitemap: https://altshiftx.com/sitemap.xml
