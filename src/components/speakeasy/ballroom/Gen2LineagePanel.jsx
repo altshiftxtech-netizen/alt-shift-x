@@ -13,33 +13,17 @@ const TYPE_LABEL = {
  * inside the Ballroom. A brass drawer that slides up from the ballroom floor,
  * grouping the stack by its lore layers; each tile links to its marketplace page.
  */
-export default function Gen2LineagePanel() {
-  const [open, setOpen] = useState(false);
-
+export default function Gen2LineagePanel({ open, onClose }) {
   return (
     <>
-      {/* Trigger — a brass plaque floating over the ballroom floor */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border px-5 py-2.5 backdrop-blur-md transition-transform hover:scale-105"
-          style={{ background: "rgba(20,16,11,0.85)", borderColor: "#C8A95B66", color: "#E6C878", boxShadow: "0 0 24px rgba(200,169,91,0.25)" }}
-        >
-          <Sparkles className="w-4 h-4" />
-          <span className="text-xs font-bold uppercase tracking-[0.25em]" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Open the Gen-2 Vault
-          </span>
-        </button>
-      )}
-
       {open && (
-        <div className="absolute inset-0 z-40 flex items-end justify-center">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div className="absolute inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
           <div
             className="relative w-full max-w-3xl max-h-[82%] overflow-y-auto rounded-t-3xl border-t border-x p-6 pb-10"
             style={{ background: "linear-gradient(180deg, rgba(24,18,12,0.98), rgba(12,9,6,0.99))", borderColor: "#C8A95B44" }}
           >
-            <button onClick={() => setOpen(false)} className="absolute top-4 right-4 text-white/50 hover:text-white">
+            <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white">
               <X className="w-5 h-5" />
             </button>
 
