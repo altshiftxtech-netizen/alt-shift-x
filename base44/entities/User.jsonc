@@ -12,6 +12,15 @@
       ],
       "default": "user",
       "description": "User role \u2014 admin (full access), user (standard), builder (marketplace builder), staff (technical staff with testing access)"
+    },
+    "speakeasy_alias": {
+      "type": "string",
+      "description": "Optional alias name shown instead of the user's real name in Speakeasy rooms \u2014 identity protection for enterprise members"
+    },
+    "speakeasy_ghost_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the user's bubble is hidden in the Ballroom and other rooms; in exchange they cannot see or interact with other members' bubbles"
     }
   }
 }

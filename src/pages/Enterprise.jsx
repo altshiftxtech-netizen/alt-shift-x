@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -10,6 +10,7 @@ import SovereignCalendar from "@/components/enterprise/SovereignCalendar";
 import SecureHandshakeModule from "@/components/enterprise/SecureHandshakeModule";
 import DeveloperSeatsTab from "@/components/enterprise/DeveloperSeatsTab";
 import EngineeringSuiteTab from "@/components/enterprise/engineering/EngineeringSuiteTab";
+import PrivacyAliasPanel from "@/components/enterprise/PrivacyAliasPanel";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
@@ -20,6 +21,7 @@ const TABS = [
   { key: "calendar", label: "Calendar", icon: CalendarClock },
   { key: "seats", label: "Developer Seats", icon: Cpu },
   { key: "engineering", label: "Engineering Suite", icon: Wrench },
+  { key: "privacy", label: "Privacy & Alias", icon: UserCog },
 ];
 
 export default function Enterprise() {
@@ -125,6 +127,7 @@ export default function Enterprise() {
           {tab === "calendar" && <div className="max-w-2xl mx-auto"><SovereignCalendar user={user} /></div>}
           {tab === "seats" && <DeveloperSeatsTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
           {tab === "engineering" && <EngineeringSuiteTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
+          {tab === "privacy" && <div className="max-w-2xl mx-auto"><PrivacyAliasPanel user={user} /></div>}
         </div>
       </div>
     </div>

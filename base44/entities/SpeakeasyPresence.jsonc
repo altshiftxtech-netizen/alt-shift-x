@@ -8,7 +8,7 @@
     },
     "user_name": {
       "type": "string",
-      "description": "Display name shown on the avatar"
+      "description": "Display name shown on the avatar (may be an alias for enterprise privacy)"
     },
     "room": {
       "type": "string",
@@ -27,6 +27,11 @@
     "pos_y": {
       "type": "number",
       "description": "Avatar Y position in the room on a 0-100 scale"
+    },
+    "ghost_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the member is hidden from the room and cannot see or interact with other members' bubbles"
     },
     "last_seen": {
       "type": "string",

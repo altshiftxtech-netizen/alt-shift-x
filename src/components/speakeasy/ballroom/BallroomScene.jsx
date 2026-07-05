@@ -4,7 +4,9 @@ import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
+import useRoomPrivacy from "@/hooks/useRoomPrivacy";
 import Gen2LineagePanel from "@/components/speakeasy/ballroom/Gen2LineagePanel";
+import { EyeOff } from "lucide-react";
 
 /**
  * A full-screen palatial ballroom that lives beyond a hallway's matte black
@@ -14,7 +16,8 @@ import Gen2LineagePanel from "@/components/speakeasy/ballroom/Gen2LineagePanel";
  */
 function BallroomInner({ image, title, kicker, accent, backTo, backLabel, showVault }) {
   const navigate = useNavigate();
-  const { members, me } = useSpeakeasyPresence("hallway");
+  const { alias, ghostMode } = useRoomPrivacy();
+  const { members, me } = useSpeakeasyPresence("hallway", { alias, ghostMode });
   const [vaultOpen, setVaultOpen] = useState(false);
 
   return (
@@ -46,11 +49,18 @@ function BallroomInner({ image, title, kicker, accent, backTo, backLabel, showVa
       >
         <ArrowLeft className="w-4 h-4" /> {backLabel}
       </button>
-      <div
-        className="absolute top-4 right-4 z-30 flex items-center gap-1.5 text-xs bg-black/50 border rounded-full px-3 py-1.5 backdrop-blur-sm"
-        style={{ color: accent, borderColor: `${accent}40` }}
-      >
-        <Users className="w-3.5 h-3.5" /> {members.length}
+      <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+        {ghostMode && (
+          <div className="flex items-center gap-1.5 text-xs bg-black/50 border border-white/15 rounded-full px-3 py-1.5 backdrop-blur-sm text-white/70">
+            <EyeOff className="w-3.5 h-3.5" /> Hidden
+          </div>
+        )}
+        <div
+          className="flex items-center gap-1.5 text-xs bg-black/50 border rounded-full px-3 py-1.5 backdrop-blur-sm"
+          style={{ color: accent, borderColor: `${accent}40` }}
+        >
+          <Users className="w-3.5 h-3.5" /> {members.length}
+        </div>
       </div>
       <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 text-center">
         <p className="text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: accent }}>{kicker}</p>
