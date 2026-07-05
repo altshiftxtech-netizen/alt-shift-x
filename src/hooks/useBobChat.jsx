@@ -45,6 +45,7 @@ export default function useBobChat() {
   const [queued, setQueued] = useState([]);  // follow-ups waiting for the current turn to finish
 
   const queuedRef = useRef([]);            // mirror of `queued` for use inside callbacks
+  const messagesRef = useRef([]);          // mirror of `messages` for stale-free reads in callbacks
   const convRef = useRef(null);            // full conversation object (for addMessage)
   const unsubRef = useRef(null);
   const subscribedIdRef = useRef(null);
@@ -55,6 +56,8 @@ export default function useBobChat() {
   const lastTextRef = useRef("");          // last assistant text (settle tracking)
   const lastLenRef = useRef(0);            // last rendered message count (anti-flicker guard)
   const onDoneRef = useRef(null);          // optional completion callback (sounds, notify)
+
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   const clearTimers = () => {
     if (settleRef.current) { clearTimeout(settleRef.current); settleRef.current = null; }
@@ -127,20 +130,23 @@ export default function useBobChat() {
     if (!turnOpenRef.current && msgs.length < (lastLenRef.current || 0)) return;
     lastLenRef.current = msgs.length;
 
-    // Reconcile the optimistic user bubble: keep it visible until the server
-    // list actually contains it, inserting BEFORE any trailing assistant reply
-    // so order is always history → your message → BOB's reply.
+    // The server conversation is the authoritative record. We ALWAYS render
+    // server messages in server order and never reorder them — that guarantees
+    // the exchange is an accurate, factual transcript.
+    //
+    // The only local addition is the optimistic user bubble for the message we
+    // just sent, shown until the server echoes it back. We APPEND it at the end
+    // (never inserted back into history), and only while the server's user-turn
+    // count hasn't yet caught up to what we sent — so it can never land ahead of
+    // an earlier assistant reply or duplicate a repeated message.
     const pending = pendingUserRef.current;
     if (pending) {
-      const serverHasIt = msgs.some(
-        (m) => m.role === "user" && (m.content || "") === pending.content
-      );
-      if (serverHasIt) {
+      const serverUserCount = msgs.reduce((n, m) => n + (m.role === "user" ? 1 : 0), 0);
+      if (serverUserCount >= (pending._expectedUserCount || 0)) {
+        // Server has caught up to (or past) our optimistic message → trust it.
         pendingUserRef.current = null;
       } else {
-        let at = msgs.length;
-        while (at > 0 && msgs[at - 1].role === "assistant") at--;
-        msgs = [...msgs.slice(0, at), pending, ...msgs.slice(at)];
+        msgs = [...msgs, pending];
       }
     }
     setMessages(msgs);
@@ -272,9 +278,19 @@ export default function useBobChat() {
 
     const c = convRef.current || await initConv();
 
-    // Optimistic user bubble (reconciled by handleUpdate).
-    if (text) {
-      pendingUserRef.current = { role: "user", content, ...(file_urls ? { file_urls } : {}) };
+    // Optimistic user bubble (reconciled by handleUpdate). Record how many user
+    // messages should exist on the server once this one lands — that's the exact
+    // point at which we can stop showing the optimistic copy without reordering.
+    if (text || (file_urls && file_urls.length)) {
+      const priorUserCount = messagesRef.current.reduce(
+        (n, m) => n + (m.role === "user" && m !== pendingUserRef.current ? 1 : 0), 0
+      );
+      pendingUserRef.current = {
+        role: "user",
+        content,
+        ...(file_urls ? { file_urls } : {}),
+        _expectedUserCount: priorUserCount + 1,
+      };
       setMessages((prev) => [...prev, pendingUserRef.current]);
     }
 
