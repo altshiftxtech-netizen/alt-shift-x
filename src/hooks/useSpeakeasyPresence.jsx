@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 
-const STALE_MS = 60 * 1000;       // presence older than this is treated as offline
-const HEARTBEAT_MS = 20 * 1000;   // refresh own presence on this cadence
+const STALE_MS = 90 * 1000;       // presence older than this is treated as offline
+const HEARTBEAT_MS = 35 * 1000;   // refresh own presence on this cadence
+const POLL_MS = 45 * 1000;        // poll the room for others slightly less often
 
 // Deterministic-ish scatter so avatars don't stack on the same spot.
 function randomPos() {
@@ -31,22 +32,25 @@ export default function useSpeakeasyPresence(room = "proxy_room") {
       if (!active || !user) return;
       setMe(user);
 
-      // Upsert presence for this user+room.
-      const existing = await base44.entities.SpeakeasyPresence.filter({ user_id: user.id, room });
-      const payload = {
-        user_id: user.id,
-        user_name: user.full_name || user.email,
-        room,
-        ...posRef.current,
-        last_seen: new Date().toISOString(),
-      };
-      if (existing[0]) {
-        rowIdRef.current = existing[0].id;
-        await base44.entities.SpeakeasyPresence.update(existing[0].id, { last_seen: payload.last_seen, room });
-      } else {
-        const created = await base44.entities.SpeakeasyPresence.create(payload);
-        rowIdRef.current = created.id;
-      }
+      // Upsert presence for this user+room. Wrapped so a transient rate-limit
+      // (429) never crashes the room — presence is best-effort chrome.
+      try {
+        const existing = await base44.entities.SpeakeasyPresence.filter({ user_id: user.id, room });
+        const payload = {
+          user_id: user.id,
+          user_name: user.full_name || user.email,
+          room,
+          ...posRef.current,
+          last_seen: new Date().toISOString(),
+        };
+        if (existing[0]) {
+          rowIdRef.current = existing[0].id;
+          await base44.entities.SpeakeasyPresence.update(existing[0].id, { last_seen: payload.last_seen, room });
+        } else {
+          const created = await base44.entities.SpeakeasyPresence.create(payload);
+          rowIdRef.current = created.id;
+        }
+      } catch { /* rate-limited or offline — keep the room usable, retry on next poll */ }
 
       const beat = async () => {
         if (rowIdRef.current) {
@@ -64,7 +68,7 @@ export default function useSpeakeasyPresence(room = "proxy_room") {
 
       await refresh();
       heartbeat = setInterval(beat, HEARTBEAT_MS);
-      poll = setInterval(refresh, HEARTBEAT_MS);
+      poll = setInterval(refresh, POLL_MS);
     };
 
     enter();
