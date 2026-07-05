@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Crown, Radio, Boxes, CalendarClock, Cpu, ShieldCheck } from "lucide-react";
+import { Loader2, Crown, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -9,6 +9,7 @@ import ComponentRequestQueue from "@/components/enterprise/ComponentRequestQueue
 import SovereignCalendar from "@/components/enterprise/SovereignCalendar";
 import SecureHandshakeModule from "@/components/enterprise/SecureHandshakeModule";
 import DeveloperSeatsTab from "@/components/enterprise/DeveloperSeatsTab";
+import EngineeringSuiteTab from "@/components/enterprise/engineering/EngineeringSuiteTab";
 import AdvisoryAgentsStrip from "@/components/enterprise/AdvisoryAgentsStrip";
 
 const TABS = [
@@ -17,6 +18,7 @@ const TABS = [
   { key: "annexes", label: "Annex Queue", icon: Boxes },
   { key: "calendar", label: "Calendar", icon: CalendarClock },
   { key: "seats", label: "Developer Seats", icon: Cpu },
+  { key: "engineering", label: "Engineering Suite", icon: Wrench },
 ];
 
 export default function Enterprise() {
@@ -116,6 +118,7 @@ export default function Enterprise() {
         {tab === "annexes" && <div className="max-w-2xl mx-auto"><ComponentRequestQueue user={user} /></div>}
         {tab === "calendar" && <div className="max-w-2xl mx-auto"><SovereignCalendar user={user} /></div>}
         {tab === "seats" && <DeveloperSeatsTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
+        {tab === "engineering" && <EngineeringSuiteTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
       </div>
     </div>
   );

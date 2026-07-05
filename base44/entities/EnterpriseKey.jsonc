@@ -1,0 +1,147 @@
+{
+  "name": "EnterpriseKey",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "Base44 user ID of the Sovereign engineer / admin who created this key"
+    },
+    "owner_email": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human label \u2014 department or client name, e.g. 'Acme Corp \u2014 Prod' or 'Legal Dept'"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "department",
+        "client"
+      ],
+      "default": "department",
+      "description": "Whether the key is scoped to an internal department or an external client"
+    },
+    "key_prefix": {
+      "type": "string",
+      "description": "Public prefix shown in dashboards, e.g. 'ENT-ACME-'"
+    },
+    "key_last4": {
+      "type": "string",
+      "description": "Last 4 chars for safe display"
+    },
+    "key_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the full key for secure storage"
+    },
+    "license": {
+      "type": "string",
+      "default": "SOVEREIGN-KEY-MANAGER-1.0",
+      "description": "License protocol governing the key"
+    },
+    "installed_components": {
+      "type": "array",
+      "description": "Components installed directly onto this enterprise key",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "component_code": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "installed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    },
+    "patches": {
+      "type": "array",
+      "description": "Fix-Only shims applied to this key without a full redeploy",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "component_code": {
+            "type": "string"
+          },
+          "component_name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "patched_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "owner_id",
+    "label"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
