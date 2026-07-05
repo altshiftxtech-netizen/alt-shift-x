@@ -11,6 +11,7 @@ export default function SpeakeasyBallroom() {
       accent="#C8A95B"
       backTo="/speakeasy/hallway"
       backLabel="Back to the Hallway"
+      showVault
     />
   );
 }

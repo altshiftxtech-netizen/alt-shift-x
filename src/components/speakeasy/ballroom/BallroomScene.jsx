@@ -4,6 +4,7 @@ import { ArrowLeft, Users } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import AvatarCluster from "@/components/speakeasy/proxy/AvatarCluster";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
+import Gen2LineagePanel from "@/components/speakeasy/ballroom/Gen2LineagePanel";
 
 /**
  * A full-screen palatial ballroom that lives beyond a hallway's matte black
@@ -11,7 +12,7 @@ import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
  * so it fills and snaps to the screen. Members appear as presence avatars on the
  * floor, and a single control returns to the originating hallway.
  */
-function BallroomInner({ image, title, kicker, accent, backTo, backLabel }) {
+function BallroomInner({ image, title, kicker, accent, backTo, backLabel, showVault }) {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
 
@@ -59,6 +60,9 @@ function BallroomInner({ image, title, kicker, accent, backTo, backLabel }) {
           {title}
         </h1>
       </div>
+
+      {/* The Gen-2 Vault — the Speakeasy & Barkeep component lineage */}
+      {showVault && <Gen2LineagePanel />}
     </div>
   );
 }
