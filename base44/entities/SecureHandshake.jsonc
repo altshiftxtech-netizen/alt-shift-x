@@ -1,0 +1,115 @@
+{
+  "name": "SecureHandshake",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "default": "BT-SECURE-KEY-TRANS-1.0",
+      "description": "The handshake protocol version used for the transfer"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "Base44 user ID of the admin who paired & transmitted the key"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "Base44 user ID of the Sovereign user meant to ingest the key"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "Email of the intended recipient"
+    },
+    "recipient_name": {
+      "type": "string"
+    },
+    "pairing_code": {
+      "type": "string",
+      "description": "Short human-readable pairing code shown during the handshake ceremony"
+    },
+    "key_label": {
+      "type": "string",
+      "description": "Human label for the key being transmitted (e.g. Pipeline key name)"
+    },
+    "key_ciphertext": {
+      "type": "string",
+      "description": "The transmitted secret payload, held until ingested"
+    },
+    "key_last4": {
+      "type": "string",
+      "description": "Last 4 chars for safe display in receipts"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_pairing",
+        "transmitted",
+        "ingested",
+        "verified",
+        "expired"
+      ],
+      "default": "pending_pairing"
+    },
+    "transmitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "receipt_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the Forensic Read-Receipt was verified"
+    },
+    "receipt_hash": {
+      "type": "string",
+      "description": "SHA-256 forensic receipt hash proving delivery integrity"
+    }
+  },
+  "required": [
+    "recipient_email"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.recipient_id": "{{user.id}}"
+        },
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.recipient_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

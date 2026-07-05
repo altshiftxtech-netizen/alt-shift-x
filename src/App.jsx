@@ -41,6 +41,7 @@ import AccountSettings from './pages/AccountSettings';
 import ComponentSetup from './pages/ComponentSetup';
 import AdminPanel from './pages/AdminPanel';
 import Pricing from './pages/Pricing';
+import Enterprise from './pages/Enterprise';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -219,6 +220,7 @@ const AuthenticatedApp = () => {
 
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/enterprise" element={<Enterprise />} />
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/dashboard/installed" element={<InstalledComponents />} />
         <Route path="/dashboard/usage" element={<UsageAnalytics />} />

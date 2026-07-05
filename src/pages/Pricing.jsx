@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit, Sparkles } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
+import SovereignTierBanner from "@/components/pricing/SovereignTierBanner";
 import Logo from "@/components/Logo";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 
@@ -468,6 +469,9 @@ export default function Pricing() {
           </div>
         </>
       )}
+
+      {/* Sovereign: Enterprise Intelligence — the third tier / private club */}
+      <SovereignTierBanner />
 
       {/* Enterprise & DPA — for companies processing personal data through the platform */}
       <div className="max-w-3xl mx-auto px-4 pb-6">

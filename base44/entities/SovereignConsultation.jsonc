@@ -1,0 +1,86 @@
+{
+  "name": "SovereignConsultation",
+  "type": "object",
+  "properties": {
+    "requester_id": {
+      "type": "string",
+      "description": "Base44 user ID of the Sovereign client"
+    },
+    "requester_name": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string",
+      "description": "What the consultation is about"
+    },
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Requested start time"
+    },
+    "end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "calendar_event_id": {
+      "type": "string",
+      "description": "Google Calendar event id once booked"
+    },
+    "meet_link": {
+      "type": "string",
+      "description": "Google Meet link for the consultation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "scheduled",
+        "completed",
+        "cancelled"
+      ],
+      "default": "requested"
+    }
+  },
+  "required": [
+    "topic",
+    "start"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.requester_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.requester_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
