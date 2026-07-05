@@ -23,27 +23,33 @@ export default function ForensicSimulator() {
     })();
   }, []);
 
-  const run = async () => {
-    setRunning(true);
-    setResult(null);
-    const comp = components.find((c) => c.id === selected);
-    // Build a deterministic package for the component and pass it through the gate.
+  // Build the deterministic doctrine package for a component. When `tampered`,
+  // an extra byte is injected so the live SHA-256 diverges from the certified
+  // Master Index hash — proving the bit-for-bit comparison catches modifications.
+  const buildPackage = (comp, tampered) => {
     const metadata = {
       code: comp?.code, name: comp?.name, type: comp?.type,
       schema: comp?.schema || [], features: comp?.features || [],
     };
-    const packageStr = JSON.stringify({ ...metadata, _sim: true });
-    const b64 = btoa(unescape(encodeURIComponent(packageStr)));
+    const packageStr = JSON.stringify(tampered ? { ...metadata, _tampered: Date.now() } : metadata);
+    return { metadata, b64: btoa(unescape(encodeURIComponent(packageStr))) };
+  };
+
+  const invokeGate = async (registerMaster) => {
+    setRunning(true);
+    setResult(null);
+    const comp = components.find((c) => c.id === selected);
+    const { metadata, b64 } = buildPackage(comp, tamper && !registerMaster);
     try {
       const res = await base44.functions.invoke("forensicGate", {
         base64: b64,
-        export_kind: "simulation",
+        export_kind: registerMaster ? "master_registration" : "simulation",
         target_ref: comp?.code || comp?.id,
+        component_code: comp?.code,
         file_name: `${comp?.code || "component"}.sim.json`,
         metadata_snapshot: metadata,
-        simulate: true,
-        // Tamper toggle: feed a wrong expected hash so the gate must fail.
-        expected_sha256: tamper ? "0000000000000000000000000000000000000000000000000000000000000000" : null,
+        simulate: !registerMaster,
+        register_master: !!registerMaster,
       });
       setResult(res?.data || null);
     } catch (e) {
@@ -51,6 +57,9 @@ export default function ForensicSimulator() {
     }
     setRunning(false);
   };
+
+  const run = () => invokeGate(false);
+  const registerMaster = () => invokeGate(true);
 
   return (
     <div className="rounded-2xl border p-6" style={{ background: "rgba(10,12,18,0.6)", borderColor: "#5BA2FF33" }}>
@@ -76,12 +85,18 @@ export default function ForensicSimulator() {
 
         <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
           <input type="checkbox" checked={tamper} onChange={(e) => setTamper(e.target.checked)} className="accent-[#5BA2FF]" />
-          Inject tamper (force a hash mismatch to test gate failure)
+          Inject tamper (modify the package so its live hash diverges from the Master Index)
         </label>
 
-        <Button onClick={run} disabled={running || !selected} className="bg-[#5BA2FF] hover:bg-[#4a90ee] text-black font-bold text-sm h-9 gap-2">
-          {running ? <><Loader2 className="w-4 h-4 animate-spin" /> Running Full Gate…</> : "Run Full Gate Simulation"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={run} disabled={running || !selected} className="bg-[#5BA2FF] hover:bg-[#4a90ee] text-black font-bold text-sm h-9 gap-2">
+            {running ? <><Loader2 className="w-4 h-4 animate-spin" /> Running Full Gate…</> : "Run Full Gate Simulation"}
+          </Button>
+          <Button onClick={registerMaster} disabled={running || !selected} variant="outline" className="border-[#C8A95B]/50 text-[#E6C878] hover:bg-[#C8A95B]/10 text-sm h-9 gap-2">
+            Register as Master Version
+          </Button>
+        </div>
+        <p className="text-[10px] text-white/35">Register writes the certified hash + seal into GSP-MASTER-INDEX-1.0 the first time. Later simulations compare Live_Hash === Master_Index_Hash.</p>
       </div>
 
       {result && (
@@ -92,11 +107,20 @@ export default function ForensicSimulator() {
             <>
               <p className={`text-sm font-bold flex items-center gap-2 ${result.verified ? "text-emerald-300" : "text-red-300"}`}>
                 {result.verified ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                {result.verified ? "Integrity Verified — true" : "Integrity FAILED — false"}
+                {result.master_registered
+                  ? "Master Version Registered — certified"
+                  : result.verified ? "Integrity Verified — true" : "Integrity FAILED — false"}
+              </p>
+              <p className="mt-1.5 text-[11px] font-semibold" style={{ color: result.master_registered ? "#E6C878" : result.master_indexed ? (result.master_matched ? "#6ee7b7" : "#fca5a5") : "#94a3b8" }}>
+                {result.master_registered
+                  ? "Written to GSP-MASTER-INDEX-1.0"
+                  : result.master_indexed
+                    ? (result.master_matched ? "Live_Hash === Master_Index_Hash ✓ bit-for-bit identical" : "Live_Hash ≠ Master_Index_Hash — modified since certification")
+                    : "No Master Index entry yet — register this component as a Master Version"}
               </p>
               <div className="mt-3 space-y-1 text-[11px] text-white/60 font-mono break-all">
                 <p>size: {result.file_size} bytes</p>
-                <p>sha256: {result.sha256}</p>
+                <p>canon_doctrine_hash: {result.canon_doctrine_hash || result.sha256}</p>
                 <p>seal: {result.integrity_seal_id}</p>
                 <p>status: {result.verification_status}</p>
                 {result.flags?.length > 0 && <p className="text-red-300">flags: {result.flags.join(", ")}</p>}
