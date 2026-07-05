@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, X, Download } from "lucide-react";
 import { GEN2_LAYERS } from "./gen2Lineage";
+import VaultDownloads from "./VaultDownloads";
 
 const TYPE_LABEL = {
   X1: "Reading Protocol", X2: "Prophecy Model", X3: "Speed Profile",
@@ -14,6 +15,7 @@ const TYPE_LABEL = {
  * grouping the stack by its lore layers; each tile links to its marketplace page.
  */
 export default function Gen2LineagePanel({ open, onClose }) {
+  const [tab, setTab] = useState("lineage"); // lineage | downloads
   return (
     <>
       {open && (
@@ -37,6 +39,30 @@ export default function Gen2LineagePanel({ open, onClose }) {
               </p>
             </div>
 
+            {/* Tab switcher — Lineage / Downloads (UNZIP-DASH-1.0) */}
+            <div className="flex items-center justify-center gap-1 mb-6 p-1 rounded-full border w-fit mx-auto"
+              style={{ borderColor: "#C8A95B33", background: "rgba(255,255,255,0.03)" }}>
+              {[
+                { key: "lineage", label: "Lineage" },
+                { key: "downloads", label: "Downloads" },
+              ].map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors"
+                  style={tab === t.key
+                    ? { background: "#C8A95B", color: "#0A0A0C" }
+                    : { color: "#ffffff88" }}
+                >
+                  {t.key === "downloads" && <Download className="w-3 h-3" />}
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {tab === "downloads" ? (
+              <VaultDownloads />
+            ) : (
             <div className="space-y-6">
               {GEN2_LAYERS.map((layer) => (
                 <div key={layer.key}>
@@ -72,6 +98,7 @@ export default function Gen2LineagePanel({ open, onClose }) {
                 </div>
               ))}
             </div>
+            )}
 
             <div className="mt-6 text-center">
               <Link to="/marketplace" className="text-[11px] font-semibold text-[#C8A95B] hover:underline">
