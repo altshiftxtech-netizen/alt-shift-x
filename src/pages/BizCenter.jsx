@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Briefcase, FileText, Lightbulb, MessageSquare, ShieldCheck, Search } from "lucide-react";
+import { ArrowLeft, Briefcase, FileText, Lightbulb, MessageSquare, ShieldCheck, Search, Scale, ExternalLink } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import DraftingAidNotice from "@/components/biz/DraftingAidNotice";
 import TemplatePicker from "@/components/biz/TemplatePicker";
@@ -109,6 +109,14 @@ function BizCenterInner() {
               <h1 className="text-sm font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Business Center</h1>
             </div>
           </div>
+          <a
+            href="https://www.upwork.com/search/profiles/?q=legal%20counsel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1.5 rounded-lg border border-[#C8A95B]/40 bg-[#C8A95B]/10 px-3 py-1.5 text-xs font-semibold text-[#E6C878] hover:bg-[#C8A95B]/20 transition-colors"
+          >
+            <Scale className="w-3.5 h-3.5" /> Legal &amp; More <ExternalLink className="w-3 h-3 opacity-60" />
+          </a>
         </div>
       </div>
 
