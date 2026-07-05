@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, X, Download } from "lucide-react";
+import { X, Download, ShoppingBag } from "lucide-react";
 import { GEN2_LAYERS } from "./gen2Lineage";
 import VaultDownloads from "./VaultDownloads";
+import UnzipSeriesPanel from "./UnzipSeriesPanel";
 
 const TYPE_LABEL = {
   X1: "Reading Protocol", X2: "Prophecy Model", X3: "Speed Profile",
@@ -15,7 +15,7 @@ const TYPE_LABEL = {
  * grouping the stack by its lore layers; each tile links to its marketplace page.
  */
 export default function Gen2LineagePanel({ open, onClose }) {
-  const [tab, setTab] = useState("lineage"); // lineage | downloads
+  const [tab, setTab] = useState("lineage"); // lineage | downloads | unzip
   return (
     <>
       {open && (
@@ -44,6 +44,7 @@ export default function Gen2LineagePanel({ open, onClose }) {
               style={{ borderColor: "#C8A95B33", background: "rgba(255,255,255,0.03)" }}>
               {[
                 { key: "lineage", label: "Lineage" },
+                { key: "unzip", label: "Unzipped" },
                 { key: "downloads", label: "Downloads" },
               ].map((t) => (
                 <button
@@ -55,6 +56,7 @@ export default function Gen2LineagePanel({ open, onClose }) {
                     : { color: "#ffffff88" }}
                 >
                   {t.key === "downloads" && <Download className="w-3 h-3" />}
+                  {t.key === "unzip" && <ShoppingBag className="w-3 h-3" />}
                   {t.label}
                 </button>
               ))}
@@ -62,6 +64,8 @@ export default function Gen2LineagePanel({ open, onClose }) {
 
             {tab === "downloads" ? (
               <VaultDownloads />
+            ) : tab === "unzip" ? (
+              <UnzipSeriesPanel />
             ) : (
             <div className="space-y-6">
               {GEN2_LAYERS.map((layer) => (
@@ -75,36 +79,29 @@ export default function Gen2LineagePanel({ open, onClose }) {
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2.5">
                     {layer.components.map((c) => (
-                      <Link
+                      <div
                         key={c.code}
-                        to={`/marketplace/${c.id}`}
-                        className="group flex flex-col gap-1.5 rounded-xl border p-3 transition-colors hover:border-[#C8A95B]"
+                        className="flex flex-col gap-1.5 rounded-xl border p-3"
                         style={{ background: "rgba(255,255,255,0.03)", borderColor: "#ffffff14" }}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${layer.accent}22`, color: layer.accent }}>
-                              {c.type}
-                            </span>
-                            <span className="text-xs font-bold text-white leading-tight">{c.name}</span>
-                          </div>
-                          <ArrowUpRight className="w-3.5 h-3.5 text-white/30 group-hover:text-[#C8A95B] flex-shrink-0" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${layer.accent}22`, color: layer.accent }}>
+                            {c.type}
+                          </span>
+                          <span className="text-xs font-bold text-white leading-tight">{c.name}</span>
                         </div>
                         <p className="text-[10px] font-mono text-white/35">{c.code} · {TYPE_LABEL[c.type]}</p>
                         <p className="text-[11px] text-white/55 leading-snug">{c.logic}</p>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
               ))}
+              <p className="text-center text-[10px] text-white/30 italic">
+                The Master Stack is sealed in the Walled Garden — display only, not for public sale.
+              </p>
             </div>
             )}
-
-            <div className="mt-6 text-center">
-              <Link to="/marketplace" className="text-[11px] font-semibold text-[#C8A95B] hover:underline">
-                Browse the full marketplace →
-              </Link>
-            </div>
           </div>
         </div>
       )}
