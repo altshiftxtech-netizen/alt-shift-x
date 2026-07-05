@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Crown, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -10,7 +10,8 @@ import SovereignCalendar from "@/components/enterprise/SovereignCalendar";
 import SecureHandshakeModule from "@/components/enterprise/SecureHandshakeModule";
 import DeveloperSeatsTab from "@/components/enterprise/DeveloperSeatsTab";
 import EngineeringSuiteTab from "@/components/enterprise/engineering/EngineeringSuiteTab";
-import AdvisoryAgentsStrip from "@/components/enterprise/AdvisoryAgentsStrip";
+
+const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
 const TABS = [
   { key: "command", label: "Command Deck", icon: Radio },
@@ -57,9 +58,7 @@ export default function Enterprise() {
         {/* Sovereign masthead */}
         <div className="border-b border-white/10 sticky top-0 z-40 backdrop-blur-xl" style={{ background: "rgba(5,6,10,0.75)" }}>
           <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(200,169,91,0.12)", border: "1px solid rgba(200,169,91,0.35)" }}>
-              <Crown className="w-5 h-5 text-[#E6C878]" />
-            </div>
+            <img src={SOVEREIGN_LOGO} alt="Alt+Shift+X" className="h-9 w-auto object-contain" draggable="false" />
             <div className="flex-1">
               <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B] leading-none">Sovereign Tier</p>
               <h1 className="text-base font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Enterprise Intelligence</h1>
@@ -79,13 +78,8 @@ export default function Enterprise() {
             The private club<br /><span className="text-[#E6C878]">within the club.</span>
           </h2>
           <p className="text-white/50 max-w-2xl mx-auto mt-4 text-sm sm:text-base">
-            Live enterprise key telemetry, priority catalog annexes, forensic key handoffs, and dedicated consultations — with BOB and The Upkeeper on persistent advisory watch.
+            Live enterprise key telemetry, priority catalog annexes, forensic key handoffs, and dedicated consultations.
           </p>
-        </div>
-
-        {/* Persistent advisors */}
-        <div className="max-w-6xl mx-auto px-6 mb-8">
-          <AdvisoryAgentsStrip />
         </div>
 
         {/* Tabs */}
