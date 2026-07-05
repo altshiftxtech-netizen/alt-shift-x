@@ -66,12 +66,12 @@ function BallroomInner({ image, title, kicker, accent, backTo, backLabel, showVa
       {showVault && (
         <button
           onClick={() => setVaultOpen(true)}
-          className="group absolute z-30 flex flex-col items-center focus:outline-none"
+          className="group absolute z-30 focus:outline-none"
           style={{ left: "50%", top: "42%", transform: "translate(-50%, -50%)" }}
         >
           {/* Door hotspot — a warm glow that intensifies on hover */}
           <div
-            className="rounded-md transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(200,169,91,0.55)]"
+            className="relative flex items-end justify-center rounded-md transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(200,169,91,0.55)]"
             style={{
               width: "clamp(90px, 14vw, 170px)",
               height: "clamp(150px, 24vw, 300px)",
@@ -79,15 +79,16 @@ function BallroomInner({ image, title, kicker, accent, backTo, backLabel, showVa
               border: "1px solid rgba(200,169,91,0.25)",
               boxShadow: "0 0 20px rgba(200,169,91,0.2)",
             }}
-          />
-          {/* "Gen-2 Vault" label at the bottom of the door */}
-          <div
-            className="mt-3 rounded-full border px-4 py-1.5 backdrop-blur-md transition-transform group-hover:scale-105"
-            style={{ background: "rgba(20,16,11,0.85)", borderColor: "#C8A95B66", color: "#E6C878", boxShadow: "0 0 24px rgba(200,169,91,0.25)" }}
           >
-            <span className="text-[11px] font-bold uppercase tracking-[0.3em]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Gen-2 Vault
-            </span>
+            {/* "Gen-2 Vault" label pinned to the bottom of the door */}
+            <div
+              className="mb-2 rounded-full border px-3 py-1 backdrop-blur-md transition-transform group-hover:scale-105"
+              style={{ background: "rgba(20,16,11,0.85)", borderColor: "#C8A95B66", color: "#E6C878", boxShadow: "0 0 24px rgba(200,169,91,0.25)" }}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] whitespace-nowrap" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Gen-2 Vault
+              </span>
+            </div>
           </div>
         </button>
       )}
