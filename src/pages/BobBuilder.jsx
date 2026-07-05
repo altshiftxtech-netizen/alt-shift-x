@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Bot, Code, AlertTriangle, Zap, ChevronRight, Send, FileText, FileDown,
   Rocket, LayoutTemplate, X, Save, CheckCircle2, Loader2, Package, BookOpen,
-  Sparkles, ArrowRight, Mic, MicOff, Paperclip, History, Camera, Lock, LayoutDashboard, Clock,
+  Sparkles, ArrowRight, Mic, MicOff, Paperclip, History, Lock, LayoutDashboard, Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import BobMessageActions from "@/components/bob/BobMessageActions";
 import BobLiveIndicator from "@/components/bob/BobLiveIndicator";
+import HeyBobModal from "@/components/bob/HeyBobModal";
 
 const QUICK_PROMPTS = [
   "Help me create a new X1 Risk & Compliance component",
@@ -120,6 +121,7 @@ export default function BobBuilder() {
   const [notifyWhenDone, setNotifyWhenDone] = useState(false);
   const [emailWhenDone, setEmailWhenDone] = useState(false);
   const [historyRefresh, setHistoryRefresh] = useState(0); // bump → reloads the Wipe Board list
+  const [heyBobOpen, setHeyBobOpen] = useState(false);     // "Hey BOB" capture gate
 
   // Framework
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
@@ -135,7 +137,6 @@ export default function BobBuilder() {
 
   const scrollRef = useRef(null);
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const greetedRef = useRef(false);
@@ -443,19 +444,23 @@ export default function BobBuilder() {
     e.target.value = "";
   };
 
-  // Bob Look — camera photo sent straight to BOB.
-  const handleBobLook = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  // Hey BOB — the capture gate returns here with a ready prompt (+ optional
+  // media). Whether opened from the splash or the in-chat composer, we land the
+  // result in an active chat: if we're still on the splash, launch a fresh chat
+  // first so the capture opens a real conversation (gating back into the chat).
+  const handleHeyBobCapture = async (text, file_urls) => {
+    setHeyBobOpen(false);
     markActed();
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setUploading(false);
-    const lookMsg =
-      "Bob Look — analyze this photo. Read every visible title/label in the image, including the focused item AND any " +
-      "books, products, or documents on the surrounding shelves or background. List what you see, then tell me what we can build or do with it.";
-    await dispatch(lookMsg, [file_url]);
+    if (!launched) {
+      lastSoundKeyRef.current = null;
+      localStorage.removeItem("bob_active_conv");
+      resetBoard();
+      setLaunched(true);
+      setActiveTab("chat");
+    } else {
+      setActiveTab("chat");
+    }
+    await dispatch(text, file_urls);
   };
 
   // ── Other senders (all funnel into dispatch) ────────────────────────────────
@@ -552,12 +557,11 @@ export default function BobBuilder() {
 
             <div className="flex items-center gap-2">
               <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
-              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleBobLook} />
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-3 py-2 rounded-xl text-xs transition-all">
                 {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
               </button>
-              <button type="button" onClick={() => cameraInputRef.current?.click()} disabled={uploading} title="Take a photo and send it straight to BOB" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all">
-                <Camera className="w-3.5 h-3.5" /> BOB Look
+              <button type="button" onClick={() => setHeyBobOpen(true)} title="Show, tell, or record — BOB turns it into components" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-3 py-2 rounded-xl text-xs transition-all">
+                <Sparkles className="w-3.5 h-3.5" /> Hey BOB
               </button>
               <button type="button" onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"} className={`flex items-center gap-1.5 border px-3 py-2 rounded-xl text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}>
                 {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isRecording ? "Stop" : "Voice"}
@@ -597,6 +601,7 @@ export default function BobBuilder() {
             </div>
           </div>
         </div>
+        <HeyBobModal open={heyBobOpen} onClose={() => setHeyBobOpen(false)} onCapture={handleHeyBobCapture} />
       </div>
     );
   }
@@ -725,12 +730,11 @@ export default function BobBuilder() {
                   </div>
                   <div className="flex items-center gap-2">
                     <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
-                    <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleBobLook} />
                     <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all">
                       {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
                     </button>
-                    <button onClick={() => cameraInputRef.current?.click()} disabled={uploading} title="Take a photo and send it straight to BOB" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all">
-                      <Camera className="w-3.5 h-3.5" /> BOB Look
+                    <button onClick={() => setHeyBobOpen(true)} title="Show, tell, or record — BOB turns it into components" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all">
+                      <Sparkles className="w-3.5 h-3.5" /> Hey BOB
                     </button>
                     <button onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"} className={`flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}>
                       {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isRecording ? "Stop" : "Voice"}
@@ -861,6 +865,7 @@ export default function BobBuilder() {
           </div>
         )}
       </div>
+      <HeyBobModal open={heyBobOpen} onClose={() => setHeyBobOpen(false)} onCapture={handleHeyBobCapture} />
     </div>
   );
 }
