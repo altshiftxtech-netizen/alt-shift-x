@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -11,6 +11,7 @@ import SecureHandshakeModule from "@/components/enterprise/SecureHandshakeModule
 import DeveloperSeatsTab from "@/components/enterprise/DeveloperSeatsTab";
 import EngineeringSuiteTab from "@/components/enterprise/engineering/EngineeringSuiteTab";
 import PrivacyAliasPanel from "@/components/enterprise/PrivacyAliasPanel";
+import ForensicReportsTab from "@/components/enterprise/forensic/ForensicReportsTab";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
@@ -22,6 +23,7 @@ const TABS = [
   { key: "seats", label: "Developer Seats", icon: Cpu },
   { key: "engineering", label: "Engineering Suite", icon: Wrench },
   { key: "privacy", label: "Privacy & Alias", icon: UserCog },
+  { key: "forensic", label: "Forensic Reports", icon: Fingerprint },
 ];
 
 export default function Enterprise() {
@@ -128,6 +130,7 @@ export default function Enterprise() {
           {tab === "seats" && <DeveloperSeatsTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
           {tab === "engineering" && <EngineeringSuiteTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
           {tab === "privacy" && <div className="max-w-2xl mx-auto"><PrivacyAliasPanel user={user} /></div>}
+          {tab === "forensic" && <ForensicReportsTab isAdmin={isAdmin} />}
         </div>
       </div>
     </div>

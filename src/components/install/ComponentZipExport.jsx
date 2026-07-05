@@ -5,6 +5,10 @@ import {
 } from "@/components/ui/dialog";
 import { FileArchive, Loader2, Download, CheckCircle2, Clock, ListChecks, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import BlackstoneDisclosureModal from "@/components/enterprise/forensic/BlackstoneDisclosureModal";
+
+// A component is data-collection-flagged if its name/code signals collection behavior.
+const isDataCollection = (c) => /data.?collection|scrape|harvest/i.test(`${c.component_name || ""} ${c.component_code || ""}`);
 
 /**
  * ComponentZipExport — lets eligible users export the FULL information of every
@@ -22,6 +26,8 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
   const [error, setError] = useState("");
   const [picked, setPicked] = useState({});
   const [mode, setMode] = useState(null); // "all" | "checkpoint" | "selected"
+  const [blackstone, setBlackstone] = useState(null); // { mode } pending acknowledgment
+  const [dcName, setDcName] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -31,6 +37,26 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
   }, [open]);
 
   if (!eligible) return null;
+
+  // Determine which components are in scope for a given mode, and whether any
+  // of them are flagged for DATA_COLLECTION (requires Blackstone disclosure).
+  const scopeFor = (selectedMode) => {
+    if (selectedMode === "selected") {
+      const ids = new Set(Object.keys(picked).filter((k) => picked[k]));
+      return installs.filter((c) => ids.has(c.component_id || c.id));
+    }
+    return installs;
+  };
+
+  const start = (selectedMode) => {
+    const flagged = scopeFor(selectedMode).find(isDataCollection);
+    if (flagged) {
+      setDcName(flagged.component_name || flagged.component_code || "");
+      setBlackstone({ mode: selectedMode });
+      return;
+    }
+    run(selectedMode);
+  };
 
   const run = async (selectedMode) => {
     setBusy(true);
@@ -91,7 +117,7 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
 
           <div className="space-y-2.5">
             <button
-              onClick={() => run("all")}
+              onClick={() => start("all")}
               disabled={busy}
               className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-colors text-left disabled:opacity-60"
             >
@@ -104,7 +130,7 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
             </button>
 
             <button
-              onClick={() => run("checkpoint")}
+              onClick={() => start("checkpoint")}
               disabled={busy || !lastDownload}
               className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-colors text-left disabled:opacity-50"
             >
@@ -140,7 +166,7 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
                   );
                 })}
               </div>
-              <Button onClick={() => run("selected")} disabled={busy} size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
+              <Button onClick={() => start("selected")} disabled={busy} size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-xs gap-1.5">
                 {busy && mode === "selected" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
                 Download selected
               </Button>
@@ -150,6 +176,13 @@ export default function ComponentZipExport({ eligible, installs = [] }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BlackstoneDisclosureModal
+        open={!!blackstone}
+        componentName={dcName}
+        onCancel={() => setBlackstone(null)}
+        onAcknowledge={() => { const m = blackstone?.mode; setBlackstone(null); if (m) run(m); }}
+      />
     </>
   );
 }

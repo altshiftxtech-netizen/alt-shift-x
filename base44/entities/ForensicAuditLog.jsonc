@@ -1,0 +1,110 @@
+{
+  "name": "ForensicAuditLog",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "default": "AGENT-TAMPER-EVIDENCE-1.0",
+      "description": "The tamper-evidence protocol that processed this export through the Full Gate"
+    },
+    "downloader_id": {
+      "type": "string",
+      "description": "Base44 user/builder ID of the identity that triggered the export"
+    },
+    "downloader_email": {
+      "type": "string"
+    },
+    "downloader_role": {
+      "type": "string",
+      "description": "Role of the downloader at the moment of export (admin/user/builder/staff)"
+    },
+    "export_kind": {
+      "type": "string",
+      "description": "What was exported, e.g. 'owned_components_zip', 'component_doc', 'esi_record'"
+    },
+    "target_ref": {
+      "type": "string",
+      "description": "Reference to the exported subject (component id/code, package name, etc.)"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "Exact byte count of the final exported package at the moment of export"
+    },
+    "sha256": {
+      "type": "string",
+      "description": "SHA-256 hash of the final exported byte-stream"
+    },
+    "integrity_seal_id": {
+      "type": "string",
+      "description": "Unique seal ID issued by the AGENT-TAMPER-EVIDENCE-1.0 component"
+    },
+    "metadata_snapshot": {
+      "type": "object",
+      "description": "JSON blob of all instruction/schema fields captured at export time",
+      "default": {}
+    },
+    "master_index_ref": {
+      "type": "string",
+      "default": "GSP-MASTER-INDEX-1.0",
+      "description": "The master index the seal/hashes are verified against"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "pending",
+        "compromised"
+      ],
+      "default": "verified",
+      "description": "Whether the Full Gate confirmed integrity against GSP-MASTER-INDEX-1.0"
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "DATA_COLLECTION_RISK",
+          "UNAUTHORIZED_ENVIRONMENT",
+          "INTEGRITY_COMPROMISED"
+        ]
+      },
+      "default": [],
+      "description": "Anomaly flags raised by the audit sweep or gate"
+    },
+    "simulated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the record was produced by the developer-only Forensic Simulator, not a real export"
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Precision UTC timestamp of the export event"
+    }
+  },
+  "required": [
+    "downloader_id",
+    "export_kind"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

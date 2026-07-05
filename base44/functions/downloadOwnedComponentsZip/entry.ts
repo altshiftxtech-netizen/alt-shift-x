@@ -97,7 +97,30 @@ Deno.serve(async (req) => {
     zip.file('manifest.json', JSON.stringify(manifest, null, 2));
 
     const zipBlob = await zip.generateAsync({ type: 'uint8array' });
-    const zipFile = new File([zipBlob], `altshiftx_components_${Date.now()}.zip`, { type: 'application/zip' });
+    const fileName = `altshiftx_components_${Date.now()}.zip`;
+
+    // ── Forensic Full Gate (AGENT-TAMPER-EVIDENCE-1.0) ──
+    // Every byte-stream is processed through the gate before release. The gate
+    // hashes + seals the package, verifies against GSP-MASTER-INDEX-1.0, and
+    // writes the hidden FORENSIC-AUDIT-LOG record.
+    const dataCollectionFlagged = manifest.components.some((c) =>
+      /data.?collection|scrape|harvest/i.test(`${c.name} ${c.code}`));
+    let b64 = '';
+    { const bin = Array.from(zipBlob, (b) => String.fromCharCode(b)).join(''); b64 = btoa(bin); }
+    let gate = null;
+    try {
+      const gateRes = await base44.functions.invoke('forensicGate', {
+        base64: b64,
+        export_kind: 'owned_components_zip',
+        target_ref: `${selected.length} components`,
+        file_name: fileName,
+        metadata_snapshot: manifest,
+        flags: dataCollectionFlagged ? ['DATA_COLLECTION_RISK'] : [],
+      });
+      gate = gateRes?.data || null;
+    } catch (e) { console.error('forensicGate invoke failed:', e.message); }
+
+    const zipFile = new File([zipBlob], fileName, { type: 'application/zip' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: zipFile });
 
     // Update / create the checkpoint.
@@ -115,7 +138,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ success: true, url: file_url, count: selected.length });
+    return Response.json({
+      success: true,
+      url: file_url,
+      count: selected.length,
+      forensic: gate ? { seal: gate.integrity_seal_id, sha256: gate.sha256, verified: gate.verified } : null,
+    });
   } catch (error) {
     console.error('downloadOwnedComponentsZip error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
