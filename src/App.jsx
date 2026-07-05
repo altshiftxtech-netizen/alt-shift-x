@@ -11,6 +11,7 @@ import AnalyticsTracker from './components/AnalyticsTracker';
 import AffiliateCapture from './components/AffiliateCapture';
 import CookieConsentBanner from './components/cookies/CookieConsentBanner';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
@@ -149,7 +150,6 @@ const AuthenticatedApp = () => {
       <Route path="/shop/collections" element={<ShopCollections />} />
       <Route path="/shop/collections/:slug" element={<ShopCollectionDetail />} />
       <Route path="/shop/fund" element={<ShopFund />} />
-      <Route path="/shop/admin" element={<ShopAdmin />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/expertmind" element={<ExpertMind />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
@@ -165,7 +165,7 @@ const AuthenticatedApp = () => {
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/white-paper" element={<WhitePaper />} />
       <Route path="/about/white-paper" element={<WhitePaper />} />
-      <Route path="/unsubscribe" element={<Unsubscribe />} />
+
       <Route path="/tutorials" element={<Tutorial />} />
       <Route path="/sensitive-intelligence-policy" element={<SensitiveIntelligencePolicy />} />
       {/* ── Legal library routes ── */}
@@ -183,33 +183,39 @@ const AuthenticatedApp = () => {
       <Route path="/legal/accessibility" element={<LegalAccessibility />} />
       <Route path="/legal/dpa" element={<LegalDpa />} />
       <Route path="/legal/childrens-safety" element={<LegalChildrensSafety />} />
-      <Route path="/rollout-procedures" element={<RolloutProcedures />} />
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
-      <Route path="/success/install" element={<InstallSuccess />} />
-      <Route path="/success/subscription" element={<SubscriptionSuccess />} />
-      <Route path="/onboarding" element={<UserOnboarding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       {/* Speakeasy rooms enforce their own membership gate (ProxyRoomGate), so
           they live outside ProtectedRoute — this also lets them render in the
-          builder preview instead of bouncing to /login as a 404. */}
-      <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
-      <Route path="/speakeasy/social" element={<SpeakeasySocial />} />
-      <Route path="/speakeasy/groups" element={<SpeakeasyGroups />} />
-      <Route path="/speakeasy/groups/:slug" element={<SpeakeasyGroup />} />
-      <Route path="/speakeasy/meet" element={<SpeakeasyMeet />} />
-      <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
-      <Route path="/speakeasy/raffles" element={<SpeakeasyRaffles />} />
-      <Route path="/speakeasy/raffles/:slug" element={<SpeakeasyRaffleDetail />} />
-      <Route path="/speakeasy/hallway-east" element={<SpeakeasyHallwayEast />} />
-      <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
-      <Route path="/speakeasy/ballroom" element={<SpeakeasyBallroom />} />
-      <Route path="/speakeasy/ballroom-east" element={<SpeakeasyBallroomEast />} />
-      <Route path="/speakeasy/pipelines" element={<SpeakeasyPipelines />} />
-      <Route path="/biz-center" element={<BizCenter />} />
+          builder preview instead of bouncing to /login as a 404. They stay
+          publicly routable but are wrapped in NoIndexRoute so search engines
+          never index these members-only / gated / transactional pages. */}
+      <Route element={<NoIndexRoute />}>
+        <Route path="/speakeasy/proxy-room" element={<SpeakeasyProxyRoom />} />
+        <Route path="/speakeasy/social" element={<SpeakeasySocial />} />
+        <Route path="/speakeasy/groups" element={<SpeakeasyGroups />} />
+        <Route path="/speakeasy/groups/:slug" element={<SpeakeasyGroup />} />
+        <Route path="/speakeasy/meet" element={<SpeakeasyMeet />} />
+        <Route path="/speakeasy/hallway" element={<SpeakeasyHallway />} />
+        <Route path="/speakeasy/raffles" element={<SpeakeasyRaffles />} />
+        <Route path="/speakeasy/raffles/:slug" element={<SpeakeasyRaffleDetail />} />
+        <Route path="/speakeasy/hallway-east" element={<SpeakeasyHallwayEast />} />
+        <Route path="/speakeasy/bathroom" element={<SpeakeasyBathroom />} />
+        <Route path="/speakeasy/ballroom" element={<SpeakeasyBallroom />} />
+        <Route path="/speakeasy/ballroom-east" element={<SpeakeasyBallroomEast />} />
+        <Route path="/speakeasy/pipelines" element={<SpeakeasyPipelines />} />
+        <Route path="/biz-center" element={<BizCenter />} />
+        <Route path="/shop/admin" element={<ShopAdmin />} />
+        <Route path="/rollout-procedures" element={<RolloutProcedures />} />
+        <Route path="/success/install" element={<InstallSuccess />} />
+        <Route path="/success/subscription" element={<SubscriptionSuccess />} />
+        <Route path="/onboarding" element={<UserOnboarding />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
+      </Route>
 
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
