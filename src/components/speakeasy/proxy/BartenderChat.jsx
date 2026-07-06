@@ -12,10 +12,10 @@ const hasText = (m) => m && typeof m.content === "string" && m.content.trim().le
 const isAssistantText = (m) => m && m.role === "assistant" && hasText(m);
 
 const QUICK = [
-  "What is the Speakeasy?",
+  "Map the whole Speakeasy for me",
+  "Any hints for the scavenger hunt?",
   "Where do the rooms lead?",
-  "What's new here?",
-  "Tell me about the founders",
+  "Tell me a joke 🍸",
 ];
 
 /**
