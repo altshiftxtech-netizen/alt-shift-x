@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { componentId } = await req.json();
+    const { componentId, acceptance_hash = "" } = await req.json();
     if (!componentId) return Response.json({ error: "componentId required" }, { status: 400 });
 
     // Read the shelved component's metadata (service role — it stays non-public).
@@ -61,6 +61,9 @@ Deno.serve(async (req) => {
         component_id: component.id,
         component_code: component.code,
         purchase_type: "unzip_one_time",
+        license_type: "lifetime_sovereign",
+        version: "V1.0.0",
+        acceptance_hash,
       },
     });
 

@@ -89,6 +89,90 @@ Deno.serve(async (req) => {
           break;
         }
 
+        // ── One-time Unzipped Series "Lifetime Sovereign License" ──
+        // Grants permanent access, logs a lifetime_license_issued event into the
+        // GSP-MASTER-INDEX-1.0, and seals the downloaded V1.0.0 via the
+        // AGENT-TAMPER-EVIDENCE-1.0 gate. No Stripe subscription is involved.
+        if (session.metadata?.purchase_type === "unzip_one_time") {
+          const compId = session.metadata?.component_id;
+          const compCode = session.metadata?.component_code || "";
+          const version = session.metadata?.version || "V1.0.0";
+          const acceptanceHash = session.metadata?.acceptance_hash || "";
+          const MASTER_INDEX_ID = "6a4a1f9f62e77d271c297e6a";
+
+          if (userId && compId) {
+            // Idempotent install grant (lifetime — no subscription id).
+            const already = await base44.asServiceRole.entities.InstalledComponent.filter({
+              user_id: userId, component_id: compId,
+            });
+            const comps = await base44.asServiceRole.entities.Component.filter({ id: compId });
+            const compRecord = comps.length > 0 ? comps[0] : {};
+            if (already.length === 0) {
+              await base44.asServiceRole.entities.InstalledComponent.create({
+                user_id: userId,
+                component_id: compId,
+                component_name: compRecord.name || "",
+                component_code: compCode || compRecord.code || "",
+                component_type: compRecord.type || "X2",
+                trust_score: compRecord.trust_score || 0,
+                status: "active",
+                installed_at: new Date().toISOString().split("T")[0],
+              });
+              if (comps.length > 0) {
+                await base44.asServiceRole.entities.Component.update(compId, {
+                  installs_count: (compRecord.installs_count || 0) + 1,
+                });
+              }
+            }
+
+            // Source-of-truth registry event: lifetime_license_issued.
+            await base44.asServiceRole.entities.ComponentCollaboration.create({
+              component_id: MASTER_INDEX_ID,
+              component_name: "GSP-MASTER-INDEX-1.0",
+              owner_id: userId,
+              notes: JSON.stringify({
+                event: "lifetime_license_issued",
+                component_code: compCode,
+                component_id: compId,
+                version,
+                acceptance_hash: acceptanceHash,
+                stripe_session_id: session.id,
+                issued_at: new Date().toISOString(),
+              }),
+              status: "active",
+            }).catch((e) => console.error("[stripeWebhook] lifetime license log failed:", e.message));
+
+            // Forensic seal of the specific version downloaded (V1.0.0). The
+            // webhook has no user session (so it can't call the auth-gated
+            // forensicGate), so we write the AGENT-TAMPER-EVIDENCE-1.0 seal
+            // record directly with the service role.
+            try {
+              const sealSource = `${compCode}:${version}:${session.id}:${crypto.randomUUID()}`;
+              const sealDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sealSource));
+              const sealHex = Array.from(new Uint8Array(sealDigest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+              await base44.asServiceRole.entities.ForensicAuditLog.create({
+                protocol: "AGENT-TAMPER-EVIDENCE-1.0",
+                downloader_id: userId,
+                downloader_email: session.customer_details?.email || session.customer_email || "",
+                downloader_role: "user",
+                export_kind: "lifetime_license",
+                target_ref: compId,
+                file_name: `${compCode || compId}-${version}`,
+                integrity_seal_id: "SEAL-" + sealHex.slice(0, 24).toUpperCase(),
+                metadata_snapshot: { version, acceptance_hash: acceptanceHash, license_type: "lifetime_sovereign" },
+                master_index_ref: "GSP-MASTER-INDEX-1.0",
+                verification_status: "verified",
+                exported_at: new Date().toISOString(),
+              });
+            } catch (e) {
+              console.error("[stripeWebhook] forensic seal failed:", e.message);
+            }
+
+            console.log(`[stripeWebhook] Lifetime license issued: user=${userId}, component=${compCode}, version=${version}`);
+          }
+          break;
+        }
+
         if (!subscriptionId) {
           console.warn("No subscription ID in checkout.session.completed — skipping subscription update");
           break;
