@@ -148,7 +148,13 @@ export default function BartenderChat({ onClose }) {
       {/* header */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: `${BRASS}33` }}>
         <div className="flex items-center gap-2">
-          <span className="text-lg">🤖</span>
+          <img
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/e8ab3c475_Copilot_20260705_022631.png"
+            alt="Robot Barkeep"
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+            style={{ border: `1.5px solid ${BRASS}`, boxShadow: `0 0 10px ${BRASS}55` }}
+            draggable="false"
+          />
           <div>
             <p className="text-sm font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The Bartender</p>
             <p className="text-[10px] uppercase tracking-wider" style={{ color: BRASS }}>Speakeasy Info · Founder Lore</p>
