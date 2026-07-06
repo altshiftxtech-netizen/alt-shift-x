@@ -20,8 +20,15 @@ export default function EmHero() {
     <section id="hero">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
-          {/* Left — 5/12 */}
-          <div className="lg:col-span-5">
+          {/* Left — 5/12 — seated on a frosted glass panel that pops off the video */}
+          <div
+            className="lg:col-span-5 rounded-3xl p-7 lg:p-9 backdrop-blur-md"
+            style={{
+              background: "linear-gradient(160deg, rgba(255,255,255,0.55), rgba(255,255,255,0.28))",
+              border: "1px solid rgba(255,255,255,0.6)",
+              boxShadow: "0 20px 60px -20px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.7)",
+            }}
+          >
             <p className="text-[13px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: EM.accent }}>
               Human Contribution AI Training Component
             </p>

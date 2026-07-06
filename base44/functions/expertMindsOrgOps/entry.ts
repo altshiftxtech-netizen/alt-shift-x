@@ -44,6 +44,71 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body.action || "list";
 
+    // ── ADMIN OVERVIEW: platform-admin financial + record-keeping rollup of
+    //    ALL ExpertMinds Enterprise orgs & seats (no gamification). ──
+    if (action === "admin_overview") {
+      if (user.role !== "admin") return Response.json({ error: "Admin only" }, { status: 403 });
+
+      const [orgs, seats] = await Promise.all([
+        base44.asServiceRole.entities.ExpertMindsOrg.list("-created_date", 1000),
+        base44.asServiceRole.entities.ExpertMindsSeat.list("-created_date", 5000),
+      ]);
+
+      const CORE_MO = 10000;    // $10k/mo per active core
+      const SEAT_MO = 999;      // $999/mo per charged seat
+
+      const activeOrgs = orgs.filter((o) => o.core_status === "active");
+      const chargedSeats = seats.filter((s) => s.billing_status === "charged");
+      const verifiedSeats = seats.filter((s) => s.forensic_status === "verified");
+
+      const coreMrr = activeOrgs.length * CORE_MO;
+      const seatMrr = chargedSeats.length * SEAT_MO;
+      const totalMrr = coreMrr + seatMrr;
+
+      // Per-org financial + record rollup for the ledger table.
+      const orgRows = orgs.map((o) => {
+        const oseats = seats.filter((s) => s.expertminds_org_id === o.expertminds_org_id);
+        const charged = oseats.filter((s) => s.billing_status === "charged").length;
+        const verified = oseats.filter((s) => s.forensic_status === "verified").length;
+        const active = o.core_status === "active";
+        const mrr = (active ? CORE_MO : 0) + charged * SEAT_MO;
+        return {
+          id: o.id,
+          org_name: o.org_name,
+          org_admin_email: o.org_admin_email,
+          core_status: o.core_status,
+          expertminds_org_id: o.expertminds_org_id,
+          blackstone_signed: !!o.blackstone_acceptance_hash,
+          created_date: o.created_date,
+          seats: oseats.length,
+          charged_seats: charged,
+          verified_seats: verified,
+          mrr,
+        };
+      });
+
+      // Status distribution for the pie/graph.
+      const statusCounts = {};
+      for (const o of orgs) statusCounts[o.core_status || "unknown"] = (statusCounts[o.core_status || "unknown"] || 0) + 1;
+
+      return Response.json({
+        ok: true,
+        kpis: {
+          totalOrgs: orgs.length,
+          activeOrgs: activeOrgs.length,
+          totalSeats: seats.length,
+          chargedSeats: chargedSeats.length,
+          verifiedSeats: verifiedSeats.length,
+          coreMrr,
+          seatMrr,
+          totalMrr,
+          arr: totalMrr * 12,
+        },
+        orgRows,
+        statusCounts,
+      });
+    }
+
     // ── LIST: org + staff registry for the current Org Admin ──
     if (action === "list") {
       const orgs = await base44.asServiceRole.entities.ExpertMindsOrg.filter({ org_admin_id: user.id });

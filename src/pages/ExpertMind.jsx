@@ -51,8 +51,24 @@ export default function ExpertMind() {
           loop
           playsInline
         />
-        {/* Soft light wash keeps the executive white-on-content readable */}
-        <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.82)" }} />
+        {/* Frosted glass overlay — lets the video shimmer through a blurred,
+            translucent pane so the whole page reads as premium "glass" while the
+            executive white-on-content theme stays crisp and readable. */}
+        <div
+          className="fixed inset-0 z-0 pointer-events-none backdrop-blur-xl"
+          style={{
+            background: "linear-gradient(155deg, rgba(255,255,255,0.72) 0%, rgba(244,247,252,0.66) 45%, rgba(255,255,255,0.78) 100%)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
+        />
+        {/* Subtle top sheen + edge vignette to make the glass "pop" */}
+        <div
+          className="fixed inset-0 z-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(1200px 500px at 50% -10%, rgba(255,255,255,0.9), transparent 60%), radial-gradient(900px 600px at 100% 110%, rgba(200,169,91,0.12), transparent 60%)",
+          }}
+        />
 
         <div className="relative z-10">
           <EmNav />

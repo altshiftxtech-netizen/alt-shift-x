@@ -7,7 +7,7 @@ import InviteMemberModal from "./InviteMemberModal";
 
 const GOLD = "#C8A95B";
 const CORE_CODE = "EXPERT-MINDS-ENTERPRISE-CORE-1.0";
-const EM_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b0a6e86d1_Copilot_20260705_193928.png";
+const EM_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/70a65d41d_generated_image.png";
 
 /**
  * ExpertMindsEnterpriseTab — the /enterprise gate to ExpertMinds Enterprise.
@@ -78,10 +78,17 @@ export default function ExpertMindsEnterpriseTab() {
 
   return (
     <div className="space-y-6">
-      {/* Corporate masthead */}
-      <div className="rounded-2xl border p-6" style={{ borderColor: `${GOLD}33`, background: "linear-gradient(180deg, rgba(200,169,91,0.06), rgba(0,0,0,0.2))" }}>
+      {/* Corporate masthead — frosted glass panel */}
+      <div
+        className="rounded-2xl border p-6 backdrop-blur-xl"
+        style={{
+          borderColor: `${GOLD}44`,
+          background: "linear-gradient(160deg, rgba(255,255,255,0.08), rgba(200,169,91,0.05) 55%, rgba(0,0,0,0.25))",
+          boxShadow: `0 20px 60px -24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)`,
+        }}
+      >
         <div className="flex items-start gap-4">
-          <img src={EM_LOGO} alt="ExpertMinds" className="h-16 w-auto object-contain" draggable="false" />
+          <img src={EM_LOGO} alt="ExpertMinds" className="h-16 w-16 object-contain rounded-xl" draggable="false" style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${GOLD}33`, padding: 4 }} />
           <div className="flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD }}>{CORE_CODE} · $10k/mo</p>
             <h3 className="text-xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>ExpertMinds Enterprise</h3>
