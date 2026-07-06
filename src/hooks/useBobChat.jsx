@@ -142,7 +142,15 @@ export default function useBobChat() {
     const pending = pendingUserRef.current;
     if (pending) {
       const serverUserCount = msgs.reduce((n, m) => n + (m.role === "user" ? 1 : 0), 0);
-      if (serverUserCount >= (pending._expectedUserCount || 0)) {
+      // The server's most recent user message already carries our pending text →
+      // the echo has landed, so drop the optimistic copy to avoid a duplicate
+      // bubble (the flash the user saw before it "went back to the right order").
+      const lastServerUser = [...msgs].reverse().find((m) => m.role === "user");
+      const echoed =
+        lastServerUser &&
+        typeof lastServerUser.content === "string" &&
+        lastServerUser.content === (pending.content || "");
+      if (serverUserCount >= (pending._expectedUserCount || 0) || echoed) {
         // Server has caught up to (or past) our optimistic message → trust it.
         pendingUserRef.current = null;
       } else {
