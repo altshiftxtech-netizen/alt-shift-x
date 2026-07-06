@@ -30,7 +30,7 @@ export default function EmHero() {
               Turn Human Expertise Into Deployable Intelligence
             </h1>
             <p className="mt-6 text-[16px] lg:text-[17px] leading-relaxed max-w-xl" style={{ color: EM.muted }}>
-              ExpertMind™ uses structured AI interviews to capture professional judgment, tacit knowledge, and lived
+              <span className="font-semibold" style={{ color: EM.primary }}>expertminds</span>™ uses structured AI interviews to capture professional judgment, tacit knowledge, and lived
               experience — then transforms it into structured, monetizable assets.
             </p>
 
@@ -38,9 +38,9 @@ export default function EmHero() {
               <button
                 onClick={launch}
                 className="text-[14px] font-semibold px-5 py-3 rounded-lg text-white transition-transform hover:-translate-y-px"
-                style={{ background: EM.primary, boxShadow: `0 1px 2px ${EM.shadow}` }}
+                style={{ background: `linear-gradient(135deg, ${EM.primary}, ${EM.accent})`, boxShadow: `0 1px 2px ${EM.shadow}` }}
               >
-                Launch ExpertMind Extraction
+                Launch expertminds Extraction
               </button>
               <button
                 className="text-[14px] font-semibold px-5 py-3 rounded-lg transition-colors hover:bg-white"

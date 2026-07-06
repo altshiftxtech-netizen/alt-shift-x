@@ -33,8 +33,8 @@ export default function EmPaywallModal({ open, isGuest, onClose }) {
           </h3>
           <p className="mt-3 text-[14px] leading-relaxed" style={{ color: EM.muted }}>
             {isGuest
-              ? "The live ExpertMind™ console is a members-only tool. Sign in with a paying membership, or view pricing to get access."
-              : "The live ExpertMind™ console is reserved for paying members. Upgrade your plan to deploy the brain and run structured extractions."}
+              ? "The live expertminds™ console is a members-only tool. Sign in with a paying membership, or view pricing to get access."
+              : "The live expertminds™ console is reserved for paying members. Upgrade your plan to deploy the brain and run structured extractions."}
           </p>
 
           <Link to="/pricing" onClick={onClose}>

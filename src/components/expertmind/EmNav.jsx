@@ -24,17 +24,19 @@ export default function EmNav() {
       style={{ background: "rgba(255,255,255,0.92)", borderBottom: `1px solid ${EM.border}` }}
     >
       <nav className="max-w-[1280px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-        {/* Left: Alt+Shift+X logo lockup */}
+        {/* Left: expertminds logo lockup */}
         <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[13px] font-bold tracking-tight"
-            style={{ background: `linear-gradient(135deg, ${EM.primary}, ${EM.primary2})` }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[15px] font-bold tracking-tight"
+            style={{ background: `linear-gradient(135deg, ${EM.primary} 45%, ${EM.accent})` }}
           >
-            X
+            e
           </div>
           <div className="leading-none">
-            <span className="text-[15px] font-semibold" style={{ color: EM.primary }}>Alt+Shift+X.tech</span>
-            <span className="hidden sm:inline text-[11px] font-medium ml-2" style={{ color: EM.accent }}>ExpertMind™</span>
+            <span className="text-[17px] font-bold tracking-tight">
+              <span style={{ color: EM.primary }}>expert</span><span style={{ color: EM.accent }}>minds</span>
+              <span className="align-super text-[9px] ml-0.5" style={{ color: EM.accent }}>™</span>
+            </span>
           </div>
         </div>
 
@@ -71,9 +73,9 @@ export default function EmNav() {
           <button
             onClick={launch}
             className="text-[13px] font-semibold px-4 py-2 rounded-lg text-white transition-transform hover:-translate-y-px"
-            style={{ background: EM.primary, boxShadow: `0 1px 2px ${EM.shadow}` }}
+            style={{ background: `linear-gradient(135deg, ${EM.primary}, ${EM.accent})`, boxShadow: `0 1px 2px ${EM.shadow}` }}
           >
-            Launch ExpertMind Extraction
+            Launch expertminds Extraction
           </button>
         </div>
       </nav>

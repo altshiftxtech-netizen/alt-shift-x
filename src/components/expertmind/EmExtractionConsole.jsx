@@ -19,7 +19,7 @@ const SAMPLE_VERDICT = {
 const GREETING = {
   role: "assistant",
   content:
-    "Welcome to **ExpertMind™**. I'll guide a structured, adaptive interview to capture your expertise and structure it into deployable knowledge assets.\n\nTo begin — what's your primary domain, and roughly how many years have you operated at a senior level in it?",
+    "Welcome to **expertminds™**. I'll guide a structured, adaptive interview to capture your expertise and structure it into deployable knowledge assets.\n\nTo begin — what's your primary domain, and roughly how many years have you operated at a senior level in it?",
 };
 
 /**
@@ -76,14 +76,14 @@ export default function EmExtractionConsole({ onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(15,23,42,0.55)" }}>
       <div className="w-full max-w-2xl h-[85vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: EM.surface, border: `1px solid ${EM.border}` }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5" style={{ background: EM.primary }}>
+        <div className="flex items-center justify-between px-5 py-3.5" style={{ background: `linear-gradient(135deg, ${EM.primary}, ${EM.accent})` }}>
           <div className="flex items-center gap-2.5">
             <span className="relative flex w-2 h-2">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: EM.accent }} />
-              <span className="relative inline-flex rounded-full w-2 h-2" style={{ background: EM.accent }} />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#fff" }} />
+              <span className="relative inline-flex rounded-full w-2 h-2" style={{ background: "#fff" }} />
             </span>
             <div className="leading-none">
-              <p className="text-[10px] uppercase tracking-[0.16em]" style={{ color: EM.accentSoft }}>ExpertMind™ · BOB-EM-1.0</p>
+              <p className="text-[10px] uppercase tracking-[0.16em]" style={{ color: EM.accentSoft }}>expertminds™ · BOB-EM-1.0</p>
               <h3 className="text-white text-[15px] font-semibold mt-0.5">Extraction Console</h3>
             </div>
           </div>

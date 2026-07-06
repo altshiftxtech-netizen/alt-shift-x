@@ -11,7 +11,7 @@ const OUTPUTS = [
 
 export default function EmOutputs() {
   return (
-    <section id="outputs" style={{ background: "#EAF1F7" }}>
+    <section id="outputs" style={{ background: EM.surfaceAlt }}>
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-20">
         <h2 className="text-[28px] lg:text-[40px] font-bold tracking-tight" style={{ color: EM.primary }}>Outputs</h2>
         <p className="mt-3 text-[16px] max-w-xl" style={{ color: EM.muted }}>Every extraction produces governed, deployable knowledge assets.</p>

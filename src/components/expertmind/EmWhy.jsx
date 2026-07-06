@@ -5,7 +5,7 @@ import { EM } from "./emTokens";
 const CARDS = [
   { icon: Waves, title: "Scraped data is noisy", body: "Scraped data is broad, unverified, and often disconnected from real-world expertise." },
   { icon: Lock, title: "Expert knowledge is trapped", body: "The most valuable knowledge still lives inside people — undocumented and unstructured." },
-  { icon: TrendingUp, title: "Governed intelligence is the opportunity", body: "ExpertMind turns that human insight into a governed, AI-ready asset." },
+  { icon: TrendingUp, title: "Governed intelligence is the opportunity", body: "expertminds turns that human insight into a governed, AI-ready asset." },
 ];
 
 export default function EmWhy() {
@@ -16,7 +16,7 @@ export default function EmWhy() {
           Scraped data is noisy. Expert knowledge is trapped.
         </h2>
         <p className="mt-4 text-[16px] max-w-2xl leading-relaxed" style={{ color: EM.muted }}>
-          The most valuable knowledge still lives inside people. ExpertMind turns that human insight into a governed AI-ready asset.
+          The most valuable knowledge still lives inside people. expertminds turns that human insight into a governed AI-ready asset.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6 mt-12">

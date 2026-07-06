@@ -31,7 +31,7 @@ export default function EmVaultPricing() {
             The Vault · Gen-2 Apex
           </p>
           <h2 className="text-[28px] lg:text-[40px] font-bold tracking-tight" style={{ color: EM.primary }}>
-            Deploy the ExpertMinds Brain
+            Deploy the expertminds Brain
           </h2>
           <p className="mt-3 text-[16px]" style={{ color: EM.muted }}>
             The only bot on the platform immune to the 2026 per-field JSON surcharge — one Super-Token, priced for life.
