@@ -20,12 +20,6 @@ export default function EmHero() {
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left — 5/12 */}
           <div className="lg:col-span-5">
-            <img
-              src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b0a6e86d1_Copilot_20260705_193928.png"
-              alt="expertminds"
-              className="h-24 w-auto object-contain mb-6 -ml-1"
-              draggable="false"
-            />
             <p className="text-[13px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: EM.accent }}>
               Human Contribution AI Training Component
             </p>
