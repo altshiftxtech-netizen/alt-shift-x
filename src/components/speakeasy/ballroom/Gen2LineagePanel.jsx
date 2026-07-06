@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { X, Download, ShoppingBag, Gem } from "lucide-react";
+import { X, Download, ShoppingBag, Gem, Printer } from "lucide-react";
 import { GEN2_LAYERS } from "./gen2Lineage";
 import VaultDownloads from "./VaultDownloads";
 import UnzipSeriesPanel from "./UnzipSeriesPanel";
 import DiamondPressPanel from "./DiamondPressPanel";
+import SovereignPrintPress from "./SovereignPrintPress";
 
 const TYPE_LABEL = {
   X1: "Reading Protocol", X2: "Prophecy Model", X3: "Speed Profile",
@@ -47,6 +48,7 @@ export default function Gen2LineagePanel({ open, onClose }) {
                 { key: "lineage", label: "Lineage" },
                 { key: "unzip", label: "Unzipped" },
                 { key: "diamond", label: "Diamond Press" },
+                { key: "print", label: "Print Press" },
                 { key: "downloads", label: "Downloads" },
               ].map((t) => (
                 <button
@@ -60,6 +62,7 @@ export default function Gen2LineagePanel({ open, onClose }) {
                   {t.key === "downloads" && <Download className="w-3 h-3" />}
                   {t.key === "unzip" && <ShoppingBag className="w-3 h-3" />}
                   {t.key === "diamond" && <Gem className="w-3 h-3" />}
+                  {t.key === "print" && <Printer className="w-3 h-3" />}
                   {t.label}
                 </button>
               ))}
@@ -69,6 +72,8 @@ export default function Gen2LineagePanel({ open, onClose }) {
               <VaultDownloads />
             ) : tab === "diamond" ? (
               <DiamondPressPanel />
+            ) : tab === "print" ? (
+              <SovereignPrintPress />
             ) : tab === "unzip" ? (
               <UnzipSeriesPanel />
             ) : (

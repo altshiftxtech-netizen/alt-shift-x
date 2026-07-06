@@ -143,6 +143,83 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── PRINT: Sovereign Print Press command completion ──
+    // Triggered by the UI once a "x1,x2 print for N hours" job's live progress
+    // window finishes. Parses/validates the command server-side (defence in
+    // depth), then creates one component per requested X-type from the refined
+    // Seed cluster via the sanctioned createComponentSafe path.
+    if (action === "print") {
+      const command = String(body.command || "").trim();
+      // ^(x1-x5[,x1-x5]...)? print for <n> <hour|hours|minute|minutes>$
+      const re = /^([xX][1-5](?:,\s*[xX][1-5])*)?\s*print\s+for\s+(\d+)\s+(hour|hours|minute|minutes)$/;
+      const m = command.match(re);
+      if (!m) return Response.json({ error: "Command did not match the Sovereign Print Press syntax." }, { status: 400 });
+
+      const unit = m[3].toLowerCase();
+      const amount = parseInt(m[2], 10);
+      const durationHours = unit.startsWith("hour") ? amount : amount / 60;
+      if (durationHours > 24) return Response.json({ error: "Max duration is 24 hours. Reduce the print window." }, { status: 400 });
+
+      // Default to X5 (Complete Agent) when no explicit category is given.
+      const rawTypes = m[1] ? m[1].split(",").map((t) => t.trim().toUpperCase()) : ["X5"];
+      const types = [...new Set(rawTypes)]; // de-dupe (x1,x1 → x1)
+
+      const TYPE_LABEL = {
+        X1: "Reading Protocol", X2: "Prophecy Model", X3: "Speed Profile",
+        X4: "Reason Council", X5: "Complete Agent",
+      };
+      const stamp = Date.now().toString(36).toUpperCase();
+      const sr = base44.asServiceRole;
+      const created = [];
+      for (const type of types) {
+        const code = `${component.code}-PRESS-${type}-${stamp}`;
+        const fields = {
+          name: `${component.name} — ${TYPE_LABEL[type] || type} (Press ${stamp})`,
+          type,
+          category: component.category || "AI Agent Development",
+          description: `Sovereign Print Press ${type} refined from the ${component.name} Seed cluster.`,
+          long_description: component.long_description || "",
+          features: component.features || [],
+          schema: component.schema || [],
+          price: component.price || 0,
+          status: "draft",
+        };
+        // Duplicate guard on code — update in place, else create fresh.
+        const existing = await sr.entities.Component.filter({ code }).catch(() => []);
+        if (existing && existing.length > 0) {
+          await sr.entities.Component.update(existing[0].id, fields);
+          created.push({ code, id: existing[0].id, action: "updated", success: true });
+        } else {
+          const rec = await sr.entities.Component.create({
+            builder_id: user.id, code, ...fields,
+            rating: 0, reviews_count: 0, installs_count: 0, trust_score: 75,
+            trust_breakdown: { performance: 75, safety: 75, satisfaction: 75, retention: 75 },
+            certified: false,
+          });
+          created.push({ code, id: rec.id, action: "created", success: true });
+        }
+      }
+
+      // Registry event in GSP-MASTER-INDEX-1.0.
+      await base44.asServiceRole.entities.ComponentCollaboration.create({
+        component_id: MASTER_INDEX_ID,
+        component_name: "GSP-MASTER-INDEX-1.0",
+        owner_id: user.id,
+        notes: JSON.stringify({
+          event: "sovereign_print_press_completed",
+          press: "SOVEREIGN-PRINT-PRESS-1.0",
+          command,
+          seed_code: component.code,
+          types,
+          duration_hours: durationHours,
+          printed_at: new Date().toISOString(),
+        }),
+        status: "active",
+      }).catch(() => {});
+
+      return Response.json({ ok: true, types, duration_hours: durationHours, printed: created });
+    }
+
     // ── SPIN-OFF: clone the Bankable Solution into a new version ──
     if (action === "spinoff") {
       const currentVersion = body.current_version || "V1.0.0";
