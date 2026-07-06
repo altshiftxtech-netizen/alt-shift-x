@@ -165,15 +165,17 @@ export default function BartenderChat({ onClose }) {
   const visible = messages.filter(hasText);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[22rem] max-w-[calc(100vw-2rem)] h-[30rem] rounded-2xl border shadow-2xl flex flex-col overflow-hidden"
-      style={{ background: "linear-gradient(180deg, rgba(20,16,11,0.96), rgba(10,8,6,0.98))", borderColor: `${BRASS}44`, backdropFilter: "blur(10px)" }}>
+    <div className="fixed bottom-6 right-6 z-50 w-[22rem] max-w-[calc(100vw-2rem)] h-[30rem] rounded-2xl border shadow-2xl flex flex-col overflow-hidden transition-colors duration-500"
+      style={{ background: "linear-gradient(180deg, rgba(20,16,11,0.96), rgba(10,8,6,0.98))", borderColor: loreMode ? `${COGNAC}88` : `${BRASS}44`, backdropFilter: "blur(10px)" }}>
       {/* header */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: `${BRASS}33` }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">🤖</span>
           <div>
             <p className="text-sm font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>The Bartender</p>
-            <p className="text-[10px] uppercase tracking-wider" style={{ color: BRASS }}>Speakeasy Info · Founder Lore</p>
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: loreMode ? COGNAC : BRASS }}>
+              {loreMode ? "Lore Mode · Pouring for the Ghosts" : "Speakeasy Info · Founder Lore"}
+            </p>
           </div>
         </div>
         <button onClick={onClose} className="text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
@@ -197,16 +199,27 @@ export default function BartenderChat({ onClose }) {
             </div>
           </div>
         )}
-        {visible.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className="max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap"
-              style={msg.role === "user"
-                ? { background: BRASS, color: "#1a120b" }
-                : { background: "rgba(255,255,255,0.08)", color: "#eae4d8", border: `1px solid ${BRASS}22` }}>
-              {msg.content}
+        {visible.map((msg, i) => {
+          // In Lore Mode, the barkeep's bubbles glow Cognac-Amber with drifting smoke.
+          const isBar = msg.role !== "user";
+          const amber = loreMode && isBar;
+          return (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className="relative max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap transition-colors duration-500"
+                style={msg.role === "user"
+                  ? { background: BRASS, color: "#1a120b" }
+                  : amber
+                    ? { background: `linear-gradient(180deg, ${COGNAC}33, ${COGNAC}18)`, color: "#f3e2cf", border: `1px solid ${COGNAC}66`, boxShadow: `0 0 18px ${COGNAC}33` }
+                    : { background: "rgba(255,255,255,0.08)", color: "#eae4d8", border: `1px solid ${BRASS}22` }}>
+                {amber && (
+                  <span className="lore-smoke pointer-events-none absolute -top-1 left-4 w-6 h-6 rounded-full"
+                    style={{ background: `radial-gradient(circle, ${COGNAC}55, transparent 70%)` }} />
+                )}
+                {msg.content}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {isWorking && (
           <div className="flex justify-start">
             <div className="px-3 py-2 rounded-xl text-xs flex items-center gap-1.5"
@@ -218,8 +231,19 @@ export default function BartenderChat({ onClose }) {
         <div ref={bottomRef} />
       </div>
 
+      {/* Pour a Drink for the Ghosts — Lore Mode trigger */}
+      <div className="px-3 pt-2" style={{ borderTop: `1px solid ${BRASS}22` }}>
+        <button onClick={pourForGhosts} disabled={!conv || loreMode}
+          className="w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold rounded-lg py-2 border transition-all disabled:opacity-50"
+          style={{ borderColor: `${COGNAC}66`, color: loreMode ? "#f3e2cf" : COGNAC,
+            background: loreMode ? `linear-gradient(180deg, ${COGNAC}33, ${COGNAC}14)` : "transparent" }}>
+          <Wine className="w-3.5 h-3.5" />
+          {loreMode ? "Pouring for the ghosts…" : "Pour a Drink for the Ghosts"}
+        </button>
+      </div>
+
       {/* input */}
-      <div className="p-3 border-t flex gap-2" style={{ borderColor: `${BRASS}33` }}>
+      <div className="p-3 flex gap-2" style={{ borderColor: `${BRASS}33` }}>
         <input
           placeholder={conv ? "Ask the barkeep…" : "Pouring…"}
           value={input}
