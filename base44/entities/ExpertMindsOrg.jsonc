@@ -1,0 +1,78 @@
+{
+  "name": "ExpertMindsOrg",
+  "type": "object",
+  "properties": {
+    "org_admin_id": {
+      "type": "string",
+      "description": "Base44 user ID of the primary Org Admin who owns this ExpertMinds Enterprise org"
+    },
+    "org_admin_email": {
+      "type": "string"
+    },
+    "org_name": {
+      "type": "string",
+      "description": "Display name of the enterprise organization"
+    },
+    "core_component_code": {
+      "type": "string",
+      "default": "EXPERT-MINDS-ENTERPRISE-CORE-1.0"
+    },
+    "expertminds_org_id": {
+      "type": "string",
+      "description": "Canonical org id registered under GSP-MASTER-INDEX-1.0"
+    },
+    "blackstone_acceptance_hash": {
+      "type": "string",
+      "description": "The immutable Blackstone Enterprise Agreement acceptance hash signed by the Org Admin"
+    },
+    "core_status": {
+      "type": "string",
+      "enum": [
+        "pending_agreement",
+        "pending_payment",
+        "active",
+        "cancelled"
+      ],
+      "default": "pending_agreement"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "org_admin_id",
+    "org_name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.org_admin_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.org_admin_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

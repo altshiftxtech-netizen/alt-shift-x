@@ -26,18 +26,12 @@ export default function EmNav() {
       <nav className="max-w-[1280px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         {/* Left: expertminds logo lockup */}
         <div className="flex items-center gap-2.5">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-[15px] font-bold tracking-tight"
-            style={{ background: `linear-gradient(135deg, ${EM.primary} 45%, ${EM.accent})` }}
-          >
-            e
-          </div>
-          <div className="leading-none">
-            <span className="text-[17px] font-bold tracking-tight">
-              <span style={{ color: EM.primary }}>expert</span><span style={{ color: EM.accent }}>minds</span>
-              <span className="align-super text-[9px] ml-0.5" style={{ color: EM.accent }}>™</span>
-            </span>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/c0242c616_image.png"
+            alt="expertminds"
+            className="h-8 w-auto object-contain"
+            draggable="false"
+          />
         </div>
 
         {/* Center: section links */}

@@ -1,0 +1,114 @@
+{
+  "name": "ExpertMindsSeat",
+  "type": "object",
+  "properties": {
+    "expertminds_org_id": {
+      "type": "string",
+      "description": "The org this seat belongs to \u2014 registered under GSP-MASTER-INDEX-1.0"
+    },
+    "org_admin_id": {
+      "type": "string",
+      "description": "Base44 user ID of the Org Admin who invited this member"
+    },
+    "license_component_code": {
+      "type": "string",
+      "default": "EXPERT-MINDS-MEMBER-LICENSE-1.0"
+    },
+    "member_name": {
+      "type": "string"
+    },
+    "member_email": {
+      "type": "string",
+      "description": "Email the invitation was sent to"
+    },
+    "member_id": {
+      "type": "string",
+      "description": "Base44 user ID once the invited member accepts"
+    },
+    "seat_type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "dev"
+      ],
+      "default": "standard",
+      "description": "Standard member seat or Dev seat"
+    },
+    "billing_status": {
+      "type": "string",
+      "enum": [
+        "pending_charge",
+        "charged",
+        "cancelled"
+      ],
+      "default": "pending_charge",
+      "description": "The EXPERT-MINDS-MEMBER-LICENSE-1.0 ($999/mo) charge state"
+    },
+    "forensic_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified"
+      ],
+      "default": "pending",
+      "description": "Pending until the member completes their Vana-Voice biological handshake; verified activates the seat"
+    },
+    "handshake_code": {
+      "type": "string",
+      "description": "Short code the member uses to complete their Vana-Voice handshake"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "expertminds_org_id",
+    "member_email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.org_admin_id": "{{user.id}}"
+        },
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.org_admin_id": "{{user.id}}"
+        },
+        {
+          "data.member_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.org_admin_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
