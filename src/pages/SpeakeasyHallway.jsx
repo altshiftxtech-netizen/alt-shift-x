@@ -5,8 +5,13 @@ import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
 import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
 import PortraitModal from "@/components/speakeasy/hallway/PortraitModal";
+import FounderLoreBar from "@/components/speakeasy/lore/FounderLoreBar";
+import DirectorsCutReader from "@/components/speakeasy/lore/DirectorsCutReader";
+import { getLore } from "@/components/speakeasy/lore/founderLore";
 import { WING_A } from "@/components/speakeasy/hallway/portraitRegistry";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
+import useFounderLore from "@/hooks/useFounderLore";
+import useSovereignAccess from "@/hooks/useSovereignAccess";
 
 // West Wing = Hallway A → portraits P1–P6 from the registry, split across the
 // two corridor walls.
@@ -17,6 +22,11 @@ function HallwayInner() {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
   const [selected, setSelected] = useState(null);
+  const { loreUnlocked, cinemaUnlocked } = useFounderLore();
+  const { status } = useSovereignAccess();
+  const isSovereign = status === "sovereign";
+  const [directorMode, setDirectorMode] = useState(false);
+  const wingFounders = WING_A.map((p) => p.founder);
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#050814" }}>
@@ -35,6 +45,7 @@ function HallwayInner() {
             {LEFT_FRAMES.map((f) => (
               <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
                 hoverPrice={f.gate ? "Vault Access" : f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                riddle={loreUnlocked ? getLore(f.founder).riddle : undefined}
                 onClick={() => setSelected(f)} />
             ))}
           </div>
@@ -46,6 +57,7 @@ function HallwayInner() {
             {RIGHT_FRAMES.map((f) => (
               <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
                 hoverPrice={f.gate ? "Vault Access" : f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                riddle={loreUnlocked ? getLore(f.founder).riddle : undefined}
                 onClick={() => setSelected(f)} />
             ))}
           </div>
@@ -65,7 +77,19 @@ function HallwayInner() {
         <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>West Wing</h1>
       </div>
 
+      {/* FounderLore action bar — unlock history + Director's Cut (Sovereign) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full px-4">
+        <FounderLoreBar
+          loreUnlocked={loreUnlocked}
+          cinemaUnlocked={cinemaUnlocked}
+          isSovereign={isSovereign}
+          directorMode={directorMode}
+          onToggleDirector={() => setDirectorMode((v) => !v)}
+        />
+      </div>
+
       {selected && <PortraitModal portrait={selected} onClose={() => setSelected(null)} />}
+      {directorMode && <DirectorsCutReader founders={wingFounders} onClose={() => setDirectorMode(false)} />}
     </div>
   );
 }

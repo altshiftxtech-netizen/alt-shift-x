@@ -5,8 +5,13 @@ import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import HallwayScene from "@/components/speakeasy/hallway/HallwayScene";
 import HallwayFrame from "@/components/speakeasy/hallway/HallwayFrame";
 import PortraitModal from "@/components/speakeasy/hallway/PortraitModal";
+import FounderLoreBar from "@/components/speakeasy/lore/FounderLoreBar";
+import DirectorsCutReader from "@/components/speakeasy/lore/DirectorsCutReader";
+import { getLore } from "@/components/speakeasy/lore/founderLore";
 import { WING_B } from "@/components/speakeasy/hallway/portraitRegistry";
 import useSpeakeasyPresence from "@/hooks/useSpeakeasyPresence";
+import useFounderLore from "@/hooks/useFounderLore";
+import useSovereignAccess from "@/hooks/useSovereignAccess";
 
 // East Wing = Hallway B → portraits P7–P12. Elias Bytewell (P12) is pulled out
 // to sit at the far end, larger and gold-trimmed.
@@ -18,6 +23,11 @@ function HallwayEastInner() {
   const navigate = useNavigate();
   const { members, me } = useSpeakeasyPresence("hallway");
   const [selected, setSelected] = useState(null);
+  const { loreUnlocked, cinemaUnlocked } = useFounderLore();
+  const { status } = useSovereignAccess();
+  const isSovereign = status === "sovereign";
+  const [directorMode, setDirectorMode] = useState(false);
+  const wingFounders = WING_B.map((p) => p.founder);
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#04070f" }}>
@@ -35,6 +45,7 @@ function HallwayEastInner() {
             {LEFT_FRAMES.map((f) => (
               <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
                 hoverPrice={f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                riddle={loreUnlocked ? getLore(f.founder).riddle : undefined}
                 onClick={() => setSelected(f)} />
             ))}
           </div>
@@ -45,6 +56,7 @@ function HallwayEastInner() {
             {RIGHT_FRAMES.map((f) => (
               <HallwayFrame key={f.id} label={f.label} sublabel={f.feature.split(" — ")[0]} accent={f.accent} image={f.image} founder={f.founder}
                 hoverPrice={f.price === 0 ? "Free" : `$${f.price}/mo`} hoverFeature={f.feature}
+                riddle={loreUnlocked ? getLore(f.founder).riddle : undefined}
                 onClick={() => setSelected(f)} />
             ))}
             {/* Elias Bytewell — the crown-jewel portrait mounts on the wall alongside
@@ -53,6 +65,7 @@ function HallwayEastInner() {
             <div style={{ filter: `drop-shadow(0 0 24px ${ELIAS.accent}88)` }}>
               <HallwayFrame label={ELIAS.label} sublabel={ELIAS.feature.split(" — ")[0]} accent={ELIAS.accent} image={ELIAS.image} founder={ELIAS.founder}
                 hoverPrice={`$${ELIAS.price}/mo`} hoverFeature={ELIAS.feature}
+                riddle={loreUnlocked ? getLore(ELIAS.founder).riddle : undefined}
                 onClick={() => setSelected(ELIAS)} />
             </div>
           </div>
@@ -72,7 +85,19 @@ function HallwayEastInner() {
         <h1 className="text-base font-bold text-white leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>East Wing</h1>
       </div>
 
+      {/* FounderLore action bar — unlock history + Director's Cut (Sovereign) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full px-4">
+        <FounderLoreBar
+          loreUnlocked={loreUnlocked}
+          cinemaUnlocked={cinemaUnlocked}
+          isSovereign={isSovereign}
+          directorMode={directorMode}
+          onToggleDirector={() => setDirectorMode((v) => !v)}
+        />
+      </div>
+
       {selected && <PortraitModal portrait={selected} onClose={() => setSelected(null)} />}
+      {directorMode && <DirectorsCutReader founders={wingFounders} onClose={() => setDirectorMode(false)} />}
     </div>
   );
 }

@@ -98,6 +98,45 @@
   100% { transform: translateX(320%) rotate(28deg); opacity: 0; }
 }
 
+/* FounderLore — portrait "glitch" shimmer on hover (data-like RGB split + jitter) */
+@keyframes lore-glitch {
+  0%   { transform: translate(0,0); filter: none; clip-path: none; }
+  20%  { transform: translate(-2px,1px); filter: hue-rotate(20deg) saturate(1.4); }
+  40%  { transform: translate(2px,-1px); filter: contrast(1.3) brightness(1.1); }
+  60%  { transform: translate(-1px,0); filter: hue-rotate(-15deg); }
+  80%  { transform: translate(1px,1px); filter: saturate(1.6) brightness(1.05); }
+  100% { transform: translate(0,0); filter: none; }
+}
+.lore-glitch-hover:hover .lore-glitch-target {
+  animation: lore-glitch 0.45s steps(2, end) 1;
+}
+.lore-glitch-hover:hover .lore-glitch-scan {
+  opacity: 1;
+}
+
+/* Director's Cut — flickering CRT scanline overlay */
+@keyframes crt-flicker {
+  0%, 100% { opacity: 0.85; }
+  48%      { opacity: 0.72; }
+  50%      { opacity: 0.95; }
+  52%      { opacity: 0.68; }
+  70%      { opacity: 0.9; }
+}
+.crt-flicker { animation: crt-flicker 3.5s infinite; }
+.crt-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.28) 3px, rgba(0,0,0,0) 4px
+  );
+}
+
+/* Barkeep Lore Mode — drifting cognac smoke behind the amber bubble */
+@keyframes lore-smoke {
+  0%   { transform: translateY(0) scale(1); opacity: 0.35; }
+  50%  { transform: translateY(-8px) scale(1.15); opacity: 0.6; }
+  100% { transform: translateY(-16px) scale(1.3); opacity: 0; }
+}
+.lore-smoke { animation: lore-smoke 4s ease-in-out infinite; }
+
 /* Hide scrollbar for horizontally-scrollable nav rows while keeping scroll behavior */
 @layer utilities {
   .no-scrollbar {

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Send, X } from "lucide-react";
+import { Loader2, Send, X, Wine } from "lucide-react";
+import useFounderLore from "@/hooks/useFounderLore";
 
 const AGENT = "the_bartender";
 const RUNNING = ["pending", "in_progress", "running"];
 const SETTLE_MS = 1400;
 const WATCHDOG_MS = 45000;
 const BRASS = "#C8A95B";
+const COGNAC = "#C77B3B"; // Cognac Amber — Lore Mode bubble
 
 const hasText = (m) => m && typeof m.content === "string" && m.content.trim().length > 0;
 const isAssistantText = (m) => m && m.role === "assistant" && hasText(m);
@@ -29,7 +31,9 @@ export default function BartenderChat({ onClose }) {
   const [isWorking, setIsWorking] = useState(false);
   const [input, setInput] = useState("");
   const [conv, setConv] = useState(null);
+  const [loreMode, setLoreMode] = useState(false); // "Pour a Drink for the Ghosts" active
   const bottomRef = useRef(null);
+  const { loreUnlocked } = useFounderLore();
 
   const unsubRef = useRef(null);
   const settleRef = useRef(null);
@@ -106,14 +110,21 @@ export default function BartenderChat({ onClose }) {
     await base44.agents.addMessage(conv, { role: "user", content: text });
   }, [conv, finishTurn]);
 
-  // Create the conversation once when the panel opens.
+  // Create the conversation once the lore entitlement is known, seeding the
+  // agent with whether FounderLore is unlocked (drives Founder Whispers).
+  const startedRef = useRef(false);
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     let mounted = true;
     (async () => {
       try {
+        const context = loreUnlocked
+          ? "[CONTEXT] This member has UNLOCKED FounderLore — you may drop Founder Whispers."
+          : "[CONTEXT] This member has NOT unlocked FounderLore — keep founder talk vague and teasing.";
         const c = await base44.agents.createConversation({
           agent_name: AGENT,
-          metadata: { name: "At the bar", description: "Speakeasy info chat with the Bartender" },
+          metadata: { name: "At the bar", description: context },
         });
         if (!mounted) return;
         setConv(c);
@@ -127,7 +138,18 @@ export default function BartenderChat({ onClose }) {
       if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
       clearTimers();
     };
-  }, [handleUpdate]);
+  }, [handleUpdate, loreUnlocked]);
+
+  // "Pour a Drink for the Ghosts" — kicks off a 60s Lore Mode noir monologue.
+  const loreTimerRef = useRef(null);
+  const pourForGhosts = useCallback(() => {
+    if (!conv) return;
+    setLoreMode(true);
+    sendMessage("[LORE MODE] Pour a drink for the ghosts — tell me one founder's story, noir style.");
+    if (loreTimerRef.current) clearTimeout(loreTimerRef.current);
+    loreTimerRef.current = setTimeout(() => setLoreMode(false), 60000);
+  }, [conv]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { if (loreTimerRef.current) clearTimeout(loreTimerRef.current); }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
