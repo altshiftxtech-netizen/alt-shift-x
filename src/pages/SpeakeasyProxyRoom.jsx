@@ -27,12 +27,12 @@ const FRAME = "#D8C18A";
 // Fancy ballroom founder portraits, one unique painting per poster.
 const PORTRAITS = [
   "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b9853d6ba_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44f47ed67_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/949e500d2_generated_image.png",
   "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/c54413bd4_generated_image.png",
   "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d53c9d278_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/a916ad0b2_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f2e449e31_generated_image.png",
   "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/e583d06f8_generated_image.png",
-  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/cdb3ba45f_generated_image.png",
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bc4817b7e_generated_image.png",
   "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/0d65c0a7a_generated_image.png",
 ];
 
