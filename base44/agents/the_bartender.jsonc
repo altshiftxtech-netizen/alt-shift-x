@@ -19,6 +19,10 @@
       "allowed_operations": [
         "read"
       ]
+    },
+    {
+      "function_name": "scavengerLeaderboard",
+      "description": "Returns the live ranked Seed Hunters leaderboard (rank, builder handle, seeds found, total, Founder's Mark). Use this to answer questions about the Founder's Board and who's leading the scavenger hunt."
     }
   ],
   "context_files": [],
@@ -38,5 +42,6 @@
   "voice_config": {
     "voice_id": null
   },
+  "allow_anonymous_access": false,
   "name": "the_bartender"
 }
