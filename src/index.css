@@ -162,6 +162,27 @@
   transform: translateY(0);
 }
 
+/* ExpertMinds Forensic — scan-line sweep across legal checkboxes / boxes */
+@keyframes forensic-scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  30%  { opacity: 0.9; }
+  70%  { opacity: 0.9; }
+  100% { transform: translateY(220%); opacity: 0; }
+}
+.forensic-scanbox { position: relative; overflow: hidden; }
+.forensic-scanbox::after {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(230,169,75,0.22), transparent);
+  animation: forensic-scan 2.6s linear infinite;
+  pointer-events: none;
+}
+/* Checked state — a brighter, faster confirming sweep */
+.forensic-scanbox.is-checked::after {
+  background: linear-gradient(180deg, transparent, rgba(230,169,75,0.4), transparent);
+  animation-duration: 1.6s;
+}
+
 /* Barkeep Lore Mode — drifting cognac smoke behind the amber bubble */
 @keyframes lore-smoke {
   0%   { transform: translateY(0) scale(1); opacity: 0.35; }

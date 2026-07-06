@@ -25,6 +25,13 @@ function shortCode() {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+// SHA-256 legal hash proving the exact moment + subject of consent.
+async function legalHash(parts: string) {
+  const data = new TextEncoder().encode(parts);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function registryLog(base44, orgId, event, payload) {
   await base44.asServiceRole.entities.ComponentCollaboration.create({
     component_id: MASTER_INDEX_ID,
@@ -107,6 +114,43 @@ Deno.serve(async (req) => {
         orgRows,
         statusCounts,
       });
+    }
+
+    // ── ACCEPT LEGAL: time-stamped clickwrap consent for the ExpertMinds
+    //    MSA + DPA + Payment Disclaimer. Records a unique legal_hash under
+    //    GSP-MASTER-INDEX-1.0 and in LegalAcceptance to prove consent. ──
+    if (action === "accept_legal") {
+      const acceptedCodes = Array.isArray(body.accepted_codes) && body.accepted_codes.length
+        ? body.accepted_codes
+        : ["EXPERT-MINDS-ENTERPRISE-MSA-1.0", "EXPERT-MINDS-DPA-1.0", "EXPERT-MINDS-PAYMENT-DISCLAIMER-1.0"];
+      const clickwrapText = body.clickwrap_text || "";
+      const acceptedAt = new Date().toISOString();
+
+      const hash = await legalHash(
+        `${user.id}|${user.email}|${acceptedCodes.join(",")}|${clickwrapText}|${acceptedAt}`,
+      );
+
+      // Immutable acceptance record.
+      await base44.asServiceRole.entities.LegalAcceptance.create({
+        user_id: user.id,
+        component_code: "EXPERT-MINDS-ENTERPRISE-MSA-1.0",
+        accepted_clauses: acceptedCodes,
+        signature_name: user.full_name || user.email,
+        legal_hash: hash,
+        accepted_at: acceptedAt,
+      }).catch((e) => console.error("[expertMindsOrgOps] LegalAcceptance failed:", e.message));
+
+      // Registry (GSP-MASTER-INDEX-1.0) record of the consent event.
+      await registryLog(base44, user.id, "legal_consent_accepted", {
+        user_email: user.email,
+        accepted_codes: acceptedCodes,
+        clickwrap_text: clickwrapText,
+        legal_hash: hash,
+        accepted_at: acceptedAt,
+      });
+
+      console.log(`[INFO] ExpertMinds legal consent recorded: user=${user.id}, hash=${hash.slice(0, 12)}…`);
+      return Response.json({ ok: true, legal_hash: hash, accepted_at: acceptedAt });
     }
 
     // ── LIST: org + staff registry for the current Org Admin ──

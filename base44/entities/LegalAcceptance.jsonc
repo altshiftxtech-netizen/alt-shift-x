@@ -24,6 +24,10 @@
       "type": "string",
       "description": "Typed full-name signature attesting acceptance"
     },
+    "legal_hash": {
+      "type": "string",
+      "description": "Unique SHA-256 time-stamped consent hash recorded under GSP-MASTER-INDEX-1.0 to prove the moment of acceptance"
+    },
     "accepted_at": {
       "type": "string",
       "format": "date-time"

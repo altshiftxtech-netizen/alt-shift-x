@@ -5,6 +5,7 @@ import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
 import ExpertMindsEnterpriseTab from "@/components/enterprise/expertminds/ExpertMindsEnterpriseTab";
+import EmLegalRepository from "@/components/expertmind/legal/EmLegalRepository";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
@@ -64,8 +65,13 @@ export default function ExpertMindsEnterprise() {
         </div>
 
         {/* Content */}
-        <div className="max-w-3xl mx-auto px-6 py-8 pb-20">
+        <div className="max-w-3xl mx-auto px-6 py-8 pb-10">
           <ExpertMindsEnterpriseTab />
+        </div>
+
+        {/* Legal Repository footer */}
+        <div className="max-w-3xl mx-auto px-6 pb-20">
+          <EmLegalRepository variant="dark" />
         </div>
       </div>
     </div>

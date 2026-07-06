@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, Building2, UserPlus, ShieldCheck, CheckCircle2, Crown, RefreshCw } from "lucide-react";
+import { Loader2, UserPlus, CheckCircle2, Crown, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import BlackstoneLegalGate from "@/components/legal/BlackstoneLegalGate";
 import StaffRegistryTable from "./StaffRegistryTable";
 import InviteMemberModal from "./InviteMemberModal";
+import EmPaymentGate from "@/components/expertmind/legal/EmPaymentGate";
 
 const GOLD = "#C8A95B";
 const CORE_CODE = "EXPERT-MINDS-ENTERPRISE-CORE-1.0";
@@ -22,7 +22,6 @@ export default function ExpertMindsEnterpriseTab() {
   const [org, setOrg] = useState(null);
   const [seats, setSeats] = useState([]);
   const [orgName, setOrgName] = useState("");
-  const [legalOpen, setLegalOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [error, setError] = useState("");
@@ -45,9 +44,8 @@ export default function ExpertMindsEnterpriseTab() {
 
   const inIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
 
-  // Blackstone signed → open the $10k/mo core checkout.
+  // Clickwrap accepted (legal_hash recorded) → open the $10k/mo core checkout.
   const onCleared = async (hash) => {
-    setLegalOpen(false);
     if (inIframe) { setError("Checkout works only from the published app. Open ExpertMinds in a new tab to subscribe."); return; }
     setCheckout(true);
     setError("");
@@ -100,17 +98,19 @@ export default function ExpertMindsEnterpriseTab() {
         </div>
       </div>
 
-      {/* Gate: not yet active → Buy Enterprise */}
+      {/* Gate: not yet active → clickwrap payment gate */}
       {!active ? (
-        <div className="rounded-2xl border p-6 text-center max-w-lg mx-auto" style={{ borderColor: `${GOLD}44`, background: "rgba(255,255,255,0.02)" }}>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}55` }}>
-            <Crown className="w-6 h-6" style={{ color: GOLD }} />
+        <div className="max-w-lg mx-auto space-y-4">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}55` }}>
+              <Crown className="w-6 h-6" style={{ color: GOLD }} />
+            </div>
+            <h4 className="text-lg font-bold text-white">Activate the Org Master</h4>
+            <p className="text-sm text-white/50 mt-2">
+              Name your organization, affirm the legal protocol, then activate your $10,000/mo core subscription.
+            </p>
           </div>
-          <h4 className="text-lg font-bold text-white">Activate the Org Master</h4>
-          <p className="text-sm text-white/50 mt-2 mb-5">
-            Mandatory Blackstone Enterprise Agreement signature by the primary Org Admin, then a $10,000/mo core subscription.
-          </p>
-          <div className="max-w-xs mx-auto mb-4 text-left">
+          <div className="text-left">
             <label className="block text-[11px] font-semibold text-white/60 mb-1">Organization name</label>
             <input
               value={orgName}
@@ -119,20 +119,16 @@ export default function ExpertMindsEnterpriseTab() {
               className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#C8A95B]"
             />
           </div>
-          <button
-            onClick={() => setLegalOpen(true)}
-            disabled={checkout}
-            className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-[#0A0A0C] disabled:opacity-60"
-            style={{ background: `linear-gradient(90deg, #D9DCE1, ${GOLD})` }}
-          >
-            {checkout ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
-            {checkout ? "Opening checkout…" : "Buy Enterprise · $10k/mo"}
-          </button>
-          <p className="text-[11px] text-white/35 mt-3 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" style={{ color: GOLD }} /> Blackstone Enterprise Agreement required
-          </p>
+
+          <EmPaymentGate priceLabel="$10,000 / month" onActivate={onCleared} />
+
+          {checkout && (
+            <p className="text-[11px] text-amber-400 text-center flex items-center justify-center gap-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening secure checkout…
+            </p>
+          )}
           {org?.core_status === "pending_payment" && (
-            <p className="text-[11px] text-amber-400 mt-2">Agreement signed — complete the checkout to activate.</p>
+            <p className="text-[11px] text-amber-400 text-center">Consent recorded — complete the checkout to activate.</p>
           )}
         </div>
       ) : (
@@ -167,13 +163,6 @@ export default function ExpertMindsEnterpriseTab() {
 
       {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-      <BlackstoneLegalGate
-        open={legalOpen}
-        componentCode={CORE_CODE}
-        componentName="ExpertMinds Enterprise Agreement"
-        onCleared={onCleared}
-        onCancel={() => setLegalOpen(false)}
-      />
       <InviteMemberModal
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
