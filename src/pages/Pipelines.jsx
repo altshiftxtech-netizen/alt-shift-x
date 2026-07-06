@@ -56,33 +56,43 @@ export default function Pipelines() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900">
-      <SharedNav mode="user" />
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-violet-600/20 border border-violet-500/30 text-violet-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-            <Building2 className="w-3.5 h-3.5" /> Enterprise Pipelines
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white">Pipeline Keys for Companies</h1>
-          <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
-            License a curated bundle of components behind a single secure key. Full payment unlocks your key instantly — Stripe, PayPal, and Stripe Stablecoin available.
-          </p>
-        </div>
+    <div className="min-h-screen relative bg-[#05060a]">
+      {/* Muted background video */}
+      <video
+        className="fixed inset-0 w-full h-full object-cover object-center z-0 pointer-events-none"
+        src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/379707588_231eb510a_generated_video.mp4"
+        autoPlay muted loop playsInline
+      />
+      <div className="fixed inset-0 bg-black/65 z-0 pointer-events-none" />
 
-        {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-violet-400" /></div>
-        ) : pipelines.length === 0 ? (
-          <div className="text-center text-slate-500 py-16 flex flex-col items-center gap-3">
-            <Layers className="w-10 h-10 opacity-40" />
-            No pipelines are available yet. Check back soon.
+      <div className="relative z-10">
+        <SharedNav mode="user" />
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-[#E6C878]/15 border border-[#E6C878]/40 text-[#E6C878] text-xs font-semibold px-3 py-1.5 rounded-full mb-4 backdrop-blur-sm">
+              <Building2 className="w-3.5 h-3.5" /> Enterprise Pipelines
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-white drop-shadow-lg">Pipeline Keys for Companies</h1>
+            <p className="text-white/70 mt-3 max-w-2xl mx-auto">
+              License a curated bundle of components behind a single secure key. Full payment unlocks your key instantly — Stripe, PayPal, and Stripe Stablecoin available.
+            </p>
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {pipelines.map((p) => (
-              <PipelineCard key={p.id} pipeline={p} componentCount={countFor(p)} onBuy={setBuying} />
-            ))}
-          </div>
-        )}
+
+          {loading ? (
+            <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-[#E6C878]" /></div>
+          ) : pipelines.length === 0 ? (
+            <div className="text-center text-white/50 py-16 flex flex-col items-center gap-3">
+              <Layers className="w-10 h-10 opacity-40" />
+              No pipelines are available yet. Check back soon.
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {pipelines.map((p) => (
+                <PipelineCard key={p.id} pipeline={p} componentCount={countFor(p)} onBuy={setBuying} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <PurchasePipelineDialog pipeline={buying} open={!!buying} onClose={() => setBuying(null)} />
