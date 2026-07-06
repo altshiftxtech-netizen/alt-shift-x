@@ -46,7 +46,7 @@ const DOORS = [
   { label: "Expertminds", sublabel: "The Vault", expertmindsGate: true,
     style: { left: "5%", top: "48%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.92)", image: PORTRAITS[0], founder: "Corin Bitwright" },
   { label: "Raffles", sublabel: "Prizes", to: "/speakeasy/raffles",
-    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora", cosmic: true },
+    style: { left: "18%", top: "46%" }, tilt: "perspective(700px) rotateY(38deg) scale(0.8)", image: PORTRAITS[1], founder: "Lysa Vectora 2.0", cosmic: true },
   // ── Back wall — four small doorway slots flanking the bar ──
   { label: "Market", sublabel: "Affiliate Shop", to: "/shop",
     style: { left: "30%", top: "26%" }, tilt: "scale(0.56)", image: PORTRAITS[2], founder: "Adele Switchford" },

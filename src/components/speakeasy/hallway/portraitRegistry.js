@@ -34,7 +34,7 @@ export const PORTRAITS = [
     image: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/6fbf5c850_generated_image.png",
   },
   {
-    id: "P4", wing: "A", label: "The Oracle", founder: "Lysa Vectora 2.0",
+    id: "P4", wing: "A", label: "The Oracle", founder: "Lysa Vectora",
     component_code: "GEN2-PROMPT-ENGINEERING-1.0", component_id: "6a48aa7a9e0d60189f94777f",
     price: 149, feature: "Gen-2 Prompt Sets — high-density intelligence",
     accent: "#6d6fb8",
