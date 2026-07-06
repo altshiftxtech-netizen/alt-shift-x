@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Home, Store, KeyRound, GitBranch, Brain, LogOut, LogIn, Settings } from "lucide-react";
+import { Home, Store, KeyRound, GitBranch, Brain, Sparkles, LogOut, LogIn, Settings } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 const GOLD = "#E6C878";
 
@@ -21,6 +22,7 @@ const NAV_TABS = [
 export default function EnterpriseNavMenu({ user }) {
   const { isAuthenticated, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [canSpeakeasy, setCanSpeakeasy] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -29,6 +31,22 @@ export default function EnterpriseNavMenu({ user }) {
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  // The Speakeasy is for paying members only — admins always pass.
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (me?.role === "admin") { setCanSpeakeasy(true); return; }
+        const subs = await base44.entities.Subscription.filter({ user_id: me.id });
+        const sub = subs[0];
+        const paying = sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status);
+        setCanSpeakeasy(!!paying);
+      } catch {
+        setCanSpeakeasy(false);
+      }
+    })();
   }, []);
 
   const initial = (user?.full_name || user?.email || "S").trim().charAt(0).toUpperCase();
@@ -53,6 +71,19 @@ export default function EnterpriseNavMenu({ user }) {
             <p className="text-xs font-semibold truncate text-white">{user?.full_name || "Sovereign"}</p>
             {user?.email && <p className="text-[10px] truncate text-white/40">{user.email}</p>}
           </div>
+
+          {/* Highlighted Speakeasy — paying members only, gated to the Founder's Room */}
+          {canSpeakeasy && (
+            <Link
+              to="/speakeasy/proxy-room"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 mx-1 my-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] hover:opacity-90 shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              The Speakeasy
+              <span className="ml-auto text-[8px] font-bold uppercase tracking-wider bg-[#0A0A0C]/15 px-1.5 py-0.5 rounded-full">Platinum</span>
+            </Link>
+          )}
 
           {NAV_TABS.map((t) => (
             <Link

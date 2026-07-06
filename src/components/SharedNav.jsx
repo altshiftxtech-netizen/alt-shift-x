@@ -137,9 +137,9 @@ export default function SharedNav({ mode = "user", theme }) {
               <>
               <div className="fixed inset-0 z-[55]" onClick={() => setPortalOpen(false)} />
               <div className={`absolute right-0 mt-1 w-44 rounded-xl shadow-lg py-1 z-[60] ${isDev ? "bg-[#161b22] border border-[#30363d] [&_a]:!text-[#8b949e] [&_a:hover]:!bg-[#0d1117] [&_a:hover]:!text-[#c9d1d9] font-mono" : "bg-white border border-slate-200"}`}>
-                {/* Highlighted Speakeasy — paying members only */}
+                {/* Highlighted Speakeasy — paying members only, gated to the Founder's Room */}
                 {canSpeakeasy && (
-                  <Link to="/speakeasy" onClick={() => setPortalOpen(false)}
+                  <Link to="/speakeasy/proxy-room" onClick={() => setPortalOpen(false)}
                     className="flex items-center gap-2 mx-1 mb-1 px-2.5 py-2 text-xs font-bold text-[#0A0A0C] rounded-lg bg-gradient-to-r from-[#D9DCE1] to-[#C8A95B] hover:opacity-90 shadow-sm">
                     <Sparkles className="w-3.5 h-3.5" />
                     The Speakeasy
