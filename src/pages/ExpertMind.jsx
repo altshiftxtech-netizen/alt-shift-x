@@ -51,14 +51,14 @@ export default function ExpertMind() {
           loop
           playsInline
         />
-        {/* Frosted glass overlay — lets the video shimmer through a blurred,
-            translucent pane so the whole page reads as premium "glass" while the
-            executive white-on-content theme stays crisp and readable. */}
+        {/* Frosted glass overlay — lighter tint + gentler blur so the background
+            video clearly shows through, like the other video-backed pages, while
+            keeping just enough veil for the executive white-on-content readability. */}
         <div
-          className="fixed inset-0 z-0 pointer-events-none backdrop-blur-xl"
+          className="fixed inset-0 z-0 pointer-events-none backdrop-blur-sm"
           style={{
-            background: "linear-gradient(155deg, rgba(255,255,255,0.72) 0%, rgba(244,247,252,0.66) 45%, rgba(255,255,255,0.78) 100%)",
-            WebkitBackdropFilter: "blur(20px)",
+            background: "linear-gradient(155deg, rgba(255,255,255,0.34) 0%, rgba(244,247,252,0.28) 45%, rgba(255,255,255,0.38) 100%)",
+            WebkitBackdropFilter: "blur(4px)",
           }}
         />
         {/* Subtle top sheen + edge vignette to make the glass "pop" */}
