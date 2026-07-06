@@ -172,6 +172,30 @@ Deno.serve(async (req) => {
       };
       const stamp = Date.now().toString(36).toUpperCase();
       const sr = base44.asServiceRole;
+
+      // Resolve the caller's Enterprise org so the print appears in that org's
+      // Sovereign Master Ledger. Owner-of, else seated-in; fall back to user id.
+      let orgKey = user.id;
+      const ownedOrgs = await sr.entities.ExpertMindsOrg.filter({ org_admin_id: user.id }).catch(() => []);
+      if (ownedOrgs?.[0]) orgKey = ownedOrgs[0].expertminds_org_id;
+      else {
+        const mySeat = await sr.entities.ExpertMindsSeat.filter({ member_id: user.id }, "-created_date", 1).catch(() => []);
+        if (mySeat?.[0]) orgKey = mySeat[0].expertminds_org_id;
+      }
+
+      // Ledger row appears immediately as PROCESSING when a print starts.
+      await sr.entities.ComponentCollaboration.create({
+        component_id: MASTER_INDEX_ID,
+        component_name: "GSP-MASTER-INDEX-1.0",
+        owner_id: orgKey,
+        notes: JSON.stringify({
+          event: "print_job_started", expertminds_org_id: orgKey,
+          user_email: user.email, command, seed_code: component.code,
+          types, full_suite: isFullSuite, duration_hours: durationHours,
+          logged_at: new Date().toISOString(),
+        }),
+        status: "active",
+      }).catch(() => {});
       const created = [];
       for (const type of types) {
         const code = `${component.code}-PRESS-${type}-${stamp}`;
@@ -204,19 +228,22 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Registry event in GSP-MASTER-INDEX-1.0.
+      // Registry event in GSP-MASTER-INDEX-1.0 (keyed to the org ledger).
       await base44.asServiceRole.entities.ComponentCollaboration.create({
         component_id: MASTER_INDEX_ID,
         component_name: "GSP-MASTER-INDEX-1.0",
-        owner_id: user.id,
+        owner_id: orgKey,
         notes: JSON.stringify({
           event: "sovereign_print_press_completed",
           press: "SOVEREIGN-PRINT-PRESS-1.0",
+          expertminds_org_id: orgKey,
+          user_email: user.email,
           command,
           seed_code: component.code,
           types,
           full_suite: isFullSuite,
           duration_hours: durationHours,
+          logged_at: new Date().toISOString(),
           printed_at: new Date().toISOString(),
         }),
         status: "active",

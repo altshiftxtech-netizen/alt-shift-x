@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import StaffRegistryTable from "./StaffRegistryTable";
 import InviteMemberModal from "./InviteMemberModal";
 import EmPaymentGate from "@/components/expertmind/legal/EmPaymentGate";
+import SovereignMasterLedger from "./ledger/SovereignMasterLedger";
 
 const GOLD = "#C8A95B";
 const CORE_CODE = "EXPERT-MINDS-ENTERPRISE-CORE-1.0";
@@ -158,6 +159,9 @@ export default function ExpertMindsEnterpriseTab() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-2">Staff Registry</p>
             <StaffRegistryTable seats={seats} />
           </div>
+
+          {/* Sovereign Master Ledger — SOVEREIGN-MASTER-LEDGER-1.0, org-scoped */}
+          <SovereignMasterLedger />
         </>
       )}
 

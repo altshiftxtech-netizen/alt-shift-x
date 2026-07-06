@@ -153,6 +153,62 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, legal_hash: hash, accepted_at: acceptedAt });
     }
 
+    // ── MASTER LEDGER: SOVEREIGN-MASTER-LEDGER-1.0 data-layer. Returns the
+    //    immutable event stream for the CURRENT org only (print / legal /
+    //    financial / seat events), shaped for the Private Portal data grid. ──
+    if (action === "master_ledger") {
+      // Resolve the caller's org (admin of, or a member seated in).
+      let orgs = await base44.asServiceRole.entities.ExpertMindsOrg.filter({ org_admin_id: user.id });
+      let org = orgs[0] || null;
+      if (!org) {
+        const seatRows = await base44.asServiceRole.entities.ExpertMindsSeat.filter({ member_id: user.id }, "-created_date", 1);
+        if (seatRows[0]) {
+          const oo = await base44.asServiceRole.entities.ExpertMindsOrg.filter({ expertminds_org_id: seatRows[0].expertminds_org_id });
+          org = oo[0] || null;
+        }
+      }
+      if (!org) return Response.json({ ok: true, org: null, rows: [] });
+
+      // The registry stores all events keyed by owner_id = expertminds_org_id.
+      const records = await base44.asServiceRole.entities.ComponentCollaboration.filter(
+        { component_id: MASTER_INDEX_ID, owner_id: org.expertminds_org_id }, "-created_date", 500,
+      );
+
+      // Map raw registry events → normalized ledger rows.
+      const EVENT_MAP = {
+        legal_consent_accepted: { type: "LEG-ACCEPT", status: "ACCEPTED" },
+        org_registered:         { type: "FIN-TRANS",  status: "PROCESSING" },
+        member_seat_invited:    { type: "FIN-TRANS",  status: "PENDING" },
+        member_seat_verified:   { type: "FIN-TRANS",  status: "CHARGED" },
+        sovereign_print_press_completed: { type: "PRINT", status: "COMPLETE" },
+        print_job_started:      { type: "PRINT",      status: "PROCESSING" },
+      };
+
+      const rows = [];
+      for (const r of records) {
+        let data = {};
+        try { data = JSON.parse(r.notes || "{}"); } catch { data = {}; }
+        const ev = data.event || "event";
+        const mapped = EVENT_MAP[ev] || { type: (ev || "EVENT").toUpperCase().slice(0, 16), status: "LOGGED" };
+        const ts = data.logged_at || data.printed_at || data.accepted_at || r.created_date;
+        const hashSource = data.legal_hash || data.integrity_seal_id ||
+          `${r.id}|${ev}|${ts}`;
+        // Deterministic 24-char forensic hash for the row.
+        const forensic = "0x" + (await legalHash(hashSource)).slice(0, 24).toUpperCase();
+        rows.push({
+          id: r.id,
+          timestamp: ts,
+          event_type: mapped.type,
+          actor: data.user_email || data.member_email || data.org_admin_id || user.email || "system",
+          status: mapped.status,
+          forensic_hash: forensic,
+          raw: { registry_id: r.id, event: ev, ...data },
+        });
+      }
+
+      return Response.json({ ok: true, org: { org_name: org.org_name, expertminds_org_id: org.expertminds_org_id }, rows });
+    }
+
     // ── LIST: org + staff registry for the current Org Admin ──
     if (action === "list") {
       const orgs = await base44.asServiceRole.entities.ExpertMindsOrg.filter({ org_admin_id: user.id });
