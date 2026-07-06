@@ -43,6 +43,7 @@ import AdminPanel from './pages/AdminPanel';
 import Pricing from './pages/Pricing';
 import Enterprise from './pages/Enterprise';
 import EnterprisePipelines from './pages/EnterprisePipelines';
+import ExpertMindsEnterprise from './pages/ExpertMindsEnterprise';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -223,6 +224,7 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/enterprise" element={<Enterprise />} />
         <Route path="/enterprise/pipelines" element={<EnterprisePipelines />} />
+        <Route path="/enterprise/expertminds" element={<ExpertMindsEnterprise />} />
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/dashboard/installed" element={<InstalledComponents />} />
         <Route path="/dashboard/usage" element={<UsageAnalytics />} />

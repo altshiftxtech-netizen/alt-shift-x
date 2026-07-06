@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2, Brain } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2 } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -13,7 +13,6 @@ import EngineeringSuiteTab from "@/components/enterprise/engineering/Engineering
 import PrivacyAliasPanel from "@/components/enterprise/PrivacyAliasPanel";
 import ForensicReportsTab from "@/components/enterprise/forensic/ForensicReportsTab";
 import GeoIntelAnnex from "@/components/enterprise/geo/GeoIntelAnnex";
-import ExpertMindsEnterpriseTab from "@/components/enterprise/expertminds/ExpertMindsEnterpriseTab";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
@@ -21,7 +20,6 @@ const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c
 const TABS = [
   { key: "command", label: "Command Deck", icon: Radio },
   { key: "geo", label: "Geopolitical Annex", icon: Globe2 },
-  { key: "expertminds", label: "ExpertMinds Enterprise", icon: Brain },
   { key: "handshake", label: "Secure Handshake", icon: ShieldCheck },
   { key: "annexes", label: "Annex Queue", icon: Boxes },
   { key: "calendar", label: "Calendar", icon: CalendarClock },
@@ -116,7 +114,6 @@ export default function Enterprise() {
             </div>
           )}
           {tab === "geo" && <div className="max-w-2xl mx-auto"><GeoIntelAnnex /></div>}
-          {tab === "expertminds" && <div className="max-w-3xl mx-auto"><ExpertMindsEnterpriseTab /></div>}
           {tab === "handshake" && (
             <div className="max-w-2xl mx-auto">
               <SecureHandshakeModule

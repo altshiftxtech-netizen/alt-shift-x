@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Home, Store, KeyRound, GitBranch, LogOut, LogIn, Settings } from "lucide-react";
+import { Home, Store, KeyRound, GitBranch, Brain, LogOut, LogIn, Settings } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 const GOLD = "#E6C878";
@@ -10,6 +10,7 @@ const NAV_TABS = [
   { to: "/marketplace", label: "Marketplace", icon: Store },
   { to: "/dashboard/api-keys", label: "Pipeline Keys", icon: KeyRound },
   { to: "/enterprise/pipelines", label: "Exclusive Pipelines", icon: GitBranch },
+  { to: "/enterprise/expertminds", label: "ExpertMinds Enterprise", icon: Brain },
 ];
 
 /**
