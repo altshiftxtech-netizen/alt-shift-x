@@ -29,8 +29,11 @@ function parseCommand(raw) {
   const amount = parseInt(m[2], 10);
   const durationHours = unit.startsWith("hour") ? amount : amount / 60;
   if (durationHours > 24) return { ok: false, error: "Max duration is 24 hours. Reject." };
-  const types = m[1] ? [...new Set(m[1].split(",").map((t) => t.trim().toUpperCase()))] : ["X5"];
-  return { ok: true, command, types, amount, unit, durationHours };
+  const fullSuite = !m[1];
+  const types = m[1]
+    ? [...new Set(m[1].split(",").map((t) => t.trim().toUpperCase()))]
+    : ["X1", "X2", "X3", "X4", "X5"];
+  return { ok: true, command, types, amount, unit, durationHours, fullSuite };
 }
 
 function pad2(n) { return String(n).padStart(2, "0"); }
@@ -76,22 +79,36 @@ export default function SovereignPrintPress() {
     const seed = UNZIP_TILES.find((t) => t.id === seedId);
     appendLog(`${PRESS_CODE} — job accepted.`);
     appendLog(`SEED ······· ${seed?.code || seedId}`);
-    appendLog(`TYPES ······ ${job.types.join(", ")}`);
-    appendLog(`WINDOW ····· ${job.amount} ${job.unit} (${job.durationHours}h)`);
+    appendLog(job.fullSuite ? `SUITE ······ FULL 5-TIER (X1–X5) → Garden` : `TYPES ······ ${job.types.join(", ")}`);
+    appendLog(`WINDOW ····· ${job.amount} ${job.unit} (${job.durationHours}h total, distributed)`);
     appendLog("──────────────────────────────────────");
 
+    // Total window (minutes) split evenly across the requested types. Each type
+    // gets an equal share of reasoning passes; the log switches focus per type
+    // with a live "Duration Remaining" countdown.
+    const totalMin = Math.round(job.durationHours * 60);
+    const nTypes = job.types.length;
+    const perTypeTicks = Math.max(1, Math.round(TICKS / nTypes));
+    const totalTicks = perTypeTicks * nTypes;
+
     let step = 0;
+    let lastTypeIdx = -1;
     await new Promise((resolve) => {
       timerRef.current = setInterval(() => {
+        const typeIdx = Math.min(nTypes - 1, Math.floor(step / perTypeTicks));
+        const type = job.types[typeIdx];
+        // Switching Focus banner when we cross into a new type.
+        if (typeIdx !== lastTypeIdx) {
+          const remainAtStart = Math.round(totalMin * (1 - step / totalTicks));
+          appendLog(`▸ Switching Focus → Refining ${type} ${TYPE_LABEL[type] || ""} Logic… [Duration Remaining: ${remainAtStart}m]`);
+          lastTypeIdx = typeIdx;
+        }
         step += 1;
-        const p = Math.min(100, step * (100 / TICKS));
+        const p = Math.min(100, Math.round((step / totalTicks) * 100));
         setPct(p);
-        // Simulated "as-of" clock across the requested window.
-        const elapsedH = (p / 100) * job.durationHours;
-        const hh = Math.floor(elapsedH);
-        const mm = Math.floor((elapsedH - hh) * 60);
-        appendLog(`+${pad2(hh)}:${pad2(mm)} ··· ${pad2(p)}% ··· distilling ${job.types.join("/")} seed refinement…`);
-        if (step >= TICKS) {
+        const remainMin = Math.max(0, Math.round(totalMin * (1 - step / totalTicks)));
+        appendLog(`  ${type} ··· ${pad2(p)}% ··· reasoning pass… [Duration Remaining: ${remainMin}m]`);
+        if (step >= totalTicks) {
           clearInterval(timerRef.current);
           timerRef.current = null;
           resolve();
@@ -111,7 +128,8 @@ export default function SovereignPrintPress() {
       if (res.data?.ok) {
         const printed = res.data.printed || [];
         printed.forEach((r) => appendLog(`✅ ${r.action?.toUpperCase() || "OK"} ${r.code}`));
-        appendLog(`PRESS COMPLETE — ${printed.length} component(s) sent to your dashboard as drafts.`);
+        const dest = res.data?.full_suite ? "shelved in the Garden" : "sent to your dashboard as drafts";
+        appendLog(`PRESS COMPLETE — ${printed.length} component(s) ${dest}.`);
       } else {
         appendLog(`✗ ${res.data?.error || "Press failed at handoff."}`);
       }
@@ -148,8 +166,8 @@ export default function SovereignPrintPress() {
       <div className="text-center">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-1" style={{ color: GOLD }}>{PRESS_CODE}</p>
         <p className="text-xs text-white/55 max-w-md mx-auto">
-          Command the press with syntax like <span className="font-mono text-white/75">x1,x2 print for 1 hour</span>. Jobs run serially;
-          new commands queue. Max window 24 hours.
+          Command the press with syntax like <span className="font-mono text-white/75">x1,x2 print for 1 hour</span>, or omit types
+          — <span className="font-mono text-white/75">print for 1 hour</span> builds the full 5-tier suite (X1–X5) into the Garden. Jobs run serially; new commands queue. Max window 24 hours.
         </p>
       </div>
 

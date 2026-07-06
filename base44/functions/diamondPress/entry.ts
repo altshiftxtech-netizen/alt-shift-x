@@ -160,8 +160,10 @@ Deno.serve(async (req) => {
       const durationHours = unit.startsWith("hour") ? amount : amount / 60;
       if (durationHours > 24) return Response.json({ error: "Max duration is 24 hours. Reduce the print window." }, { status: 400 });
 
-      // Default to X5 (Complete Agent) when no explicit category is given.
-      const rawTypes = m[1] ? m[1].split(",").map((t) => t.trim().toUpperCase()) : ["X5"];
+      // Default Suite Logic: a bare "print for N" with NO type prefixes builds
+      // the Full 5-Tier Suite (X1–X5). Explicit prefixes print only those types.
+      const rawTypes = m[1] ? m[1].split(",").map((t) => t.trim().toUpperCase()) : ["X1", "X2", "X3", "X4", "X5"];
+      const isFullSuite = !m[1];
       const types = [...new Set(rawTypes)]; // de-dupe (x1,x1 → x1)
 
       const TYPE_LABEL = {
@@ -182,7 +184,9 @@ Deno.serve(async (req) => {
           features: component.features || [],
           schema: component.schema || [],
           price: component.price || 0,
-          status: "draft",
+          // Default 5-Tier Suite lands in the Garden as "shelved"; explicit
+          // type prints stay "draft".
+          status: isFullSuite ? "shelved" : "draft",
         };
         // Duplicate guard on code — update in place, else create fresh.
         const existing = await sr.entities.Component.filter({ code }).catch(() => []);
@@ -211,13 +215,14 @@ Deno.serve(async (req) => {
           command,
           seed_code: component.code,
           types,
+          full_suite: isFullSuite,
           duration_hours: durationHours,
           printed_at: new Date().toISOString(),
         }),
         status: "active",
       }).catch(() => {});
 
-      return Response.json({ ok: true, types, duration_hours: durationHours, printed: created });
+      return Response.json({ ok: true, types, full_suite: isFullSuite, duration_hours: durationHours, printed: created });
     }
 
     // ── SPIN-OFF: clone the Bankable Solution into a new version ──
