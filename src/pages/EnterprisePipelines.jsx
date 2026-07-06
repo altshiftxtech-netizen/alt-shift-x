@@ -31,7 +31,7 @@ export default function EnterprisePipelines() {
     <div className="min-h-screen text-white relative" style={{ background: "radial-gradient(ellipse at 50% -10%, #131824, #05060a 60%)" }}>
       <video
         className="fixed inset-0 w-full h-full object-cover object-center z-0 pointer-events-none"
-        src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/9ecf5a4c1_68074918c_generated_video.mp4"
+        src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/5a28790a3_254cd1cd6_generated_video.mp4"
         autoPlay muted loop playsInline
       />
       <div className="fixed inset-0 bg-black/60 z-0 pointer-events-none" />
