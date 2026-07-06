@@ -41,19 +41,33 @@ export default function ExpertMind() {
 
   return (
     <EmLaunchProvider value={launchConsole}>
-      <div style={{ background: EM.bg, color: EM.text, fontFamily: "Inter, 'IBM Plex Sans', system-ui, sans-serif" }}>
-        <EmNav />
-        <main>
-          <EmHero />
-          <EmWhy />
-          <EmProcess />
-          <EmOutputs />
-          <EmEnterprise />
-          <EmRevenue />
-          <EmVaultPricing />
-          <EmFinalCta />
-        </main>
-        <EmFooter />
+      <div className="relative min-h-screen" style={{ color: EM.text, fontFamily: "Inter, 'IBM Plex Sans', system-ui, sans-serif" }}>
+        {/* Fixed video background */}
+        <video
+          className="fixed inset-0 w-full h-full object-cover object-center z-0 pointer-events-none"
+          src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/7bfe3d5b4_435914f42_generated_video.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+        {/* Soft light wash keeps the executive white-on-content readable */}
+        <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.82)" }} />
+
+        <div className="relative z-10">
+          <EmNav />
+          <main>
+            <EmHero />
+            <EmWhy />
+            <EmProcess />
+            <EmOutputs />
+            <EmEnterprise />
+            <EmRevenue />
+            <EmVaultPricing />
+            <EmFinalCta />
+          </main>
+          <EmFooter />
+        </div>
       </div>
       {consoleOpen && <EmExtractionConsole onClose={() => setConsoleOpen(false)} />}
       <EmPaywallModal open={!!paywall} isGuest={paywall?.isGuest} onClose={() => setPaywall(null)} />

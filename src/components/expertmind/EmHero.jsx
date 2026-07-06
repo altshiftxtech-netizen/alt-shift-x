@@ -17,7 +17,7 @@ export default function EmHero() {
   const launch = useEmLaunch();
   const [requestOpen, setRequestOpen] = useState(false);
   return (
-    <section id="hero" style={{ background: EM.bg }}>
+    <section id="hero">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left — 5/12 */}
