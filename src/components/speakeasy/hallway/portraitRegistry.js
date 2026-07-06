@@ -101,3 +101,21 @@ export const PORTRAITS = [
 
 export const WING_A = PORTRAITS.filter((p) => p.wing === "A");
 export const WING_B = PORTRAITS.filter((p) => p.wing === "B");
+
+// Concept-art lookup keyed by the FounderLore founder names (founderLore.js /
+// FOUNDER_ORDER), used by the Director's Cut Cinema Reader. Kept explicit
+// because a few registry `founder` labels differ from the lore keys.
+export const PORTRAITS_BY_FOUNDER = {
+  "Corin Bitwright": PORTRAITS[0].image,
+  "Lysa Vectora 2.0": PORTRAITS[3].image,
+  "Adele Switchford": PORTRAITS[2].image,
+  "Bram Cacheton": PORTRAITS[4].image,
+  "Tavin Gridley": PORTRAITS[5].image,
+  "Elowen Stackhart": PORTRAITS[1].image,
+  "Orrin Datamore": PORTRAITS[6].image,
+  "Vera Logicson": PORTRAITS[7].image,
+  "Cassian Verge": PORTRAITS[8].image,
+  "Nira Loopin": PORTRAITS[9].image,
+  "Soren Patchley": PORTRAITS[10].image,
+  "The Founder": PORTRAITS[11].image,
+};

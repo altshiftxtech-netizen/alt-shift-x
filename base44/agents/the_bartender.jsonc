@@ -22,11 +22,11 @@
     },
     {
       "function_name": "scavengerLeaderboard",
-      "description": "Returns the live ranked Seed Hunters leaderboard (rank, builder handle, seeds found, total, Founder's Mark)."
+      "description": "Returns the live ranked Seed Hunters leaderboard."
     },
     {
       "function_name": "logLoreEvent",
-      "description": "Logs a delivered lore snippet (riddle, whisper, or monologue) as a lore_event to the daily forensic report so founder stories don't repeat. Call this AFTER you narrate a Lore Mode monologue or drop a Founder Whisper, passing the founder name and snippet_type ('whisper' | 'monologue' | 'riddle')."
+      "description": "Logs a delivered lore snippet so founder stories don't repeat."
     }
   ],
   "context_files": [],
