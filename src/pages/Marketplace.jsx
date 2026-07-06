@@ -316,7 +316,7 @@ export default function Marketplace() {
         )}
 
         {/* Enterprise Pipelines promo — for big companies */}
-        <Link to="/pipelines" className="block mb-6 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-900/40 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-amber-400/70 transition-colors group">
+        <Link to="/enterprise/expertminds" className="block mb-6 rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-900/40 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-amber-400/70 transition-colors group">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0">
               <Package className="w-5 h-5 text-amber-300" />
@@ -333,7 +333,7 @@ export default function Marketplace() {
         </Link>
 
         {/* For Enterprise — gate into the Sovereign tier portal */}
-        <Link to="/enterprise" className="block mb-6 rounded-2xl border border-[#C8A95B]/40 bg-gradient-to-br from-[#1b1a24]/80 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-[#C8A95B]/70 transition-colors group">
+        <Link to="/enterprise/expertminds" className="block mb-6 rounded-2xl border border-[#C8A95B]/40 bg-gradient-to-br from-[#1b1a24]/80 via-slate-900/60 to-black/60 backdrop-blur-md p-5 hover:border-[#C8A95B]/70 transition-colors group">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-[#C8A95B]/15 border border-[#C8A95B]/30 flex items-center justify-center shrink-0">
               <Crown className="w-5 h-5 text-[#E6C878]" />
