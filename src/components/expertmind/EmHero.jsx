@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { ShieldCheck, BadgeCheck, LayoutGrid, Lock, Building2 } from "lucide-react";
 import { EM } from "./emTokens";
 import { useEmLaunch } from "./EmLaunchContext";
 import KnowledgeCockpit from "./KnowledgeCockpit";
+import EmRequestEnterpriseModal from "./EmRequestEnterpriseModal";
 
 const CHIPS = [
   { label: "Consent-based", icon: ShieldCheck },
@@ -14,6 +15,7 @@ const CHIPS = [
 
 export default function EmHero() {
   const launch = useEmLaunch();
+  const [requestOpen, setRequestOpen] = useState(false);
   return (
     <section id="hero" style={{ background: EM.bg }}>
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24">
@@ -43,6 +45,7 @@ export default function EmHero() {
                 Launch expertminds Extraction
               </button>
               <button
+                onClick={() => setRequestOpen(true)}
                 className="text-[14px] font-semibold px-5 py-3 rounded-lg transition-colors hover:bg-white"
                 style={{ color: EM.primary, border: `1px solid ${EM.border}`, background: "transparent" }}
               >
@@ -70,6 +73,7 @@ export default function EmHero() {
           </div>
         </div>
       </div>
+      <EmRequestEnterpriseModal open={requestOpen} onClose={() => setRequestOpen(false)} />
     </section>
   );
 }
