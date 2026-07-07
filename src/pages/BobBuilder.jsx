@@ -109,7 +109,7 @@ export default function BobBuilder() {
     send, stop, openConversation, resetBoard, initConv, setMessages, setOnDone,
   } = useBobChat();
 
-  const [launched, setLaunched] = useState(false);
+  const [launched, setLaunched] = useState(true);
   const [activeTab, setActiveTab] = useState("chat");
   const [input, setInput] = useState("");
   const [clearSignal, setClearSignal] = useState(0);
@@ -369,7 +369,7 @@ export default function BobBuilder() {
     localStorage.removeItem("bob_active_conv");
     setInput("");
     setClearSignal((s) => s + 1);
-    setLaunched(false);
+    setActiveTab("chat");
   };
 
   const openHistory = () => { userActedRef.current = true; setLaunched(true); setActiveTab("chat"); resetBoard(); };
