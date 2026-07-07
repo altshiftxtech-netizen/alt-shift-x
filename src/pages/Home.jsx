@@ -70,11 +70,23 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  // Accurate live catalog count (paginated server-side; not capped at 5k).
+  const loadCount = React.useCallback(() => {
+    base44.functions.invoke("componentCounts", {})
+      .then((res) => { if (res?.data?.published != null) setComponentCount(res.data.published); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadCount();
+    const unsubscribe = base44.entities.Component.subscribe(() => loadCount());
+    return unsubscribe;
+  }, [loadCount]);
+
   useEffect(() => {
     base44.entities.Component.filter({ status: "published" }, "-installs_count", 100)
       .then((data) => {
         const list = data || [];
-        setComponentCount(list.length);
         setFeatured(list.slice(0, 3));
         // Spotlight = any explicitly-featured component, plus SAFEGUARD pinned to the front by code.
         const safeguard = list.find((c) => c.code === "SAFEGUARD-1.0");
@@ -91,7 +103,7 @@ export default function Home() {
   }, []);
 
   const STATS = [
-    { label: "First to Market Components", value: "5000+", icon: Package },
+    { label: "First to Market Components", value: componentCount > 0 ? componentCount.toLocaleString() : "5000+", icon: Package },
     { label: "Avg Trust Score", value: avgTrust != null ? String(avgTrust) : "—", icon: ShieldCheck },
     { label: "Do-No-Harm Audited", value: "Every component", icon: Users },
     { label: "Stage", value: "Beta", icon: Zap },

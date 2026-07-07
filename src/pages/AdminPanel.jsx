@@ -84,26 +84,36 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("User Management");
   const [stats, setStats] = useState({ pending: 0, published: 0, flagged: 0, builders: 0 });
 
-  // Live moderation stats pulled from the real catalog.
-  useEffect(() => {
-    (async () => {
-      try {
-        const [pendingA, pendingB, published, flagged, users, components] = await Promise.all([
-          base44.asServiceRole.entities.Component.filter({ status: "pending_review" }, "-created_date", 1000),
-          base44.asServiceRole.entities.Component.filter({ status: "pending" }, "-created_date", 1000),
-          base44.asServiceRole.entities.Component.filter({ status: "published" }, "-created_date", 10000),
-          base44.asServiceRole.entities.Component.filter({ status: "shelved" }, "-created_date", 1000),
-          base44.asServiceRole.entities.User.list("-created_date", 500),
-          base44.asServiceRole.entities.Component.list("-created_date", 10000),
-        ]);
-        const builderIds = new Set(components.filter((c) => c.builder_id).map((c) => c.builder_id));
-        const builders = users.filter((u) => builderIds.has(u.id) || u.role === "admin" || u.role === "builder").length;
-        setStats({ pending: pendingA.length + pendingB.length, published: published.length, flagged: flagged.length, builders });
-      } catch {
-        // leave zeros
-      }
-    })();
+  // Load accurate catalog counts. A single .filter()/.list() call is capped at
+  // 5,000 records per page, so counting on the client truncates once the catalog
+  // grows past that. componentCounts paginates server-side for the true totals.
+  const loadStats = React.useCallback(async () => {
+    try {
+      const [countsRes, users, components] = await Promise.all([
+        base44.functions.invoke("componentCounts", {}),
+        base44.asServiceRole.entities.User.list("-created_date", 500),
+        base44.asServiceRole.entities.Component.list("-created_date", 5000),
+      ]);
+      const counts = countsRes?.data || {};
+      const builderIds = new Set(components.filter((c) => c.builder_id).map((c) => c.builder_id));
+      const builders = users.filter((u) => builderIds.has(u.id) || u.role === "admin" || u.role === "builder").length;
+      setStats({
+        pending: counts.breakdown?.pending || 0,
+        published: counts.published || 0,
+        flagged: counts.breakdown?.shelved || 0,
+        builders,
+      });
+    } catch {
+      // leave existing values
+    }
   }, []);
+
+  // Initial load + realtime: re-count whenever a component is added/updated/deleted.
+  useEffect(() => {
+    loadStats();
+    const unsubscribe = base44.entities.Component.subscribe(() => loadStats());
+    return unsubscribe;
+  }, [loadStats]);
 
   const STATS = [
     { label: "Pending Review", value: stats.pending, icon: Clock, color: "text-amber-600" },
