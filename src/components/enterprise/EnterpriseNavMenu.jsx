@@ -10,7 +10,7 @@ const NAV_TABS = [
   { to: "/", label: "Home", icon: Home },
   { to: "/marketplace", label: "Marketplace", icon: Store },
   { to: "/dashboard/api-keys", label: "Pipeline Keys", icon: KeyRound },
-  { to: "/enterprise/pipelines", label: "Exclusive Pipelines", icon: GitBranch },
+  { to: "/enterprise?tab=pipelines", label: "Exclusive Pipelines", icon: GitBranch },
   { to: "/enterprise/expertminds", label: "ExpertMinds Enterprise", icon: Brain },
 ];
 

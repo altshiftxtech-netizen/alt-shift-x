@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2 } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2, GitBranch } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -13,12 +13,14 @@ import EngineeringSuiteTab from "@/components/enterprise/engineering/Engineering
 import PrivacyAliasPanel from "@/components/enterprise/PrivacyAliasPanel";
 import ForensicReportsTab from "@/components/enterprise/forensic/ForensicReportsTab";
 import GeoIntelAnnex from "@/components/enterprise/geo/GeoIntelAnnex";
+import PipelinesTab from "@/components/enterprise/pipelines/PipelinesTab";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
 const TABS = [
   { key: "command", label: "Command Deck", icon: Radio },
+  { key: "pipelines", label: "Exclusive Pipelines", icon: GitBranch },
   { key: "geo", label: "Geopolitical Annex", icon: Globe2 },
   { key: "handshake", label: "Secure Handshake", icon: ShieldCheck },
   { key: "annexes", label: "Annex Queue", icon: Boxes },
@@ -30,8 +32,9 @@ const TABS = [
 ];
 
 export default function Enterprise() {
-  const { status, user, isAdmin } = useSovereignAccess();
-  const [tab, setTab] = useState("command");
+  const { status, user, isAdmin, canPipelines } = useSovereignAccess();
+  const initialTab = new URLSearchParams(window.location.search).get("tab");
+  const [tab, setTab] = useState(TABS.some((t) => t.key === initialTab) ? initialTab : "command");
   const [legalOpen, setLegalOpen] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
 
@@ -113,6 +116,7 @@ export default function Enterprise() {
               <div className="lg:col-span-2"><SovereignCalendar user={user} /></div>
             </div>
           )}
+          {tab === "pipelines" && <PipelinesTab canPipelines={canPipelines} />}
           {tab === "geo" && <div className="max-w-2xl mx-auto"><GeoIntelAnnex /></div>}
           {tab === "handshake" && (
             <div className="max-w-2xl mx-auto">
