@@ -76,8 +76,8 @@ export function playComputingBeep() {
 // Persisted in localStorage so the user can tell BOB what to sound like and it
 // sticks across sessions. Defaults to the deep, gender-neutral robotic voice.
 const VOICE_KEY = "bob_voice_settings";
-// Higher pitch + faster rate reads as a lively, human-like-but-synthesized voice.
-const DEFAULT_VOICE = { voiceName: "", pitch: 1.15, rate: 1.1 };
+// Deep, flat pitch + slightly measured rate reads as a synthesized, robotic voice.
+const DEFAULT_VOICE = { voiceName: "", pitch: 0.7, rate: 0.92 };
 
 export function getVoiceSettings() {
   if (typeof window === "undefined") return { ...DEFAULT_VOICE };
@@ -185,9 +185,9 @@ export function speak(text, { queue = false } = {}) {
     // Honor an explicitly chosen / described voice first.
     let chosen = settings.voiceName ? voices.find((v) => v.name === settings.voiceName) : null;
     if (!chosen) {
-      // Fall back to deeper / robotic neutral voices; avoid feminine defaults.
+      // Prefer explicitly synthetic / robotic system voices for a machine feel.
       const robotic = voices.find((v) =>
-        /robot|fred|albert|ralph|cellos|zarvox|trinoids|google uk english male|daniel|alex|rocko|grandpa/i.test(v.name)
+        /robot|zarvox|cellos|trinoids|whisper|bahh|boing|jester|superstar|synth|fred|albert|ralph|rocko|grandpa/i.test(v.name)
       );
       const maleish = voices.find((v) =>
         /\bmale\b/i.test(v.name) && !/female/i.test(v.name)
