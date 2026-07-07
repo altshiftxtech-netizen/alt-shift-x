@@ -1,0 +1,109 @@
+{
+  "name": "ExposureHardStop",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "Base44 user ID of the Sovereign engineer whose session triggered the hard-stop"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Identifier of the high-stakes session that was bit-stamped and purged"
+    },
+    "protocol": {
+      "type": "string",
+      "default": "SOVEREIGN-EXPOSURE-HARDSTOP-1.0",
+      "description": "The exposure hard-stop protocol version that fired"
+    },
+    "rule_code": {
+      "type": "string",
+      "enum": [
+        "VALUE_DENSITY_100M",
+        "PROMETHEUS_GATE",
+        "CONTEXT_SATURATION_60",
+        "TEMPORAL_4H"
+      ],
+      "description": "Which hard-stop rule was breached"
+    },
+    "rule_name": {
+      "type": "string",
+      "description": "Human-readable rule name, e.g. 'Value-Density Threshold (The $100M Rule)'"
+    },
+    "threshold": {
+      "type": "string",
+      "description": "The hard-stop threshold that was breached"
+    },
+    "trigger_value": {
+      "type": "string",
+      "description": "The measured value that breached the threshold, e.g. '$125M ARR', '62% context', '4h 12m'"
+    },
+    "session_phase": {
+      "type": "string",
+      "enum": [
+        "production",
+        "external_outreach",
+        "mixed",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "What strategic phase the session was in when the stop fired"
+    },
+    "bit_stamp_hash": {
+      "type": "string",
+      "description": "SHA-256 forensic bit-stamp locking the session logic-state into the Truth Anchor before purge"
+    },
+    "purged": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the session buffer was purged after bit-stamping"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "owner_id",
+    "session_id",
+    "rule_code"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

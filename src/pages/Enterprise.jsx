@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2, GitBranch } from "lucide-react";
+import { Loader2, Radio, Boxes, CalendarClock, Cpu, ShieldCheck, Wrench, UserCog, Fingerprint, Globe2, GitBranch, Gauge } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseLegalGate from "@/components/enterprise/EnterpriseLegalGate";
@@ -15,6 +15,7 @@ import ForensicReportsTab from "@/components/enterprise/forensic/ForensicReports
 import GeoIntelAnnex from "@/components/enterprise/geo/GeoIntelAnnex";
 import PipelinesTab from "@/components/enterprise/pipelines/PipelinesTab";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
+import ExposureHardStopsPanel from "@/components/enterprise/exposure/ExposureHardStopsPanel";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
@@ -29,6 +30,7 @@ const TABS = [
   { key: "engineering", label: "Engineering Suite", icon: Wrench },
   { key: "privacy", label: "Privacy & Alias", icon: UserCog },
   { key: "forensic", label: "Forensic Reports", icon: Fingerprint },
+  { key: "exposure", label: "Exposure Hard-Stops", icon: Gauge },
 ];
 
 export default function Enterprise() {
@@ -139,6 +141,7 @@ export default function Enterprise() {
           {tab === "engineering" && <EngineeringSuiteTab isAdmin={isAdmin} hasSeatLicense={isAdmin} />}
           {tab === "privacy" && <div className="max-w-2xl mx-auto"><PrivacyAliasPanel user={user} /></div>}
           {tab === "forensic" && <ForensicReportsTab isAdmin={isAdmin} />}
+          {tab === "exposure" && <ExposureHardStopsPanel />}
         </div>
       </div>
     </div>
