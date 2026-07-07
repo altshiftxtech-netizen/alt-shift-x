@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Briefcase, FileText, Lightbulb, MessageSquare, ShieldCheck, Search, Scale, ExternalLink } from "lucide-react";
+import { ArrowLeft, Briefcase, FileText, Lightbulb, MessageSquare, ShieldCheck, Search, Scale, ExternalLink, Receipt } from "lucide-react";
 import ProxyRoomGate from "@/components/speakeasy/proxy/ProxyRoomGate";
 import DraftingAidNotice from "@/components/biz/DraftingAidNotice";
 import TemplatePicker from "@/components/biz/TemplatePicker";
@@ -9,12 +9,14 @@ import DocumentForm from "@/components/biz/DocumentForm";
 import GeneratedDocument from "@/components/biz/GeneratedDocument";
 import StrategyCenter from "@/components/biz/StrategyCenter";
 import CounselorChat from "@/components/biz/CounselorChat";
+import InvoiceBuilder from "@/components/biz/invoice/InvoiceBuilder";
 import MemoryGreeting from "@/components/biz/MemoryGreeting";
 import useBobTier, { LIGHT_TEMPLATE_KEYS } from "@/hooks/useBobTier";
 import { TEMPLATES } from "@/components/biz/bizData";
 
 const TABS = [
   { key: "documents", label: "Document Center", icon: FileText },
+  { key: "invoicing", label: "Sovereign Invoicing", icon: Receipt },
   { key: "strategy", label: "Strategy Center", icon: Lightbulb },
   { key: "counselor", label: "Counselor", icon: MessageSquare },
 ];
@@ -186,6 +188,8 @@ function BizCenterInner() {
             )}
           </>
         )}
+
+        {tab === "invoicing" && <InvoiceBuilder />}
 
         {tab === "strategy" && <StrategyCenter />}
 

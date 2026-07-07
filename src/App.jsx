@@ -212,6 +212,7 @@ const AuthenticatedApp = () => {
         <Route path="/speakeasy/ballroom-east" element={<SpeakeasyBallroomEast />} />
         <Route path="/speakeasy/pipelines" element={<SpeakeasyPipelines />} />
         <Route path="/biz-center" element={<BizCenter />} />
+        <Route path="/speakeasy/business-center" element={<BizCenter />} />
         <Route path="/shop/admin" element={<ShopAdmin />} />
         <Route path="/rollout-procedures" element={<RolloutProcedures />} />
         <Route path="/success/install" element={<InstallSuccess />} />
@@ -257,6 +258,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/business-center" element={<BizCenter />} />
         <Route path="/admin/upkeeper" element={<UpKeeper />} />
         <Route path="/admin/raffles" element={<RaffleAdmin />} />
         <Route path="/admin/crm" element={<Crm />} />

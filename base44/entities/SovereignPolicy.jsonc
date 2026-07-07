@@ -1,0 +1,100 @@
+{
+  "name": "SovereignPolicy",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "Base44 user ID of the policy owner (held on their private profile)"
+    },
+    "vault_code": {
+      "type": "string",
+      "default": "SPEAKEASY-POLICY-VAULT-1.0",
+      "description": "The vault component this policy is registered under"
+    },
+    "policy_name": {
+      "type": "string",
+      "description": "Human name of the policy document, e.g. 'Standard Consulting Rates 2026'"
+    },
+    "hub": {
+      "type": "string",
+      "description": "Operating hub / region this policy applies to, e.g. 'SEATTLE'"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "rate_items": {
+      "type": "array",
+      "description": "Named billable line items with their unit rates, mapped into the invoice grid",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit_rate": {
+            "type": "number"
+          }
+        }
+      },
+      "default": []
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Forensic version counter for policy change tracking"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "owner_id",
+    "policy_name"
+  ],
+  "rls": {
+    "create": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
