@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit, Sparkles } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import SovereignTierBanner from "@/components/pricing/SovereignTierBanner";
+import SovereignApexCard from "@/components/pricing/SovereignApexCard";
 import Logo from "@/components/Logo";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 
@@ -469,6 +470,9 @@ export default function Pricing() {
           </div>
         </>
       )}
+
+      {/* Sovereign Bundle Matrix — reads SOVEREIGN-SUPER-PRICING-UI-1.0 */}
+      <SovereignApexCard />
 
       {/* Sovereign: Enterprise Intelligence — the third tier / private club */}
       <SovereignTierBanner />
