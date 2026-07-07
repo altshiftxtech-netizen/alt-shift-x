@@ -5,6 +5,8 @@ import {
   saveVoiceSettings,
   listVoices,
   applyVoiceDescription,
+  applyVoicePreset,
+  VOICE_PRESETS,
   speak,
 } from "@/lib/bobSounds";
 
@@ -40,6 +42,12 @@ export default function BobVoiceSettings() {
     speak("How's this? This is how I sound now.");
   };
 
+  const handlePreset = (id) => {
+    const next = applyVoicePreset(id);
+    setSettings(next);
+    speak("How's this? This is how I sound now.");
+  };
+
   const handleReset = () => {
     saveVoiceSettings(DEFAULTS);
     setSettings(DEFAULTS);
@@ -62,6 +70,25 @@ export default function BobVoiceSettings() {
 
       {open && (
         <div className="px-3 pb-3 space-y-3">
+          {/* One-click voice presets */}
+          <div>
+            <label className="text-[10px] text-slate-400 font-semibold block mb-1.5">
+              Pick a voice
+            </label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {VOICE_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handlePreset(p.id)}
+                  className="flex items-center gap-1.5 bg-slate-900 hover:bg-violet-900/50 border border-slate-600 hover:border-violet-500 text-slate-300 hover:text-white text-[11px] font-medium px-2 py-1.5 rounded-lg transition-colors text-left"
+                >
+                  <span className="text-sm leading-none">{p.emoji}</span>
+                  <span className="truncate">{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Describe-it-in-words */}
           <div>
             <label className="text-[10px] text-slate-400 font-semibold block mb-1">

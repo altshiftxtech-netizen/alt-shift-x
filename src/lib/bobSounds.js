@@ -136,6 +136,37 @@ export function applyVoiceDescription(text) {
   return next;
 }
 
+// Curated voice personas — one-click presets. Each sets pitch/rate and, when a
+// matching browser voice exists, a voice family. `match` is a regex tried
+// against available voice names; if none match, the pitch/rate still apply.
+export const VOICE_PRESETS = [
+  { id: "robotic",   label: "Deep Robotic",  emoji: "🤖", pitch: 0.85, rate: 1.05, match: /robot|zarvox|cellos|trinoids|fred|albert|ralph/i },
+  { id: "classic",   label: "BOB Classic",   emoji: "⚡", pitch: 1.15, rate: 1.1,  match: null },
+  { id: "deep_male", label: "Deep Male",     emoji: "🧔", pitch: 0.75, rate: 1.0,  match: /\bmale\b|daniel|alex|fred|albert|aaron/i },
+  { id: "warm_male", label: "Warm Male",     emoji: "☕", pitch: 1.0,  rate: 0.95, match: /daniel|alex|tom|arthur|male/i },
+  { id: "female",    label: "Feminine",      emoji: "💁", pitch: 1.25, rate: 1.05, match: /\bfemale\b|samantha|victoria|karen|zira|fiona|allison/i },
+  { id: "soft_female", label: "Soft Female", emoji: "🌸", pitch: 1.35, rate: 0.9,  match: /samantha|victoria|allison|serena|female|susan/i },
+  { id: "british",   label: "British",       emoji: "🇬🇧", pitch: 1.05, rate: 1.0,  match: /uk english|daniel|kate|serena|google uk|arthur/i },
+  { id: "energetic", label: "Energetic",     emoji: "🔥", pitch: 1.3,  rate: 1.4,  match: null },
+  { id: "calm",      label: "Calm & Slow",   emoji: "🧘", pitch: 1.0,  rate: 0.8,  match: null },
+  { id: "chipmunk",  label: "Chipmunk",      emoji: "🐿️", pitch: 1.8,  rate: 1.35, match: null },
+  { id: "villain",   label: "Villain",       emoji: "😈", pitch: 0.6,  rate: 0.85, match: /fred|albert|ralph|male/i },
+];
+
+// Apply a preset by id. Returns the new settings object (also persisted).
+export function applyVoicePreset(id) {
+  const preset = VOICE_PRESETS.find((p) => p.id === id);
+  if (!preset) return getVoiceSettings();
+  let voiceName = "";
+  if (preset.match) {
+    const v = listVoices().find((vc) => preset.match.test(vc.name));
+    if (v) voiceName = v.name;
+  }
+  const next = { pitch: preset.pitch, rate: preset.rate, voiceName };
+  saveVoiceSettings(next);
+  return next;
+}
+
 // Core robotic-voice speak helper. Reads the user's saved voice settings so the
 // pitch, rate, and chosen voice reflect what they've configured / described.
 // speak(text, { queue }) — when queue is true the utterance is appended behind
