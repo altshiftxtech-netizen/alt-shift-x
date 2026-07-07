@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
-import { Search, Package, Download, Check, Loader2 } from "lucide-react";
+import { Search, Package, Download, Check, Loader2, BookOpen } from "lucide-react";
 
 /**
  * Marketplace Installer — browse the catalog and install a component directly
@@ -42,6 +42,13 @@ export default function MarketplaceInstaller({ components, keys, onInstalled }) 
       <div className="flex items-center gap-2 mb-1">
         <Package className="w-5 h-5 text-[#C8A95B]" />
         <h3 className="text-lg font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Marketplace Installer</h3>
+        <button
+          onClick={() => window.open("/enterprise/catalog", "_blank", "noopener")}
+          className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-[#0A0A0C] px-3 py-1.5 rounded-lg"
+          style={{ background: "linear-gradient(90deg,#E6C878,#C8A95B)" }}
+        >
+          <BookOpen className="w-3.5 h-3.5" /> View Catalog
+        </button>
       </div>
       <p className="text-xs text-white/45 mb-4">Browse the marketplace and install directly to an enterprise key.</p>
 

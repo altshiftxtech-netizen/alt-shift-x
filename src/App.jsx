@@ -43,6 +43,7 @@ import AdminPanel from './pages/AdminPanel';
 import Pricing from './pages/Pricing';
 import Enterprise from './pages/Enterprise';
 import EnterprisePipelines from './pages/EnterprisePipelines';
+import EnterpriseCatalog from './pages/EnterpriseCatalog';
 import ExpertMindsEnterprise from './pages/ExpertMindsEnterprise';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
@@ -158,6 +159,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/pipelines" element={<Pipelines />} />
+      <Route path="/enterprise/catalog" element={<EnterpriseCatalog />} />
       <Route path="/builders/:id" element={<BuilderPublicProfile />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
