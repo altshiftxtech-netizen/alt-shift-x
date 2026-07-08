@@ -3,7 +3,8 @@ import { X, Compass } from "lucide-react";
 import { EM } from "./emTokens";
 
 const MISSION =
-  "Alt + Shift + X is a B2B and B2C marketplace where businesses buy, sell, build, and manage operational intelligence components — protocols, training modules, reasoning frameworks, speed configurations, and pre-built AI agent solutions. It serves as the central exchange for organizations that want to enhance their AI agent capabilities with domain-specific, plug-and-play components built on the YottaJoule / Claire architecture.";
+  "An AI-driven expert extraction system that converts human expertise, experience, judgment, and tacit knowledge into structured, monetizable AI-ready assets.";
+const CORE_PROMISE = "Turn a subject-matter expert's mind into a governed knowledge product.";
 
 /**
  * Mission Statement tab modal — a highlighted glass card that gates the
@@ -63,9 +64,12 @@ export default function EmMissionModal({ open, onClose }) {
         </div>
 
         {/* Mission content */}
-        <div className="px-6 py-6">
+        <div className="px-6 py-6 space-y-4">
           <p className="text-[15px] leading-relaxed" style={{ color: EM.text }}>
             {MISSION}
+          </p>
+          <p className="text-[14px] font-semibold italic" style={{ color: EM.accent }}>
+            {CORE_PROMISE}
           </p>
         </div>
 

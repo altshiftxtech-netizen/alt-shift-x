@@ -12,6 +12,7 @@ import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
 import AboutUsSection from "@/components/home/AboutUsSection";
+import HomeMissionModal from "@/components/home/HomeMissionModal";
 import { base44 } from "@/api/base44Client";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
@@ -55,6 +56,7 @@ export default function Home() {
   const [avgTrust, setAvgTrust] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [installedMap, setInstalledMap] = useState({});
+  const [missionOpen, setMissionOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me()
@@ -345,6 +347,20 @@ export default function Home() {
         <PlatformSocials variant="light" />
         <p className="text-white/30">Powered by: Trust AR LLC.</p>
       </footer>
+
+      {/* Floating Mission tab — highlighted gate to the platform mission */}
+      <button
+        onClick={() => setMissionOpen(true)}
+        className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-transform hover:-translate-y-px"
+        style={{
+          background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+          boxShadow: "0 0 0 1px rgba(139,92,246,0.3), 0 4px 14px rgba(0,0,0,0.3), 0 0 18px rgba(139,92,246,0.25)",
+        }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
+        Our Mission
+      </button>
+      <HomeMissionModal open={missionOpen} onClose={() => setMissionOpen(false)} />
     </div>
   );
 }
