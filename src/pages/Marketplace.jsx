@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,20 @@ export default function Marketplace() {
   const [bundleInstalling, setBundleInstalling] = useState(false);
   const [featuredKit, setFeaturedKit] = useState(null);
   const [page, setPage] = useState(1);
+  const [totalCatalogCount, setTotalCatalogCount] = useState(0);
+
+  // Accurate live catalog count (paginated server-side; not capped at 5k).
+  const loadCatalogCount = React.useCallback(() => {
+    base44.functions.invoke("componentCounts", {})
+      .then((res) => { if (res?.data?.published != null) setTotalCatalogCount(res.data.published); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    loadCatalogCount();
+    const unsubscribe = base44.entities.Component.subscribe(() => loadCatalogCount());
+    return unsubscribe;
+  }, [loadCatalogCount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -472,7 +486,7 @@ export default function Marketplace() {
                 })()}
 
                 <p className="text-xs text-white/40 mb-4">
-                  {filtered.length} components
+                  {totalCatalogCount > 0 ? `${totalCatalogCount.toLocaleString()} components` : `${filtered.length} components`}
                   {filtered.length > PAGE_SIZE && (
                     <span> · showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}</span>
                   )}

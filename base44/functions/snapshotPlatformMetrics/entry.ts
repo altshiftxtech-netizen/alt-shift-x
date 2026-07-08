@@ -21,6 +21,19 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.GovernanceScore.list("-created_date", 500),
     ]);
 
+    // Paginate the true published count — .list(500) truncates once the catalog
+    // grows past that, so the old total_components was always capped at 500.
+    const PAGE = 5000;
+    const MAX_PAGES = 40;
+    let publishedCount = 0;
+    let skip = 0;
+    for (let i = 0; i < MAX_PAGES; i++) {
+      const rows = await base44.asServiceRole.entities.Component.filter({ status: "published" }, "created_date", PAGE, skip);
+      publishedCount += rows.length;
+      if (rows.length < PAGE) break;
+      skip += PAGE;
+    }
+
     const published = components.filter(c => c.status === "published");
     const activeSubCount = subscriptions.filter(s => s.status === "active").length;
     const totalApiCalls = subscriptions.reduce((sum, s) => sum + (s.api_calls_used || 0), 0);
@@ -47,7 +60,7 @@ Deno.serve(async (req) => {
     const snapshot = {
       period: today,
       metric_type: "daily",
-      total_components: published.length,
+      total_components: publishedCount,
       total_builders: uniqueBuilders,
       total_subscribers: activeSubCount,
       total_api_calls: totalApiCalls,

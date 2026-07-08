@@ -191,7 +191,7 @@ export default function PlatformIntelligence() {
                   { label: "Builder Payout Rate", value: "70%", desc: "Revenue share to builders", color: "text-violet-600" },
                   { label: "Webhook Delivery Rate", value: m.webhook_success_rate_pct ? `${m.webhook_success_rate_pct}%` : "99.2%", desc: "Platform reliability signal", color: "text-blue-600" },
                   { label: "Trust Flywheel Score", value: `${m.avg_trust_score || 91}/100`, desc: "Compounding data advantage", color: "text-amber-600" },
-                  { label: "Total Platform Components", value: m.total_components || 8, desc: "Deployed to marketplace", color: "text-slate-700" },
+                  { label: "Total Platform Components", value: (m.total_components || 0).toLocaleString(), desc: "Deployed to marketplace", color: "text-slate-700" },
                   { label: "Total API Calls (MRR)", value: m.total_api_calls ? `${(m.total_api_calls / 1000).toFixed(0)}k` : "142k", desc: "Stickiness indicator", color: "text-indigo-600" },
                 ].map(({ label, value, desc, color }) => (
                   <div key={label} className="bg-slate-50 rounded-xl p-3">
