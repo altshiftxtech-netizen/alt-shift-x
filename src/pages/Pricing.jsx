@@ -328,6 +328,12 @@ export default function Pricing() {
           >
             For Builders
           </button>
+          <Link
+            to="/enterprise"
+            className="px-5 py-2 rounded-full text-sm font-semibold transition-all bg-white text-slate-500 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5"
+          >
+            <Building2 className="w-3.5 h-3.5" /> Enterprise
+          </Link>
         </div>
       </div>
 
