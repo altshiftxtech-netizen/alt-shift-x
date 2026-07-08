@@ -29,6 +29,8 @@ import ReactMarkdown from "react-markdown";
 import BobMessageActions from "@/components/bob/BobMessageActions";
 import BobLiveIndicator from "@/components/bob/BobLiveIndicator";
 import HeyBobModal from "@/components/bob/HeyBobModal";
+import SessionHandoffBanner from "@/components/bob/SessionHandoffBanner";
+import { useSessionHandoff } from "@/hooks/useSessionHandoff";
 
 const QUICK_PROMPTS = [
   "Help me create a new X1 Risk & Compliance component",
@@ -108,6 +110,8 @@ export default function BobBuilder() {
     convId, messages, isWorking, queued, removeQueued,
     send, stop, openConversation, resetBoard, initConv, setMessages, setOnDone,
   } = useBobChat();
+
+  const { handoffBrief, handoffPending, checkHandoffTrigger, startFreshWithBrief, clearHandoff } = useSessionHandoff({ messages });
 
   const [launched, setLaunched] = useState(true);
   const [activeTab, setActiveTab] = useState("chat");
@@ -305,6 +309,10 @@ export default function BobBuilder() {
   const handleSend = async () => {
     const msg = input.trim();
     if (!msg && uploadedFiles.length === 0) return;
+
+    // Sovereign Session Handoff: <new session> triggers a continuity brief + fresh session
+    if (await checkHandoffTrigger(msg, dispatch)) return;
+
     setInput("");
     setClearSignal((s) => s + 1);
     const files = uploadedFiles;
@@ -370,10 +378,11 @@ export default function BobBuilder() {
     setInput("");
     setClearSignal((s) => s + 1);
     setActiveTab("chat");
+    clearHandoff();
   };
 
   const openHistory = () => { userActedRef.current = true; setLaunched(true); setActiveTab("chat"); resetBoard(); };
-  const wipeBoard = () => { userActedRef.current = true; lastSoundKeyRef.current = null; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); };
+  const wipeBoard = () => { userActedRef.current = true; lastSoundKeyRef.current = null; setActiveTab("chat"); resetBoard(); localStorage.removeItem("bob_active_conv"); clearHandoff(); };
   const openProject = async (c) => {
     userActedRef.current = true;
     greetedRef.current = true;            // never greet over a restored project
@@ -705,6 +714,11 @@ export default function BobBuilder() {
                 )}
 
                 <div className="border-t border-slate-700 p-3 space-y-2">
+                  <SessionHandoffBanner
+                    handoffBrief={handoffBrief}
+                    handoffPending={handoffPending}
+                    onStartFresh={() => startFreshWithBrief(launch)}
+                  />
                   <NextStepActions onPick={(p) => dispatch(p)} disabled={isWorking} />
                   <BobChatInput
                     value={input}
