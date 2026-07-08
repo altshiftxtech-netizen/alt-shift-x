@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Newspaper, ArrowRight } from "lucide-react";
+import BlogNav from "@/components/blog/BlogNav";
 
 const CAT_STYLE = {
   product: "bg-violet-100 text-violet-700",
@@ -24,6 +25,7 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <BlogNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div className="flex items-center gap-3 mb-2">
           <Newspaper className="w-6 h-6 text-violet-600" />

@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Loader2, ArrowLeft, Calendar } from "lucide-react";
 import BlogReactions from "@/components/blog/BlogReactions";
 import BlogComments from "@/components/blog/BlogComments";
+import BlogNav from "@/components/blog/BlogNav";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -34,6 +35,7 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <BlogNav />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between mb-6">
           <Link to="/blog" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700">
