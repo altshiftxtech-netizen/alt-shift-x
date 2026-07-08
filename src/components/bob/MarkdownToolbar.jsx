@@ -1,5 +1,6 @@
-import React from "react";
-import { Bold, Italic, Code, List, ListOrdered, Heading, Quote, Link2 } from "lucide-react";
+import React, { useState } from "react";
+import { Bold, Italic, Code, List, ListOrdered, Heading, Quote, Link2, Smile, Copy, Check } from "lucide-react";
+import EmojiPicker from "./EmojiPicker";
 
 /**
  * MarkdownToolbar — power-user formatting for BOB's chat input.
@@ -25,6 +26,31 @@ const WRAPS = [
 ];
 
 function MarkdownToolbar({ textareaRef, value = "", onChange }) {
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const insertEmoji = (emoji) => {
+    const el = textareaRef?.current;
+    const start = el ? el.selectionStart : value.length;
+    const end = el ? el.selectionEnd : value.length;
+    const newText = value.slice(0, start) + emoji + value.slice(end);
+    onChange?.(newText);
+    setEmojiOpen(false);
+    requestAnimationFrame(() => {
+      if (!el) return;
+      el.focus();
+      const caret = start + emoji.length;
+      el.setSelectionRange(caret, caret);
+    });
+  };
+
+  const copyText = () => {
+    navigator.clipboard?.writeText(value || "").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
   const apply = (tool) => {
     const el = textareaRef?.current;
     const start = el ? el.selectionStart : value.length;
@@ -69,6 +95,29 @@ function MarkdownToolbar({ textareaRef, value = "", onChange }) {
           <tool.icon className="w-3.5 h-3.5" />
         </button>
       ))}
+      {/* Emoji picker */}
+      <div className="relative">
+        <button
+          type="button"
+          title="Insert emoji"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setEmojiOpen(!emojiOpen)}
+          className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-amber-300 hover:bg-slate-700/70 transition-colors"
+        >
+          <Smile className="w-3.5 h-3.5" />
+        </button>
+        {emojiOpen && <EmojiPicker onPick={insertEmoji} />}
+      </div>
+      {/* Copy prompt text */}
+      <button
+        type="button"
+        title="Copy prompt text"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={copyText}
+        className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-700/70 transition-colors"
+      >
+        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+      </button>
       <span className="ml-1.5 text-[10px] text-slate-600 font-mono hidden sm:inline">markdown</span>
     </div>
   );

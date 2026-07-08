@@ -18,6 +18,12 @@ import QueuedFollowups from "@/components/bob/QueuedFollowups";
 import NextStepActions from "@/components/bob/NextStepActions";
 import BobTricks from "@/components/bob/BobTricks";
 import StopButton from "@/components/StopButton";
+import ForensicListen from "@/components/bob/sovereign/ForensicListen";
+import ProphecySlider from "@/components/bob/sovereign/ProphecySlider";
+import VaultToggle from "@/components/bob/sovereign/VaultToggle";
+import QrSealAction from "@/components/bob/sovereign/QrSealAction";
+import FederalRootSync from "@/components/bob/sovereign/FederalRootSync";
+import BioAnchorSend from "@/components/bob/sovereign/BioAnchorSend";
 import useBobAccess from "@/hooks/useBobAccess";
 import useBobChat from "@/hooks/useBobChat";
 import { buildDocContext } from "@/lib/extractDocText";
@@ -106,7 +112,7 @@ function MessageBubble({ m }) {
 }
 
 export default function BobBuilder() {
-  const { isPaying } = useBobAccess();
+  const { isPaying, isSovereign } = useBobAccess();
   const {
     convId, messages, isWorking, queued, removeQueued,
     send, stop, openConversation, resetBoard, initConv, setMessages, setOnDone,
@@ -127,6 +133,9 @@ export default function BobBuilder() {
   const [emailWhenDone, setEmailWhenDone] = useState(false);
   const [historyRefresh, setHistoryRefresh] = useState(0); // bump → reloads the Wipe Board list
   const [heyBobOpen, setHeyBobOpen] = useState(false);     // "Hey BOB" capture gate
+  // V35 Sovereign Console state — gated to enterprise/sovereign subscribers
+  const [prophecyMode, setProphecyMode] = useState("reality"); // "reality" | "prophecy"
+  const [vaultMode, setVaultMode] = useState(false);           // Sovereign Vault shield
 
   // Framework
   const [framework, setFramework] = useState(DEFAULT_FRAMEWORK);
@@ -340,10 +349,21 @@ export default function BobBuilder() {
   const dispatch = async (content, file_urls) => {
     const text = (content || "").trim();
     if (!text && !(file_urls && file_urls.length)) return;
+
+    // V35 Sovereign modifiers — prepend mode tags to the prompt sent to BOB.
+    // titleProject still gets the clean text so conversation titles stay readable.
+    let sentContent = text;
+    if (isSovereign && prophecyMode === "prophecy") {
+      sentContent = `[PROPHECY MODE — X2/X35 Engines engaged] Project the $100T civilizational outcome of this command.\n\n${sentContent}`;
+    }
+    if (isSovereign && vaultMode) {
+      sentContent = `[SOVEREIGN VAULT ACTIVE] All drafted components must be tagged status="shelved", include_in_pipelines=false. Private vault only — no pipeline exposure.\n\n${sentContent}`;
+    }
+
     userActedRef.current = true;
     if (notifyWhenDone) notifyPendingRef.current = true;
     sayThinking();
-    const c = await send({ content, file_urls });
+    const c = await send({ content: sentContent, file_urls });
     titleProject(c, text || (file_urls && "attachment")).catch(() => {});
   };
 
@@ -729,7 +749,7 @@ export default function BobBuilder() {
                 </Card>
               )}
 
-              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 200px)", minHeight: "560px" }}>
+              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 160px)", minHeight: "640px" }}>
                 <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
@@ -761,14 +781,13 @@ export default function BobBuilder() {
                     handoffPending={handoffPending}
                     onStartFresh={() => startFreshWithBrief(launch)}
                   />
-                  <NextStepActions onPick={(p) => dispatch(p)} disabled={isWorking} />
                   <BobChatInput
                     value={input}
                     onChange={setInput}
                     onSubmit={handleSend}
                     clearSignal={clearSignal}
                     placeholder={isRecording ? "🎙 Listening — speak your prompt..." : "Ask BOB anything…  Enter = send · Shift+Enter = new line"}
-                    minHeight={52}
+                    minHeight={60}
                     maxHeight={500}
                     showToolbar
                   />
@@ -784,23 +803,42 @@ export default function BobBuilder() {
                       </label>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* V35 Prophecy/Reality slider — Sovereign tier only */}
+                  {isSovereign && (
+                    <ProphecySlider mode={prophecyMode} onChange={setProphecyMode} />
+                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
                     <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all">
                       {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />} Attach
                     </button>
+                    {isSovereign && (
+                      <VaultToggle active={vaultMode} onToggle={() => setVaultMode((v) => !v)} />
+                    )}
                     <button onClick={() => setHeyBobOpen(true)} title="Show, tell, or record — BOB turns it into components" className="flex items-center gap-1.5 text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-lg text-xs transition-all">
                       <Sparkles className="w-3.5 h-3.5" /> Hey BOB
                     </button>
+                    {isSovereign && (
+                      <ForensicListen isRecording={isRecording} onToggle={toggleRecording} disabled={isWorking} />
+                    )}
                     <button onClick={toggleRecording} title={isRecording ? "Stop recording" : "Voice to text"} className={`flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs transition-all ${isRecording ? "bg-red-600 border-red-500 text-white animate-pulse" : "text-slate-400 hover:text-violet-400 border-slate-700 hover:border-violet-500"}`}>
                       {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}{isRecording ? "Stop" : "Voice"}
                     </button>
+                    {isSovereign && (
+                      <QrSealAction prompt={input} />
+                    )}
                     <div className="flex-1" />
                     {isWorking && <StopButton onStop={stop} />}
-                    <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} title={isWorking ? "BOB is working — your message will be queued and sent the moment it finishes" : "Send"} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
-                      {isWorking ? <><Clock className="w-3.5 h-3.5" /> Queue</> : <><Send className="w-3.5 h-3.5" /> Send</>}
-                    </button>
+                    {isSovereign && <FederalRootSync />}
+                    {isSovereign && !isWorking ? (
+                      <BioAnchorSend onSend={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} isWorking={isWorking} />
+                    ) : (
+                      <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} title={isWorking ? "BOB is working — your message will be queued and sent the moment it finishes" : "Send"} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
+                        {isWorking ? <><Clock className="w-3.5 h-3.5" /> Queue</> : <><Send className="w-3.5 h-3.5" /> Send</>}
+                      </button>
+                    )}
                   </div>
+                  <NextStepActions onPick={(p) => dispatch(p)} disabled={isWorking} />
                   <BobTricks />
                 </div>
               </Card>
