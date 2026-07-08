@@ -14,6 +14,7 @@ import EmVaultPricing from "@/components/expertmind/EmVaultPricing";
 import EmFinalCta from "@/components/expertmind/EmFinalCta";
 import EmFooter from "@/components/expertmind/EmFooter";
 import EmExtractionConsole from "@/components/expertmind/EmExtractionConsole";
+import EmMissionModal from "@/components/expertmind/EmMissionModal";
 
 /**
  * ExpertMind™ — premium executive landing page (Alt+Shift+X.tech).
@@ -23,6 +24,7 @@ import EmExtractionConsole from "@/components/expertmind/EmExtractionConsole";
 export default function ExpertMind() {
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [paywall, setPaywall] = useState(null); // null | { isGuest: boolean }
+  const [missionOpen, setMissionOpen] = useState(false);
 
   // Gate the paid tool: admins + paying members open the console directly,
   // guests and free-tier visitors get the paywall (the landing page stays public).
@@ -84,9 +86,23 @@ export default function ExpertMind() {
           </main>
           <EmFooter />
         </div>
+
+        {/* Floating Mission tab — highlighted gate to the platform mission */}
+        <button
+          onClick={() => setMissionOpen(true)}
+          className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-transform hover:-translate-y-px"
+          style={{
+            background: `linear-gradient(135deg, ${EM.primary}, ${EM.accent})`,
+            boxShadow: `0 0 0 1px rgba(37,99,235,0.25), 0 4px 14px rgba(15,30,61,0.2), 0 0 18px rgba(37,99,235,0.2)`,
+          }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
+          Our Mission
+        </button>
       </div>
       {consoleOpen && <EmExtractionConsole onClose={() => setConsoleOpen(false)} />}
       <EmPaywallModal open={!!paywall} isGuest={paywall?.isGuest} onClose={() => setPaywall(null)} />
+      <EmMissionModal open={missionOpen} onClose={() => setMissionOpen(false)} />
     </EmLaunchProvider>
   );
 }
