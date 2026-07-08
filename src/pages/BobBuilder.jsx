@@ -239,8 +239,24 @@ export default function BobBuilder() {
       } catch { localStorage.removeItem("bob_active_conv"); }
     }
     try {
-      const list = await base44.agents.listConversations({ agent_name: "bob_builder" });
-      const latest = (list || [])
+      // Paginate — the SDK defaults to a small first page, so the latest real
+      // session could be beyond it if the builder has many projects.
+      const all = [];
+      let skip = 0;
+      while (true) {
+        const page = await base44.agents.listConversations({
+          q: { agent_name: "bob_builder" },
+          limit: 100,
+          skip,
+          sort: "-updated_date",
+        });
+        const items = page || [];
+        all.push(...items);
+        if (items.length < 100) break;
+        skip += 100;
+        if (skip > 2000) break;
+      }
+      const latest = all
         .filter((c) => !c.metadata?.trashed && c.metadata?.name && c.metadata.name !== "New Project")
         .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0];
       if (!latest) return;

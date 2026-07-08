@@ -8,8 +8,8 @@ import { loadMetaMap, renameConversation, trashConversation, restoreConversation
 
 const AGENT = "bob_builder";
 // History lifecycle limits.
-const ACTIVE_LIMIT = 10; // projects shown as "active" before older ones archive
-const HARD_CAP = 20;     // beyond this, the builder must download-or-lose
+const ACTIVE_LIMIT = 15; // projects shown as "active" before older ones archive
+const HARD_CAP = 100;    // beyond this, the builder must download-or-lose
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
@@ -38,14 +38,30 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const load = async () => {
     setLoading(true);
     try {
-      const [list, metaMap] = await Promise.all([
-        base44.agents.listConversations({ agent_name: AGENT }),
-        loadMetaMap(AGENT),
-      ]);
+      const metaMap = await loadMetaMap(AGENT);
+      // Paginate through ALL conversations — the SDK defaults to a small first
+      // page (~20), so without explicit pagination older sessions vanish.
+      const all = [];
+      const PAGE = 100;
+      let skip = 0;
+      while (true) {
+        const page = await base44.agents.listConversations({
+          q: { agent_name: AGENT },
+          limit: PAGE,
+          skip,
+          sort: "-updated_date",
+        });
+        const items = page || [];
+        all.push(...items);
+        if (items.length < PAGE) break;
+        skip += PAGE;
+        // Safety valve — never loop forever even if the API misbehaves.
+        if (skip > 2000) break;
+      }
       // The agents SDK exposes no updateConversation — rename/trash/clear live in
       // our ConversationMeta entity. Merge that state onto each conversation so
       // the rest of the panel can read it off c.metadata as before.
-      const merged = (list || []).map((c) => {
+      const merged = all.map((c) => {
         const m = metaMap[c.id];
         if (!m) return c;
         return {
@@ -58,7 +74,7 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           },
         };
       });
-      setConvos(merged.filter((c) => !c.metadata?.cleared).slice(0, 50));
+      setConvos(merged.filter((c) => !c.metadata?.cleared));
     } catch {
       setConvos([]);
     }
