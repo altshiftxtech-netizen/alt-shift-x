@@ -21,6 +21,7 @@ import StopButton from "@/components/StopButton";
 import useBobAccess from "@/hooks/useBobAccess";
 import useBobChat from "@/hooks/useBobChat";
 import { buildDocContext } from "@/lib/extractDocText";
+import { renameConversation as renameConvMeta, loadMetaMap } from "@/lib/conversationMeta";
 import {
   playTileDrop, playCashIn, sayHi, sayThinking, sayTiles, saySubmitted,
 } from "@/lib/bobSounds";
@@ -256,8 +257,27 @@ export default function BobBuilder() {
         skip += 100;
         if (skip > 2000) break;
       }
-      const latest = all
-        .filter((c) => !c.metadata?.trashed && c.metadata?.name && c.metadata.name !== "New Project")
+      // Merge ConversationMeta (titles + trashed state) so we can filter
+      // accurately — the conversation's own metadata may not have the title
+      // if updateConversation failed.
+      const metaMap = await loadMetaMap("bob_builder");
+      const merged = all.map((c) => {
+        const m = metaMap[c.id];
+        if (!m) return c;
+        return {
+          ...c,
+          metadata: {
+            ...(c.metadata || {}),
+            ...(m.title ? { name: m.title } : {}),
+            trashed: !!m.trashed,
+          },
+        };
+      });
+      // Pick the most recent session that has messages and isn't trashed.
+      // Don't filter by name — a real session with messages might still be
+      // "New Project" if the auto-title call failed.
+      const latest = merged
+        .filter((c) => !c.metadata?.trashed)
         .sort((a, b) => new Date(b.updated_date || b.created_date) - new Date(a.updated_date || a.created_date))[0];
       if (!latest) return;
       const full = await base44.agents.getConversation(latest.id);
@@ -305,7 +325,13 @@ export default function BobBuilder() {
     if (current && current !== "New Project") return;
     const title = deriveTitle(text);
     if (!title) return;
-    await base44.agents.updateConversation(c.id, { metadata: { ...(c.metadata || {}), name: title } });
+    // Try the agents SDK first (stores on the conversation itself).
+    try {
+      await base44.agents.updateConversation(c.id, { metadata: { ...(c.metadata || {}), name: title } });
+    } catch { /* fall through to ConversationMeta */ }
+    // Always also persist in ConversationMeta — the history panel merges this
+    // reliably, so the title shows up even if updateConversation fails.
+    renameConvMeta(c.id, "bob_builder", title).catch(() => {});
   };
 
   // ── THE single send pipeline for the chat ───────────────────────────────────

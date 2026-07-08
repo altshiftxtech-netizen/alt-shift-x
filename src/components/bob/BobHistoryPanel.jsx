@@ -84,15 +84,10 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   useEffect(() => { load(); }, [activeConvId, refreshSignal]);
 
   const isTrashed = (c) => !!c.metadata?.trashed;
-  // Hide stale, never-used projects: conversations still named "New Project" are
-  // empty shells (a real project gets auto-titled from its first message). They
-  // only clutter the board, so we filter them out — except the active one.
-  const isNamed = (c) => {
-    const n = c.metadata?.name;
-    return n && n !== "New Project";
-  };
-  // All live (non-trashed, real) projects, newest first.
-  const live = convos.filter((c) => !isTrashed(c) && (isNamed(c) || c.id === activeConvId));
+  // Show ALL non-trashed sessions — even ones still named "New Project".
+  // Previously, unnamed sessions were hidden, which made real sessions with
+  // messages vanish from the board if the auto-title call failed.
+  const live = convos.filter((c) => !isTrashed(c));
   const active = live.slice(0, ACTIVE_LIMIT);                 // top 10
   const archived = live.slice(ACTIVE_LIMIT, HARD_CAP);        // 11–20, collapsed
   const overCap = live.slice(HARD_CAP);                       // beyond 20 → download-or-lose
