@@ -363,6 +363,14 @@ export default function BobBuilder() {
     if (isSovereign && prophecyMode === "prophecy") {
       sentContent = `[PROPHECY MODE — X2/X35 Engines engaged] Project the $100T civilizational outcome of this command.\n\n${sentContent}`;
     }
+    if (isSovereign && prophecyMode === "privacy") {
+      sentContent =
+        `[PRIVACY VEIL ACTIVE — SOVEREIGN-PRIVACY-VEIL-1.0] All drafted content must be treated as vault-only: ` +
+        `scramble all output through the obfuscation layer (noiseDensity 0.85), route through the edge encryption ` +
+        `tunnel (encryption_tunnel_status must return LOCKED), and apply IP redaction / input filtering on all ` +
+        `source material. Do not expose any drafted component to pipelines or marketplace — status="shelved", ` +
+        `include_in_pipelines=false, include_in_open_pipeline=false. Vault-only session.\n\n${sentContent}`;
+    }
     if (isSovereign && vaultMode) {
       sentContent = `[SOVEREIGN VAULT ACTIVE] All drafted components must be tagged status="shelved", include_in_pipelines=false. Private vault only — no pipeline exposure.\n\n${sentContent}`;
     }
