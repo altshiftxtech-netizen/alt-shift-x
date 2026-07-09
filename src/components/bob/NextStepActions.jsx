@@ -57,15 +57,20 @@ const ACTIONS = [
 export default function NextStepActions({ onPick, disabled }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const openRef = useRef(open);
+  openRef.current = open;
 
+  // Always-on listener with a ref check — avoids the re-attachment delay that
+  // happens when the listener is torn down and re-added on every open toggle.
   useEffect(() => {
-    if (!open) return;
     const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (openRef.current && ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
+  }, []);
 
   return (
     <div className="relative" ref={ref}>
