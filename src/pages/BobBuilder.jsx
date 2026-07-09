@@ -135,6 +135,7 @@ export default function BobBuilder() {
   const [heyBobOpen, setHeyBobOpen] = useState(false);     // "Hey BOB" capture gate
   // V35 Sovereign Console state — gated to enterprise/sovereign subscribers
   const [prophecyMode, setProphecyMode] = useState("reality"); // "reality" | "prophecy"
+  const [privacyVeil, setPrivacyVeil] = useState(false);       // Sovereign Privacy Veil on/off
   const [vaultMode, setVaultMode] = useState(false);           // Sovereign Vault shield
 
   // Framework
@@ -363,7 +364,7 @@ export default function BobBuilder() {
     if (isSovereign && prophecyMode === "prophecy") {
       sentContent = `[PROPHECY MODE — X2/X35 Engines engaged] Project the $100T civilizational outcome of this command.\n\n${sentContent}`;
     }
-    if (isSovereign && prophecyMode === "privacy") {
+    if (isSovereign && privacyVeil) {
       sentContent =
         `[PRIVACY VEIL ACTIVE — SOVEREIGN-PRIVACY-VEIL-1.0] All drafted content must be treated as vault-only: ` +
         `scramble all output through the obfuscation layer (noiseDensity 0.85), route through the edge encryption ` +
@@ -820,7 +821,12 @@ export default function BobBuilder() {
                   </div>
                   {/* V35 Prophecy/Reality slider — Sovereign tier only */}
                   {isSovereign && (
-                    <ProphecySlider mode={prophecyMode} onChange={setProphecyMode} />
+                    <ProphecySlider
+                      mode={prophecyMode}
+                      onChange={setProphecyMode}
+                      privacyOn={privacyVeil}
+                      onTogglePrivacy={setPrivacyVeil}
+                    />
                   )}
                   <div className="flex items-center gap-2 flex-wrap">
                     <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
