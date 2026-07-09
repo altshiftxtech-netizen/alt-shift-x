@@ -84,19 +84,35 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setLoading(false);
   };
 
-  // Auto-retry once after a short delay — the initial mount load can fail if the
-  // auth token isn't fully initialized yet (common on fresh page loads behind
-  // ProtectedRoute). This gives the SDK time to settle before retrying.
-  const retriedRef = useRef(false);
+  // Track load state in refs so the retry timer always reads the CURRENT values,
+  // not stale closure captures from the initial render (where loading=true and
+  // convos=[], which made the old retry condition always false).
+  const loadingRef = useRef(true);
+  const convosRef = useRef([]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { convosRef.current = convos; }, [convos]);
+
   useEffect(() => {
     load();
   }, [activeConvId, refreshSignal]);
 
+  // Auto-retry: the initial mount load can fail if the auth token isn't fully
+  // initialized yet (common on fresh page loads behind ProtectedRoute). Retry
+  // up to 3 times with increasing delays so the panel always eventually loads.
+  const retryCountRef = useRef(0);
   useEffect(() => {
-    if (retriedRef.current) return;
-    retriedRef.current = true;
-    const t = setTimeout(() => { if (convos.length === 0 && !loading) load(); }, 1500);
-    return () => clearTimeout(t);
+    const timers = [];
+    const delays = [1500, 3000, 5000];
+    for (const delay of delays) {
+      const t = setTimeout(() => {
+        if (convosRef.current.length === 0 && !loadingRef.current && retryCountRef.current < delays.length) {
+          retryCountRef.current += 1;
+          load();
+        }
+      }, delay);
+      timers.push(t);
+    }
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   const isTrashed = (c) => !!c.metadata?.trashed;
