@@ -229,6 +229,28 @@ export default function useBobChat() {
     };
   }, [resync]);
 
+  // Stall detector: while working, periodically poll the conversation to catch
+  // responses the WebSocket stream failed to deliver (silent stream death).
+  // Without this, BOB appears stalled until the user tabs away/back — and when
+  // resync finally fires, the stalled reply + the next reply land together
+  // ("two responses at once").
+  const stallRef = useRef(null);
+  useEffect(() => {
+    if (!isWorking) {
+      if (stallRef.current) { clearInterval(stallRef.current); stallRef.current = null; }
+      return;
+    }
+    stallRef.current = setInterval(async () => {
+      const id = subscribedIdRef.current;
+      if (!id) return;
+      try {
+        const full = await base44.agents.getConversation(id);
+        if (full?.messages) handleUpdate({ messages: full.messages });
+      } catch { /* stream will catch up */ }
+    }, 10000);
+    return () => { if (stallRef.current) clearInterval(stallRef.current); stallRef.current = null; };
+  }, [isWorking, handleUpdate]);
+
   // ── Public actions ─────────────────────────────────────────────────────────
 
   // Load an existing conversation object into the chat.
@@ -303,6 +325,10 @@ export default function useBobChat() {
     }
 
     await base44.agents.addMessage(c, { role: "user", content, ...(file_urls ? { file_urls } : {}) });
+    // Force a fresh subscription — the previous stream may have silently died,
+    // and `subscribe` would skip re-subscribing on the same conversation id.
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    subscribedIdRef.current = null;
     subscribe(c.id);
     return c;
   }, [finishTurn, initConv, subscribe]);
