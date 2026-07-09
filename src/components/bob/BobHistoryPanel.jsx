@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { History, Plus, GitBranch, Loader2, MessageSquare, Clock, Trash2, RotateCcw, FileText, Lock, AlertTriangle, Share2, Mail, Archive, Eraser, RefreshCw, Pencil, Check, X, Download, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EsiShareModal from "@/components/bob/EsiShareModal";
@@ -33,10 +33,12 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
   const [savingTitle, setSavingTitle] = useState(false);
   const [jsonBusy, setJsonBusy] = useState(null); // conversation id whose recovery file is downloading
   const [showArchived, setShowArchived] = useState(false);
-  const [collapsed, setCollapsed] = useState(true); // whole panel collapses into a dropdown header
+  const [collapsed, setCollapsed] = useState(false); // expanded by default so history is visible
+  const [loadError, setLoadError] = useState(false);
 
   const load = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const metaMap = await loadMetaMap(AGENT);
       // Paginate through ALL conversations — the SDK defaults to a small first
@@ -75,13 +77,27 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
         };
       });
       setConvos(merged.filter((c) => !c.metadata?.cleared));
-    } catch {
-      setConvos([]);
+    } catch (err) {
+      console.error("[BobHistoryPanel] load failed:", err);
+      setLoadError(true);
     }
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [activeConvId, refreshSignal]);
+  // Auto-retry once after a short delay — the initial mount load can fail if the
+  // auth token isn't fully initialized yet (common on fresh page loads behind
+  // ProtectedRoute). This gives the SDK time to settle before retrying.
+  const retriedRef = useRef(false);
+  useEffect(() => {
+    load();
+  }, [activeConvId, refreshSignal]);
+
+  useEffect(() => {
+    if (retriedRef.current) return;
+    retriedRef.current = true;
+    const t = setTimeout(() => { if (convos.length === 0 && !loading) load(); }, 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   const isTrashed = (c) => !!c.metadata?.trashed;
   // Show ALL non-trashed sessions — even ones still named "New Project".
@@ -353,9 +369,23 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           </div>
         ) : active.length === 0 ? (
           <div className="px-4 py-5 text-center space-y-2.5">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              No projects yet. Hit <span className="text-violet-400 font-semibold">Wipe Board</span> to start your first one.
-            </p>
+            {loadError ? (
+              <>
+                <p className="text-[11px] text-amber-400 leading-relaxed">
+                  Couldn't load history. Check your connection and retry.
+                </p>
+                <button
+                  onClick={load}
+                  className="flex items-center gap-1.5 text-[10px] font-semibold text-violet-300 hover:text-white border border-violet-700 hover:border-violet-500 bg-violet-900/30 px-2.5 py-1.5 rounded-md transition-colors mx-auto"
+                >
+                  <RefreshCw className="w-3 h-3" /> Retry
+                </button>
+              </>
+            ) : (
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                No projects yet. Hit <span className="text-violet-400 font-semibold">Wipe Board</span> to start your first one.
+              </p>
+            )}
             <div className="flex items-center justify-center">
               <RecoverProjectButton onRecovered={async (conv) => { await load(); onOpen(conv); }} />
             </div>

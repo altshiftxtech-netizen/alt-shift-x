@@ -189,7 +189,14 @@ export default function BobBuilder() {
     });
   }, [setOnDone, emailWhenDone, convId]);
 
-  useEffect(() => { loadFrameworks(); restoreActiveConversation(); }, []);
+  useEffect(() => {
+    loadFrameworks();
+    restoreActiveConversation();
+    // Retry restore after a short delay — the initial call can fire before the
+    // auth token is fully initialized on fresh page loads.
+    const t = setTimeout(() => { if (!userActedRef.current && !convId && messages.length === 0) restoreActiveConversation(); }, 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   // Robotic "hi" — spoken ONCE per page mount, and only when entering a fresh,
   // empty board with no user action yet. The moment the user sends anything
