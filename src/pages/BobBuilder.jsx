@@ -749,7 +749,7 @@ export default function BobBuilder() {
                 </Card>
               )}
 
-              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 160px)", minHeight: "640px" }}>
+              <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 120px)", minHeight: "680px" }}>
                 <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">
@@ -829,9 +829,11 @@ export default function BobBuilder() {
                     )}
                     <div className="flex-1" />
                     {isWorking && <StopButton onStop={stop} />}
-                    {isSovereign && <FederalRootSync />}
                     {isSovereign && !isWorking ? (
-                      <BioAnchorSend onSend={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} isWorking={isWorking} />
+                      <div className="flex items-center gap-2">
+                        <FederalRootSync />
+                        <BioAnchorSend onSend={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} isWorking={isWorking} />
+                      </div>
                     ) : (
                       <button onClick={handleSend} disabled={!input.trim() && uploadedFiles.length === 0} title={isWorking ? "BOB is working — your message will be queued and sent the moment it finishes" : "Send"} className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold">
                         {isWorking ? <><Clock className="w-3.5 h-3.5" /> Queue</> : <><Send className="w-3.5 h-3.5" /> Send</>}
