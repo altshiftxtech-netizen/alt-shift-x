@@ -1,9 +1,28 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Rate limit: max 5 login attempts per IP per minute (brute-force protection)
+const rlAttempts = new Map();
+const RL_WINDOW = 60_000;
+const RL_MAX = 5;
+function rlCheck(req) {
+  const fwd = req.headers.get("x-forwarded-for") || "";
+  const ip = (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
+  const now = Date.now();
+  const recent = (rlAttempts.get(ip) || []).filter((t) => now - t < RL_WINDOW);
+  if (recent.length >= RL_MAX) return false;
+  recent.push(now);
+  rlAttempts.set(ip, recent);
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method !== 'POST') {
       return Response.json({ error: 'POST only' }, { status: 405 });
+    }
+
+    if (!rlCheck(req)) {
+      return Response.json({ error: 'Too many login attempts. Please wait a moment.' }, { status: 429 });
     }
 
     const { email, tax_id } = await req.json();

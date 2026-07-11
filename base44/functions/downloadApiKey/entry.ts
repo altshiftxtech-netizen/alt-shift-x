@@ -23,6 +23,12 @@ Deno.serve(async (req) => {
 
     const apiKey = keys[0];
 
+    // SECURITY: The plaintext key is shown ONLY once at generation time.
+    // Only key_hash is persisted — the plaintext cannot be re-downloaded.
+    if (!apiKey.key_hash) {
+      return Response.json({ error: 'Key hash not found on this record.' }, { status: 409 });
+    }
+
     // Mark as active (last-key-active logic)
     await base44.entities.ApiKey.update(key_id, { 
       is_active: true,
@@ -41,30 +47,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Format output
+    // The plaintext key is not stored — only key_hash exists for verification.
+    // Return metadata only; the key itself was shown once at creation and cannot be retrieved.
+    const safeRecord = {
+      name: apiKey.name,
+      description: apiKey.description,
+      agent_name: apiKey.agent_name,
+      created_date: apiKey.created_date,
+      last_used: apiKey.last_used,
+      is_active: true,
+      key_hash_prefix: (apiKey.key_hash || '').slice(0, 8) + '…',
+      note: 'The plaintext API key was shown only once at generation time and cannot be re-downloaded. Only the hash is stored.',
+    };
+
     let content = '';
     let filename = '';
     let contentType = 'application/json';
 
     if (format === 'env') {
-      content = `API_KEY=${apiKey.key}\nAPI_KEY_NAME=${apiKey.name}\nCREATED_DATE=${apiKey.created_date}`;
+      content = `# The plaintext API key is not stored and cannot be re-downloaded.\nAPI_KEY_NAME=${apiKey.name}\nCREATED_DATE=${apiKey.created_date}\nKEY_HASH_PREFIX=${safeRecord.key_hash_prefix}`;
       filename = `${apiKey.name}.env`;
       contentType = 'text/plain';
     } else if (format === 'csv') {
-      content = `Key,Name,Description,Agent,CreatedDate,LastUsed\n"${apiKey.key}","${apiKey.name}","${apiKey.description || ''}","${apiKey.agent_name || ''}","${apiKey.created_date}","${apiKey.last_used || 'Never'}"`;
+      content = `Name,Description,Agent,CreatedDate,LastUsed,KeyHashPrefix\n"${apiKey.name}","${apiKey.description || ''}","${apiKey.agent_name || ''}","${apiKey.created_date}","${apiKey.last_used || 'Never'}","${safeRecord.key_hash_prefix}"`;
       filename = `api-keys.csv`;
       contentType = 'text/csv';
     } else {
-      // JSON
-      content = JSON.stringify({
-        key: apiKey.key,
-        name: apiKey.name,
-        description: apiKey.description,
-        agent_name: apiKey.agent_name,
-        created_date: apiKey.created_date,
-        last_used: apiKey.last_used,
-        is_active: true,
-      }, null, 2);
+      content = JSON.stringify(safeRecord, null, 2);
       filename = `${apiKey.name}-key.json`;
     }
 

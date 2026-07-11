@@ -19,8 +19,27 @@ const hashKey = async (key) => {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 };
 
+// Rate limit: max 5 key generations per IP per minute
+const rlAttempts = new Map();
+const RL_WINDOW = 60_000;
+const RL_MAX = 5;
+function rlCheck(req) {
+  const fwd = req.headers.get("x-forwarded-for") || "";
+  const ip = (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
+  const now = Date.now();
+  const recent = (rlAttempts.get(ip) || []).filter((t) => now - t < RL_WINDOW);
+  if (recent.length >= RL_MAX) return false;
+  recent.push(now);
+  rlAttempts.set(ip, recent);
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
+    if (!rlCheck(req)) {
+      return Response.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 

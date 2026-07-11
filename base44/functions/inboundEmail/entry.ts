@@ -18,10 +18,20 @@ Deno.serve(async (req) => {
 
     // 1) Verify the shared secret from the query string.
     const url = new URL(req.url);
-    const providedSecret = url.searchParams.get('secret');
-    const expectedSecret = Deno.env.get('INBOUND_EMAIL_WEBHOOK_SECRET');
-    if (!expectedSecret || providedSecret !== expectedSecret) {
+    const providedSecret = url.searchParams.get('secret') || '';
+    const expectedSecret = Deno.env.get('INBOUND_EMAIL_WEBHOOK_SECRET') || '';
+    if (!expectedSecret || providedSecret.length !== expectedSecret.length) {
       console.error('[inboundEmail] secret mismatch or missing');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // Timing-safe comparison to prevent side-channel secret extraction
+    const enc = new TextEncoder();
+    const a = enc.encode(providedSecret);
+    const b = enc.encode(expectedSecret);
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+    if (diff !== 0) {
+      console.error('[inboundEmail] secret mismatch');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

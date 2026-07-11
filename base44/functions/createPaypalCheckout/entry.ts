@@ -84,8 +84,27 @@ async function ensurePlan(api, token, { name, price, refId }) {
   return plan.id;
 }
 
+// Rate limit: max 8 checkout attempts per IP per minute
+const rlAttempts = new Map();
+const RL_WINDOW = 60_000;
+const RL_MAX = 8;
+function rlCheck(req) {
+  const fwd = req.headers.get("x-forwarded-for") || "";
+  const ip = (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
+  const now = Date.now();
+  const recent = (rlAttempts.get(ip) || []).filter((t) => now - t < RL_WINDOW);
+  if (recent.length >= RL_MAX) return false;
+  recent.push(now);
+  rlAttempts.set(ip, recent);
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
+    if (!rlCheck(req)) {
+      return Response.json({ error: "Too many checkout attempts. Please wait a moment." }, { status: 429 });
+    }
+
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
