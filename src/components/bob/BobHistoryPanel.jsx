@@ -60,10 +60,32 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
         // Safety valve — never loop forever even if the API misbehaves.
         if (skip > 2000) break;
       }
+
+      // Fallback: if the SDK didn't return a conversation that ConversationMeta
+      // knows about, build a stub from the meta record so the project still
+      // shows on the board. The full conversation is loaded on-demand when the
+      // user clicks it (openProject calls getConversation). Without this, any
+      // SDK failure or empty result wipes the entire history even though the
+      // metadata records exist.
+      const sdkIds = new Set(all.map((c) => c.id));
+      const metaOnly = Object.values(metaMap)
+        .filter((m) => !sdkIds.has(m.conversation_id))
+        .map((m) => ({
+          id: m.conversation_id,
+          metadata: {
+            name: m.title || "New Project",
+            trashed: !!m.trashed,
+            cleared: !!m.cleared,
+          },
+          updated_date: m.updated_date || m.created_date,
+          created_date: m.created_date,
+        }));
+      const combined = [...all, ...metaOnly];
+
       // The agents SDK exposes no updateConversation — rename/trash/clear live in
       // our ConversationMeta entity. Merge that state onto each conversation so
       // the rest of the panel can read it off c.metadata as before.
-      const merged = all.map((c) => {
+      const merged = combined.map((c) => {
         const m = metaMap[c.id];
         if (!m) return c;
         return {
@@ -76,6 +98,8 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
           },
         };
       });
+      // Sort by most recently updated so meta-only stubs interleave correctly.
+      merged.sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
       setConvos(merged.filter((c) => !c.metadata?.cleared));
     } catch (err) {
       console.error("[BobHistoryPanel] load failed:", err);

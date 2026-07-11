@@ -278,6 +278,24 @@ export default function BobBuilder() {
       // accurately — the conversation's own metadata may not have the title
       // if updateConversation failed.
       const metaMap = await loadMetaMap("bob_builder");
+
+      // Fallback: if the SDK didn't return a conversation that ConversationMeta
+      // knows about, build a stub from the meta record so restore can still find
+      // the most recent session. Without this, an empty SDK result makes every
+      // prior project invisible even though the metadata records exist.
+      const sdkIds = new Set(all.map((c) => c.id));
+      const metaOnly = Object.values(metaMap)
+        .filter((m) => !sdkIds.has(m.conversation_id) && !m.cleared)
+        .map((m) => ({
+          id: m.conversation_id,
+          metadata: {
+            name: m.title || "New Project",
+            trashed: !!m.trashed,
+          },
+          updated_date: m.updated_date || m.created_date,
+          created_date: m.created_date,
+        }));
+      all.push(...metaOnly);
       const merged = all.map((c) => {
         const m = metaMap[c.id];
         if (!m) return c;
