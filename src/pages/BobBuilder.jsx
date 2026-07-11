@@ -20,6 +20,7 @@ import BobTricks from "@/components/bob/BobTricks";
 import StopButton from "@/components/StopButton";
 import ForensicListen from "@/components/bob/sovereign/ForensicListen";
 import ProphecySlider from "@/components/bob/sovereign/ProphecySlider";
+import QuickPromptChips from "@/components/bob/QuickPromptChips";
 import VaultToggle from "@/components/bob/sovereign/VaultToggle";
 import QrSealAction from "@/components/bob/sovereign/QrSealAction";
 import FederalRootSync from "@/components/bob/sovereign/FederalRootSync";
@@ -846,6 +847,7 @@ export default function BobBuilder() {
                       onTogglePrivacy={setPrivacyVeil}
                     />
                   )}
+                  <QuickPromptChips onPick={(p) => dispatch(p)} disabled={isWorking} />
                   <div className="flex items-center gap-2 flex-wrap">
                     <input ref={fileInputRef} type="file" multiple accept=".pdf,.csv,.doc,.docx,.txt,.json,.xlsx,.xls,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} />
                     <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach files" className="flex items-center gap-1.5 text-slate-400 hover:text-violet-400 border border-slate-700 hover:border-violet-500 px-2.5 py-1.5 rounded-lg text-xs transition-all">
