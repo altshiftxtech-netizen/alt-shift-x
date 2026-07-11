@@ -16,7 +16,9 @@ async function sha256(text: string): Promise<string> {
 
 function pairingCode(): string {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  const bytes = new Uint32Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from({ length: 6 }, (_, i) => chars[bytes[i] % chars.length]).join("");
 }
 
 Deno.serve(async (req) => {

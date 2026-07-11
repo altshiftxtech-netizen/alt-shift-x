@@ -2,9 +2,11 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
 
 const generateRandomKey = () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = new Uint32Array(32);
+  crypto.getRandomValues(bytes);
   let key = "";
   for (let i = 0; i < 32; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
+    key += chars.charAt(bytes[i] % chars.length);
   }
   return key;
 };

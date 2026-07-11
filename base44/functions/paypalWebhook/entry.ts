@@ -24,8 +24,8 @@ async function paypalToken() {
 async function verifySignature(token, req, rawBody) {
   const webhookId = Deno.env.get("PAYPAL_WEBHOOK_ID");
   if (!webhookId) {
-    console.warn("[paypalWebhook] PAYPAL_WEBHOOK_ID not set — skipping signature verification");
-    return true;
+    console.error("[paypalWebhook] PAYPAL_WEBHOOK_ID not set — rejecting webhook (fail-closed)");
+    return false;
   }
   const res = await fetch(`${PAYPAL_API}/v1/notifications/verify-webhook-signature`, {
     method: "POST",

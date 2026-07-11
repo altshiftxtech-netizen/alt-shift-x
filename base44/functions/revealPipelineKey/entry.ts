@@ -17,8 +17,10 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
  */
 const genKey = () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bytes = new Uint32Array(28);
+  crypto.getRandomValues(bytes);
   let body = "";
-  for (let i = 0; i < 28; i++) body += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < 28; i++) body += chars.charAt(bytes[i] % chars.length);
   // Grouped for readability: ASX-PIPE-LIVE-XXXX-XXXX-XXXX-XXXX
   const g = body.match(/.{1,4}/g).join("-");
   return `ASX-PIPE-LIVE-${g}`;
