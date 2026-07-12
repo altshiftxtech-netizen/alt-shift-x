@@ -2,7 +2,7 @@ import React from "react";
 
 // Compact one-tap prompt chips that sit beside the Prophecy slider.
 // Each chip dispatches its label straight into the BOB chat pipeline.
-const CHIPS = ["both", "all", "1", "2", "3", "4", "5", "Option A", "Option B", "Option C", "Option D"];
+const CHIPS = ["both", "all", "1", "2", "3", "4", "5", "Option A", "Option B", "Option C", "Option D", "yes", "no"];
 
 export default function QuickPromptChips({ onPick, disabled }) {
   return (
