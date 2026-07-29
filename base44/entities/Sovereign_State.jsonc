@@ -1,0 +1,74 @@
+{
+  "name": "Sovereign_State",
+  "type": "object",
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "default": "SOV-STATE-1.0",
+      "description": "The Sovereign Defense Suite protocol version this state record governs"
+    },
+    "golden_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical invariant payload \u2014 the Watchdog verifies all policies against this hash"
+    },
+    "mtls_strict": {
+      "type": "boolean",
+      "default": false,
+      "description": "Policy-level flag: mutual TLS strict mode is active (infrastructure enforcement is external, this is the data-layer invariant)"
+    },
+    "ja4_enforcement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Policy-level flag: JA4 TLS fingerprint enforcement is active"
+    },
+    "pow_gate_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Policy-level flag: Adaptive Proof-of-Work gate is enabled for flagged requests"
+    },
+    "apex_orchestrator_authorized": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the Apex Orchestrator is authorized to command the Autonomous Repair agent"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the Audit Watchdog last verified the invariants against the golden hash"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "degraded",
+        "locked"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "protocol_version"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

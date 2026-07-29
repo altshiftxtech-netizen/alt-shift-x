@@ -1,0 +1,81 @@
+{
+  "name": "Forensic_Beacon",
+  "type": "object",
+  "properties": {
+    "beacon_code": {
+      "type": "string",
+      "description": "Unique beacon identifier, e.g. BEACON-A1B2C3D4E5F6G7H8"
+    },
+    "beacon_type": {
+      "type": "string",
+      "enum": [
+        "canary_token",
+        "ja4_fingerprint",
+        "attestation_pass",
+        "attestation_failure",
+        "drift_detected",
+        "integrity_pass"
+      ],
+      "description": "What kind of forensic artifact this beacon records"
+    },
+    "target_ref": {
+      "type": "string",
+      "description": "Reference to the entity, user, or request this beacon was embedded in"
+    },
+    "token_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the unique canary token \u2014 for exfiltration tracking"
+    },
+    "triggered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this beacon was triggered (e.g. canary token was later observed in exfiltration)"
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "triggered_by_ip": {
+      "type": "string"
+    },
+    "triggered_by_ua": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "default": {},
+      "description": "Additional forensic context (client IP, origin, policy code, drift details, etc.)"
+    },
+    "deployed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the beacon was deployed / the forensic event was recorded"
+    }
+  },
+  "required": [
+    "beacon_code",
+    "beacon_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "Access_Policy",
+  "type": "object",
+  "properties": {
+    "policy_code": {
+      "type": "string",
+      "description": "Unique policy identifier, e.g. SOV-POLICY-GATEWAY-1.0"
+    },
+    "policy_name": {
+      "type": "string",
+      "description": "Human-readable policy name"
+    },
+    "allowed_origins": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Origins that pass attestation. Use '*' as a wildcard substring match."
+    },
+    "allowed_user_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "User-Agent substrings that pass attestation. Use '*' to match all."
+    },
+    "requires_attestation": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, requests matching this policy must still pass Sovereign_State invariant checks"
+    },
+    "tarpit_duration_ms": {
+      "type": "number",
+      "default": 0,
+      "description": "Artificial delay (ms) applied to requests that fail attestation under this policy \u2014 the Adaptive PoW Gate"
+    },
+    "shadow_reality_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, failed-attestation requests receive decoy 'Shadow Reality' data instead of a 403"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "policy_code",
+    "policy_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
