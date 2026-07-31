@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot, ArrowRight, ShieldCheck, Cpu, Download, Loader2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, Cpu, Download, Loader2 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import { base44 } from "@/api/base44Client";
 
@@ -24,9 +24,11 @@ export default function PwaAgent() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#343A40] flex items-center justify-center shrink-0">
-            <Bot className="w-7 h-7 text-[#F8F9FA]" />
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png"
+            alt="Agent Wrapper logo"
+            className="w-14 h-14 rounded-2xl object-cover shrink-0 border border-slate-300"
+          />
           <div>
             <h1 className="text-2xl font-black text-[#343A40]">Agent Wrapper</h1>
             <p className="text-sm text-slate-500">PWA-AGENT-WRAPPER-1.0 · Generic Office Shell</p>

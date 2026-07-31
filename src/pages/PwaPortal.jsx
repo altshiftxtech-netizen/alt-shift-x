@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor, Bot } from "lucide-react";
+import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
 import { base44 } from "@/api/base44Client";
@@ -126,9 +126,11 @@ export default function PwaPortal() {
           <Card className="border-slate-200">
             <CardContent className="pt-6 pb-6">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-[#343A40] flex items-center justify-center shrink-0">
-                  <Bot className="w-5 h-5 text-[#F8F9FA]" />
-                </div>
+                <img
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png"
+                  alt="Agent Wrapper logo"
+                  className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-300"
+                />
                 <div>
                   <h2 className="font-bold text-[#343A40] text-base" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
                     Agent Wrapper PWA
