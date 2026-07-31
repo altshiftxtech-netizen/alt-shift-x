@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight } from "lucide-react";
+import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
 import BudgetGauge, { getBudgetTier } from "@/components/bob-init/BudgetGauge";
@@ -32,6 +32,7 @@ export default function BobInit() {
   const [buildActive, setBuildActive] = useState(false);
   const [buildDone, setBuildDone] = useState(false);
   const [stackConfig, setStackConfig] = useState(null);
+  const [chatToCode, setChatToCode] = useState(false); // Plain-English mode for non-coders
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -39,7 +40,7 @@ export default function BobInit() {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history]);
 
-  const appendLine = (type, text) => setHistory((h) => [...h, { type, text }]);
+  const appendLine = (type, text, plain) => setHistory((h) => [...h, { type, text, plain }]);
 
   const parseCommand = (raw) => {
     const trimmed = raw.trim();
@@ -90,11 +91,11 @@ export default function BobInit() {
     const config = { stack, shim, budget: budgetFlag ?? budget };
     setStackConfig(config);
     setBuildDone(false);
-    appendLine("system", `✓ Stack initialized: ${stack}`);
-    appendLine("system", `  Shim mode: ${shim}`);
-    appendLine("system", `  Budget: $${(budgetFlag ?? budget).toLocaleString()}`);
-    appendLine("system", `  Tier: ${getBudgetTier(budgetFlag ?? budget).label}`);
-    appendLine("system", `Ready. Run 'bob build' to execute the pipeline.`);
+    appendLine("system", `✓ Stack initialized: ${stack}`, `Great! B.O.B. is now set up to build a ${stack} application.`);
+    appendLine("system", `  Shim mode: ${shim}`, `Self-healing is set to ${shim} — this means your app will auto-fix itself if APIs change.`);
+    appendLine("system", `  Budget: $${(budgetFlag ?? budget).toLocaleString()}`, `Your budget is set to $${(budgetFlag ?? budget).toLocaleString()}.`);
+    appendLine("system", `  Tier: ${getBudgetTier(budgetFlag ?? budget).label}`, `This qualifies for the "${getBudgetTier(budgetFlag ?? budget).label}" tier of features.`);
+    appendLine("system", `Ready. Run 'bob build' to execute the pipeline.`, `Everything looks good! Type "bob build" and hit Run to start building your app.`);
   };
 
   const handleBobBuild = () => {
@@ -107,32 +108,32 @@ export default function BobInit() {
       appendLine("error", `Insufficient budget ($${stackConfig.budget.toLocaleString()}). Production Build requires $9,500 minimum.`);
       return;
     }
-    appendLine("system", `Executing build pipeline for ${stackConfig.stack} (${tier.label} tier)...`);
+    appendLine("system", `Executing build pipeline for ${stackConfig.stack} (${tier.label} tier)...`, `B.O.B. is now building your ${stackConfig.stack} app. This takes a few seconds...`);
     setBuildActive(true);
   };
 
   const handleRegistryList = () => {
-    appendLine("system", "BOB-INIT-REGISTRY-1.0 — Audited Components:");
-    appendLine("system", "  • nextjs-wrapper-v2.1     (X3)  ✓ seL4 hardened");
-    appendLine("system", "  • go-middleware-v1.4      (X3)  ✓ OCap verified");
-    appendLine("system", "  • react-pwa-shell-v3.0    (X1)  ✓ Fragmented storage");
-    appendLine("system", "  • self-healing-shim-v1.1  (X2)  ✓ drift_threshold: 0.85");
-    appendLine("system", "  • fpga-boolean-gate-v9.1  (X4)  ✓ Stateless boolean");
+    appendLine("system", "BOB-INIT-REGISTRY-1.0 — Audited Components:", "Here are the pre-approved building blocks B.O.B. can use:", true);
+    appendLine("system", "  • nextjs-wrapper-v2.1     (X3)  ✓ seL4 hardened", "Next.js web framework — security-verified");
+    appendLine("system", "  • go-middleware-v1.4      (X3)  ✓ OCap verified", "Go backend layer — access-controlled");
+    appendLine("system", "  • react-pwa-shell-v3.0    (X1)  ✓ Fragmented storage", "React mobile app shell — data is split for privacy");
+    appendLine("system", "  • self-healing-shim-v1.1  (X2)  ✓ drift_threshold: 0.85", "The self-healing layer — auto-fixes broken API connections");
+    appendLine("system", "  • fpga-boolean-gate-v9.1  (X4)  ✓ Stateless boolean", "Hardware-level security gate — blocks bad traffic");
   };
 
   const handleStatus = () => {
     if (buildDone) {
-      appendLine("system", `Build: COMPLETE — ${stackConfig?.stack || "n/a"} (${getBudgetTier(stackConfig?.budget || 0).label})`);
-      appendLine("system", `  Output: ${stackConfig?.stack?.toUpperCase()}-AGENT-1.0`);
-      appendLine("system", `  Shim: BOB-INIT-SELF-HEALING-SHIM-1.0 (active)`);
-      appendLine("system", `  Maintenance: $${Math.max(1, Math.floor((stackConfig?.budget || 9500) / 9500)) * 500}/mo`);
+      appendLine("system", `Build: COMPLETE — ${stackConfig?.stack || "n/a"} (${getBudgetTier(stackConfig?.budget || 0).label})`, `Your ${stackConfig?.stack || ""} app has been built successfully!`);
+      appendLine("system", `  Output: ${stackConfig?.stack?.toUpperCase()}-AGENT-1.0`, `The finished product is called ${stackConfig?.stack?.toUpperCase()}-AGENT-1.0`);
+      appendLine("system", `  Shim: BOB-INIT-SELF-HEALING-SHIM-1.0 (active)`, `Self-healing is turned on — your app will auto-repair if things break`);
+      appendLine("system", `  Maintenance: $${Math.max(1, Math.floor((stackConfig?.budget || 9500) / 9500)) * 500}/mo`, `You'll pay $${Math.max(1, Math.floor((stackConfig?.budget || 9500) / 9500)) * 500}/month for ongoing maintenance`);
     } else if (buildActive) {
-      appendLine("system", "Build: IN PROGRESS...");
+      appendLine("system", "Build: IN PROGRESS...", "B.O.B. is currently building your app. Please wait...");
     } else if (stackConfig) {
-      appendLine("system", `Build: READY — ${stackConfig.stack} (${getBudgetTier(stackConfig.budget).label})`);
-      appendLine("system", "  Run 'bob build' to execute.");
+      appendLine("system", `Build: READY — ${stackConfig.stack} (${getBudgetTier(stackConfig.budget).label})`, `Your ${stackConfig.stack} app is configured and ready to build.`);
+      appendLine("system", "  Run 'bob build' to execute.", `Type "bob build" and hit Run to start.`);
     } else {
-      appendLine("system", "Build: IDLE — no stack initialized.");
+      appendLine("system", "Build: IDLE — no stack initialized.", "Nothing has been set up yet. Type a command like 'bob init --stack nextjs' to begin.");
     }
   };
 
@@ -178,8 +179,15 @@ export default function BobInit() {
               onClick={() => inputRef.current?.focus()}
             >
               {history.map((line, idx) => (
-                <div key={idx} className={`whitespace-pre-wrap mb-1 ${line.type === "input" ? "text-cyan-400" : line.type === "error" ? "text-red-400" : "text-[#8b949e]"}`}>
-                  {line.text}
+                <div key={idx} className="mb-1">
+                  <div className={`whitespace-pre-wrap ${line.type === "input" ? "text-cyan-400" : line.type === "error" ? "text-red-400" : "text-[#8b949e]"}`}>
+                    {line.text}
+                  </div>
+                  {chatToCode && line.plain && (
+                    <div className="ml-3 mb-1 pl-2 border-l-2 border-cyan-500/30 text-[#c9d1d9] text-[11px] leading-relaxed">
+                      <span className="text-cyan-500/60">💬 </span>{line.plain}
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={terminalEndRef} />
@@ -205,8 +213,23 @@ export default function BobInit() {
               </Button>
             </form>
 
+            {/* Chat-to-Code toggle — plain-English mode for non-coders */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setChatToCode((v) => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${chatToCode ? "bg-cyan-600/20 border-cyan-500 text-cyan-400" : "border-[#30363d] text-[#8b949e] hover:bg-[#161b22]"}`}
+                title="Toggle plain-English explanations of terminal output"
+              >
+                <MessageSquareText className="w-3.5 h-3.5" />
+                Chat to Code: {chatToCode ? "ON" : "OFF"}
+              </button>
+              <span className="text-[10px] text-[#484f58] font-mono">
+                {chatToCode ? "Plain-English explanations shown under each line" : "Turn on to see plain-English explanations"}
+              </span>
+            </div>
+
             {/* Build sequence */}
-            <BuildSequence active={buildActive} onComplete={() => { setBuildActive(false); setBuildDone(true); appendLine("system", "✓ Build pipeline complete. Output ready for deployment."); }} />
+            <BuildSequence active={buildActive} onComplete={() => { setBuildActive(false); setBuildDone(true); appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your app has been built, audited, and is ready to deploy. The self-healing layer is active so it will auto-fix itself if APIs change."); }} />
 
             {/* Quick actions */}
             <div className="flex flex-wrap gap-2">
