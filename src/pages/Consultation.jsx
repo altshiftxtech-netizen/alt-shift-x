@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SchedulePicker from "@/components/consultation/SchedulePicker";
+import ConsultationPolicyFooter from "@/components/consultation/ConsultationPolicyFooter";
 import {
   Crown, Lock, ChevronRight, ChevronLeft, Upload, FileText,
   CheckCircle2, Loader2, ShieldCheck, Calendar, Video, AlertCircle, Building2,
@@ -648,8 +649,9 @@ export default function Consultation() {
         </Card>
 
         {/* Status footer */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-2">
           <p className="text-[10px] font-mono text-[#484f58]">ROADMAP INTEGRITY: 115% · GATE STATUS: ARMED · PRIVACY VEIL: HOLDING</p>
+          <ConsultationPolicyFooter />
         </div>
       </div>
     </div>
