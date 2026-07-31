@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import AnalyticsHeader from "@/components/builder-analytics/AnalyticsHeader";
 import InstallTrendChart from "@/components/builder-analytics/InstallTrendChart";
 import InstallBreakdown from "@/components/builder-analytics/InstallBreakdown";
@@ -32,9 +33,10 @@ export default function BuilderAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="builder" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative z-10">
         <AnalyticsHeader
           components={selectorOptions}
           selected={selectedComponent}

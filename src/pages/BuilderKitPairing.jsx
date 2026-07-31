@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Link2, Tag } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import RequestPairingDialog from "@/components/kit-pairing/RequestPairingDialog";
 import CreateDiscountDialog from "@/components/kit-pairing/CreateDiscountDialog";
 import PairingCard from "@/components/kit-pairing/PairingCard";
@@ -59,9 +60,10 @@ export default function BuilderKitPairing() {
   const incomingPairings = pairings.filter((p) => p.partner_id === user?.id);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="builder" />
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
         <div className="space-y-8">
           {/* Header */}
           <div>

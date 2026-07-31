@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Trash2, ExternalLink, Terminal, Package, Download, Loader2 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import { exportInstalledComponentsPdf } from "@/utils/exportPdf";
 import ComponentZipExport from "@/components/install/ComponentZipExport";
 import { base44 } from "@/api/base44Client";
@@ -47,10 +48,11 @@ export default function InstalledComponents() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="user" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 relative z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Components</h1>

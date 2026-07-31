@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import {
   Webhook, Plus, Trash2, PauseCircle, PlayCircle, Copy,
   CheckCircle2, AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, EyeOff
@@ -109,9 +110,10 @@ export default function WebhookManager() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="user" />
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 relative z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">

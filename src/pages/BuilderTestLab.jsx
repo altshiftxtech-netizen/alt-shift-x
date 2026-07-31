@@ -3,6 +3,16 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SharedNav from "@/components/SharedNav";
+
+// Cosmic video background for the Test Lab page.
+const TEST_LAB_VIDEO = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/bcd17b569_3157e7832_generated_video.mp4";
+function TestLabVideoBackground() {
+  return (
+    <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none" aria-hidden="true">
+      <source src={TEST_LAB_VIDEO} type="video/mp4" />
+    </video>
+  );
+}
 import ReactMarkdown from "react-markdown";
 import {
   Bot, Send, Loader2, Upload, Copy, Download, FileText, Zap,
@@ -401,10 +411,11 @@ export default function BuilderTestLab() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <TestLabVideoBackground />
       <SharedNav mode="builder" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">

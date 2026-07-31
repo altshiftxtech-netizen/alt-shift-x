@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import ComponentRevenueTable from "@/components/analytics-suite/ComponentRevenueTable";
 import RevenueTrendChart from "@/components/analytics-suite/RevenueTrendChart";
 import ApiUsageBreakdown from "@/components/analytics-suite/ApiUsageBreakdown";
@@ -67,11 +68,12 @@ export default function BuilderAnalyticsSuite() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="builder" />
 
       {/* Page header */}
-      <div className="bg-white border-b border-slate-100 px-6 py-5">
+      <div className="bg-white border-b border-slate-100 px-6 py-5 relative z-10">
         <div className="max-w-7xl mx-auto flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-slate-900">Builder Analytics Suite</h1>
@@ -98,7 +100,7 @@ export default function BuilderAnalyticsSuite() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-10">
         {/* KPI header stats */}
         <SuiteHeaderStats
           components={components}

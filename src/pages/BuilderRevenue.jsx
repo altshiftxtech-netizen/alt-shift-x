@@ -1,5 +1,6 @@
 import React from "react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import RevenueHeader from "@/components/builder-revenue/RevenueHeader";
 import RevenueStatCards from "@/components/builder-revenue/RevenueStatCards";
 import RevenueChart from "@/components/builder-revenue/RevenueChart";
@@ -33,9 +34,10 @@ export default function BuilderRevenue() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="builder" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative z-10">
 
         <RevenueHeader builderTier="certified" />
 

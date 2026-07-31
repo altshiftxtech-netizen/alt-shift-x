@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor, Radio } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
 import MyBuilds from "@/components/pwa/MyBuilds";
 import PwaHandbook from "@/components/pwa/PwaHandbook";
 import PwaLegalAssets from "@/components/pwa/PwaLegalAssets";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { getLockedManifestUrl } from "@/lib/lockedManifest";
 
 // PWA-DASHBOARD-PORTAL-1.0 — tier-based install logic.
 // TopTier (any active non-free subscription) → free "Install Now".
@@ -40,11 +42,15 @@ export default function PwaPortal() {
   const isTopTier = sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status);
   const isAdmin = user?.role === "admin";
 
+  // The Site Mirror PWA manifest is permanently locked to pwa.altshiftx.tech.
+  const lockedManifestUrl = useMemo(() => getLockedManifestUrl(), []);
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="user" />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 relative z-10">
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -120,7 +126,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl="/manifest.json" pwaName="Alt+Shift+X" zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
+                  <UniversalPwaInstall manifestUrl={lockedManifestUrl} pwaName="Alt+Shift+X" swapManifest zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>

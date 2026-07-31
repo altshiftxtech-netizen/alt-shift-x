@@ -7,6 +7,7 @@ import {
   CheckCircle2, Code, X, AlertTriangle, Clock, ShieldOff, Loader2, Download
 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import { base44 } from "@/api/base44Client";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -353,7 +354,8 @@ export default function ApiKeys() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="user" />
 
       {revokeTarget && (
@@ -371,7 +373,7 @@ export default function ApiKeys() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>

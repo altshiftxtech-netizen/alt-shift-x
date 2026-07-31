@@ -91,7 +91,7 @@ export default function UniversalPwaInstall({
   const downloadManifest = () => {
     const link = document.createElement("a");
     link.href = manifestUrl;
-    link.download = manifestUrl.split("/").pop();
+    link.download = "manifest.json";
     link.click();
   };
 
@@ -191,7 +191,7 @@ export default function UniversalPwaInstall({
               <p className="font-bold text-[#343A40] text-xs mb-1">Install on this browser:</p>
               <p>1. Look for an <span className="font-semibold">install icon</span> in the address bar or browser menu.</p>
               <p>2. On mobile, use your browser's "Add to Home Screen" option.</p>
-              <p>3. Download the manifest to deploy {pwaName} on your own domain.</p>
+              <p className="text-slate-400 italic">The PWA domain is locked to <span className="font-mono font-semibold">pwa.altshiftx.tech</span> and cannot be changed.</p>
             </>
           )}
         </div>

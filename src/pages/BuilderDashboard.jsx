@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import SharedNav from "@/components/SharedNav";
+import CosmicBackground from "@/components/CosmicBackground";
 import DashboardHeader from "@/components/builder-dashboard/DashboardHeader";
 import DashboardStatRow from "@/components/builder-dashboard/DashboardStatRow";
 import DashboardTrustSummary from "@/components/builder-dashboard/DashboardTrustSummary";
@@ -66,9 +67,10 @@ export default function BuilderDashboard() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
+      <CosmicBackground />
       <SharedNav mode="builder" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative z-10">
         <BobAdvisorWidget />
         <W9RequiredBanner />
 
