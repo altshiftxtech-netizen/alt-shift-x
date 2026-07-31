@@ -45,6 +45,43 @@
         "cancelled"
       ],
       "default": "requested"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Non-profit Tax ID for $0 Sovereign Credit validation"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "For-Profit, Non-Profit, Government, Individual"
+    },
+    "role_title": {
+      "type": "string",
+      "description": "Client's role / title"
+    },
+    "doc_url": {
+      "type": "string",
+      "description": "URL of uploaded intent document"
+    },
+    "payment_confirmation_id": {
+      "type": "string",
+      "description": "Stripe session ID or promo confirmation ID \u2014 the gate key"
+    },
+    "promo_code": {
+      "type": "string",
+      "description": "Applied promo code (e.g. SOV-NONPROFIT-2027)"
+    },
+    "final_price": {
+      "type": "number",
+      "description": "Final price after promo (0 for non-profit credit)"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "paid",
+        "promo_applied"
+      ],
+      "default": "pending_payment"
     }
   },
   "required": [

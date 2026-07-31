@@ -1,5 +1,6 @@
 import Stripe from "npm:stripe@14.21.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { finalizeConsultation } from "../../shared/consultationFinalizer.ts";
 
 // Safely turn a Stripe unix timestamp into a YYYY-MM-DD string (null if missing/invalid).
 function toDateStr(unixSeconds) {
@@ -169,6 +170,22 @@ Deno.serve(async (req) => {
             }
 
             console.log(`[stripeWebhook] Lifetime license issued: user=${userId}, component=${compCode}, version=${version}`);
+          }
+          break;
+        }
+
+        // ── Sovereign Consultation one-time payment ──
+        if (session.metadata?.purchase_type === "consultation") {
+          const consultationId = session.metadata?.consultation_id;
+          const promoCode = session.metadata?.promo_code || "";
+          const finalPrice = (session.amount_total || 0) / 100;
+          if (consultationId) {
+            try {
+              await finalizeConsultation(base44, consultationId, session.id, promoCode, finalPrice);
+              console.log(`[stripeWebhook] Consultation finalized: ${consultationId}, payment=${session.id}`);
+            } catch (e) {
+              console.error(`[stripeWebhook] Consultation finalization failed: ${e.message}`);
+            }
           }
           break;
         }

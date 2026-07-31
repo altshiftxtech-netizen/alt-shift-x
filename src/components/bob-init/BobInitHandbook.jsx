@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench, ShieldAlert, Eye } from "lucide-react";
+import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench, ShieldAlert, Eye, CreditCard } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -12,6 +12,24 @@ const SECTIONS = [
         <p>B.O.B.Init is not a "coding tool"—it is a <strong className="text-cyan-400">Machine that Builds Machines</strong>. It takes your ideas and turns them into hardened, revenue-generating Sovereign components.</p>
         <p className="mt-2"><strong className="text-amber-400">🏆 The Sandbox Edition (V4.0):</strong> Stress-test before you invest. The award-winning <strong className="text-cyan-400">Pain-Gain</strong> interface lets you watch your app harden in real time.</p>
         <p className="mt-1"><strong className="text-[#C8A95B]">📅 The Consultation Edition (V5.0):</strong> The <strong>Schedule Consultation</strong> gateway is now live — high-stakes architectural advisory with forensic intake.</p>
+        <p className="mt-1"><strong className="text-green-400">💳 The Billing Edition (V6.0):</strong> Consultations are now finalized through a <strong>Payment Gate</strong> — secure checkout, Non-Profit promo codes, and dual-track email (appointment + invoice).</p>
+      </>
+    ),
+  },
+  {
+    id: "billing",
+    icon: CreditCard,
+    title: "💳 The Billing Protocol (V6.0)",
+    body: (
+      <>
+        <p className="mb-2"><strong className="text-[#C8A95B]">Securing Your Session:</strong> Consultations are only finalized upon successful payment. If you have a <strong>Non-Profit Promo Code</strong>, enter it at checkout to unlock the <strong>$0 setup</strong>.</p>
+        <p className="mb-2"><strong className="text-[#C8A95B]">The Congratulations Gate:</strong> You will receive your session credentials and the "Congratulations" notice only after the payment/promo step is verified.</p>
+        <p className="mb-2"><strong className="text-[#C8A95B]">Record Keeping:</strong> You will receive two separate emails—one for your schedule (The Appointment) and one for your records (The Invoice). Keep the invoice for your year-end Sovereign tax-deduction audit.</p>
+        <div className="mt-2 p-2 rounded-lg bg-[#C8A95B]/5 border border-[#C8A95B]/20 text-[11px] font-mono space-y-0.5">
+          <p className="text-green-400">✓ PAYMENT GATE: ARMED</p>
+          <p className="text-[#C8A95B]">✓ PROMO BRIDGE: SOV-NONPROFIT-2027</p>
+          <p className="text-cyan-400">✓ DUAL-TRACK EMAIL: ORCHESTRATED</p>
+        </div>
       </>
     ),
   },
@@ -262,7 +280,7 @@ export default function BobInitHandbook() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-5.0 · The Consultation Edition</span>
+              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-6.0 · The Billing Edition</span>
               <Button onClick={() => setOpen(false)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
                 Got it
               </Button>
