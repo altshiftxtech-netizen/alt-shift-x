@@ -123,11 +123,17 @@ export default function useBobChat() {
   const handleUpdate = useCallback((data) => {
     let msgs = data.messages || [];
 
-    // Guard against the subscription "replay" that fires immediately after we
-    // load a conversation: when no turn is open and the incoming list is empty
-    // or shorter than what we just rendered, ignore it. This is what caused the
-    // chat to flicker / momentarily change right after selecting a history item.
-    if (!turnOpenRef.current && msgs.length < (lastLenRef.current || 0)) return;
+    // CRITICAL: Never let a shorter/staler message list wipe the visible
+    // messages — this is what caused BOB's replies to vanish. The stall
+    // detector (10s poll) and focus/visibility resync both call
+    // getConversation, which can return a stale snapshot (server read-after-
+    // write lag) that's BEHIND what the WebSocket stream already delivered.
+    // The old guard only blocked this when no turn was open, but the stall
+    // detector runs DURING a turn — exactly when the guard was disabled — so
+    // the stale snapshot replaced the streamed reply and the stream (having
+    // already sent those messages) never re-delivered them. Now we block ANY
+    // update whose message count is below the last server count we saw.
+    if (msgs.length < (lastLenRef.current || 0)) return;
     lastLenRef.current = msgs.length;
 
     // The server conversation is the authoritative record. We ALWAYS render
@@ -290,6 +296,9 @@ export default function useBobChat() {
     const c = await base44.agents.createConversation({ agent_name: "bob_builder", metadata: { name } });
     convRef.current = c;
     setConvId(c.id);
+    // Fresh conversation — reset the anti-shrink guard so the old conversation's
+    // message count doesn't block the first server updates on the new conv.
+    lastLenRef.current = 0;
     return c;
   }, []);
 
