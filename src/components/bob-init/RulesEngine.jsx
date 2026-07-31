@@ -3,7 +3,7 @@ import { MessageSquareText } from "lucide-react";
 
 export default function RulesEngine({ rules, setRules }) {
   return (
-    <div className="rounded-xl border border-[#30363d] bg-[#0d1117] p-4">
+    <div className="rounded-xl border border-[#30363d] bg-[#0d1117]/60 backdrop-blur-md p-4">
       <div className="flex items-center gap-2 mb-3">
         <MessageSquareText className="w-4 h-4 text-cyan-400" />
         <h3 className="text-xs font-mono uppercase tracking-wider text-cyan-400">Rules of the House</h3>

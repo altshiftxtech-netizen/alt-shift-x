@@ -13,7 +13,7 @@ export default function BuildManifest({ selected, rules, uploadedFiles, apiField
   const hasApi = apiFields.some((f) => f.key.trim());
 
   return (
-    <Card className="border-[#30363d] bg-[#0d1117] sticky top-20">
+    <Card className="border-[#30363d] bg-[#0d1117]/60 backdrop-blur-md sticky top-20">
       <CardContent className="pt-4 pb-4 space-y-3">
         <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5">
           <Package className="w-3.5 h-3.5" /> Build Manifest

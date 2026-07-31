@@ -60,7 +60,7 @@ export default function ApexSandbox({ selectedCount = 0 }) {
   const statusColor = pain > 60 ? "text-red-400" : pain > 30 ? "text-amber-400" : "text-cyan-400";
 
   return (
-    <Card className="border-[#30363d] bg-[#0d1117]/90 backdrop-blur-sm">
+    <Card className="border-[#30363d] bg-[#0d1117]/60 backdrop-blur-md">
       <CardContent className="pt-4 pb-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5">

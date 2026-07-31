@@ -31,10 +31,10 @@ export default function BuilderFeatures() {
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9] relative overflow-hidden">
       {/* Video background */}
-      <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-15 pointer-events-none">
+      <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none">
         <source src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/fec84752f_288132b88_generated_video.mp4" type="video/mp4" />
       </video>
-      <div className="fixed inset-0 bg-[#0d1117]/80 pointer-events-none" />
+      <div className="fixed inset-0 bg-[#0d1117]/50 pointer-events-none" />
 
       <SharedNav mode="builder" theme="dev" />
 
