@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor } from "lucide-react";
+import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor, Radio } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
 import MyBuilds from "@/components/pwa/MyBuilds";
@@ -90,9 +90,11 @@ export default function PwaPortal() {
           <Card className="border-slate-200">
             <CardContent className="pt-6 pb-6">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-[#343A40] flex items-center justify-center shrink-0">
-                  <Monitor className="w-5 h-5 text-[#F8F9FA]" />
-                </div>
+                <img
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/beac80924_altxlogo2.jpg"
+                  alt="Alt+Shift+X logo"
+                  className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-300 bg-white p-0.5"
+                />
                 <div>
                   <h2 className="font-bold text-[#343A40] text-base" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
                     Site Mirror PWA
@@ -100,14 +102,20 @@ export default function PwaPortal() {
                   <p className="text-xs text-slate-400">Mirrors altshiftx.tech · /state/* excluded</p>
                 </div>
               </div>
-              <p className="text-sm text-slate-500 mb-4">
+              <p className="text-sm text-slate-500 mb-3">
                 Standalone app that mirrors the full altshiftx.tech site. No app store required.
               </p>
+              <div className="flex items-start gap-2 mb-4 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
+                <Radio className="w-3.5 h-3.5 text-violet-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-600">
+                  <span className="font-semibold text-slate-700">Hybrid Mirror:</span> installs the global shell (<span className="font-mono">pwa.altshiftx.tech</span>) for updates &amp; P2P signaling, then uses a local <span className="font-mono">.local</span> fast-path for zero-latency transfers between nearby devices.
+                </p>
+              </div>
               {loading ? (
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl="/manifest.json" pwaName="Alt+Shift+X" />
+                  <UniversalPwaInstall manifestUrl="/manifest.json" pwaName="Alt+Shift+X" zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
@@ -146,7 +154,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl="/manifest-agent.json" pwaName="Agent Wrapper" swapManifest />
+                  <UniversalPwaInstall manifestUrl="/manifest-agent.json" pwaName="Agent Wrapper" swapManifest zipName="altshiftx-agent-wrapper" zipSubtitle="PWA-AGENT-WRAPPER-1.0 · Generic Office" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>

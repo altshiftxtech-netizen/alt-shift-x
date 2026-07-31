@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Download, Loader2, CheckCircle2, Share, PlusCircle, FileDown, Monitor } from "lucide-react";
+import { Download, Loader2, CheckCircle2, Share, PlusCircle, FileDown, Monitor, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { downloadStaticPwaZip } from "@/lib/buildPackage";
 
 // UniversalPwaInstall — works across ALL browsers:
 //  • Chrome / Edge / Android: native beforeinstallprompt install button
@@ -18,10 +19,14 @@ export default function UniversalPwaInstall({
   pwaName = "Alt+Shift+X",
   swapManifest = false,
   disabled = false,
+  zipName = null,
+  zipSubtitle = "",
+  zipThemeColor = "#0d1117",
 }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [zipping, setZipping] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const originalManifestRef = useRef(null);
 
@@ -90,6 +95,23 @@ export default function UniversalPwaInstall({
     link.click();
   };
 
+  const handleZip = async () => {
+    setZipping(true);
+    try {
+      await downloadStaticPwaZip(manifestUrl, zipName || pwaName, {
+        subtitle: zipSubtitle,
+        themeColor: zipThemeColor,
+      });
+    } finally { setZipping(false); }
+  };
+
+  const ZipButton = () => (
+    <Button onClick={handleZip} disabled={zipping} variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-100 gap-2 w-full text-xs">
+      {zipping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Package className="w-3.5 h-3.5" />}
+      {zipping ? "Packaging..." : "Download ZIP"}
+    </Button>
+  );
+
   // ── Already installed ──
   if (installed) {
     return (
@@ -109,6 +131,7 @@ export default function UniversalPwaInstall({
         <Button onClick={downloadManifest} variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-100 gap-2 w-full text-xs">
           <FileDown className="w-3.5 h-3.5" /> Download Manifest
         </Button>
+        {zipName && <ZipButton />}
         {showInstructions && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-1.5 text-xs text-slate-600">
             <p className="font-bold text-[#343A40] text-xs mb-1">Install on iOS:</p>
@@ -132,6 +155,7 @@ export default function UniversalPwaInstall({
         <Button onClick={downloadManifest} variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-100 gap-2 w-full text-xs">
           <FileDown className="w-3.5 h-3.5" /> Download Manifest
         </Button>
+        {zipName && <ZipButton />}
       </div>
     );
   }
@@ -145,6 +169,7 @@ export default function UniversalPwaInstall({
       <Button onClick={downloadManifest} variant="outline" className="border-slate-300 text-slate-600 hover:bg-slate-100 gap-2 w-full text-xs">
         <FileDown className="w-3.5 h-3.5" /> Download Manifest
       </Button>
+      {zipName && <ZipButton />}
       {showInstructions && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-1.5 text-xs text-slate-600">
           {isFirefox ? (

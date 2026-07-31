@@ -60,6 +60,77 @@ self.addEventListener("fetch", (e) => {
 `;
 }
 
+// Builds and triggers a download of a ZIP package for a static (non-database)
+// PWA such as the Site Mirror or Agent Wrapper. Fetches the manifest from the
+// URL and packages it with a standalone shell + service worker.
+export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
+  const { subtitle = "", themeColor = "#0d1117" } = opts;
+
+  // Fetch the live manifest JSON
+  let manifestText = JSON.stringify({ name: pwaName }, null, 2);
+  try {
+    const res = await fetch(manifestUrl);
+    if (res.ok) manifestText = await res.text();
+  } catch { /* fall back to stub */ }
+
+  const safeName = (pwaName || "Alt+Shift+X PWA").replace(/[<>]/g, "");
+  const sub = subtitle ? `<p class="meta">${subtitle}</p>` : "";
+
+  const shellHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="${themeColor}" />
+  <title>${safeName}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; background:${themeColor}; color:#c9d1d9; font-family: -apple-system, system-ui, sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .shell { max-width:480px; padding:2rem; text-align:center; }
+    h1 { color:#fff; font-size:1.5rem; margin:0 0 0.5rem; }
+    .meta { color:#8b949e; font-family:ui-monospace,monospace; font-size:0.75rem; margin:0 0 1.25rem; }
+    .footer { font-size:0.7rem; color:#484f58; font-family:ui-monospace,monospace; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1>${safeName}</h1>
+    ${sub}
+    <p class="footer">Alt+Shift+X · Sovereign PWA Shell</p>
+  </div>
+  <script>
+    if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./sw.js"); }
+  </script>
+</body>
+</html>`;
+
+  const zip = new JSZip();
+  zip.file("manifest.json", manifestText);
+  zip.file("index.html", shellHtml);
+  zip.file("sw.js", generateSwJs());
+  zip.file(
+    "README.txt",
+    `Alt+Shift+X PWA Package\n` +
+      `======================\n\n` +
+      `PWA:      ${pwaName}\n` +
+      `Manifest: ${manifestUrl}\n\n` +
+      `Deploy these files on any static host (Netlify, Vercel, GitHub\n` +
+      `Pages, or your own server). manifest.json + sw.js make this\n` +
+      `installable as a standalone PWA.`
+  );
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(pwaName || "altshiftx-pwa").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 // Builds and triggers a download of a ZIP package for a B.O.B.Init build record.
 export async function downloadBuildZip(build) {
   const zip = new JSZip();
