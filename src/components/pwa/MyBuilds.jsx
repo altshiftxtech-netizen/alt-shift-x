@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Boxes, Clock, Shield, Loader2, Cpu } from "lucide-react";
+import { Clock, Shield, Loader2, Cpu } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import PwaBuildInstall from "@/components/pwa/PwaBuildInstall";
+import BobInitLogo from "@/components/bob-init/BobInitLogo";
 
 // MyBuilds — lists the current builder's persisted B.O.B.Init builds, each
 // with install + ZIP-download actions. Renders inside the PWA Portal.
@@ -32,8 +33,8 @@ export default function MyBuilds() {
   return (
     <Card className="border-slate-200">
       <CardContent className="pt-5 pb-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Boxes className="w-5 h-5 text-violet-600" />
+        <div className="flex items-center gap-3">
+          <BobInitLogo size="sm" className="border-cyan-400/50" />
           <h2 className="text-lg font-bold text-slate-900">My B.O.B.Init Builds</h2>
         </div>
         <p className="text-sm text-slate-500 -mt-2">

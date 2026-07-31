@@ -48,9 +48,11 @@ export default function PwaPortal() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-[#343A40] flex items-center justify-center">
-              <Smartphone className="w-5 h-5 text-[#F8F9FA]" />
-            </div>
+            <img
+                src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/98d0068c6_Copilot_20260731_032927.png"
+                alt="Sovereign PWA Portal emblem"
+                className="w-12 h-12 rounded-full object-cover border border-slate-300 shrink-0"
+              />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-[#343A40]" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
                 Sovereign PWA Portal
