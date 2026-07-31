@@ -18,6 +18,7 @@ import SiteContentBanner from "@/components/site-content/SiteContentBanner";
 import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
 import { isFreeGated } from "@/components/free-gate/freeGateData";
 import { Share2 } from "lucide-react";
+import ConsultationButton from "@/components/consultation/ConsultationButton";
 
 const ALL_COMPONENTS = [];
 const PAGE_SIZE = 50;
@@ -250,6 +251,7 @@ export default function Marketplace() {
            <span className="text-sm text-white/60">Marketplace</span>
          </div>
          <div className="flex items-center gap-2">
+           <ConsultationButton />
            {isAuthenticated ? (
              <>
                <Link to="/dashboard"><Button variant="outline" className="text-sm h-8 bg-white/10 border-white/20 text-white hover:bg-white/20">My Dashboard</Button></Link>

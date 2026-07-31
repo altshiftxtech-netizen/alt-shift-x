@@ -106,7 +106,6 @@ export default function Consultation() {
             <Button onClick={() => base44.auth.redirectToLogin("/consultation")} className="bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold w-full">
               <Lock className="w-4 h-4 mr-1" /> Sign in to Continue
             </Button>
-            <Link to="/" className="block text-xs text-[#484f58] hover:text-[#8b949e]">← Back to home</Link>
           </CardContent>
         </Card>
       </div>
@@ -116,8 +115,12 @@ export default function Consultation() {
   // Tier gate — non-Sovereign, non-admin, non-pre-alpha
   if (status === "denied" && !isAdmin && !isPreAlphaBuilder) {
     return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-4">
-        <Card className="border-[#C8A95B]/30 bg-[#0d1117] max-w-lg">
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-4 relative overflow-hidden">
+        <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none">
+          <source src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a40ebfb38_081bbfb03_generated_video.mp4" type="video/mp4" />
+        </video>
+        <div className="fixed inset-0 bg-[#0d1117]/50 pointer-events-none" />
+        <Card className="border-[#C8A95B]/30 bg-[#0d1117]/60 backdrop-blur-md max-w-lg relative z-10">
           <CardContent className="pt-6 text-center space-y-4">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-[#C8A95B]/10 border border-[#C8A95B]/30 flex items-center justify-center">
               <Crown className="w-7 h-7 text-[#C8A95B]" />
@@ -128,10 +131,7 @@ export default function Consultation() {
               <p className="text-[11px] text-[#C8A95B] font-mono mb-1">NON-PROFIT?</p>
               <p className="text-xs text-[#8b949e]">If you are a registered Non-Profit, enter your Tax ID during intake to trigger the $0 Sovereign Credit — but you must be Sovereign-Tier first.</p>
             </div>
-            <Link to="/enterprise">
-              <Button className="bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold w-full">Upgrade Now</Button>
-            </Link>
-            <Link to="/pricing" className="block text-xs text-[#484f58] hover:text-[#8b949e]">← Back to pricing</Link>
+            <p className="text-[11px] text-[#484f58] font-mono">Upgrade through the Sovereign Tier to unlock consultations.</p>
           </CardContent>
         </Card>
       </div>
@@ -141,8 +141,12 @@ export default function Consultation() {
   // Success screen
   if (booked) {
     return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-4">
-        <Card className="border-green-500/30 bg-[#0d1117] max-w-lg">
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-4 relative overflow-hidden">
+        <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none">
+          <source src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a40ebfb38_081bbfb03_generated_video.mp4" type="video/mp4" />
+        </video>
+        <div className="fixed inset-0 bg-[#0d1117]/50 pointer-events-none" />
+        <Card className="border-green-500/30 bg-[#0d1117]/60 backdrop-blur-md max-w-lg relative z-10">
           <CardContent className="pt-6 text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
             <h2 className="text-2xl font-black text-white">Consultation Scheduled</h2>
@@ -163,9 +167,7 @@ export default function Consultation() {
             {isNonProfit && (
               <div className="rounded-lg bg-green-500/10 border border-green-500/30 p-2 text-xs text-green-400 font-mono">✓ $0 Sovereign Credit Applied (Non-Profit)</div>
             )}
-            <Link to="/dashboard">
-              <Button variant="outline" className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22]">Back to Dashboard</Button>
-            </Link>
+            <p className="text-[11px] text-[#484f58] font-mono">A confirmation has been sent to your email. You may close this page.</p>
           </CardContent>
         </Card>
       </div>
@@ -174,10 +176,16 @@ export default function Consultation() {
 
   // Multi-step intake form
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9]">
+    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9] relative overflow-hidden">
+      {/* Video background */}
+      <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none">
+        <source src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/a40ebfb38_081bbfb03_generated_video.mp4" type="video/mp4" />
+      </video>
+      <div className="fixed inset-0 bg-[#0d1117]/50 pointer-events-none" />
+
       <SharedNav mode="user" theme="dev" />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C8A95B]/10 border border-[#C8A95B]/30">
@@ -211,7 +219,7 @@ export default function Consultation() {
         </div>
 
         {/* Step content */}
-        <Card className="border-[#30363d] bg-[#0d1117]/80 backdrop-blur-md">
+        <Card className="border-[#30363d] bg-[#0d1117]/60 backdrop-blur-md">
           <CardContent className="pt-6 space-y-4">
             {step === 0 && (
               <>

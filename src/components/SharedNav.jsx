@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown, ListChecks, Calendar } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown, ListChecks } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -52,23 +52,19 @@ export default function SharedNav({ mode = "user", theme }) {
   const [portalOpen, setPortalOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [canSpeakeasy, setCanSpeakeasy] = useState(false);
-  const [canConsult, setCanConsult] = useState(false);
 
   // The Speakeasy is for paying builders/developers only — free-tier users don't see it.
   useEffect(() => {
     (async () => {
       try {
         const user = await base44.auth.me();
-        if (user?.role === "admin") { setCanSpeakeasy(true); setCanConsult(true); return; }
+        if (user?.role === "admin") { setCanSpeakeasy(true); return; }
         const subs = await base44.entities.Subscription.filter({ user_id: user.id });
         const sub = subs[0];
         const isPaying = sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status);
         setCanSpeakeasy(!!isPaying);
-        const isSovereign = isPaying && sub.plan === "enterprise";
-        setCanConsult(isSovereign || user.id === "6a19363c90f06323c4cfff74");
       } catch {
         setCanSpeakeasy(false);
-        setCanConsult(false);
       }
     })();
   }, []);
@@ -132,13 +128,6 @@ export default function SharedNav({ mode = "user", theme }) {
 
           {/* Notifications */}
           <NotificationBell isDev={isDev} />
-
-          {/* Schedule Consultation — pre-alpha: Sovereign-tier + specific builder only */}
-          {canConsult && (
-            <Link to="/consultation" className="hidden sm:flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-1.5 transition-all bg-gradient-to-r from-[#C8A95B] to-[#E6C878] text-[#0A0A0C] hover:opacity-90 shadow-sm shrink-0">
-              <Calendar className="w-3.5 h-3.5" /> Schedule Consultation
-            </Link>
-          )}
 
           {/* Portal switcher */}
           <div className="relative hidden sm:block">
