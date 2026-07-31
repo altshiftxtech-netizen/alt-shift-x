@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText, History } from "lucide-react";
+import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText, History, Rocket } from "lucide-react";
+import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
 import BudgetGauge, { getBudgetTier } from "@/components/bob-init/BudgetGauge";
@@ -324,9 +325,14 @@ export default function BobInit({ navMode = "user" }) {
                       <div className="flex justify-between"><span className="text-[#8b949e]">Maintenance</span><span className="text-amber-400">${maintenanceFee}/mo</span></div>
                     </div>
                     {buildDone && (
-                      <div className="mt-2 rounded-md bg-[#3fb950]/10 border border-[#3fb950]/30 px-2 py-1.5 text-[#3fb950]">
-                        ✓ {stackConfig.stack.toUpperCase()}-AGENT-1.0 ready
-                      </div>
+                      <>
+                        <div className="mt-2 rounded-md bg-[#3fb950]/10 border border-[#3fb950]/30 px-2 py-1.5 text-[#3fb950]">
+                          ✓ {stackConfig.stack.toUpperCase()}-AGENT-1.0 ready
+                        </div>
+                        <Link to="/builder/features" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-xs py-2.5 transition-all hover:from-cyan-500 hover:to-cyan-400">
+                          <Rocket className="w-4 h-4" /> Render PWA
+                        </Link>
+                      </>
                     )}
                   </div>
                 ) : (
