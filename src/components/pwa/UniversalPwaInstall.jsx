@@ -18,6 +18,7 @@ export default function UniversalPwaInstall({
   manifestUrl = "/manifest.json",
   pwaName = "Alt+Shift+X",
   swapManifest = false,
+  domainLocked = false,
   disabled = false,
   zipName = null,
   zipSubtitle = "",
@@ -191,7 +192,9 @@ export default function UniversalPwaInstall({
               <p className="font-bold text-[#343A40] text-xs mb-1">Install on this browser:</p>
               <p>1. Look for an <span className="font-semibold">install icon</span> in the address bar or browser menu.</p>
               <p>2. On mobile, use your browser's "Add to Home Screen" option.</p>
-              <p className="text-slate-400 italic">The PWA domain is locked to <span className="font-mono font-semibold">pwa.altshiftx.tech</span> and cannot be changed.</p>
+              {domainLocked && (
+                <p className="text-slate-400 italic">The PWA domain is locked to <span className="font-mono font-semibold">pwa.altshiftx.tech</span> and cannot be changed.</p>
+              )}
             </>
           )}
         </div>

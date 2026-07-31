@@ -12,6 +12,7 @@ import PwaLegalAssets from "@/components/pwa/PwaLegalAssets";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { getLockedManifestUrl } from "@/lib/lockedManifest";
+import { getAgentManifestUrl, DEFAULT_AGENT_DOMAIN } from "@/lib/agentManifest";
 
 // PWA-DASHBOARD-PORTAL-1.0 — tier-based install logic.
 // TopTier (any active non-free subscription) → free "Install Now".
@@ -44,6 +45,10 @@ export default function PwaPortal() {
 
   // The Site Mirror PWA manifest is permanently locked to pwa.altshiftx.tech.
   const lockedManifestUrl = useMemo(() => getLockedManifestUrl(), []);
+
+  // The Agent Wrapper PWA domain is user-configurable (not locked).
+  const [agentDomain, setAgentDomain] = useState(DEFAULT_AGENT_DOMAIN);
+  const agentManifestUrl = useMemo(() => getAgentManifestUrl(agentDomain), [agentDomain]);
 
   return (
     <div className="min-h-screen">
@@ -126,7 +131,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl={lockedManifestUrl} pwaName="Alt+Shift+X" swapManifest zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
+                  <UniversalPwaInstall manifestUrl={lockedManifestUrl} pwaName="Alt+Shift+X" swapManifest domainLocked zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
@@ -164,8 +169,19 @@ export default function PwaPortal() {
               {loading ? (
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
-                <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl="/manifest-agent.json" pwaName="Agent Wrapper" swapManifest zipName="altshiftx-agent-wrapper" zipSubtitle="PWA-AGENT-WRAPPER-1.0 · Generic Office" />
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Deployment Domain</label>
+                    <input
+                      type="text"
+                      value={agentDomain}
+                      onChange={(e) => setAgentDomain(e.target.value)}
+                      placeholder="https://your-domain.com"
+                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-[#343A40] bg-white/60 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Customize the deployment domain for your Agent Wrapper PWA.</p>
+                  </div>
+                  <UniversalPwaInstall manifestUrl={agentManifestUrl} pwaName="Agent Wrapper" swapManifest zipName="altshiftx-agent-wrapper" zipSubtitle="PWA-AGENT-WRAPPER-1.0 · Generic Office" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
