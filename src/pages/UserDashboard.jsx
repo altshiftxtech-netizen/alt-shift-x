@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, BarChart2, Key, Settings, ShieldCheck, ArrowRight, Webhook, Download, CheckCircle2, AlertCircle, User, FileText, Loader2 } from "lucide-react";
+import { Package, BarChart2, Key, Settings, ShieldCheck, ArrowRight, Webhook, Download, CheckCircle2, AlertCircle, User, FileText, Loader2, Smartphone } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -13,6 +13,7 @@ const QUICK_LINKS = [
   { to: "/dashboard/api-keys", label: "API Keys", desc: "Create and manage API keys", icon: Key },
   { to: "/dashboard/webhooks", label: "Webhooks", desc: "Configure event subscriptions", icon: Webhook },
   { to: "/dashboard/subscription", label: "Subscription", desc: "Manage your plan & billing", icon: ShieldCheck },
+  { to: "/dashboard/pwa", label: "PWA Download", desc: "Install your hardened PWA app", icon: Smartphone },
   { to: "/dashboard/settings", label: "Account Settings", desc: "Update profile and preferences", icon: Settings },
 ];
 
