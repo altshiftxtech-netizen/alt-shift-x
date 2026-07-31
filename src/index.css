@@ -243,6 +243,18 @@
   100% { transform: translate3d(0, 0, 0); }
 }
 
+/* Glassmorphism — frosted glass overlay for cards on cosmic background pages.
+   The CosmicBackground component adds .cosmic-page to <body>; this rule makes
+   all Card components (.bg-card) translucent with a blur so the nebula shows
+   through while keeping text readable. */
+body.cosmic-page .bg-card {
+  background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
 /* Hide scrollbar for horizontally-scrollable nav rows while keeping scroll behavior */
 @layer utilities {
   .no-scrollbar {

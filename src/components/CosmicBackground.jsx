@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Cosmic futuristic background — combines the nebula image with animated
 // CSS starfield layers. Fixed full-screen, sits behind all content (z-0).
 const NEBULA_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/b4ada9d98_Copilot_20260731_032913.png";
 
 export default function CosmicBackground() {
+  // Tag the body so CSS can apply glassmorphism to cards on cosmic pages only.
+  useEffect(() => {
+    document.body.classList.add("cosmic-page");
+    return () => document.body.classList.remove("cosmic-page");
+  }, []);
+
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       {/* Nebula image base */}
