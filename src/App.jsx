@@ -68,6 +68,7 @@ import Tutorial from './pages/Tutorial';
 import Contact from './pages/Contact';
 import SensitiveIntelligencePolicy from './pages/SensitiveIntelligencePolicy';
 import BobBuilder from './pages/BobBuilder';
+import BobInit from './pages/BobInit';
 import ComponentVersionHistory from './pages/ComponentVersionHistory';
 import WebhookManager from './pages/WebhookManager';
 import GovernanceDashboard from './pages/GovernanceDashboard';
@@ -274,6 +275,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/security" element={<SecurityCenter />} />
         <Route path="/admin/health" element={<SystemHealth />} />
         <Route path="/admin/gamification" element={<GamificationAdmin />} />
+        <Route path="/admin/bob-init" element={<BobInit />} />
         <Route path="/vendor-portal" element={<VendorPortalPage />} />
         <Route path="/finance" element={<FinancePortal />} />
         <Route path="/api-partners" element={<ApiPartnerDashboard />} />
