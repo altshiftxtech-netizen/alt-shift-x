@@ -18,7 +18,7 @@ import ReactMarkdown from "react-markdown";
 import {
   Bot, Send, Loader2, Upload, Copy, Download, FileText, Zap,
   FlaskConical, ClipboardList, Star, Shield, BarChart2, RefreshCw,
-  CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, Cpu, Globe
+  CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, Cpu, Globe, Search
 } from "lucide-react";
 
 // ── Quick-fire test prompt library ─────────────────────────────────────────────
@@ -93,9 +93,21 @@ function MessageBubble({ msg }) {
 // ── Export Test Key generator ───────────────────────────────────────────────────
 function ExportTestKeys({ components }) {
   const [page, setPage] = useState(0);
+  const [query, setQuery] = useState("");
   const PER_PAGE = 6;
-  const totalPages = Math.ceil(components.length / PER_PAGE);
-  const currentComponents = components.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+
+  const filtered = components.filter(c => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return (
+      (c.name || "").toLowerCase().includes(q) ||
+      (c.code || "").toLowerCase().includes(q) ||
+      (c.description || "").toLowerCase().includes(q) ||
+      (c.category || "").toLowerCase().includes(q)
+    );
+  });
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const currentComponents = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   const generateBrief = (component) => {
     return `# AI TRUST EVALUATION BRIEF — ${component?.name || "Component"}
@@ -198,6 +210,23 @@ Compare your results against the platform benchmark scores above.
           <Download className="w-3 h-3" /> Export All
         </Button>
       </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setPage(0); }}
+          placeholder="Search by name, code, category, or description…"
+          className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 bg-white/80 backdrop-blur-md rounded-xl focus:outline-none focus:border-violet-500 placeholder:text-slate-500 font-medium text-slate-900"
+        />
+      </div>
+
+      {currentComponents.length === 0 && (
+        <div className="text-center py-10 text-slate-500 text-sm font-medium">
+          No components match your search.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {currentComponents.map(c => (
