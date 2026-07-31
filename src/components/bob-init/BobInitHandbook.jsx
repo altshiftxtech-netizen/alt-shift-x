@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench } from "lucide-react";
+import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench, ShieldAlert, Eye } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -10,7 +10,7 @@ const SECTIONS = [
     body: (
       <>
         <p>B.O.B.Init is not a "coding tool"—it is a <strong className="text-cyan-400">Machine that Builds Machines</strong>. It takes your ideas and turns them into hardened, revenue-generating Sovereign components.</p>
-        <p className="mt-2"><strong className="text-amber-400">🚀 The Rocket Ship Update (V3.0):</strong> Easy, user-friendly, and powerful. Build like a boutique design firm—not a generator.</p>
+        <p className="mt-2"><strong className="text-amber-400">🏆 The Sandbox Edition (V4.0):</strong> Stress-test before you invest. The award-winning <strong className="text-cyan-400">Pain-Gain</strong> interface lets you watch your app harden in real time.</p>
       </>
     ),
   },
@@ -51,6 +51,52 @@ const SECTIONS = [
           <li>☑ <strong className="text-cyan-400">Hippocrates Shield:</strong> HIPAA-compliant health data encryption.</li>
           <li>☑ <strong className="text-cyan-400">Self-Healing Shim:</strong> Auto-updates your app when APIs change.</li>
         </ul>
+      </>
+    ),
+  },
+  {
+    id: "sandbox",
+    icon: ShieldAlert,
+    title: "🛡 The Apex Sandbox (V4.0 — Pain-Gain Interface)",
+    body: (
+      <>
+        <p className="mb-2"><strong className="text-red-400">The Pain:</strong> The internet is full of "AI agents" that break the moment they hit real data.</p>
+        <p className="mb-2"><strong className="text-cyan-400">The Solution:</strong> The <strong>SOV-APEX-SANDBOX-1.0</strong> triggers a <em>"Chaos Audit."</em> It attacks your project with simulated logic-poisoning and server-side failures.</p>
+        <p className="mb-2"><strong className="text-cyan-400">The Damage Indicator:</strong> As the sandbox hardens the app, you see the <span className="text-red-400">red (Pain/Risk)</span> turn into <span className="text-cyan-400">Sovereign Blue (Gain/Resilience)</span>. This visual transformation is pure award-bait.</p>
+        <div className="mt-2 p-2 rounded-lg bg-cyan-500/5 border border-cyan-500/20 text-[11px] space-y-0.5">
+          <p>📉 <strong className="text-red-400">Pain Reduction:</strong> % of infrastructure vulnerabilities auto-closed by B.O.B.Init.</p>
+          <p>📈 <strong className="text-cyan-400">Gain Acceleration:</strong> % increase in operational speed and user-trust via the Sovereign Ledger.</p>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: "preview",
+    icon: Eye,
+    title: "👁 The Project Preview (Polishing)",
+    body: (
+      <>
+        <p className="mb-2"><strong className="text-cyan-400">The Solution:</strong> The <strong>SOV-PROJECT-PREVIEW-1.0</strong> provides a high-speed, interactive window into your app before you commit.</p>
+        <ul className="space-y-1.5">
+          <li><strong className="text-cyan-400">Wearable Bridge:</strong> Drag gestures (Double-tap, Swipe, Long Press, Twist) into the preview to see haptic feedback visualized.</li>
+          <li><strong className="text-cyan-400">Brand Absorption:</strong> Toggle between aesthetics—watch your app shift from "Nike" to "Goldman Sachs" instantly.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "award-flow",
+    icon: Zap,
+    title: "🏆 The Award-Winning Flow (V4.0)",
+    body: (
+      <>
+        <ol className="space-y-1.5 list-decimal list-inside">
+          <li><strong className="text-cyan-400">Draft</strong> — Chat-to-Code in the B.O.B.Init terminal.</li>
+          <li><strong className="text-cyan-400">Customize</strong> — Feature Selection (toggle hardened modules).</li>
+          <li><strong className="text-cyan-400">Stress-Test</strong> — Apex Sandbox (Chaos Audit → Pain-Gain).</li>
+          <li><strong className="text-cyan-400">Polishing</strong> — Project Preview (Wearable + Brand Mirror).</li>
+          <li><strong className="text-cyan-400">Render</strong> — One-Click Rocket.</li>
+        </ol>
       </>
     ),
   },
@@ -198,7 +244,7 @@ export default function BobInitHandbook() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-3.0 · The Pro-Architect Edition</span>
+              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-4.0 · The Sandbox Edition</span>
               <Button onClick={() => setOpen(false)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
                 Got it
               </Button>

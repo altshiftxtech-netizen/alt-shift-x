@@ -6,6 +6,8 @@ import FeatureGroup from "@/components/bob-init/FeatureGroup";
 import RulesEngine from "@/components/bob-init/RulesEngine";
 import CodeInjector from "@/components/bob-init/CodeInjector";
 import BuildManifest from "@/components/bob-init/BuildManifest";
+import ApexSandbox from "@/components/bob-init/ApexSandbox";
+import ProjectPreview from "@/components/bob-init/ProjectPreview";
 
 export default function BuilderFeatures() {
   const [selected, setSelected] = useState({});
@@ -27,10 +29,16 @@ export default function BuilderFeatures() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9]">
+    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9] relative overflow-hidden">
+      {/* Video background */}
+      <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-15 pointer-events-none">
+        <source src="https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/fec84752f_288132b88_generated_video.mp4" type="video/mp4" />
+      </video>
+      <div className="fixed inset-0 bg-[#0d1117]/80 pointer-events-none" />
+
       <SharedNav mode="builder" theme="dev" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -64,6 +72,8 @@ export default function BuilderFeatures() {
             <FeatureGroup selected={selected} onToggle={toggle} />
             <RulesEngine rules={rules} setRules={setRules} />
             <CodeInjector uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} apiFields={apiFields} setApiFields={setApiFields} />
+            <ApexSandbox selectedCount={Object.values(selected).filter(Boolean).length} />
+            <ProjectPreview selected={selected} />
           </div>
 
           {/* Sidebar — build manifest */}

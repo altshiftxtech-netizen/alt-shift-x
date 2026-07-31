@@ -31,7 +31,6 @@ const BUILDER_NAV = [
 const BUILDER_NAV_MORE = [
   { to: "/builder/bob", label: "BOB Builder", icon: Bot },
   { to: "/builder/bob-init", label: "B.O.B.Init", icon: Terminal },
-  { to: "/builder/features", label: "Feature Selector", icon: ListChecks },
   { to: "/enterprise/expertminds", label: "ExpertMinds", icon: Crown },
   { to: "/builder/trust", label: "Trust", icon: ShieldCheck },
   { to: "/builder/governance", label: "Governance", icon: ShieldCheck },
