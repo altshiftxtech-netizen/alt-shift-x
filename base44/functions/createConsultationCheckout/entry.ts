@@ -15,7 +15,7 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { consultation_id, promo_code, success_url } = await req.json();
+    const { consultation_id, promo_code, success_url, sovereign_member } = await req.json();
     if (!consultation_id) return Response.json({ error: "consultation_id is required" }, { status: 400 });
 
     // Fetch the consultation and verify ownership
@@ -47,6 +47,13 @@ export default async function(req) {
       finalPrice = 0;
     } else if (normalizedPromo) {
       return Response.json({ error: "Invalid promo code." }, { status: 400 });
+    }
+
+    // ── Sovereign Member Path: $0 — consultation included in subscription ──
+    if (sovereign_member) {
+      const paymentConfirmationId = `SOV-MEMBER-${Date.now()}-${consultation_id.slice(-6).toUpperCase()}`;
+      const finalized = await finalizeConsultation(base44, consultation_id, paymentConfirmationId, "SOV-SOVEREIGN-MEMBER", 0);
+      return Response.json({ success: true, consultation: finalized });
     }
 
     // ── $0 Promo Path: finalize immediately ──

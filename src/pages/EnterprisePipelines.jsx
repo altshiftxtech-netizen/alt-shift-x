@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
+import ConsultationButton from "@/components/consultation/ConsultationButton";
 import EnterprisePipelineCard from "@/components/enterprise/pipelines/EnterprisePipelineCard";
 import { ENTERPRISE_PIPELINES, ENTERPRISE_MASTER_SUITE } from "@/components/enterprise/pipelines/enterprisePipelines";
 
@@ -45,6 +46,7 @@ export default function EnterprisePipelines() {
               <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B] leading-none">Sovereign Tier</p>
               <h1 className="text-base font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Exclusive Pipelines</h1>
             </div>
+            <ConsultationButton skipBilling className="hidden sm:flex" />
             <EnterpriseNavMenu user={user} />
           </div>
         </div>

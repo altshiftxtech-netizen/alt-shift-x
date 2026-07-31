@@ -16,6 +16,7 @@ import GeoIntelAnnex from "@/components/enterprise/geo/GeoIntelAnnex";
 import PipelinesTab from "@/components/enterprise/pipelines/PipelinesTab";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
 import ExposureHardStopsPanel from "@/components/enterprise/exposure/ExposureHardStopsPanel";
+import ConsultationButton from "@/components/consultation/ConsultationButton";
 
 const SOVEREIGN_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/441b5ba88_generated_image.png";
 
@@ -75,6 +76,7 @@ export default function Enterprise() {
               <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B] leading-none">Sovereign Tier</p>
               <h1 className="text-base font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Enterprise Intelligence</h1>
             </div>
+            <ConsultationButton skipBilling className="hidden sm:flex" />
             <Link to="/dashboard" className="text-xs text-white/50 hover:text-white hidden sm:block">Dashboard</Link>
             <EnterpriseNavMenu user={user} />
           </div>

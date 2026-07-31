@@ -10,7 +10,7 @@ const PRE_ALPHA_BUILDER_ID = "6a19363c90f06323c4cfff74";
  * Visible only to the pre-alpha builder, Sovereign-tier members, and admins.
  * Renders null when the user doesn't qualify, so it's safe to drop into any header.
  */
-export default function ConsultationButton({ className = "" }) {
+export default function ConsultationButton({ className = "", skipBilling = false }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function ConsultationButton({ className = "" }) {
 
   return (
     <Link
-      to="/consultation"
+      to={skipBilling ? "/consultation?no_billing=true" : "/consultation"}
       className={`flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-1.5 transition-all bg-gradient-to-r from-[#C8A95B] to-[#E6C878] text-[#0A0A0C] hover:opacity-90 shadow-sm shrink-0 ${className}`}
     >
       <Calendar className="w-3.5 h-3.5" /> Schedule Consultation

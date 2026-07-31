@@ -4,6 +4,7 @@ import { Loader2, Brain } from "lucide-react";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
 import SovereignPaywall from "@/components/enterprise/SovereignPaywall";
 import EnterpriseNavMenu from "@/components/enterprise/EnterpriseNavMenu";
+import ConsultationButton from "@/components/consultation/ConsultationButton";
 import ExpertMindsEnterpriseTab from "@/components/enterprise/expertminds/ExpertMindsEnterpriseTab";
 import EmLegalRepository from "@/components/expertmind/legal/EmLegalRepository";
 
@@ -45,6 +46,7 @@ export default function ExpertMindsEnterprise() {
               <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#C8A95B] leading-none">Sovereign Tier</p>
               <h1 className="text-base font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>ExpertMinds Enterprise</h1>
             </div>
+            <ConsultationButton skipBilling className="hidden sm:flex" />
             <Link to="/enterprise" className="text-xs text-white/50 hover:text-white hidden sm:block">Enterprise</Link>
             <EnterpriseNavMenu user={user} />
           </div>

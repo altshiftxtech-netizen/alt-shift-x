@@ -43,6 +43,7 @@ export default function Consultation() {
   const [booked, setBooked] = useState(null);
   const [error, setError] = useState("");
   const [pendingPay, setPendingPay] = useState(null);
+  const [noBilling, setNoBilling] = useState(false);
 
   // Step A — Forensic Dossier
   const [fullName, setFullName] = useState("");
@@ -74,7 +75,7 @@ export default function Consultation() {
 
   // Fetch consultation fee from Component entity
   useEffect(() => {
-    if (step === 4 && consultationFee === null) {
+    if (step === 4 && !noBilling && consultationFee === null) {
       base44.entities.Component.filter({ code: CONSULTATION_COMPONENT_CODE })
         .then((comps) => {
           if (comps[0]?.price != null) setConsultationFee(comps[0].price);
@@ -85,11 +86,15 @@ export default function Consultation() {
   }, [step]);
 
   // Handle Stripe redirect return — ?consultation=success&id=xxx
+  // Also detect ?no_billing=true for Sovereign-member sessions (no payment step)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("consultation") === "success" && params.get("id")) {
       setPendingPay(params.get("id"));
       window.history.replaceState({}, "", "/consultation");
+    }
+    if (params.get("no_billing") === "true") {
+      setNoBilling(true);
     }
   }, []);
 
@@ -143,8 +148,8 @@ export default function Consultation() {
     setSubmitting(true);
     setError("");
     try {
-      // Iframe guard — Stripe checkout only works from the published app
-      if (window.self !== window.top) {
+      // Iframe guard — Stripe checkout only works from the published app (skip for $0 sovereign-member path)
+      if (!noBilling && window.self !== window.top) {
         setError("Checkout is only available from the published app. Please open the live URL to complete payment.");
         setSubmitting(false);
         return;
@@ -185,6 +190,7 @@ export default function Consultation() {
         consultation_id: consultation.id,
         promo_code: promoApplied ? NONPROFIT_PROMO : "",
         success_url: successUrl,
+        sovereign_member: noBilling,
       });
 
       // Stripe redirect path
@@ -361,7 +367,7 @@ export default function Consultation() {
 
         {/* Step indicator */}
         <div className="flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
-          {STEPS.map((s, idx) => (
+          {STEPS.filter((s) => !noBilling || s.id !== "checkout").map((s, idx) => (
             <span key={s.id} className="flex items-center">
               <button
                 onClick={() => idx < step && setStep(idx)}
@@ -529,7 +535,7 @@ export default function Consultation() {
               </>
             )}
 
-            {step === 4 && (
+            {step === 4 && !noBilling && (
               <>
                 <h3 className="text-sm font-mono uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                   <CreditCard className="w-4 h-4" /> Step E — Billing & Checkout
@@ -624,9 +630,13 @@ export default function Consultation() {
               <Button variant="outline" size="sm" disabled={step === 0} onClick={() => setStep((s) => s - 1)} className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22] font-mono text-xs">
                 <ChevronLeft className="w-3 h-3" /> Back
               </Button>
-              {step < 4 ? (
+              {step < (noBilling ? 3 : 4) ? (
                 <Button size="sm" disabled={!canNext} onClick={() => setStep((s) => s + 1)} className="bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold text-xs">
                   Continue <ChevronRight className="w-3 h-3" />
+                </Button>
+              ) : noBilling ? (
+                <Button size="sm" disabled={!canNext || submitting} onClick={handleCheckout} className="bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold text-xs">
+                  {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />} Confirm Consultation
                 </Button>
               ) : (
                 <Button size="sm" disabled={!canNext || submitting} onClick={handleCheckout} className="bg-green-600 hover:bg-green-500 text-white font-bold text-xs">
