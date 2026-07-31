@@ -11,6 +11,7 @@ const SECTIONS = [
       <>
         <p>B.O.B.Init is not a "coding tool"—it is a <strong className="text-cyan-400">Machine that Builds Machines</strong>. It takes your ideas and turns them into hardened, revenue-generating Sovereign components.</p>
         <p className="mt-2"><strong className="text-amber-400">🏆 The Sandbox Edition (V4.0):</strong> Stress-test before you invest. The award-winning <strong className="text-cyan-400">Pain-Gain</strong> interface lets you watch your app harden in real time.</p>
+        <p className="mt-1"><strong className="text-[#C8A95B]">📅 The Consultation Edition (V5.0):</strong> The <strong>Schedule Consultation</strong> gateway is now live — high-stakes architectural advisory with forensic intake.</p>
       </>
     ),
   },
@@ -97,6 +98,23 @@ const SECTIONS = [
           <li><strong className="text-cyan-400">Polishing</strong> — Project Preview (Wearable + Brand Mirror).</li>
           <li><strong className="text-cyan-400">Render</strong> — One-Click Rocket.</li>
         </ol>
+      </>
+    ),
+  },
+  {
+    id: "consultation",
+    icon: Crown,
+    title: "📅 The Consultation Gateway (V5.0)",
+    body: (
+      <>
+        <p className="mb-2"><strong className="text-[#C8A95B]">How to Access:</strong> Look for the <strong>Schedule Consultation</strong> button at the very top of your homepage starting Monday.</p>
+        <p className="mb-2"><strong className="text-[#C8A95B]">Preparation:</strong> Have your business entity details and any technical briefs ready. The <strong>Forensic Intake</strong> requires these for legal hardening before we open the SpeakEasy tunnel.</p>
+        <p className="mb-2"><strong className="text-[#C8A95B]">The Monday Launch:</strong> Scheduling opens Monday for Tuesday appointments. If you are a <strong>Non-Profit</strong>, ensure your Tax ID is entered to trigger the <strong>$0 Sovereign Credit</strong>.</p>
+        <div className="mt-2 p-2 rounded-lg bg-[#C8A95B]/5 border border-[#C8A95B]/20 text-[11px] font-mono space-y-0.5">
+          <p className="text-green-400">✓ ROADMAP INTEGRITY: 115%</p>
+          <p className="text-[#C8A95B]">✓ GATE STATUS: ARMED (Monday Launch)</p>
+          <p className="text-cyan-400">✓ PRIVACY VEIL: HOLDING</p>
+        </div>
       </>
     ),
   },
@@ -244,7 +262,7 @@ export default function BobInitHandbook() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-4.0 · The Sandbox Edition</span>
+              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-5.0 · The Consultation Edition</span>
               <Button onClick={() => setOpen(false)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
                 Got it
               </Button>

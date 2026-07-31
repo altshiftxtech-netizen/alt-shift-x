@@ -38,6 +38,7 @@ export default function BobInit({ navMode = "user" }) {
   const [stackConfig, setStackConfig] = useState(null);
   const [chatToCode, setChatToCode] = useState(false); // Plain-English mode for non-coders
   const [historyRefresh, setHistoryRefresh] = useState(0); // bump to reload history panel
+  const [expandedPipeline, setExpandedPipeline] = useState(null);
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -348,20 +349,31 @@ export default function BobInit({ navMode = "user" }) {
                   <Cpu className="w-3.5 h-3.5" /> Pipeline
                 </h3>
                 {[
-                  { icon: TerminalIcon, label: "UI Terminal", code: "BOB-INIT-UI-1.0" },
-                  { icon: Cpu, label: "Engine", code: "BOB-INIT-ENGINE-1.0" },
-                  { icon: Package, label: "Registry", code: "BOB-INIT-REGISTRY-1.0" },
-                  { icon: Shield, label: "Self-Healing Shim", code: "BOB-INIT-SHIM-1.0" },
-                ].map(({ icon: Icon, label, code }, idx, arr) => (
-                  <div key={code} className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs text-[#c9d1d9]">{label}</p>
-                      <p className="text-[10px] text-[#484f58] font-mono">{code}</p>
+                  { icon: TerminalIcon, label: "UI Terminal", code: "BOB-INIT-UI-1.0", desc: "The command-line interface where you type 'bob init' and 'bob build'. This is the entry point for all B.O.B.Init operations — it parses your commands and routes them to the Engine." },
+                  { icon: Cpu, label: "Engine", code: "BOB-INIT-ENGINE-1.0", desc: "The core build engine that assembles hardened components from the audited registry into a deployable PWA. It orchestrates the full build pipeline from init to render." },
+                  { icon: Package, label: "Registry", code: "BOB-INIT-REGISTRY-1.0", desc: "The curated catalog of seL4-verified, OCap-audited components. Every dependency is checked against the Unzipped Catalog hash before it enters your build." },
+                  { icon: Shield, label: "Self-Healing Shim", code: "BOB-INIT-SHIM-1.0", desc: "The auto-repair layer. When external APIs drift or break, the shim detects the change and patches your app automatically — no manual redeploy required." },
+                ].map(({ icon: Icon, label, code, desc }) => {
+                  const isOpen = expandedPipeline === code;
+                  return (
+                    <div key={code}>
+                      <button
+                        onClick={() => setExpandedPipeline(isOpen ? null : code)}
+                        className="w-full flex items-center gap-2 text-left hover:bg-[#161b22] rounded-lg p-1 -m-1 transition-colors"
+                      >
+                        <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-[#c9d1d9]">{label}</p>
+                          <p className="text-[10px] text-[#484f58] font-mono">{code}</p>
+                        </div>
+                        <ChevronRight className={`w-3 h-3 text-[#484f58] transition-transform shrink-0 ${isOpen ? "rotate-90 text-cyan-400" : ""}`} />
+                      </button>
+                      {isOpen && (
+                        <p className="ml-6 mt-1 mb-1 text-[11px] text-[#8b949e] leading-relaxed">{desc}</p>
+                      )}
                     </div>
-                    {idx < arr.length - 1 && <ChevronRight className="w-3 h-3 text-[#30363d]" />}
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </div>

@@ -71,6 +71,7 @@ import BobBuilder from './pages/BobBuilder';
 import BobInit from './pages/BobInit';
 import BuilderBobInit from './pages/BuilderBobInit';
 import BuilderFeatures from './pages/BuilderFeatures';
+import Consultation from './pages/Consultation';
 import ComponentVersionHistory from './pages/ComponentVersionHistory';
 import WebhookManager from './pages/WebhookManager';
 import GovernanceDashboard from './pages/GovernanceDashboard';
@@ -234,6 +235,7 @@ const AuthenticatedApp = () => {
       {/* ── Protected routes — login required ── */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/enterprise" element={<Enterprise />} />
+        <Route path="/consultation" element={<Consultation />} />
         <Route path="/enterprise/pipelines" element={<EnterprisePipelines />} />
         <Route path="/enterprise/expertminds" element={<ExpertMindsEnterprise />} />
         <Route path="/dashboard" element={<UserDashboard />} />
