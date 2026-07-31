@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText } from "lucide-react";
+import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText, History } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
 import BudgetGauge, { getBudgetTier } from "@/components/bob-init/BudgetGauge";
 import BuildSequence from "@/components/bob-init/BuildSequence";
+import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
+import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
 
 // B.O.B.Init — the "Machine that Builds Machines."
@@ -17,6 +19,7 @@ const HELP_TEXT = `Available commands:
   bob build                                        Execute the build pipeline
   bob registry list                                List audited registry components
   bob status                                       Show current build state
+  bob history                                      Show past build history
   bob help                                         Show this help message
 
 Examples:
@@ -24,7 +27,7 @@ Examples:
   bob init --stack react --shim auto --budget 15000
   bob build`;
 
-export default function BobInit() {
+export default function BobInit({ navMode = "user" }) {
   const { user } = useAuth();
   const [budget, setBudget] = useState(9500);
   const [command, setCommand] = useState("");
@@ -33,6 +36,7 @@ export default function BobInit() {
   const [buildDone, setBuildDone] = useState(false);
   const [stackConfig, setStackConfig] = useState(null);
   const [chatToCode, setChatToCode] = useState(false); // Plain-English mode for non-coders
+  const [historyRefresh, setHistoryRefresh] = useState(0); // bump to reload history panel
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -63,6 +67,8 @@ export default function BobInit() {
         else appendLine("error", "Unknown registry subcommand. Try: bob registry list");
       } else if (sub === "status") {
         handleStatus();
+      } else if (sub === "history") {
+        handleHistoryCmd();
       } else {
         appendLine("error", `Unknown subcommand: ${sub}. Type 'bob help'.`);
       }
@@ -137,6 +143,27 @@ export default function BobInit() {
     }
   };
 
+  const handleHistoryCmd = () => {
+    const entries = loadHistory();
+    if (entries.length === 0) {
+      appendLine("system", "No build history found. Run 'bob build' to create your first entry.", "You haven't built anything yet. Type 'bob build' after setting up a stack to start.");
+      return;
+    }
+    appendLine("system", `Build History (${entries.length} entries):`, `Here are your past ${entries.length} build${entries.length === 1 ? "" : "s"}:`);
+    entries.slice(0, 10).forEach((e, i) => {
+      appendLine("system", `  [${i + 1}] ${e.stack?.toUpperCase()}-AGENT-1.0 · $${e.budget?.toLocaleString()} · ${e.tier} · ${new Date(e.timestamp).toLocaleDateString()}`, `${e.stack} app built for $${e.budget?.toLocaleString()} (${e.tier} tier) on ${new Date(e.timestamp).toLocaleDateString()}`);
+    });
+  };
+
+  const restoreBuild = (entry) => {
+    const config = { stack: entry.stack, shim: entry.shim, budget: entry.budget };
+    setStackConfig(config);
+    setBudget(entry.budget);
+    setBuildDone(false);
+    appendLine("system", `↩ Restored build config: ${entry.stack} ($${entry.budget?.toLocaleString()}, ${entry.tier})`, `Loaded your previous ${entry.stack} build setup. Type 'bob build' to rebuild it.`);
+    inputRef.current?.focus();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     parseCommand(command);
@@ -156,18 +183,21 @@ export default function BobInit() {
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9]">
-      <SharedNav mode="user" theme="dev" />
+      <SharedNav mode={navMode} theme="dev" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <BobInitLogo size="lg" />
-          <div>
-            <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
-              B.O.B.Init <span className="text-cyan-400 text-sm font-mono">&lt;init&gt;</span>
-            </h1>
-            <p className="text-xs text-[#8b949e] font-mono">BOB-INIT-UI-TERMINAL-1.0 · The Machine that Builds Machines</p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BobInitLogo size="lg" />
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+                B.O.B.Init <span className="text-cyan-400 text-sm font-mono">&lt;init&gt;</span>
+              </h1>
+              <p className="text-xs text-[#8b949e] font-mono">BOB-INIT-UI-TERMINAL-1.0 · The Machine that Builds Machines</p>
+            </div>
           </div>
+          <BobInitHandbook />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-4">
@@ -229,7 +259,22 @@ export default function BobInit() {
             </div>
 
             {/* Build sequence */}
-            <BuildSequence active={buildActive} onComplete={() => { setBuildActive(false); setBuildDone(true); appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your app has been built, audited, and is ready to deploy. The self-healing layer is active so it will auto-fix itself if APIs change."); }} />
+            <BuildSequence active={buildActive} onComplete={() => {
+              setBuildActive(false);
+              setBuildDone(true);
+              const buildTier = getBudgetTier(stackConfig?.budget ?? budget);
+              saveBuildEntry({
+                stack: stackConfig?.stack,
+                shim: stackConfig?.shim,
+                budget: stackConfig?.budget ?? budget,
+                tier: buildTier.label,
+                tierColor: buildTier.color,
+                timestamp: new Date().toISOString(),
+              });
+              setHistoryRefresh((r) => r + 1);
+              appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your app has been built, audited, and is ready to deploy. The self-healing layer is active so it will auto-fix itself if APIs change.");
+              appendLine("system", "  ✓ Saved to build history.", "This build was saved to your history — click 'Build History' in the sidebar to view or restore it anytime.");
+            }} />
 
             {/* Quick actions */}
             <div className="flex flex-wrap gap-2">
@@ -245,6 +290,9 @@ export default function BobInit() {
               <Button onClick={() => { setCommand("bob registry list"); }} variant="outline" size="sm" className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22] hover:text-cyan-400 font-mono text-xs gap-1">
                 <ChevronRight className="w-3 h-3" /> registry
               </Button>
+              <Button onClick={() => { setCommand("bob history"); }} variant="outline" size="sm" className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22] hover:text-cyan-400 font-mono text-xs gap-1">
+                <ChevronRight className="w-3 h-3" /> history
+              </Button>
               <Button onClick={() => { setCommand("bob help"); }} variant="outline" size="sm" className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22] hover:text-cyan-400 font-mono text-xs gap-1">
                 <ChevronRight className="w-3 h-3" /> help
               </Button>
@@ -254,9 +302,10 @@ export default function BobInit() {
             </div>
           </div>
 
-          {/* Sidebar — budget + build summary */}
+          {/* Sidebar — budget + build summary + history */}
           <div className="space-y-4">
             <BudgetGauge budget={budget} setBudget={setBudget} />
+            <BobInitHistory refreshKey={historyRefresh} onRestore={restoreBuild} />
 
             {/* Build summary */}
             <Card className="border-[#30363d] bg-[#0d1117]">
