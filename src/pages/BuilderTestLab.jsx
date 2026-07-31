@@ -42,6 +42,12 @@ const CATEGORY_COLORS = {
   "External Test Key": "bg-rose-100 text-rose-700",
 };
 
+// Glass-grey gradient surface — translucent enough that the video background
+// shows through as a soft blur ("made out but not clearly seen"), opaque enough
+// that dark text stays crisp and legible.
+const GLASS_GREY =
+  "bg-gradient-to-br from-slate-100/85 via-slate-200/75 to-slate-300/60 backdrop-blur-xl border border-white/30 shadow-xl ring-1 ring-black/5";
+
 // ── Test Mode Tabs ──────────────────────────────────────────────────────────────
 const TEST_MODES = [
   { id: "chat", label: "Live Chat", icon: Bot },
@@ -67,7 +73,7 @@ function MessageBubble({ msg }) {
         <TestBotLogo size={28} className="mt-0.5" />
       )}
       <div className={`max-w-[80%] group relative`}>
-        <div className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm ${isUser ? "bg-violet-700 text-white" : "bg-slate-50 border border-slate-300 text-slate-900"}`}>
+        <div className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm ${isUser ? "bg-violet-700 text-white" : "bg-white/80 border border-white/40 text-slate-900 shadow-sm"}`}>
           {isUser ? (
             <p className="leading-relaxed">{msg.content}</p>
           ) : (
@@ -230,7 +236,7 @@ Compare your results against the platform benchmark scores above.
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {currentComponents.map(c => (
-          <div key={c.id} className="bg-white/60 backdrop-blur-md border border-white/40 shadow-lg rounded-xl p-4">
+          <div key={c.id} className="bg-gradient-to-br from-slate-100/85 via-slate-200/75 to-slate-300/60 backdrop-blur-xl border border-white/30 shadow-xl ring-1 ring-black/5 rounded-xl p-4">
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm font-bold text-slate-900">{c.name}</p>
@@ -317,7 +323,7 @@ function DocTestPanel({ conversation, onSend }) {
         <p className="text-xs text-slate-500">Upload any document — contract, invoice, schedule, site report — and BOT-X will extract, analyse, and score it like a component would.</p>
       </div>
 
-      <label className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl p-8 cursor-pointer transition-all ${file ? "border-violet-400 bg-violet-50" : "border-slate-200 hover:border-slate-300 bg-white"}`}>
+      <label className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl p-8 cursor-pointer transition-all ${file ? "border-violet-400 bg-violet-50" : "border-white/40 hover:border-white/60 bg-white/70"}`}>
         <input type="file" className="hidden" accept=".pdf,.docx,.doc,.xlsx,.csv,.txt,.png,.jpg,.jpeg" onChange={handleFile} />
         {uploading ? (
           <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
@@ -339,7 +345,7 @@ function DocTestPanel({ conversation, onSend }) {
       <div>
         <label className="text-xs font-semibold text-slate-700 mb-1 block">Test instruction (customise):</label>
         <textarea
-          className="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 h-20 resize-none focus:outline-none focus:border-violet-400"
+          className="w-full text-xs border border-white/40 bg-white/70 rounded-xl px-3 py-2 h-20 resize-none focus:outline-none focus:border-violet-400"
           value={testPrompt}
           onChange={e => setTestPrompt(e.target.value)}
         />
@@ -467,10 +473,10 @@ export default function BuilderTestLab() {
             <TestBotLogo size={48} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900">BOT-X Test Lab</h1>
+                <h1 className="text-xl font-black text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]">BOT-X Test Lab</h1>
                 <span className="text-[10px] font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Builder Exclusive</span>
               </div>
-              <p className="text-xs text-slate-500">Multi-modal AI testing · Component analysis · External AI benchmarking · Trust scoring</p>
+              <p className="text-xs text-slate-200 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">Multi-modal AI testing · Component analysis · External AI benchmarking · Trust scoring</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={newSession} className="gap-2 text-xs shrink-0">
@@ -482,7 +488,7 @@ export default function BuilderTestLab() {
           {/* LEFT — Chat panel */}
           <div className="lg:col-span-2 flex flex-col">
             {/* Mode tabs */}
-            <div className="flex gap-1 mb-3 bg-white/90 backdrop-blur-md border border-white/50 shadow-lg rounded-xl p-1">
+            <div className="flex gap-1 mb-3 bg-gradient-to-br from-slate-100/85 via-slate-200/75 to-slate-300/60 backdrop-blur-xl border border-white/30 shadow-xl ring-1 ring-black/5 rounded-xl p-1">
               {TEST_MODES.map(m => {
                 const Icon = m.icon;
                 return (
@@ -498,7 +504,7 @@ export default function BuilderTestLab() {
               })}
             </div>
 
-            <div className="bg-white/95 backdrop-blur-md border border-slate-300/70 shadow-2xl ring-1 ring-black/5 rounded-2xl flex flex-col flex-1 min-h-[520px]">
+            <div className="bg-gradient-to-br from-slate-100/85 via-slate-200/75 to-slate-300/60 backdrop-blur-xl border border-white/30 shadow-2xl ring-1 ring-black/5 rounded-2xl flex flex-col flex-1 min-h-[520px]">
               {/* Chat mode */}
               {mode === "chat" && (
                 <>
@@ -514,7 +520,7 @@ export default function BuilderTestLab() {
                     {sending && (
                       <div className="flex gap-2 justify-start">
                         <TestBotLogo size={28} />
-                        <div className="bg-slate-50 border border-slate-300 rounded-2xl px-4 py-2.5 shadow-sm">
+                        <div className="bg-white/70 border border-white/40 rounded-2xl px-4 py-2.5 shadow-sm">
                           <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
                         </div>
                       </div>
@@ -523,7 +529,7 @@ export default function BuilderTestLab() {
                   </div>
                   <div className="border-t border-slate-100 px-4 py-3 flex gap-2">
                     <input
-                      className="flex-1 text-sm border border-slate-300 bg-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-violet-500 placeholder:text-slate-500 font-medium text-slate-900"
+                      className="flex-1 text-sm border border-slate-300 bg-white/80 rounded-xl px-4 py-2.5 focus:outline-none focus:border-violet-500 placeholder:text-slate-500 font-medium text-slate-900"
                       placeholder="Ask BOT-X anything…"
                       value={input}
                       onChange={e => setInput(e.target.value)}
@@ -544,7 +550,7 @@ export default function BuilderTestLab() {
                     <button
                       key={i}
                       onClick={() => { setInput(p.prompt); setMode("chat"); }}
-                      className="w-full text-left flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-violet-200 hover:bg-violet-50 transition-all group"
+                      className="w-full text-left flex items-center gap-3 p-3 rounded-xl border border-white/40 hover:border-violet-300 hover:bg-violet-500/10 transition-all group"
                     >
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${CATEGORY_COLORS[p.category] || "bg-slate-100 text-slate-600"}`}>
                         {p.category}
@@ -575,7 +581,7 @@ export default function BuilderTestLab() {
           {/* RIGHT — Stats + quick actions */}
           <div className="space-y-4">
             {/* Session info */}
-            <Card>
+            <Card className={GLASS_GREY}>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-violet-500" /> Session
@@ -606,7 +612,7 @@ export default function BuilderTestLab() {
             </Card>
 
             {/* Component quick-test cards */}
-            <Card>
+            <Card className={GLASS_GREY}>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-500" /> Quick Component Tests
@@ -620,7 +626,7 @@ export default function BuilderTestLab() {
                       setInput(`Give me a full analysis of the "${c.name}" component (${c.code}). Include trust score breakdown, use cases, output schema, competitive positioning, and any risk flags.`);
                       setMode("chat");
                     }}
-                    className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 group"
+                    className="w-full text-left flex items-center gap-2 p-2 rounded-lg hover:bg-white/40 group"
                   >
                     <div className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0">{c.type}</div>
                     <span className="text-xs text-slate-700 font-medium flex-1 truncate group-hover:text-violet-700">{c.name}</span>
@@ -631,7 +637,7 @@ export default function BuilderTestLab() {
             </Card>
 
             {/* Trust score rubric */}
-            <Card>
+            <Card className={GLASS_GREY}>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Star className="w-4 h-4 text-violet-500" /> Trust Score Rubric
@@ -662,7 +668,7 @@ export default function BuilderTestLab() {
             </Card>
 
             {/* Capability chips */}
-            <Card>
+            <Card className={GLASS_GREY}>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FlaskConical className="w-4 h-4 text-blue-500" /> What BOT-X Can Test
