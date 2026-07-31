@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
+import MyBuilds from "@/components/pwa/MyBuilds";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -161,6 +162,9 @@ export default function PwaPortal() {
             </CardContent>
           </Card>
         </div>
+
+        {/* My B.O.B.Init Builds — persisted, installable, downloadable */}
+        <MyBuilds />
 
         {/* Legal disclaimer gate */}
         <Card className="border-amber-200 bg-amber-50">

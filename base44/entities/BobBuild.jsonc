@@ -1,0 +1,137 @@
+{
+  "name": "BobBuild",
+  "type": "object",
+  "properties": {
+    "builder_id": {
+      "type": "string",
+      "description": "Base44 user ID of the builder who rendered this B.O.B.Init build"
+    },
+    "stack": {
+      "type": "string",
+      "description": "Project stack chosen in the B.O.B.Init terminal (e.g. nextjs, react)"
+    },
+    "shim": {
+      "type": "string",
+      "description": "Self-Healing Shim mode (auto/manual)"
+    },
+    "budget": {
+      "type": "number",
+      "description": "Build budget allocated in the terminal"
+    },
+    "tier": {
+      "type": "string"
+    },
+    "selected_features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Feature ids selected on the Feature Selection page",
+      "default": []
+    },
+    "feature_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Human-readable labels of the selected modules (for display in dashboards)",
+      "default": []
+    },
+    "rules": {
+      "type": "string",
+      "description": "Rules-engine text injected into the manifest"
+    },
+    "code_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of uploaded code-injection files",
+      "default": []
+    },
+    "api_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
+    "esi_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Environment-Sovereign-Index score 0-100"
+    },
+    "pwa_name": {
+      "type": "string",
+      "description": "Display name used inside the generated PWA manifest"
+    },
+    "build_code": {
+      "type": "string",
+      "description": "Short build code, e.g. ASX-BUILD-XXXXX"
+    },
+    "manifest_json": {
+      "type": "string",
+      "description": "The generated PWA web-app manifest JSON string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rendered",
+        "archived"
+      ],
+      "default": "rendered"
+    }
+  },
+  "required": [
+    "builder_id"
+  ],
+  "rls": {
+    "create": {
+      "data.builder_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.builder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

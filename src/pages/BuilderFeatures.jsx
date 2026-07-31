@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ListChecks, CheckCircle2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { FEATURE_GROUPS, calculateEsi } from "@/components/bob-init/featureData";
 import SharedNav from "@/components/SharedNav";
 import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
 import FeatureGroup from "@/components/bob-init/FeatureGroup";
@@ -17,16 +19,36 @@ export default function BuilderFeatures() {
   const [apiFields, setApiFields] = useState([]);
   const [rendering, setRendering] = useState(false);
   const [rendered, setRendered] = useState(false);
+  const [renderError, setRenderError] = useState(null);
 
   const toggle = (id) => setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleRender = () => {
+  const handleRender = async () => {
+    const selectedIds = Object.keys(selected).filter((k) => selected[k]);
+    if (selectedIds.length === 0) return;
     setRendering(true);
     setRendered(false);
-    setTimeout(() => {
+    setRenderError(null);
+    try {
+      const feature_labels = FEATURE_GROUPS.flatMap((g) =>
+        g.features.filter((f) => selected[f.id]).map((f) => f.label.split("(")[0].trim())
+      );
+      const esi_score = calculateEsi(selected);
+      const res = await base44.functions.invoke("saveBobBuild", {
+        selected_features: selectedIds,
+        feature_labels,
+        rules,
+        code_files: uploadedFiles.map((f) => f.name || f),
+        api_fields: apiFields.filter((f) => f.key && f.key.trim()),
+        esi_score,
+        pwa_name: "Alt+Shift+X PWA",
+      });
       setRendering(false);
       setRendered(true);
-    }, 3500);
+    } catch (e) {
+      setRendering(false);
+      setRenderError(e?.response?.data?.error || e.message || "Render failed");
+    }
   };
 
   return (
@@ -61,9 +83,19 @@ export default function BuilderFeatures() {
             <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-bold text-green-400">Build manifest rendered successfully.</p>
-              <p className="text-xs text-[#8b949e] font-mono">Your PWA has been hardened with {Object.values(selected).filter(Boolean).length} modules and is ready for download from your <Link to="/dashboard" className="text-cyan-400 hover:underline">dashboard</Link>.</p>
+              <p className="text-xs text-[#8b949e] font-mono">Your PWA has been hardened with {Object.values(selected).filter(Boolean).length} modules and saved to your account. Install or download it from the <Link to="/dashboard/pwa" className="text-cyan-400 hover:underline">PWA Portal</Link>.</p>
             </div>
             <button onClick={() => setRendered(false)} className="text-xs font-mono text-[#484f58] hover:text-[#8b949e]">Dismiss</button>
+          </div>
+        )}
+
+        {renderError && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-bold text-red-400">Render failed.</p>
+              <p className="text-xs text-[#8b949e] font-mono">{renderError}</p>
+            </div>
+            <button onClick={() => setRenderError(null)} className="text-xs font-mono text-[#484f58] hover:text-[#8b949e]">Dismiss</button>
           </div>
         )}
 
