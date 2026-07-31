@@ -14,6 +14,7 @@ const STEPS = [
   { id: "dossier", label: "Forensic Dossier", icon: ShieldCheck },
   { id: "intent", label: "The Intent Map", icon: FileText },
   { id: "schedule", label: "Scheduling", icon: Calendar },
+  { id: "review", label: "Review", icon: CheckCircle2 },
   { id: "checkout", label: "Billing", icon: CreditCard },
 ];
 
@@ -73,7 +74,7 @@ export default function Consultation() {
 
   // Fetch consultation fee from Component entity
   useEffect(() => {
-    if (step === 3 && consultationFee === null) {
+    if (step === 4 && consultationFee === null) {
       base44.entities.Component.filter({ code: CONSULTATION_COMPONENT_CODE })
         .then((comps) => {
           if (comps[0]?.price != null) setConsultationFee(comps[0].price);
@@ -488,7 +489,50 @@ export default function Consultation() {
             {step === 3 && (
               <>
                 <h3 className="text-sm font-mono uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4" /> Step D — Billing & Checkout
+                  <CheckCircle2 className="w-4 h-4" /> Step D — Intake Review
+                </h3>
+                <p className="text-xs text-[#8b949e]">Review your complete forensic dossier, intent map, and scheduled session before proceeding to billing.</p>
+
+                {/* Dossier review */}
+                <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-3 space-y-1.5">
+                  <p className="text-[10px] font-mono text-[#484f58] uppercase flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" /> Forensic Dossier
+                  </p>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Name:</span> {fullName}</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Role:</span> {role}</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Entity:</span> {entityName} ({entityType})</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Tax ID:</span> {taxId || "—"}</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Disclaimer:</span> <span className="text-green-400">Accepted</span></div>
+                </div>
+
+                {/* Intent review */}
+                <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-3 space-y-1.5">
+                  <p className="text-[10px] font-mono text-[#484f58] uppercase flex items-center gap-1">
+                    <FileText className="w-3 h-3" /> The Intent Map
+                  </p>
+                  <div className="text-[11px] text-[#8b949e] leading-relaxed">{objective}</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Document:</span> {intentDoc?.name || "None attached"}</div>
+                </div>
+
+                {/* Schedule review */}
+                <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-3 space-y-1.5">
+                  <p className="text-[10px] font-mono text-[#484f58] uppercase flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> Scheduling
+                  </p>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Session:</span> {startTime ? new Date(startTime).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</div>
+                  <div className="text-[11px] text-[#8b949e]"><span className="text-[#484f58]">Duration:</span> 45 minutes</div>
+                </div>
+
+                <div className="rounded-lg border border-[#C8A95B]/30 bg-[#C8A95B]/5 p-3 text-center">
+                  <p className="text-[11px] text-[#C8A95B] font-mono">✓ All intake fields verified. Proceed to Billing to finalize your session.</p>
+                </div>
+              </>
+            )}
+
+            {step === 4 && (
+              <>
+                <h3 className="text-sm font-mono uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4" /> Step E — Billing & Checkout
                 </h3>
                 <p className="text-xs text-[#8b949e]">Your consultation is finalized only upon successful payment. Have a Non-Profit Promo Code? Enter it below for $0 setup.</p>
 
@@ -506,7 +550,7 @@ export default function Consultation() {
                   )}
                   <div className="border-t border-[#30363d] pt-2 flex items-center justify-between">
                     <span className="text-xs text-[#c9d1d9] font-bold font-mono">Total</span>
-                    <span className="text-lg font-black font-mono ${finalPrice === 0 ? 'text-green-400' : 'text-[#C8A95B]'}">${finalPrice.toLocaleString()}.00</span>
+                    <span className={`text-lg font-black font-mono ${finalPrice === 0 ? "text-green-400" : "text-[#C8A95B]"}`}>${finalPrice.toLocaleString()}.00</span>
                   </div>
                 </div>
 
@@ -580,7 +624,7 @@ export default function Consultation() {
               <Button variant="outline" size="sm" disabled={step === 0} onClick={() => setStep((s) => s - 1)} className="border-[#30363d] text-[#8b949e] hover:bg-[#161b22] font-mono text-xs">
                 <ChevronLeft className="w-3 h-3" /> Back
               </Button>
-              {step < 3 ? (
+              {step < 4 ? (
                 <Button size="sm" disabled={!canNext} onClick={() => setStep((s) => s + 1)} className="bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold text-xs">
                   Continue <ChevronRight className="w-3 h-3" />
                 </Button>
