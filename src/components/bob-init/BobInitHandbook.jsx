@@ -10,22 +10,28 @@ const SECTIONS = [
     body: (
       <>
         <p>B.O.B.Init is not a "coding tool"—it is a <strong className="text-cyan-400">Machine that Builds Machines</strong>. It takes your ideas and turns them into hardened, revenue-generating Sovereign components.</p>
+        <p className="mt-2"><strong className="text-amber-400">🚀 The Rocket Ship Update (V3.0):</strong> Easy, user-friendly, and powerful. Build like a boutique design firm—not a generator.</p>
       </>
     ),
   },
   {
-    id: "guide",
+    id: "build-guide",
     icon: BookOpen,
-    title: "1. How to Build Your First App",
+    title: "🚀 How to Build (The Sovereign Way)",
     body: (
       <>
-        <p className="mb-2">Building an app used to take months. With B.O.B.Init, it takes a conversation.</p>
-        <ul className="space-y-2">
-          <li><strong className="text-cyan-400">Step 1 — The Vision (Chat-to-Code):</strong> Talk to BOB like a partner. Say, <em>"I want a secure app for sports agents that handles medical data and legal contracts."</em> BOB translates this into a "Manifest"—a list of technical parts needed for the job.</li>
-          <li><strong className="text-cyan-400">Step 2 — Customizing Your Logic:</strong> You don't need to write <code className="text-amber-400">if/else</code> statements. Just tell BOB the "Rules of the House." (Example: <em>"If a player's health score drops below 70, alert the manager immediately."</em>)</li>
-          <li><strong className="text-cyan-400">Step 3 — The Assembly:</strong> Click "Render." B.O.B.Init pulls the parts from the Unzipped Catalog, wraps them in a secure PWA shell, and gives you a download link.</li>
-          <li><strong className="text-cyan-400">Step 4 — The Download:</strong> Go to your dashboard, click the "Rocket" icon, and the PWA installs on your phone or desktop in seconds. <strong>Zero App Store hassle.</strong></li>
-        </ul>
+        <ol className="space-y-2 list-decimal list-inside">
+          <li><strong className="text-cyan-400">The Conversation:</strong> Tell BOB what you want to build. Use <em>Chat-to-Code</em> for rapid ideation. Say: <em>"I need an app that audits carbon credits."</em> BOB does the heavy lifting.</li>
+          <li><strong className="text-cyan-400">The Feature Checklist:</strong> Use the <strong>Feature Selection Page</strong>. Check the boxes for security and operational tools you need.
+            <ul className="ml-4 mt-1 space-y-0.5 text-[11px]">
+              <li>• Need privacy? Check <strong>PII Fragmentation</strong>.</li>
+              <li>• Need file sharing? Check <strong>D2D Sync</strong>.</li>
+            </ul>
+          </li>
+          <li><strong className="text-cyan-400">The Custom Rules:</strong> In the "Rules" box, tell your app how to behave. (e.g., <em>"Only allow managers to see financial data."</em>) You don't need to be a coder; you just need to be the Boss.</li>
+          <li><strong className="text-cyan-400">For the Coders:</strong> If you already have code, drag and drop your files. B.O.B.Init will "Hard Code" your custom logic into the Sovereign substrate so it remains invariant and unchangeable.</li>
+          <li><strong className="text-cyan-400">The Launch:</strong> Click <strong>Render</strong>. Your PWA is built, hardened, and ready for download.</li>
+        </ol>
       </>
     ),
   },
@@ -37,13 +43,44 @@ const SECTIONS = [
       <>
         <p className="mb-2">Hardened Modules you can toggle on for any build:</p>
         <ul className="space-y-1.5">
+          <li>☑ <strong className="text-cyan-400">seL4 Isolation:</strong> Hardware-level separation of your app's "brain" from the internet.</li>
+          <li>☑ <strong className="text-cyan-400">FPGA Ingress Gate:</strong> Ingress filtering that drops non-authorized traffic.</li>
           <li>☑ <strong className="text-cyan-400">PII Fragmentation:</strong> Automatically splits user data across 5 nodes (Impossible to Hack).</li>
           <li>☑ <strong className="text-cyan-400">D2D Sync:</strong> Active "Internet Bluetooth" file sharing.</li>
-          <li>☑ <strong className="text-cyan-400">Blackstone Guardrails:</strong> Real-time legal liability shifting.</li>
+          <li>☑ <strong className="text-cyan-400">Blackstone Guard:</strong> Real-time legal liability shifting.</li>
           <li>☑ <strong className="text-cyan-400">Hippocrates Shield:</strong> HIPAA-compliant health data encryption.</li>
           <li>☑ <strong className="text-cyan-400">Self-Healing Shim:</strong> Auto-updates your app when APIs change.</li>
-          <li>☑ <strong className="text-cyan-400">seL4 Isolation:</strong> Hardware-level separation of your app's "brain" from the internet.</li>
-          <li>☑ <strong className="text-cyan-400">FPGA Boolean Gate:</strong> Ingress filtering that drops non-authorized traffic.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "titan-features",
+    icon: Crown,
+    title: "🏆 The Four Titan Features (Award-Winning)",
+    body: (
+      <>
+        <p className="mb-2">To win the UI Builder Award and make this unrecognizable as an AI agent, inject these four features:</p>
+        <ul className="space-y-2">
+          <li><strong className="text-amber-300">Brand Absorption (Mirroring Layer):</strong> Scan a client's website and adopt their <em>exact</em> CSS variables, typography, and spacing. Your PWA looks like it was built by a $500k/year boutique design firm.</li>
+          <li><strong className="text-amber-300">Reason Council Logic Map (X4 Visualizer):</strong> A high-fidelity, interactive wiring diagram showing how agents in the Reason Council communicate. Bloomberg Terminal style—visually dense, professional, and data-heavy.</li>
+          <li><strong className="text-amber-300">Ghost-Build (Metadata Obfuscation):</strong> Scrambles the build's metadata and file headers. No "AI-generated" comments or GPT boilerplate—your PWA looks like bespoke, hand-coded assembly.</li>
+          <li><strong className="text-amber-300">'Perfect Play' Simulator:</strong> A "Stress-Test" button that runs 1M virtual interactions in 5 seconds before render. Provides a "Resilience Report" with heatmaps and failure-node analysis.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "pro-architect",
+    icon: Zap,
+    title: "🏗 The Pro-Architect Edition (V3.0)",
+    body: (
+      <>
+        <ul className="space-y-2">
+          <li><strong className="text-cyan-400">Erasing the AI Fingerprint:</strong> Use <strong>Brand Absorption</strong>. If building for a sports team, scan their home page. Your builder UI instantly morphs to match their legacy colors and fonts.</li>
+          <li><strong className="text-cyan-400">The Engineering View:</strong> Don't just trust the chat. Switch to the <strong>Logic Map</strong> to see the "Thinking" behind your Reason Council. Manually tweak how agents vote on your business rules.</li>
+          <li><strong className="text-cyan-400">Bespoke Code Injection:</strong> For the award-winning look, use <strong>Ghost-Build</strong>. It scrubs the platform signatures, making your PWA an "untraceable" masterpiece of operational engineering.</li>
+          <li><strong className="text-cyan-400">Final Certification:</strong> Never render without a <strong>'Perfect Play' Simulation</strong>. It's the difference between a "prototype" and a "Sovereign Asset."</li>
         </ul>
       </>
     ),
@@ -70,14 +107,12 @@ const SECTIONS = [
   {
     id: "admin",
     icon: Crown,
-    title: "4. Admin & Gating: The BOB Bridge",
+    title: "🔧 Customize & Gate",
     body: (
       <>
-        <p className="mb-2"><strong className="text-amber-400">Admin Only (BOB-INIT-ADMIN-KEY required):</strong></p>
-        <ul className="space-y-1.5">
-          <li><strong className="text-cyan-400">BOB's Autonomy:</strong> BOB can self-update the B.O.B.Init engine. When you ask it to "Add a feature to the builder," it uses <code className="text-amber-400">createComponentSafe</code> to update <code className="text-amber-400">BOB-INIT-ENGINE-1.0</code> in real-time.</li>
-          <li><strong className="text-cyan-400">Pipeline Gating:</strong> The Sovereign Restriction is enforced — only <strong>Betta Vested 100</strong> members can see the high-stakes "Enterprise Exclusive" components.</li>
-        </ul>
+        <p className="mb-2"><strong className="text-amber-400">Gating:</strong> Only <strong>Vested 100</strong> members can see the high-stakes "Enterprise Exclusive" pipelines.</p>
+        <p className="mb-2"><strong className="text-amber-400">Admin Access:</strong> As an admin, you can ask BOB to add <em>any</em> component or new coding logic directly into the B.O.B.Init engine. Just say: <em>"BOB, add [Component Code] to my builder checklist."</em></p>
+        <p className="mb-2"><strong className="text-amber-400">BOB's Autonomy:</strong> BOB can self-update the B.O.B.Init engine. When you ask it to "Add a feature to the builder," it uses <code className="text-amber-400">createComponentSafe</code> to update <code className="text-amber-400">BOB-INIT-ENGINE-1.0</code> in real-time.</p>
       </>
     ),
   },
@@ -163,7 +198,7 @@ export default function BobInitHandbook() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-1.0</span>
+              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-3.0 · The Pro-Architect Edition</span>
               <Button onClick={() => setOpen(false)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
                 Got it
               </Button>

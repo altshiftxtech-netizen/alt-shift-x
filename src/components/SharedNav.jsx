@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown, ListChecks } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -31,6 +31,7 @@ const BUILDER_NAV = [
 const BUILDER_NAV_MORE = [
   { to: "/builder/bob", label: "BOB Builder", icon: Bot },
   { to: "/builder/bob-init", label: "B.O.B.Init", icon: Terminal },
+  { to: "/builder/features", label: "Feature Selector", icon: ListChecks },
   { to: "/enterprise/expertminds", label: "ExpertMinds", icon: Crown },
   { to: "/builder/trust", label: "Trust", icon: ShieldCheck },
   { to: "/builder/governance", label: "Governance", icon: ShieldCheck },

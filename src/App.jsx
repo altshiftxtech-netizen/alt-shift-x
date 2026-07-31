@@ -70,6 +70,7 @@ import SensitiveIntelligencePolicy from './pages/SensitiveIntelligencePolicy';
 import BobBuilder from './pages/BobBuilder';
 import BobInit from './pages/BobInit';
 import BuilderBobInit from './pages/BuilderBobInit';
+import BuilderFeatures from './pages/BuilderFeatures';
 import ComponentVersionHistory from './pages/ComponentVersionHistory';
 import WebhookManager from './pages/WebhookManager';
 import GovernanceDashboard from './pages/GovernanceDashboard';
@@ -259,6 +260,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/profile" element={<BuilderProfile />} />
         <Route path="/builder/bob" element={<BobBuilder />} />
         <Route path="/builder/bob-init" element={<BuilderBobInit />} />
+        <Route path="/builder/features" element={<BuilderFeatures />} />
         <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
         <Route path="/builder/governance" element={<GovernanceDashboard />} />
         <Route path="/builder/test-lab" element={<BuilderTestLab />} />
