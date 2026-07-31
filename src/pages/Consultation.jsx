@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import SharedNav from "@/components/SharedNav";
 import useSovereignAccess from "@/hooks/useSovereignAccess";
+import SchedulePicker from "@/components/consultation/SchedulePicker";
 import {
   Crown, Lock, ChevronRight, ChevronLeft, Upload, FileText,
   CheckCircle2, Loader2, ShieldCheck, Calendar, Video, AlertCircle, Building2,
@@ -183,9 +183,7 @@ export default function Consultation() {
       </video>
       <div className="fixed inset-0 bg-[#0d1117]/50 pointer-events-none" />
 
-      <SharedNav mode="user" theme="dev" />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-12 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C8A95B]/10 border border-[#C8A95B]/30">
@@ -317,18 +315,9 @@ export default function Consultation() {
                 <h3 className="text-sm font-mono uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" /> Step C — Scheduling
                 </h3>
-                <p className="text-xs text-[#8b949e]">Select your preferred consultation window. Scheduling opens Monday for Tuesday appointments.</p>
+                <p className="text-xs text-[#8b949e]">Select your preferred date and time. Consultations are available Monday–Friday, 9 AM – 6 PM, with a 1–3 PM break.</p>
 
-                <div>
-                  <label className="text-xs text-[#8b949e] font-mono">Preferred Start Time *</label>
-                  <input
-                    type="datetime-local"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full mt-1 rounded-lg border border-[#30363d] bg-[#010409] px-3 py-2 text-xs text-[#c9d1d9] focus:outline-none focus:border-[#C8A95B]/50"
-                  />
-                  <p className="mt-1 text-[10px] text-[#484f58] font-mono">A Google Meet link will be generated and sent to your email.</p>
-                </div>
+                <SchedulePicker value={startTime} onChange={setStartTime} />
 
                 {/* Intake summary */}
                 <div className="rounded-lg border border-[#30363d] bg-[#161b22] p-3 space-y-1.5">
