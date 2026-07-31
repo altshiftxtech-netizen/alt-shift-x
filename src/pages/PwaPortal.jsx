@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor } from "lucide-react";
+import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor, Bot } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import PwaInstallButton from "@/components/pwa/PwaInstallButton";
+import PwaAgentInstallButton from "@/components/pwa/PwaAgentInstallButton";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -83,46 +84,82 @@ export default function PwaPortal() {
           </Card>
         </div>
 
-        {/* Install card */}
-        <Card className="border-slate-200">
-          <CardContent className="pt-6 pb-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#343A40] flex items-center justify-center shrink-0">
-                <Monitor className="w-6 h-6 text-[#F8F9FA]" />
-              </div>
-              <div className="flex-1 space-y-3">
+        {/* PWA install cards — Site Mirror + Agent Wrapper */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Site Mirror PWA */}
+          <Card className="border-slate-200">
+            <CardContent className="pt-6 pb-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-[#343A40] flex items-center justify-center shrink-0">
+                  <Monitor className="w-5 h-5 text-[#F8F9FA]" />
+                </div>
                 <div>
-                  <h2 className="text-lg font-bold text-[#343A40]" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
-                    Install the Sovereign PWA
+                  <h2 className="font-bold text-[#343A40] text-base" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+                    Site Mirror PWA
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1">
-                    A standalone, office-ready app that mirrors altshiftx.tech. No app store required — installs directly from your browser.
+                  <p className="text-xs text-slate-400">Mirrors altshiftx.tech · /state/* excluded</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-500 mb-4">
+                Standalone app that mirrors the full altshiftx.tech site. No app store required.
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
+              ) : isTopTier || isAdmin ? (
+                <div className="space-y-2">
+                  <PwaInstallButton />
+                  <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
                 </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button asChild className="bg-slate-700 hover:bg-slate-800 text-white gap-2 w-full">
+                    <Link to="/pricing"><Lock className="w-4 h-4" /> Upgrade to Install</Link>
+                  </Button>
+                  <p className="text-xs text-slate-400">Free-tier needs a plan upgrade.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-                {loading ? (
-                  <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking subscription tier...</div>
-                ) : isTopTier || isAdmin ? (
-                  <div className="space-y-2">
-                    <PwaInstallButton />
-                    <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Your TopTier subscription includes free PWA installation.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Button asChild className="bg-slate-700 hover:bg-slate-800 text-white gap-2">
-                      <Link to="/pricing"><Lock className="w-4 h-4" /> Download Access — Upgrade Required</Link>
-                    </Button>
-                    <p className="text-xs text-slate-400">
-                      Free-tier users need a one-time plan upgrade to unlock PWA download access. TopTier subscribers install for free.
-                    </p>
-                  </div>
-                )}
+          {/* Agent Wrapper PWA */}
+          <Card className="border-slate-200">
+            <CardContent className="pt-6 pb-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-[#343A40] flex items-center justify-center shrink-0">
+                  <Bot className="w-5 h-5 text-[#F8F9FA]" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-[#343A40] text-base" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+                    Agent Wrapper PWA
+                  </h2>
+                  <p className="text-xs text-slate-400">PWA-AGENT-WRAPPER-1.0 · Generic Office</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <p className="text-sm text-slate-500 mb-4">
+                Portable neutral container for AI services. Deploy to clients with a unique manifest.
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
+              ) : isTopTier || isAdmin ? (
+                <div className="space-y-2">
+                  <PwaAgentInstallButton />
+                  <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button asChild className="bg-slate-700 hover:bg-slate-800 text-white gap-2 w-full">
+                    <Link to="/pricing"><Lock className="w-4 h-4" /> Upgrade to Install</Link>
+                  </Button>
+                  <p className="text-xs text-slate-400">Free-tier needs a plan upgrade.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Legal disclaimer gate */}
         <Card className="border-amber-200 bg-amber-50">

@@ -1,0 +1,26 @@
+{
+  "name": "Alt+Shift+X — Agent Wrapper (Generic Office)",
+  "short_name": "ASX Agent",
+  "description": "PWA-AGENT-WRAPPER-1.0 — a portable, neutral container for AI services and model building. Generic Office aesthetic.",
+  "start_url": "/agent",
+  "scope": "/agent",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#F8F9FA",
+  "background_color": "#F8F9FA",
+  "icons": [
+    {
+      "src": "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d476ae1cb_altxlogo2.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d476ae1cb_altxlogo2.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business", "developer"]
+}

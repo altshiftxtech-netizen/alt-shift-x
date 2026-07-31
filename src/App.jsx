@@ -49,6 +49,7 @@ import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PwaPortal from './pages/PwaPortal';
 import SovereignPwaPolicy from './pages/SovereignPwaPolicy';
+import PwaAgent from './pages/PwaAgent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ExportControls from './pages/ExportControls';
@@ -192,6 +193,7 @@ const AuthenticatedApp = () => {
       <Route path="/legal/childrens-safety" element={<LegalChildrensSafety />} />
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/legal/sovereign-pwa" element={<SovereignPwaPolicy />} />
+      <Route path="/agent" element={<PwaAgent />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
