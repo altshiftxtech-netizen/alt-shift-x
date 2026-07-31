@@ -2,7 +2,7 @@
 // Unlike the Site Mirror (locked to pwa.altshiftx.tech via lockedManifest.js),
 // the Agent Wrapper can be deployed to any domain the user specifies.
 
-export const DEFAULT_AGENT_DOMAIN = "https://pwa.altshiftx.tech";
+export const DEFAULT_AGENT_DOMAIN = "";
 
 export const AGENT_MANIFEST_BASE = {
   name: "Agent Wrapper",
@@ -18,17 +18,28 @@ export const AGENT_MANIFEST_BASE = {
 };
 
 // Generates a blob URL for a manifest with the user-specified domain.
+// The Agent Wrapper must NEVER use the locked Site Mirror domain.
+const FORBIDDEN_DOMAIN = "pwa.altshiftx.tech";
+
 export function getAgentManifestUrl(domain = DEFAULT_AGENT_DOMAIN) {
   let normalized = domain.trim();
-  if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+
+  // Hard guard: reject the locked Site Mirror domain — it is never attached
+  // to the Agent Wrapper PWA.
+  if (normalized.includes(FORBIDDEN_DOMAIN)) {
+    normalized = "";
+  }
+
+  if (normalized && !normalized.startsWith("http://") && !normalized.startsWith("https://")) {
     normalized = "https://" + normalized;
   }
   normalized = normalized.replace(/\/+$/, "");
 
+  const startUrl = normalized || "https://your-domain.com";
   const manifest = {
     ...AGENT_MANIFEST_BASE,
-    start_url: normalized,
-    scope: normalized,
+    start_url: startUrl,
+    scope: startUrl,
   };
   const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" });
   return URL.createObjectURL(blob);
