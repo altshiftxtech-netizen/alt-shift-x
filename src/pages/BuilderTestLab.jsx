@@ -375,6 +375,8 @@ export default function BuilderTestLab() {
   const [components, setComponents] = useState([]);
   const [initDone, setInitDone] = useState(false);
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const isNearBottomRef = useRef(true);
 
   useEffect(() => {
     Promise.all([
@@ -406,21 +408,48 @@ export default function BuilderTestLab() {
     }
   }, [user, initDone]);
 
+  // Smart auto-scroll: only jump to the bottom when the user is already near it.
+  // If they've scrolled up to read earlier messages, don't yank them back down as
+  // the bot streams. Uses instant scroll (not smooth) so rapid token updates
+  // don't cause a janky "creeping" animation that fights itself.
   useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    const el = scrollContainerRef.current;
+    if (el && isNearBottomRef.current) {
+      el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, sending]);
+
+  // Reset to bottom when entering chat mode so the user sees the latest messages.
+  useEffect(() => {
+    if (mode === "chat") {
+      isNearBottomRef.current = true;
+      requestAnimationFrame(() => {
+        const el = scrollContainerRef.current;
+        if (el) el.scrollTop = el.scrollHeight;
+      });
+    }
+  }, [mode]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    isNearBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
 
   const sendMessage = async (text, fileUrl = null) => {
     if (!text.trim() || !conversation || sending) return;
+    isNearBottomRef.current = true;
     setSending(true);
-    if (fileUrl) {
-      await base44.agents.addMessage(conversation, { role: "user", content: text, file_urls: [fileUrl] });
-    } else {
-      await base44.agents.addMessage(conversation, { role: "user", content: text });
+    try {
+      if (fileUrl) {
+        await base44.agents.addMessage(conversation, { role: "user", content: text, file_urls: [fileUrl] });
+      } else {
+        await base44.agents.addMessage(conversation, { role: "user", content: text });
+      }
+    } finally {
+      setSending(false);
     }
-    setSending(false);
     if (mode !== "chat") setMode("chat");
   };
 
@@ -508,7 +537,7 @@ export default function BuilderTestLab() {
               {/* Chat mode */}
               {mode === "chat" && (
                 <>
-                  <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ maxHeight: "460px" }}>
+                  <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ maxHeight: "460px" }}>
                     {messages.length === 0 && !sending && (
                       <div className="text-center py-10">
                         <TestBotLogo size={40} className="mx-auto mb-3" />
