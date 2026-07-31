@@ -15,7 +15,6 @@ export default function ConsultationPolicyFooter() {
 
   return (
     <>
-      <p className="text-[9px] font-mono text-[#484f58] uppercase tracking-[0.2em] text-center mb-2">The Sovereign Footer Suite</p>
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         {POLICIES.map((p, i) => (
           <React.Fragment key={p.code}>

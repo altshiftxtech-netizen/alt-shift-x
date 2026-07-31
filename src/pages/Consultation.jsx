@@ -649,8 +649,7 @@ export default function Consultation() {
         </Card>
 
         {/* Status footer */}
-        <div className="text-center space-y-2">
-          <p className="text-[10px] font-mono text-[#484f58]">ROADMAP INTEGRITY: 115% · GATE STATUS: ARMED · PRIVACY VEIL: HOLDING</p>
+        <div className="text-center">
           <ConsultationPolicyFooter />
         </div>
       </div>
