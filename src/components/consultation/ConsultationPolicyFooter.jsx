@@ -3,11 +3,11 @@ import { FileText, X } from "lucide-react";
 import { POLICY_TEXT } from "@/components/consultation/consultationPolicies";
 
 const POLICIES = [
-  { code: "SOV-LEGAL-CONSULT-TERMS-1.0", name: "Terms of Service" },
+  { code: "SOV-LEGAL-CONSULT-TERMS-1.0", name: "Consultation Terms" },
   { code: "SOV-PRIVACY-CONSULT-1.0", name: "Privacy Policy" },
+  { code: "SOV-APEX-CONSULTATION-EXECUTIVE-1.0", name: "Procedural Agreement" },
+  { code: "SOV-SHELL-DISCLAIMER-1.0", name: "Non-Profit Compliance" },
   { code: "SOV-RESIDENT-CONSULTANT-NDA-1.0", name: "Mutual NDA" },
-  { code: "SOV-SHELL-DISCLAIMER-1.0", name: "PWA Shell Disclaimer" },
-  { code: "SOV-APEX-CONSULTATION-EXECUTIVE-1.0", name: "Rules of Engagement" },
 ];
 
 export default function ConsultationPolicyFooter() {
@@ -15,7 +15,8 @@ export default function ConsultationPolicyFooter() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-1">
+      <p className="text-[9px] font-mono text-[#484f58] uppercase tracking-[0.2em] text-center mb-2">The Sovereign Footer Suite</p>
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         {POLICIES.map((p, i) => (
           <React.Fragment key={p.code}>
             <button
