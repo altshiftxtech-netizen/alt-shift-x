@@ -4,8 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileText, Monitor, Bot } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
-import PwaInstallButton from "@/components/pwa/PwaInstallButton";
-import PwaAgentInstallButton from "@/components/pwa/PwaAgentInstallButton";
+import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -107,7 +106,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <PwaInstallButton />
+                  <UniversalPwaInstall manifestUrl="/manifest.json" pwaName="Alt+Shift+X" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
@@ -144,7 +143,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <PwaAgentInstallButton />
+                  <UniversalPwaInstall manifestUrl="/manifest-agent.json" pwaName="Agent Wrapper" swapManifest />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
