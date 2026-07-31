@@ -1,54 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { FileText, X, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { FileText, X } from "lucide-react";
+import { POLICY_TEXT } from "@/components/consultation/consultationPolicies";
 
-const POLICY_CODES = [
-  "SOV-LEGAL-CONSULT-TERMS-1.0",
-  "SOV-PRIVACY-CONSULT-1.0",
-  "SOV-RESIDENT-CONSULTANT-NDA-1.0",
-  "SOV-SHELL-DISCLAIMER-1.0",
-  "SOV-APEX-CONSULTATION-EXECUTIVE-1.0",
+const POLICIES = [
+  { code: "SOV-LEGAL-CONSULT-TERMS-1.0", name: "Terms of Service" },
+  { code: "SOV-PRIVACY-CONSULT-1.0", name: "Privacy Policy" },
+  { code: "SOV-RESIDENT-CONSULTANT-NDA-1.0", name: "Mutual NDA" },
+  { code: "SOV-SHELL-DISCLAIMER-1.0", name: "PWA Shell Disclaimer" },
+  { code: "SOV-APEX-CONSULTATION-EXECUTIVE-1.0", name: "Rules of Engagement" },
 ];
 
 export default function ConsultationPolicyFooter() {
-  const [policies, setPolicies] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [active, setActive] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const rows = await base44.entities.Component.filter({ code: { $in: POLICY_CODES } });
-        // Preserve canonical order
-        const ordered = POLICY_CODES.map((c) => (rows || []).find((r) => r.code === c)).filter(Boolean);
-        setPolicies(ordered);
-      } catch {
-        setPolicies([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-3">
-        {loading ? (
-          <Loader2 className="w-3 h-3 animate-spin text-[#484f58]" />
-        ) : (
-          policies.map((p, i) => (
-            <React.Fragment key={p.id}>
-              <button
-                onClick={() => setActive(p)}
-                className="inline-flex items-center gap-1 text-[10px] font-mono text-[#8b949e] hover:text-[#C8A95B] transition-colors"
-              >
-                <FileText className="w-2.5 h-2.5" />
-                {p.name || p.code}
-              </button>
-              {i < policies.length - 1 && <span className="text-[#30363d] text-[10px]">·</span>}
-            </React.Fragment>
-          ))
-        )}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mt-1">
+        {POLICIES.map((p, i) => (
+          <React.Fragment key={p.code}>
+            <button
+              onClick={() => setActive(p)}
+              className="inline-flex items-center gap-1 text-[10px] font-mono text-[#8b949e] hover:text-[#C8A95B] transition-colors"
+            >
+              <FileText className="w-2.5 h-2.5" />
+              {p.name}
+            </button>
+            {i < POLICIES.length - 1 && <span className="text-[#30363d] text-[10px]">·</span>}
+          </React.Fragment>
+        ))}
       </div>
 
       {active && (
@@ -67,7 +46,7 @@ export default function ConsultationPolicyFooter() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-4 text-xs text-[#c9d1d9] leading-relaxed whitespace-pre-line">
-              {active.long_description || "No description available."}
+              {POLICY_TEXT[active.code] || "Policy text not available."}
             </div>
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex justify-end">
               <button onClick={() => setActive(null)} className="text-[11px] font-mono text-[#8b949e] hover:text-white">
