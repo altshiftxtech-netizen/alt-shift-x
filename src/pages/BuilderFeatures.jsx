@@ -1,17 +1,13 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, Lock, ListChecks, ArrowRight, Crown, Rocket, CheckCircle2 } from "lucide-react";
+import { ListChecks, CheckCircle2 } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
 import FeatureGroup from "@/components/bob-init/FeatureGroup";
 import RulesEngine from "@/components/bob-init/RulesEngine";
 import CodeInjector from "@/components/bob-init/CodeInjector";
 import BuildManifest from "@/components/bob-init/BuildManifest";
-import useSovereignAccess from "@/hooks/useSovereignAccess";
-import { Link } from "react-router-dom";
 
 export default function BuilderFeatures() {
-  const { status, isAdmin } = useSovereignAccess();
   const [selected, setSelected] = useState({});
   const [rules, setRules] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -29,33 +25,6 @@ export default function BuilderFeatures() {
       setRendered(true);
     }, 3500);
   };
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
-      </div>
-    );
-  }
-
-  if (status !== "sovereign" && !isAdmin) {
-    return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center rounded-2xl border border-[#30363d] bg-[#0d1117] p-8">
-          <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-4 bg-cyan-600/10 border border-cyan-500/30">
-            <ListChecks className="w-6 h-6 text-cyan-400" />
-          </div>
-          <h1 className="text-xl font-bold text-white mb-2">Feature Selection Requires Sovereign Tier</h1>
-          <p className="text-sm text-[#8b949e] mb-6">
-            The hardened module checklist, rules engine, and code injection tools are reserved for Sovereign-tier builders.
-          </p>
-          <Button asChild className="w-full bg-gradient-to-r from-[#E6C878] to-[#C8A95B] text-[#0A0A0C] font-bold gap-1.5">
-            <Link to="/enterprise"><Crown className="w-4 h-4" /> Upgrade to Sovereign <ArrowRight className="w-4 h-4" /></Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9]">

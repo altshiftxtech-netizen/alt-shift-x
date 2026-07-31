@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package, Rocket, CheckCircle2 } from "lucide-react";
 import { FEATURE_GROUPS } from "./featureData";
+import EsiTracker from "./EsiTracker";
 
 export default function BuildManifest({ selected, rules, uploadedFiles, apiFields, onRender, rendering }) {
   const selectedFeatures = FEATURE_GROUPS.flatMap((g) =>
@@ -17,6 +18,9 @@ export default function BuildManifest({ selected, rules, uploadedFiles, apiField
         <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5">
           <Package className="w-3.5 h-3.5" /> Build Manifest
         </h3>
+
+        {/* ESI Tracker */}
+        <EsiTracker selected={selected} />
 
         {/* Selected features */}
         <div className="space-y-1.5">

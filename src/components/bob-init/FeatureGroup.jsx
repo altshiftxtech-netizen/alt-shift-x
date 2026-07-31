@@ -1,8 +1,8 @@
 import React from "react";
-import { Shield, Database, Radio, Scale, Wrench, Crown } from "lucide-react";
+import { Shield, Database, Radio, Scale, Wrench, Crown, GitBranch } from "lucide-react";
 import { FEATURE_GROUPS } from "./featureData";
 
-const ICONS = { Shield, Database, Radio, Scale, Wrench, Crown };
+const ICONS = { Shield, Database, Radio, Scale, Wrench, Crown, GitBranch };
 
 export default function FeatureGroup({ selected, onToggle }) {
   return (
@@ -34,6 +34,9 @@ export default function FeatureGroup({ selected, onToggle }) {
                         <span className={`text-xs font-semibold ${checked ? "text-cyan-400" : "text-[#c9d1d9]"}`}>{feat.label}</span>
                         {feat.flag && (
                           <code className="text-[9px] font-mono text-[#484f58] bg-[#010409] px-1.5 py-0.5 rounded">{feat.flag}</code>
+                        )}
+                        {feat.esi > 0 && (
+                          <span className="text-[9px] font-mono text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">+{feat.esi} ESI</span>
                         )}
                       </div>
                       <p className="text-[11px] text-[#8b949e] mt-0.5 leading-relaxed">{feat.desc}</p>
