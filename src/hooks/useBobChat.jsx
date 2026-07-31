@@ -28,8 +28,10 @@ import { base44 } from "@/api/base44Client";
 
 const RUNNING = ["pending", "in_progress", "running"];
 // After the reply text stops changing, wait this long before calling the turn
-// done — prevents "your turn" flashing on a half-streamed sentence.
-const SETTLE_MS = 600;
+// done. 1500ms covers natural LLM streaming pauses (token gaps, inter-paragraph
+// breaks) without feeling sluggish; if it fires prematurely anyway, handleUpdate
+// re-opens the turn when new text arrives so the response never freezes.
+const SETTLE_MS = 1500;
 // Absolute ceiling: even a dead stream clears the indicator after this.
 const WATCHDOG_MS = 60000;
 
@@ -165,7 +167,31 @@ export default function useBobChat() {
     }
     setMessages(msgs);
 
-    if (!turnOpenRef.current) { setIsWorking(false); return; }
+    if (!turnOpenRef.current) {
+      // The settle timer closed the turn, but if new assistant text is still
+      // arriving, BOB was mid-response — a natural streaming pause triggered
+      // the settle timer prematurely. Re-open the turn so the working indicator
+      // and stall detector resume; without this, the response freezes mid-
+      // sentence and the stall detector (which only runs while isWorking) can't
+      // catch a subsequent stream death. Skip when there are queued follow-ups —
+      // those mean the turn intentionally closed for the next send.
+      const last = msgs[msgs.length - 1];
+      if (
+        isAssistantText(last) &&
+        last.content !== lastTextRef.current &&
+        queuedRef.current.length === 0
+      ) {
+        turnOpenRef.current = true;
+        setIsWorking(true);
+        lastTextRef.current = last.content;
+        clearTimers();
+        settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
+        watchdogRef.current = setTimeout(() => finishTurn(), WATCHDOG_MS);
+      } else {
+        setIsWorking(false);
+      }
+      return;
+    }
 
     const working = detectWorking(msgs);
     if (!working) { finishTurn(msgs); return; }
