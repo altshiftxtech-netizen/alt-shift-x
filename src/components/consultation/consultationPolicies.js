@@ -4,7 +4,7 @@
  */
 export const POLICY_TEXT = {
   "SOV-LEGAL-CONSULT-TERMS-1.0": `SOVEREIGN CONSULTATION TERMS OF SERVICE
-Effective Date: January 1, 2027
+Effective Date: July 15, 2026
 
 1. NATURE OF SERVICE
 The Sovereign Consultation Gateway ("the Service") provides strategic architectural advisory and component intelligence guidance only. The Service is operated by Alt+Shift+X ("the Provider"). Nothing in this engagement constitutes a fiduciary, professional-client, attorney-client, or financial advisory relationship.
@@ -28,7 +28,7 @@ Consultation sessions may be cancelled up to 48 hours before the scheduled time 
 By submitting a consultation request, the client acknowledges having read, understood, and agreed to these Terms of Service, the Privacy Policy, and the Mutual NDA.`,
 
   "SOV-PRIVACY-CONSULT-1.0": `SOVEREIGN CONSULTATION PRIVACY POLICY
-Effective Date: January 1, 2027
+Effective Date: July 15, 2026
 
 1. DATA COLLECTION
 During the consultation intake, we collect: your full name, role/title, entity name, entity type, tax ID (for non-profit verification), contact email, and any documents you upload as part of your intent brief.
@@ -52,7 +52,7 @@ All consultation sessions are logged under GSP-MASTER-INDEX-1.0 for forensic int
 Payment is processed through Stripe or PayPal. The Provider never stores credit card numbers, bank account details, or full payment credentials. Stripe/PayPal handle all PCI-DSS compliance.`,
 
   "SOV-RESIDENT-CONSULTANT-NDA-1.0": `SOVEREIGN MUTUAL NON-DISCLOSURE AGREEMENT
-Effective Date: January 1, 2027
+Effective Date: July 15, 2026
 
 1. MUTUAL CONFIDENTIALITY
 Both the Provider (Alt+Shift+X and its Resident Consultants) and the Client agree to maintain the confidentiality of all non-public information disclosed during the consultation engagement, including technical architecture, business strategy, ESI scores, and proprietary methodologies.
@@ -76,7 +76,7 @@ Any dispute arising from this NDA shall be resolved through binding arbitration 
 This NDA remains in effect for the duration of the consultation engagement and for five (5) years thereafter, regardless of termination.`,
 
   "SOV-SHELL-DISCLAIMER-1.0": `SOVEREIGN PWA SHELL DISCLAIMER (BLACKSTONE-MAX)
-Effective Date: January 1, 2027
+Effective Date: July 15, 2026
 
 1. INERT SHELL DECLARATION
 The Sovereign PWA and all associated software are provided as an "Inert Shell" — a passive architectural tool. The infrastructure providers (altshiftx.tech) are insulated from the actions, intent, and misuse of any operator who deploys, modifies, or distributes the software.
@@ -97,7 +97,7 @@ Under the Blackstone-Max 110% Legal Operating System, all liability for operatio
 By submitting any consultation request, installing any component, or deploying any Sovereign PWA, the operator acknowledges having read, understood, and accepted this disclaimer in full.`,
 
   "SOV-APEX-CONSULTATION-EXECUTIVE-1.0": `SOVEREIGN APEX CONSULTATION — RULES OF ENGAGEMENT
-Effective Date: January 1, 2027
+Effective Date: July 15, 2026
 
 1. CONSULTATION LIFECYCLE
 Each Sovereign Apex Consultation follows a structured lifecycle: Forensic Intake → Intent Mapping → Scheduling → Review → Finalization. No session is confirmed until the intake is complete and payment (or Sovereign Credit) is verified.
