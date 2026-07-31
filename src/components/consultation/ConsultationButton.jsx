@@ -33,7 +33,7 @@ export default function ConsultationButton({ className = "", skipBilling = false
   return (
     <Link
       to={skipBilling ? "/consultation?no_billing=true" : "/consultation"}
-      className={`flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-1.5 transition-all bg-gradient-to-r from-[#C8A95B] to-[#E6C878] text-[#0A0A0C] hover:opacity-90 shadow-sm shrink-0 ${className}`}
+      className="flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-1.5 transition-all shrink-0 text-[#E6C878] bg-[#C8A95B]/15 border border-[#C8A95B]/40 hover:bg-[#C8A95B]/25 hover:border-[#C8A95B]/60 backdrop-blur-md shadow-[0_0_10px_rgba(200,169,91,0.35),inset_0_0_6px_rgba(200,169,91,0.15)]"
     >
       <Calendar className="w-3.5 h-3.5" /> Schedule Consultation
     </Link>
