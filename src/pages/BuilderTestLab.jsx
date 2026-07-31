@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SharedNav from "@/components/SharedNav";
+import TestBotLogo from "@/components/builder/TestBotLogo";
 
 // Cosmic video background for the Test Lab page.
 const TEST_LAB_VIDEO = "https://media.base44.com/videos/public/6a19363c90f06323c4cfff73/bcd17b569_3157e7832_generated_video.mp4";
@@ -63,9 +64,7 @@ function MessageBubble({ msg }) {
   return (
     <div className={`flex gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-          <Bot className="w-4 h-4 text-violet-600" />
-        </div>
+        <TestBotLogo size={28} className="mt-0.5" />
       )}
       <div className={`max-w-[80%] group relative`}>
         <div className={`rounded-2xl px-4 py-2.5 text-sm ${isUser ? "bg-violet-700 text-white" : "bg-white border border-slate-200 text-slate-800"}`}>
@@ -397,9 +396,7 @@ export default function BuilderTestLab() {
       <div className="min-h-screen bg-slate-50">
         <SharedNav mode="builder" />
         <div className="max-w-lg mx-auto px-4 py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-            <Bot className="w-8 h-8 text-violet-600" />
-          </div>
+          <TestBotLogo size={64} className="mx-auto mb-4" />
           <h1 className="text-2xl font-black text-slate-900 mb-2">BOT-X Test Lab</h1>
           <p className="text-slate-500 text-sm mb-6">The Builder Test Lab is exclusively available to Builder-tier accounts. Upgrade to unlock full testing capabilities.</p>
           <a href="/pricing">
@@ -419,9 +416,7 @@ export default function BuilderTestLab() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-violet-700 flex items-center justify-center">
-              <Bot className="w-6 h-6 text-white" />
-            </div>
+            <TestBotLogo size={48} />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-900">BOT-X Test Lab</h1>
@@ -462,7 +457,7 @@ export default function BuilderTestLab() {
                   <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ maxHeight: "460px" }}>
                     {messages.length === 0 && !sending && (
                       <div className="text-center py-10">
-                        <Bot className="w-10 h-10 text-violet-200 mx-auto mb-3" />
+                        <TestBotLogo size={40} className="mx-auto mb-3" />
                         <p className="text-sm font-semibold text-slate-500 mb-1">BOT-X is ready</p>
                         <p className="text-xs text-slate-400 max-w-xs mx-auto">Ask anything about components, revenue share, trust scores, or run tests on documents and external AIs.</p>
                       </div>
@@ -470,9 +465,7 @@ export default function BuilderTestLab() {
                     {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
                     {sending && (
                       <div className="flex gap-2 justify-start">
-                        <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
-                          <Bot className="w-4 h-4 text-violet-600" />
-                        </div>
+                        <TestBotLogo size={28} />
                         <div className="bg-white border border-slate-200 rounded-2xl px-4 py-2.5">
                           <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
                         </div>
