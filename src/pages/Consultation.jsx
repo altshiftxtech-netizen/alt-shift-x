@@ -45,6 +45,7 @@ export default function Consultation() {
   const [error, setError] = useState("");
   const [pendingPay, setPendingPay] = useState(null);
   const [noBilling, setNoBilling] = useState(false);
+  const [returnTo, setReturnTo] = useState("/");
 
   // Step A — Forensic Dossier
   const [fullName, setFullName] = useState("");
@@ -96,6 +97,10 @@ export default function Consultation() {
     }
     if (params.get("no_billing") === "true") {
       setNoBilling(true);
+    }
+    const rt = params.get("return_to");
+    if (rt) {
+      try { setReturnTo(decodeURIComponent(rt)); } catch { setReturnTo(rt); }
     }
   }, []);
 
@@ -186,7 +191,7 @@ export default function Consultation() {
       }
 
       // 3. Create checkout (Stripe redirect or $0 promo finalize)
-      const successUrl = `${window.location.origin}/consultation?consultation=success&id=${consultation.id}`;
+      const successUrl = `${window.location.origin}/consultation?consultation=success&id=${consultation.id}&return_to=${encodeURIComponent(returnTo)}`;
       const checkoutRes = await base44.functions.invoke("createConsultationCheckout", {
         consultation_id: consultation.id,
         promo_code: promoApplied ? NONPROFIT_PROMO : "",
@@ -344,6 +349,12 @@ export default function Consultation() {
             </div>
 
             <p className="text-center text-[11px] text-[#484f58] font-mono">Keep your invoice email for your year-end Sovereign tax-deduction audit.</p>
+
+            <a href={returnTo} className="block">
+              <Button className="w-full bg-[#C8A95B] hover:bg-[#E6C878] text-[#0A0A0C] font-bold text-sm gap-1.5">
+                <ChevronLeft className="w-3.5 h-3.5" /> Return to where you started
+              </Button>
+            </a>
           </CardContent>
         </Card>
       </div>
