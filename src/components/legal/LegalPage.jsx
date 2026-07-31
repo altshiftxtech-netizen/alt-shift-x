@@ -20,15 +20,24 @@ export default function LegalPage({ contentKeys = [], crumb = "Legal" }) {
 
   useEffect(() => {
     let cancelled = false;
+    let attempt = 0;
     (async () => {
-      const results = await Promise.all(
-        contentKeys.map((key) =>
-          base44.entities.SiteContent.filter({ key, is_active: true })
-            .then((rows) => (rows && rows[0]) || null)
-            .catch(() => null)
-        )
-      );
-      if (!cancelled) setRecords(results.filter(Boolean));
+      // Retry up to 3x with backoff — transient 429 rate limits were silently
+      // swallowing the fetch and rendering an empty "not available" page.
+      while (attempt < 3) {
+        attempt += 1;
+        const results = await Promise.all(
+          contentKeys.map((key) =>
+            base44.entities.SiteContent.filter({ key, is_active: true })
+              .then((rows) => (rows && rows[0]) || null)
+              .catch(() => null)
+          )
+        );
+        const filtered = results.filter(Boolean);
+        if (cancelled) return;
+        if (filtered.length > 0 || attempt === 3) { setRecords(filtered); return; }
+        await new Promise((r) => setTimeout(r, 1200 * attempt));
+      }
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
