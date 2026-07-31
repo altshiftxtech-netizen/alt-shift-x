@@ -6,6 +6,8 @@ import { Smartphone, ShieldCheck, Lock, ArrowRight, CheckCircle2, Loader2, FileT
 import SharedNav from "@/components/SharedNav";
 import UniversalPwaInstall from "@/components/pwa/UniversalPwaInstall";
 import MyBuilds from "@/components/pwa/MyBuilds";
+import PwaHandbook from "@/components/pwa/PwaHandbook";
+import PwaLegalAssets from "@/components/pwa/PwaLegalAssets";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -49,13 +51,14 @@ export default function PwaPortal() {
             <div className="w-10 h-10 rounded-xl bg-[#343A40] flex items-center justify-center">
               <Smartphone className="w-5 h-5 text-[#F8F9FA]" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-[#343A40]" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
                 Sovereign PWA Portal
               </h1>
               <p className="text-sm text-slate-500">Install Alt+Shift+X as a standalone desktop or mobile app.</p>
             </div>
-          </div>
+            <PwaHandbook />
+            </div>
         </div>
 
         {/* Status row */}
@@ -173,6 +176,9 @@ export default function PwaPortal() {
 
         {/* My B.O.B.Init Builds — persisted, installable, downloadable */}
         <MyBuilds />
+
+        {/* PWA Download Package — legal assets */}
+        <PwaLegalAssets />
 
         {/* Legal disclaimer gate */}
         <Card className="border-amber-200 bg-amber-50">

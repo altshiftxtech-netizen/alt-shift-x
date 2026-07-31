@@ -1,4 +1,13 @@
 import JSZip from "jszip";
+import { PWA_LEGAL_ASSETS, LEGAL_MD } from "@/lib/pwaLegalAssets";
+
+// Injects the four Sovereign legal assets + consolidated LEGAL.md into a ZIP.
+function addLegalAssets(zip) {
+  for (const doc of PWA_LEGAL_ASSETS) {
+    zip.file(doc.fileName, doc.body);
+  }
+  zip.file("LEGAL.md", LEGAL_MD);
+}
 
 // Generates a standalone PWA shell HTML for a B.O.B.Init build record.
 export function generateShellHtml(build) {
@@ -109,6 +118,7 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   zip.file("manifest.json", manifestText);
   zip.file("index.html", shellHtml);
   zip.file("sw.js", generateSwJs());
+  addLegalAssets(zip);
   zip.file(
     "README.txt",
     `Alt+Shift+X PWA Package\n` +
@@ -137,6 +147,7 @@ export async function downloadBuildZip(build) {
   zip.file("manifest.json", build.manifest_json || JSON.stringify({ name: build.pwa_name || "Alt+Shift+X PWA" }, null, 2));
   zip.file("index.html", generateShellHtml(build));
   zip.file("sw.js", generateSwJs());
+  addLegalAssets(zip);
   zip.file(
     "README.txt",
     `B.O.B.Init Build Package\n` +
