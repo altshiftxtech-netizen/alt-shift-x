@@ -47,6 +47,8 @@ import EnterpriseCatalog from './pages/EnterpriseCatalog';
 import ExpertMindsEnterprise from './pages/ExpertMindsEnterprise';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
+import PwaPortal from './pages/PwaPortal';
+import SovereignPwaPolicy from './pages/SovereignPwaPolicy';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ExportControls from './pages/ExportControls';
@@ -189,6 +191,7 @@ const AuthenticatedApp = () => {
       <Route path="/legal/dpa" element={<LegalDpa />} />
       <Route path="/legal/childrens-safety" element={<LegalChildrensSafety />} />
       <Route path="/mobile" element={<MobileApp />} />
+      <Route path="/legal/sovereign-pwa" element={<SovereignPwaPolicy />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -235,6 +238,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/settings" element={<AccountSettings />} />
         <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
         <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
+        <Route path="/dashboard/pwa" element={<PwaPortal />} />
         <Route path="/pipeline-key/:id" element={<PipelineKeyReveal />} />
         <Route path="/dashboard/testing" element={<TestingDashboard />} />
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
