@@ -39,6 +39,7 @@ import BobLiveIndicator from "@/components/bob/BobLiveIndicator";
 import HeyBobModal from "@/components/bob/HeyBobModal";
 import SessionHandoffBanner from "@/components/bob/SessionHandoffBanner";
 import { useSessionHandoff } from "@/hooks/useSessionHandoff";
+import { HISTORY_PAGE, MAX_MESSAGES } from "@/lib/bobHistoryLimits";
 
 const QUICK_PROMPTS = [
   "Help me create a new X1 Risk & Compliance component",
@@ -258,23 +259,14 @@ export default function BobBuilder() {
       } catch { localStorage.removeItem("bob_active_conv"); }
     }
     try {
-      // Paginate — the SDK defaults to a small first page, so the latest real
-      // session could be beyond it if the builder has many projects.
-      const all = [];
-      let skip = 0;
-      while (true) {
-        const page = await base44.agents.listConversations({
-          q: { agent_name: "bob_builder" },
-          limit: 100,
-          skip,
-          sort: "-updated_date",
-        });
-        const items = page || [];
-        all.push(...items);
-        if (items.length < 100) break;
-        skip += 100;
-        if (skip > 2000) break;
-      }
+      // Hard cap — only the most recent HISTORY_PAGE conversations. The old
+      // pagination loop (up to 2000) stalled the main thread and caused the
+      // restore race where a slow restore swapped an old chat into the board.
+      const all = await base44.agents.listConversations({
+        q: { agent_name: "bob_builder" },
+        limit: HISTORY_PAGE,
+        sort: "-updated_date",
+      }) || [];
       // Merge ConversationMeta (titles + trashed state) so we can filter
       // accurately — the conversation's own metadata may not have the title
       // if updateConversation failed.
@@ -809,7 +801,12 @@ export default function BobBuilder() {
                       </div>
                     </div>
                   )}
-                  {messages.map((m, i) => <MessageBubble key={i} m={m} />)}
+                  {messages.length > MAX_MESSAGES && (
+                    <p className="text-center text-[10px] text-slate-500 py-1">
+                      Showing the last {MAX_MESSAGES} of {messages.length} messages — older turns stay in the project record.
+                    </p>
+                  )}
+                  {messages.slice(-MAX_MESSAGES).map((m, i) => <MessageBubble key={i} m={m} />)}
                   <QueuedFollowups items={queued} onRemove={removeQueued} />
                 </div>
 

@@ -5,11 +5,9 @@ import EsiShareModal from "@/components/bob/EsiShareModal";
 import RecoverProjectButton from "@/components/bob/RecoverProjectButton";
 import { downloadRecoveryFile } from "@/lib/projectRecovery";
 import { loadMetaMap, renameConversation, trashConversation, restoreConversation, clearConversation } from "@/lib/conversationMeta";
+import { ACTIVE_LIMIT, HARD_CAP, HISTORY_PAGE } from "@/lib/bobHistoryLimits";
 
 const AGENT = "bob_builder";
-// History lifecycle limits.
-const ACTIVE_LIMIT = 15; // projects shown as "active" before older ones archive
-const HARD_CAP = 100;    // beyond this, the builder must download-or-lose
 
 // The Wipe Board — a builder's project history. Each BOB conversation is a
 // "project" they can jump back into, fork (Spin Off), download as an ESI legal
@@ -41,25 +39,15 @@ export default function BobHistoryPanel({ activeConvId, onOpen, onWipeBoard, onS
     setLoadError(false);
     try {
       const metaMap = await loadMetaMap(AGENT);
-      // Paginate through ALL conversations — the SDK defaults to a small first
-      // page (~20), so without explicit pagination older sessions vanish.
-      const all = [];
-      const PAGE = 100;
-      let skip = 0;
-      while (true) {
-        const page = await base44.agents.listConversations({
-          q: { agent_name: AGENT },
-          limit: PAGE,
-          skip,
-          sort: "-updated_date",
-        });
-        const items = page || [];
-        all.push(...items);
-        if (items.length < PAGE) break;
-        skip += PAGE;
-        // Safety valve — never loop forever even if the API misbehaves.
-        if (skip > 2000) break;
-      }
+      // Hard cap: fetch only the most recent HISTORY_PAGE conversations. The old
+      // pagination loop (up to 2000) re-ran after every turn and stalled the
+      // main thread — the root cause of replies vanishing and stale chats
+      // appearing. A bounded single page keeps the board fast and complete.
+      const all = await base44.agents.listConversations({
+        q: { agent_name: AGENT },
+        limit: HISTORY_PAGE,
+        sort: "-updated_date",
+      }) || [];
 
       // Fallback: if the SDK didn't return a conversation that ConversationMeta
       // knows about, build a stub from the meta record so the project still
