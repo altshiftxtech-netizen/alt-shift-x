@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench, ShieldAlert, Eye, CreditCard } from "lucide-react";
+import { BookOpen, X, ChevronDown, Terminal, Shield, Zap, Crown, Download, Wrench, ShieldAlert, Eye, CreditCard, FileJson } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -164,6 +164,38 @@ const SECTIONS = [
           <li><strong className="text-cyan-400">Bespoke Code Injection:</strong> For the award-winning look, use <strong>Ghost-Build</strong>. It scrubs the platform signatures, making your PWA an "untraceable" masterpiece of operational engineering.</li>
           <li><strong className="text-cyan-400">Final Certification:</strong> Never render without a <strong>'Perfect Play' Simulation</strong>. It's the difference between a "prototype" and a "Sovereign Asset."</li>
         </ul>
+      </>
+    ),
+  },
+  {
+    id: "project-json",
+    icon: FileJson,
+    title: "4. The project.json Workflow (Half-Price PWA)",
+    body: (
+      <>
+        <p className="mb-2"><strong className="text-cyan-400">Learn to code, pay half.</strong> Build via the <strong>project.json Workflow</strong> instead of raw text-to-code and your PWA render is <strong className="text-amber-300">half price</strong> — an incentive to learn enough Node.js to run your own server and go local.</p>
+        <p className="mb-2">The project.json is a form. Each line is a pluggable input — a prompt requesting a specific outcome in the PWA. BOB makes assumptions for anything you leave blank, so there's always a quality outcome that meets the builder standard.</p>
+        <ul className="space-y-1.5 text-[11px]">
+          <li><code className="text-amber-400">name</code> — the project name (e.g. <em>Turki360</em>). Becomes the PWA title.</li>
+          <li><code className="text-amber-400">version</code> — semver, default <em>1.0.0</em>.</li>
+          <li><code className="text-amber-400">type</code> — <em>PWA_Agent_Wrapper</em>, <em>Site_Mirror</em>, <em>Agent_Wrapper</em>, or <em>Custom</em>.</li>
+          <li><code className="text-amber-400">stack.frontend</code> — <em>Next.js</em>, <em>React</em>, <em>Vue</em>, <em>Svelte</em>, <em>Astro</em>.</li>
+          <li><code className="text-amber-400">stack.middleware</code> — e.g. <em>TypeScript</em> shims for version-invariant API adaptors.</li>
+          <li><code className="text-amber-400">stack.backend</code> — <em>Express.js</em>, <em>Fastify</em>, <em>Nest.js</em>, <em>Go</em>, <em>Python-FastAPI</em>.</li>
+          <li><code className="text-amber-400">stack.proxy</code> — <em>NGINX</em>, <em>Caddy</em>, <em>Traefik</em>, or <em>none</em>.</li>
+          <li><code className="text-amber-400">connectivity.local_server</code> — <em>enabled</em>/<em>disabled</em>. Enables the local .local fast-path.</li>
+          <li><code className="text-amber-400">connectivity.frontier_bridge[]</code> — frontier models to bridge (<em>GPT-4o</em>, <em>Claude-3-Opus</em>, <em>Gemini-1.5-Pro</em>, <em>Llama-3</em>).</li>
+          <li><code className="text-amber-400">connectivity.registry</code> — component registry, default <em>altshiftx-private-core</em>.</li>
+          <li><code className="text-amber-400">features[]</code> — toggle hardened modules (<em>Magna-Dev-Full-Access</em>, <em>Sovereign-Apex-Hardening</em>, <em>Self-Healing-API-Shims</em>, <em>PII-Fragmentation</em>, <em>D2D-Sync</em>, <em>Blackstone-Guard</em>).</li>
+          <li><code className="text-amber-400">branding.colorway</code> — <em>Generic_Office_Slate</em>, <em>Sovereign_Gold</em>, <em>Midnight</em>, <em>Clean_White</em>.</li>
+          <li><code className="text-amber-400">branding.logo_url</code> — upload a logo, or leave <em>[PENDING_UPLOAD]</em>.</li>
+          <li><code className="text-amber-400">branding.terminal_aesthetic</code> — <em>Classic_Prompt</em>, <em>PowerShell</em>, <em>Bash</em>, <em>Minimal</em>.</li>
+          <li><code className="text-amber-400">compliance.wv_retention_vault</code> — <em>linked</em> or <em>off</em>.</li>
+          <li><code className="text-amber-400">compliance.fragmentation_level</code> — <em>K-of-N</em>, <em>full</em>, <em>none</em>.</li>
+        </ul>
+        <p className="mt-2"><strong className="text-cyan-400">Text-to-Code:</strong> Prefer plain language? Write a paragraph and BOB fills the form, making assumptions for anything missing.</p>
+        <p className="mt-1"><strong className="text-cyan-400">Reference documents:</strong> upload a Concept, White Paper, Valuation, and 10-Year Plan — BOB builds for the plan.</p>
+        <p className="mt-1"><strong className="text-cyan-400">Functionality check:</strong> run the check before Initialize so the shell is operational — no second shell needed.</p>
       </>
     ),
   },

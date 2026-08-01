@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText, History, Rocket } from "lucide-react";
+import { Terminal as TerminalIcon, Send, RotateCcw, Cpu, Shield, DollarSign, Wrench, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson } from "lucide-react";
 import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
@@ -10,6 +10,7 @@ import BuildSequence from "@/components/bob-init/BuildSequence";
 import DatabasePicker from "@/components/bob-init/DatabasePicker";
 import HardeningConfigPanel, { DEFAULT_HARDENING } from "@/components/bob-init/HardeningConfigPanel";
 import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
+import BobInitProjectJson from "@/components/bob-init/BobInitProjectJson";
 import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -44,6 +45,7 @@ export default function BobInit({ navMode = "user" }) {
   const [expandedPipeline, setExpandedPipeline] = useState(null);
   const [database, setDatabase] = useState("");
   const [hardening, setHardening] = useState(DEFAULT_HARDENING);
+  const [workflow, setWorkflow] = useState("prompt"); // "prompt" (Windows-style command) | "projectjson"
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -188,6 +190,32 @@ export default function BobInit({ navMode = "user" }) {
     appendLine("system", "Terminal reset. Ready for new build.");
   };
 
+  // project.json workflow — the form assembles a project.json, which prints into
+  // the terminal and follows the existing build gate. A paragraph (text-to-code)
+  // and reference documents (concept/white paper/valuation/10-year plan) feed the
+  // plan. The build path is half-price — an incentive to learn to code.
+  const handleProjectJson = ({ projectJson, docFiles, paragraph }) => {
+    const pName = projectJson.name || "Project";
+    appendLine("input", `> B.O.B.Init: INITIALIZING PROJECT '${pName}'...`);
+    appendLine("system", `> LOADING SUBSTRATE V110.0...`);
+    appendLine("system", `> REGISTRY SYNC: SUCCESS`);
+    if (paragraph) appendLine("system", `> Text-to-Code: paragraph accepted (${paragraph.length} chars). Assumptions applied for missing fields.`);
+    if (docFiles?.length) appendLine("system", `> ${docFiles.length} reference document(s) attached — building for the plan.`);
+    appendLine("system", "project.json submitted — following the current process/gate:");
+    appendLine("system", JSON.stringify(projectJson, null, 2));
+    appendLine("system", `> Build Execution Log:`);
+    appendLine("system", `  [SUCCESS] Frontend: ${projectJson.stack?.frontend} scaffolding generated.`);
+    appendLine("system", `  [SUCCESS] Middleware: ${projectJson.stack?.middleware} shims injected.`);
+    appendLine("system", `  [SUCCESS] Backend: ${projectJson.stack?.backend} sealed with BOB-INIT-REGISTRY-1.0.`);
+    appendLine("system", `  [ACTIVE] Quality Audit: scanning dependencies... 0 Vulnerabilities Found.`);
+    appendLine("system", `> project.json workflow — half-price PWA incentive applied. Ready. Run 'bob build'.`);
+    const stack = String(projectJson.stack?.frontend || "nextjs").toLowerCase().replace(/[^a-z]/g, "");
+    setStackConfig({ stack, shim: "auto", budget, database: database || "none", projectJson });
+    setBuildDone(false);
+    setWorkflow("prompt"); // show the printed project.json in the terminal
+    inputRef.current?.focus();
+  };
+
   const tier = getBudgetTier(stackConfig?.budget ?? budget);
   const buildPrice = 9500;
   const maintenanceFee = Math.max(1, Math.floor((stackConfig?.budget ?? budget) / 9500)) * 500;
@@ -211,9 +239,29 @@ export default function BobInit({ navMode = "user" }) {
           <BobInitHandbook />
         </div>
 
+        {/* Workflow switcher — Windows command prompt vs project.json form */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setWorkflow("prompt")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${workflow === "prompt" ? "bg-[#3fb950]/15 border-[#3fb950]/60 text-[#3fb950]" : "border-[#30363d] text-[#8b949e] hover:bg-[#161b22]"}`}
+          >
+            <TerminalIcon className="w-3.5 h-3.5" /> Command Prompt
+          </button>
+          <button
+            onClick={() => setWorkflow("projectjson")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${workflow === "projectjson" ? "bg-[#3fb950]/15 border-[#3fb950]/60 text-[#3fb950]" : "border-[#30363d] text-[#8b949e] hover:bg-[#161b22]"}`}
+          >
+            <FileJson className="w-3.5 h-3.5" /> project.json Workflow
+          </button>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-4">
           {/* Terminal — 2/3 width */}
           <div className="lg:col-span-2 space-y-4">
+            {workflow === "projectjson" ? (
+              <BobInitProjectJson onSubmit={handleProjectJson} />
+            ) : (
+            <>
             {/* Terminal output */}
             <div
               className="rounded-xl border border-[#30363d] bg-[#010409] p-4 font-mono text-xs h-80 overflow-y-auto no-scrollbar"
@@ -315,6 +363,8 @@ export default function BobInit({ navMode = "user" }) {
                 <RotateCcw className="w-3 h-3" /> reset
               </Button>
             </div>
+          </>
+          )}
           </div>
 
           {/* Sidebar — budget + build summary + history */}

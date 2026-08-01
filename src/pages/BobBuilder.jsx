@@ -785,6 +785,20 @@ export default function BobBuilder() {
               )}
 
               <Card className="bg-slate-900 border-slate-700 flex flex-col" style={{ height: "calc(100vh - 120px)", minHeight: "680px" }}>
+                {/* Deep-Path Reasoning indicator — pinned to the top of the chat
+                    panel so it stays visible without scrolling while BOB works. */}
+                {isWorking && (
+                  <div className="sticky top-0 z-10 flex items-center gap-2 bg-slate-950/95 backdrop-blur border-b border-amber-700/40 px-4 py-2">
+                    <span className="relative flex w-2.5 h-2.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 animate-ping" />
+                      <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-amber-500" />
+                    </span>
+                    <span className="text-[11px] font-semibold text-amber-300">Deep-Path Reasoning in progress…</span>
+                    <span className="text-[10px] text-slate-500">BOB is working but still listening — keep typing.</span>
+                    <div className="flex-1" />
+                    <StopButton onStop={stop} />
+                  </div>
+                )}
                 <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3">
                   {messages.length === 0 && !isWorking && (
                     <div className="flex items-start gap-3 mt-2">

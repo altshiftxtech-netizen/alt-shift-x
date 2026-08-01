@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { extractDocText, isDocFile } from "@/lib/extractDocText";
-import { Loader2, Upload, FileText, Wand2, X, Check } from "lucide-react";
+import { Loader2, Upload, FileText, Wand2, X, Check, ImagePlus } from "lucide-react";
 
 // One upload slot. Defined at module level (not inside DocumentIntake) so the
 // file <input> keeps a stable identity across re-renders — re-creating it on
@@ -34,7 +34,30 @@ function FileRow({ label, file, onPick, onClear, inputRef, hint, uploading }) {
 // production brief → auto-populates the studio. The operator edits everything
 // before anything is saved. Fields the doc doesn't mention are still populated
 // (empty) so they're ready when the user reaches that step.
-export default function DocumentIntake({ onExtracted }) {
+// Reference photos — visual references (logos, product shots, mood boards).
+// Uploaded and surfaced as URLs so the studio + extraction can read them.
+function ReferencePhotos({ photos, onAdd, onRemove, uploading }) {
+  const inputRef = useRef(null);
+  return (
+    <div>
+      <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { onAdd(e.target.files); e.target.value = ""; }} />
+      <div className="flex flex-wrap gap-2">
+        {photos.map((p, i) => (
+          <div key={i} className="relative w-14 h-14 rounded-lg overflow-hidden border border-amber-900/40 group">
+            <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+            <button onClick={() => onRemove(i)} className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 text-amber-300 hover:text-white"><X className="w-3 h-3" /></button>
+          </div>
+        ))}
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+          className="w-14 h-14 flex flex-col items-center justify-center gap-0.5 text-amber-300 bg-black/40 hover:bg-black/60 border border-dashed border-amber-700/50 hover:border-amber-500 rounded-lg disabled:opacity-50">
+          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-[8px]">add</span></>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function DocumentIntake({ onExtracted, onPhotosChange }) {
   const [brandFile, setBrandFile] = useState(null);
   const [scriptFile, setScriptFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -43,6 +66,32 @@ export default function DocumentIntake({ onExtracted }) {
   const [done, setDone] = useState(false);
   const brandRef = useRef(null);
   const scriptRef = useRef(null);
+  const [photos, setPhotos] = useState([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+
+  const addPhotos = async (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    setPhotoUploading(true);
+    try {
+      const uploaded = await Promise.all(files.map(async (file) => {
+        const url = await uploadWithRetry(file);
+        return { name: file.name, url };
+      }));
+      setPhotos((prev) => {
+        const next = [...prev, ...uploaded];
+        onPhotosChange?.(next);
+        return next;
+      });
+    } catch { /* ignore */ } finally {
+      setPhotoUploading(false);
+    }
+  };
+  const removePhoto = (i) => setPhotos((prev) => {
+    const next = prev.filter((_, idx) => idx !== i);
+    onPhotosChange?.(next);
+    return next;
+  });
 
   // Upload with automatic retry on 429 (rate limit) — waits and tries again a
   // few times with growing backoff before giving up.
@@ -111,6 +160,14 @@ export default function DocumentIntake({ onExtracted }) {
       <div className="grid sm:grid-cols-2 gap-3">
         <FileRow label="Brand document" file={brandFile} onPick={(e) => pickFile(e, setBrandFile)} onClear={() => setBrandFile(null)} inputRef={brandRef} hint="Colors, fonts, tone, style" uploading={uploading} />
         <FileRow label="Script (optional)" file={scriptFile} onPick={(e) => pickFile(e, setScriptFile)} onClear={() => setScriptFile(null)} inputRef={scriptRef} hint="Becomes the production brief" uploading={uploading} />
+      </div>
+
+      {/* Reference photos — visual references for the production (logo, product
+          shots, mood board). Images are uploaded and passed to extraction as
+          file_urls so the vision model can read them alongside the brand doc. */}
+      <div>
+        <label className="text-[11px] font-semibold text-amber-200/60 block mb-1.5">Reference photos</label>
+        <ReferencePhotos photos={photos} onAdd={addPhotos} onRemove={removePhoto} uploading={photoUploading} />
       </div>
 
       {error && <p className="text-[11px] text-red-400">{error}</p>}
