@@ -107,6 +107,7 @@ import Crm from './pages/Crm';
 import TaxCompliance from './pages/TaxCompliance';
 import Pipelines from './pages/Pipelines';
 import PipelineKeyReveal from './pages/PipelineKeyReveal';
+import SovereignAccess from './pages/SovereignAccess';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import WhitePaper from './pages/WhitePaper';
@@ -173,6 +174,7 @@ const AuthenticatedApp = () => {
       <Route path="/export-controls" element={<ExportControls />} />
       <Route path="/sanctions-policy" element={<ExportControls />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/access" element={<SovereignAccess />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/white-paper" element={<WhitePaper />} />
