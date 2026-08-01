@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import { PWA_LEGAL_ASSETS, LEGAL_MD } from "@/lib/pwaLegalAssets";
+import { base44 } from "@/api/base44Client";
 
 // Injects the four Sovereign legal assets + consolidated LEGAL.md into a ZIP.
 function addLegalAssets(zip) {
@@ -9,22 +10,85 @@ function addLegalAssets(zip) {
   zip.file("LEGAL.md", LEGAL_MD);
 }
 
+// ── PWA Tightening (client-side mirror of SOV-PWA-TIGHT-ORCH-X5-1.0) ────────
+// Strips all proprietary platform internals from a build record so the produced
+// PWA cannot leak Alt+Shift+X procedure, codes, or hardening configuration.
+//
+// DOCTRINE: Produced PWA's are "AI Agent Hardened" — NOT 110%. The 110%
+// Hardened Standard is reserved for components built ON altshiftx.tech.
+// Produced PWA shells get AI Agent Hardening only.
+const PROPRIETARY_PREFIXES = [
+  "BOB-INIT-", "ASX-BUILD-", "GSP-MASTER-INDEX", "SOV-", "EXPERT-MINDS-", "SPEAKEASY-",
+];
+
+function stripProprietary(text) {
+  if (!text) return text;
+  let cleaned = text;
+  for (const prefix of PROPRIETARY_PREFIXES) {
+    cleaned = cleaned.replace(new RegExp(prefix + "[A-Z0-9.-]*", "g"), "");
+  }
+  return cleaned.replace(/\s{2,}/g, " ").replace(/[·•]\s*$/g, "").trim();
+}
+
+// Tighten a build record into a public-safe version. Tries the server-side
+// orchestrator first (SOV-PWA-TIGHT-ORCH-X5-1.0); falls back to client-side
+// stripping if the function is unavailable so the PWA is always tight.
+async function tightenBuild(build) {
+  // Try server-side tightening first
+  if (build?.id) {
+    try {
+      const res = await base44.functions.invoke("sovPwaTightOrch", { build_id: build.id });
+      if (res?.success && res?.tightened) return res.tightened;
+    } catch { /* fall through to client-side */ }
+  }
+
+  // Client-side fallback — same stripping logic
+  const h = build?.hardening || {};
+  const hardening_badges = [
+    h.hallucination_guard !== false && "Hallucination Guard",
+    h.audit_logging !== false && "Audit Logging",
+  ].filter(Boolean);
+
+  let cleanManifest = {};
+  try {
+    cleanManifest = JSON.parse(build?.manifest_json || "{}");
+    if (cleanManifest.description) cleanManifest.description = "AI Agent Hardened PWA";
+  } catch {}
+
+  return {
+    pwa_name: build?.pwa_name || "PWA",
+    database: build?.database || "none",
+    hardening_level: "AI Agent Hardened",
+    hardening_badges,
+    confidence_threshold: h.confidence_threshold || 0.85,
+    hallucination_guard: h.hallucination_guard !== false,
+    audit_logging: h.audit_logging !== false,
+    manifest: cleanManifest,
+    features: (build?.feature_labels || []).map(stripProprietary).filter(Boolean),
+    tightened_at: new Date().toISOString(),
+    protocol: "SOV-PWA-TIGHT-ORCH-X5-1.0",
+  };
+}
+
 // ── Hardened chat scaffold script ──────────────────────────────────────────
 // Injected into every generated PWA so the chat has the smart auto-scroll fix
-// (no "creep") + the 110% hardening config baked in. The agent API endpoint is
-// left as a placeholder for the builder to wire.
-function generateHardenedChatScript(hardening, database) {
-  const h = hardening || {};
-  const ct = h.confidence_threshold || 0.85;
+// (no "creep") + AI Agent Hardening baked in. Only boolean guard flags + the
+// confidence threshold survive — the full hardening config is NEVER exposed.
+function generateHardenedChatScript(tightened) {
+  const guard = tightened?.hallucination_guard !== false;
+  const audit = tightened?.audit_logging !== false;
+  const ct = tightened?.confidence_threshold || 0.85;
+  const db = tightened?.database || "none";
   return `
-    // ── Hardened chat scaffold with smart auto-scroll (no creep) ──
-    const HARDENING = ${JSON.stringify(h)};
-    const CONFIDENCE_THRESHOLD = ${ct};
-    const DB = ${JSON.stringify(database || "none")};
-    const messagesEl = document.getElementById("messages");
-    const inputEl = document.getElementById("input");
-    const sendBtn = document.getElementById("send");
-    let isNearBottom = true;
+    // ── AI Agent Hardened chat scaffold with smart auto-scroll (no creep) ──
+    var HALLUCINATION_GUARD = ${guard};
+    var AUDIT_LOGGING = ${audit};
+    var CONFIDENCE_THRESHOLD = ${ct};
+    var DB = ${JSON.stringify(db)};
+    var messagesEl = document.getElementById("messages");
+    var inputEl = document.getElementById("input");
+    var sendBtn = document.getElementById("send");
+    var isNearBottom = true;
 
     // Track scroll — only auto-scroll when user is near the bottom.
     messagesEl.addEventListener("scroll", function() {
@@ -36,22 +100,21 @@ function generateHardenedChatScript(hardening, database) {
       div.className = "msg " + role;
       div.textContent = text;
       messagesEl.appendChild(div);
-      // Instant scroll (not smooth) — prevents the "creep" animation stacking
-      // that happens when smooth-scroll fires on every streamed token.
+      // Instant scroll (not smooth) — prevents the "creep" animation stacking.
       if (isNearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // X1 Ledger — audit-log every message to local storage (immutable append).
+    // Audit-log every message to local storage (immutable append).
     function auditLog(role, text) {
-      if (!HARDENING.audit_logging) return;
+      if (!AUDIT_LOGGING) return;
       try {
-        var log = JSON.parse(localStorage.getItem("x1_ledger") || "[]");
+        var log = JSON.parse(localStorage.getItem("audit_ledger") || "[]");
         log.push({ ts: Date.now(), role: role, hash: btoa(text).slice(0, 16) });
-        localStorage.setItem("x1_ledger", JSON.stringify(log.slice(-500)));
+        localStorage.setItem("audit_ledger", JSON.stringify(log.slice(-500)));
       } catch (e) {}
     }
 
-    // X2 Sensor — confidence check stub. Replace with real confidence scoring.
+    // Confidence check stub. Replace with real confidence scoring.
     function checkConfidence(text) {
       return text.length > 3 ? 0.9 : 0.5;
     }
@@ -67,12 +130,12 @@ function generateHardenedChatScript(hardening, database) {
 
       // ── Wire your agent API endpoint here ──
       // fetch("/api/chat", { method: "POST", body: JSON.stringify({ message: text }) })
-      //   .then(r => r.json()).then(data => { addMessage("bot", data.reply); });
+      //   .then(function(r) { return r.json(); }).then(function(data) { addMessage("bot", data.reply); });
 
       var confidence = checkConfidence(text);
 
       // Hallucination Guard — fail-closed if confidence below threshold.
-      if (HARDENING.hallucination_guard && confidence < CONFIDENCE_THRESHOLD) {
+      if (HALLUCINATION_GUARD && confidence < CONFIDENCE_THRESHOLD) {
         addMessage("bot", "⚠ Confidence (" + confidence.toFixed(2) + ") below threshold (" + CONFIDENCE_THRESHOLD + "). Output blocked by hallucination guard.");
         auditLog("bot", "BLOCKED:low_confidence:" + confidence.toFixed(2));
       } else {
@@ -88,7 +151,7 @@ function generateHardenedChatScript(hardening, database) {
       if (e.key === "Enter") sendMessage();
     });
 
-    addMessage("bot", "Hardened shell ready. Database: " + DB + ". Confidence threshold: " + CONFIDENCE_THRESHOLD + ". Connect an agent API to begin.");
+    addMessage("bot", "AI Agent Hardened shell ready. Database: " + DB + ". Confidence threshold: " + CONFIDENCE_THRESHOLD + ". Connect an agent API to begin.");
   `;
 }
 
@@ -121,27 +184,17 @@ function shellStyles(themeColor) {
   `;
 }
 
-function hardeningBadges(h) {
-  const badges = [
-    h.hallucination_guard && "Hallucination Guard",
-    h.audit_logging && "Audit Logging",
-    h.x1_ledger && "X1 Ledger",
-    h.x2_sensor && "X2 Sensor",
-    h.x4_guard && "X4 Guard",
-    h.x5_healing && "X5 Healing",
-  ].filter(Boolean);
-  return badges.map((b) => `<span class="badge">${b}</span>`).join("");
-}
-
-// Generates a standalone PWA shell HTML for a B.O.B.Init build record.
-export function generateShellHtml(build) {
-  const name = build.pwa_name || build.build_code || "Alt+Shift+X PWA";
-  const modules = (build.feature_labels || [])
+// Generates a standalone PWA shell HTML from a TIGHTENED build (no proprietary data).
+export function generateShellHtml(tightened) {
+  const name = tightened.pwa_name || "PWA";
+  const modules = (tightened.features || [])
     .map((l) => `      <li>${l}</li>`)
     .join("\n");
-  const db = build.database || "none";
-  const h = build.hardening || {};
-  const ct = h.confidence_threshold || 0.85;
+  const db = tightened.database || "none";
+  const ct = tightened.confidence_threshold || 0.85;
+  const badges = (tightened.hardening_badges || [])
+    .map((b) => `<span class="badge">${b}</span>`)
+    .join("");
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -155,17 +208,12 @@ export function generateShellHtml(build) {
 <body>
   <div class="header">
     <h1>${name}</h1>
-    <p class="meta">${build.build_code || ""} · ESI ${build.esi_score || 0}/100</p>
-    <div class="badges">${hardeningBadges(h)}</div>
+    <div class="badges">${badges}</div>
     <div class="info">
       <span>DB: <b>${db}</b></span>
       <span>Confidence ≥ <b>${ct}</b></span>
-      <span>Framework: <b>${h.regulatory_framework || "Blackstone Protocol"}</b></span>
     </div>
-    <p class="label">Hardened Modules</p>
-    <ul>
-${modules || "      <li>No modules</li>"}
-    </ul>
+    ${modules ? `<p class="label">Modules</p><ul>${modules}</ul>` : ""}
   </div>
   <div class="chat">
     <div id="messages" class="messages"></div>
@@ -174,15 +222,15 @@ ${modules || "      <li>No modules</li>"}
       <button id="send" onclick="sendMessage()">Send</button>
     </div>
   </div>
-  <p class="footer">BOB-INIT-ENGINE-1.0 · Self-Healing Shim active · 110% Hardened</p>
-  <script>${generateHardenedChatScript(h, db)}</script>
+  <p class="footer">AI Agent Hardened · Self-Healing active</p>
+  <script>${generateHardenedChatScript(tightened)}</script>
 </body>
 </html>`;
 }
 
 export function generateSwJs() {
-  return `// BOB-INIT-SELF-HEALING-SHIM-1.0 service worker
-const CACHE = "bob-init-shell-v1";
+  return `// Self-Healing service worker
+const CACHE = "pwa-shell-v1";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
@@ -209,10 +257,18 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
     if (res.ok) manifestText = await res.text();
   } catch { /* fall back to stub */ }
 
-  const safeName = (pwaName || "Alt+Shift+X PWA").replace(/[<>]/g, "");
+  const safeName = (pwaName || "PWA").replace(/[<>]/g, "");
   const sub = subtitle ? `<p class="meta">${subtitle}</p>` : "";
-  // Default hardening for static PWA shells (Agent Wrapper etc.)
-  const defaultH = { hallucination_guard: true, confidence_threshold: 0.85, audit_logging: true, regulatory_framework: "Blackstone Protocol", x1_ledger: true, x2_sensor: true, x4_guard: true, x5_healing: true };
+  // AI Agent Hardened defaults for static PWA shells
+  const tightened = {
+    pwa_name: safeName,
+    database: "none",
+    hardening_level: "AI Agent Hardened",
+    hardening_badges: ["Hallucination Guard", "Audit Logging"],
+    confidence_threshold: 0.85,
+    hallucination_guard: true,
+    audit_logging: true,
+  };
 
   const shellHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -228,10 +284,9 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   <div class="header">
     <h1>${safeName}</h1>
     ${sub}
-    <div class="badges">${hardeningBadges(defaultH)}</div>
+    <div class="badges">${(tightened.hardening_badges || []).map((b) => `<span class="badge">${b}</span>`).join("")}</div>
     <div class="info">
       <span>Confidence ≥ <b>0.85</b></span>
-      <span>Framework: <b>Blackstone Protocol</b></span>
     </div>
   </div>
   <div class="chat">
@@ -241,8 +296,8 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
       <button id="send" onclick="sendMessage()">Send</button>
     </div>
   </div>
-  <p class="footer">Alt+Shift+X · Sovereign PWA Shell · 110% Hardened</p>
-  <script>${generateHardenedChatScript(defaultH, "none")}</script>
+  <p class="footer">AI Agent Hardened · Sovereign PWA Shell</p>
+  <script>${generateHardenedChatScript(tightened)}</script>
 </body>
 </html>`;
 
@@ -253,11 +308,11 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   addLegalAssets(zip);
   zip.file(
     "README.txt",
-    `Alt+Shift+X PWA Package\n` +
-      `======================\n\n` +
-      `PWA:      ${pwaName}\n` +
-      `Manifest: ${manifestUrl}\n` +
-      `Hardening: 110% Standard (fail-closed, hallucination guard, audit logging)\n\n` +
+    `PWA Package\n` +
+      `===========\n\n` +
+      `PWA:       ${pwaName}\n` +
+      `Manifest:  ${manifestUrl}\n` +
+      `Hardening: AI Agent Hardened (fail-closed, hallucination guard, audit logging)\n\n` +
       `Deploy these files on any static host (Netlify, Vercel, GitHub\n` +
       `Pages, or your own server). manifest.json + sw.js make this\n` +
       `installable as a standalone PWA.`
@@ -267,7 +322,7 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${(pwaName || "altshiftx-pwa").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.zip`;
+  a.download = `${(pwaName || "pwa").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -275,51 +330,41 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
 }
 
 // Builds and triggers a download of a ZIP package for a B.O.B.Init build record.
+// Runs the SOV-PWA-TIGHT-ORCH-X5-1.0 orchestrator to strip proprietary info
+// before generating the shell, so nothing leaks.
 export async function downloadBuildZip(build) {
+  // Tighten the build — strips proprietary codes, ESI, build codes, full hardening JSON
+  const tightened = await tightenBuild(build);
+
   const zip = new JSZip();
-  zip.file("manifest.json", build.manifest_json || JSON.stringify({ name: build.pwa_name || "Alt+Shift+X PWA" }, null, 2));
-  zip.file("index.html", generateShellHtml(build));
+  zip.file("manifest.json", JSON.stringify(tightened.manifest || { name: tightened.pwa_name }, null, 2));
+  zip.file("index.html", generateShellHtml(tightened));
   zip.file("sw.js", generateSwJs());
   addLegalAssets(zip);
-  const h = build.hardening || {};
-  const activeLayers = [
-    h.hallucination_guard && "Hallucination Guard",
-    h.audit_logging && "Audit Logging (X1 Ledger)",
-    h.x1_ledger && "X1 Forensic Ledger",
-    h.x2_sensor && "X2 Friction Sensor",
-    h.x4_guard && "X4 Logic Canary",
-    h.x5_healing && "X5 Self-Healing Executive",
-  ].filter(Boolean).join(", ");
   zip.file(
     "README.txt",
-    `B.O.B.Init Build Package\n` +
-      `========================\n\n` +
-      `Build:      ${build.build_code || build.id}\n` +
-      `PWA Name:   ${build.pwa_name || "Alt+Shift+X PWA"}\n` +
-      `Stack:      ${build.stack || "n/a"}\n` +
-      `Database:   ${build.database || "none"}\n` +
-      `ESI:        ${build.esi_score || 0}/100\n` +
-      `Modules:    ${(build.feature_labels || []).join(", ") || "none"}\n` +
-      `Hardening:  ${h.hallucination_guard !== false ? "110% Standard (ON)" : "OFF"}\n` +
-      `  Confidence threshold: ${h.confidence_threshold || 0.85}\n` +
-      `  Regulatory framework: ${h.regulatory_framework || "Blackstone Protocol"}\n` +
-      `  Active layers: ${activeLayers || "none"}\n` +
-      `  Environment: ${h.environment || "production"}\n` +
-      `  Rollback: ${h.rollback_strategy || "automatic"}\n\n` +
+    `PWA Package\n` +
+      `===========\n\n` +
+      `PWA Name:  ${tightened.pwa_name}\n` +
+      `Database:  ${tightened.database}\n` +
+      `Hardening: ${tightened.hardening_level}\n` +
+      `  Guards: ${(tightened.hardening_badges || []).join(", ") || "none"}\n` +
+      `  Confidence threshold: ${tightened.confidence_threshold}\n` +
+      `Modules:   ${(tightened.features || []).join(", ") || "none"}\n\n` +
       `Deploy these files on any static host (Netlify, Vercel, GitHub\n` +
       `Pages, or your own server). manifest.json + sw.js make this\n` +
       `installable as a standalone PWA.\n\n` +
-      `The bundled index.html contains a hardened chat scaffold with\n` +
-      `smart auto-scroll (no creep), X1 audit logging, X2 confidence\n` +
-      `sensing, and a fail-closed hallucination guard. Wire your agent\n` +
-      `API endpoint into the sendMessage() function to activate it.`
+      `The bundled index.html contains an AI Agent Hardened chat scaffold\n` +
+      `with smart auto-scroll (no creep), audit logging, and a fail-closed\n` +
+      `hallucination guard. Wire your agent API endpoint into the\n` +
+      `sendMessage() function to activate it.`
   );
 
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${build.build_code || "bob-build"}.zip`;
+  a.download = `${(tightened.pwa_name || "pwa").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
