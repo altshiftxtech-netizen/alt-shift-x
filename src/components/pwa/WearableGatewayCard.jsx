@@ -111,6 +111,9 @@ export default function WearableGatewayCard({ isTopTier, isAdmin, loading }) {
                 <span className="font-semibold text-slate-700">Voice wiring:</span> point your assistant skill at <span className="font-mono">/functions/wearableGateway</span> with header <span className="font-mono">x-api-key: ASX-WG-…</span> and action <span className="font-mono">probe</span> for a glanceable readout.
               </p>
             </div>
+            <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+              <Lock className="w-3 h-3" /> Hardware-bound <strong className="text-slate-700">AOI/REST API</strong> key isolation — voice commands never leak outside the Sovereign shell.
+            </p>
             <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" /> TopTier — gateway enabled.
             </p>

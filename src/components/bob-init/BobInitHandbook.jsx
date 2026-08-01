@@ -170,7 +170,7 @@ const SECTIONS = [
   {
     id: "project-json",
     icon: FileJson,
-    title: "4. The project.json Workflow (Half-Price PWA)",
+    title: "4. The project.json Workflow (V8.0 — The Coder's Manifest)",
     body: (
       <>
         <p className="mb-2"><strong className="text-cyan-400">Learn to code, pay half.</strong> Build via the <strong>project.json Workflow</strong> instead of raw text-to-code and your PWA render is <strong className="text-amber-300">half price</strong> — an incentive to learn enough Node.js to run your own server and go local.</p>
@@ -186,12 +186,13 @@ const SECTIONS = [
           <li><code className="text-amber-400">connectivity.local_server</code> — <em>enabled</em>/<em>disabled</em>. Enables the local .local fast-path.</li>
           <li><code className="text-amber-400">connectivity.frontier_bridge[]</code> — frontier models to bridge (<em>GPT-4o</em>, <em>Claude-3-Opus</em>, <em>Gemini-1.5-Pro</em>, <em>Llama-3</em>).</li>
           <li><code className="text-amber-400">connectivity.registry</code> — component registry, default <em>altshiftx-private-core</em>.</li>
-          <li><code className="text-amber-400">features[]</code> — toggle hardened modules (<em>Magna-Dev-Full-Access</em>, <em>Sovereign-Apex-Hardening</em>, <em>Self-Healing-API-Shims</em>, <em>PII-Fragmentation</em>, <em>D2D-Sync</em>, <em>Blackstone-Guard</em>).</li>
+          <li><code className="text-amber-400">features[]</code> — toggle hardened modules: <em>SOV-AUTH-MAX</em> (hardware-bound auth), <em>SOV-PWA-FUNCTIONALITY-CHECK-1.0</em> (verifies zero dead API nodes + service-worker install), <em>SELF-HEALING</em> (API shims), plus <em>PII-Fragmentation</em>, <em>D2D-Sync</em>, <em>Blackstone-Guard</em>.</li>
           <li><code className="text-amber-400">branding.colorway</code> — <em>Generic_Office_Slate</em>, <em>Sovereign_Gold</em>, <em>Midnight</em>, <em>Clean_White</em>.</li>
           <li><code className="text-amber-400">branding.logo_url</code> — upload a logo, or leave <em>[PENDING_UPLOAD]</em>.</li>
           <li><code className="text-amber-400">branding.terminal_aesthetic</code> — <em>Classic_Prompt</em>, <em>PowerShell</em>, <em>Bash</em>, <em>Minimal</em>.</li>
           <li><code className="text-amber-400">compliance.wv_retention_vault</code> — <em>linked</em> or <em>off</em>.</li>
           <li><code className="text-amber-400">compliance.fragmentation_level</code> — <em>K-of-N</em>, <em>full</em>, <em>none</em>.</li>
+          <li><code className="text-amber-400">valuation</code> — <em>number</em>. The 10-year projected value for the ESI Audit Tracker (e.g. <em>12500000</em>).</li>
         </ul>
         <p className="mt-2"><strong className="text-cyan-400">Text-to-Code:</strong> Prefer plain language? Write a paragraph and BOB fills the form, making assumptions for anything missing.</p>
         <p className="mt-1"><strong className="text-cyan-400">Reference documents:</strong> upload a Concept, White Paper, Valuation, and 10-Year Plan — BOB builds for the plan.</p>
@@ -312,7 +313,7 @@ export default function BobInitHandbook() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between">
-              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-6.0 · The Billing Edition</span>
+              <span className="text-[10px] font-mono text-[#484f58]">BOB-INIT-HANDBOOK-8.0 · The Coder's Manifest</span>
               <Button onClick={() => setOpen(false)} size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
                 Got it
               </Button>

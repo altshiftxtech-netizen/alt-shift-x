@@ -15,6 +15,8 @@ export default function BobbyDocSetRenderer() {
   const [rendering, setRendering] = useState(false);
   const [docSet, setDocSet] = useState(null);
   const [error, setError] = useState("");
+  const [certifying, setCertifying] = useState(false);
+  const [certification, setCertification] = useState(null);
 
   const onPick = async (e) => {
     const picked = [...(e.target.files || [])];
@@ -103,6 +105,55 @@ export default function BobbyDocSetRenderer() {
     }
   };
 
+  // Forensic certification — extract original timestamps + historical ESI from
+  // the uploaded past document set to certify authenticity as a Sovereign Record.
+  const certifyRecord = async () => {
+    if (files.length < 1) {
+      setError("Upload at least 1 past document to certify.");
+      return;
+    }
+    setCertifying(true);
+    setError("");
+    setCertification(null);
+    try {
+      const schema = {
+        type: "object",
+        properties: {
+          originalityTimestamp: { type: "string", description: "Earliest original timestamp extracted from the evidence (ISO date, e.g. 2026-07-15)" },
+          historicalEsi: { type: "number", description: "Historical ESI (Environment-Sovereign-Index) marker extracted from the evidence, 0-100" },
+          authenticityStatus: { type: "string", enum: ["certified", "partial", "contested"] },
+          evidenceItems: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                document: { type: "string" },
+                timestamp: { type: "string" },
+                esiMarker: { type: "string" },
+              },
+            },
+          },
+          summary: { type: "string" },
+        },
+        required: ["originalityTimestamp", "historicalEsi", "authenticityStatus", "summary"],
+      };
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt:
+          "You are BOBby, the forensic certifier on the Sovereign Substrate. From the uploaded past document set, extract the ORIGINAL timestamps (earliest creation/signature/filing dates) and any historical ESI (Environment-Sovereign-Index) markers present in the evidence. Certify the authenticity of the history — this transforms the history into a certified Sovereign Record. Return the originality timestamp, historical ESI score, authenticity status, per-document evidence items, and a one-paragraph summary. Do NOT use emojis.",
+        file_urls: files.map((f) => f.url),
+        response_json_schema: schema,
+      });
+      const cert = res?.output || res;
+      const sealText = (cert.originalityTimestamp || "") + "|" + (cert.historicalEsi ?? "") + "|" + (cert.summary || "");
+      const certSeal = await computeSeal(sealText);
+      setCertification({ ...cert, certSeal });
+    } catch (e) {
+      setError("Certification failed: " + (e.message || "substrate error"));
+    } finally {
+      setCertifying(false);
+    }
+  };
+
   return (
     <Card className="bg-white/[0.03] border-[#D4AF37]/20 backdrop-blur-md">
       <CardContent className="p-5 space-y-5">
@@ -133,10 +184,16 @@ export default function BobbyDocSetRenderer() {
           </div>
         )}
 
-        <Button onClick={renderSet} disabled={rendering || files.length < 2} className="w-full bg-[#D4AF37] hover:bg-[#e6c454] text-black font-bold gap-2">
-          {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Layers className="w-4 h-4" />}
-          {rendering ? "Rendering Set…" : "Render Document Set"}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={renderSet} disabled={rendering || files.length < 2} className="flex-1 bg-[#D4AF37] hover:bg-[#e6c454] text-black font-bold gap-2">
+            {rendering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Layers className="w-4 h-4" />}
+            {rendering ? "Rendering…" : "Render Document Set"}
+          </Button>
+          <Button onClick={certifyRecord} disabled={certifying || files.length < 1} variant="outline" className="flex-1 border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37]/10 gap-2">
+            {certifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+            {certifying ? "Certifying…" : "Certify Sovereign Record"}
+          </Button>
+        </div>
         {error && <p className="text-[11px] text-red-400">{error}</p>}
 
         {docSet && (
@@ -161,6 +218,49 @@ export default function BobbyDocSetRenderer() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {certification && (
+          <div className="mt-2 rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/[0.04] p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+              <h3 className="text-sm font-bold text-white">Certified Sovereign Record</h3>
+              <span className={`ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full ${certification.authenticityStatus === "certified" ? "bg-emerald-500/15 text-emerald-400" : certification.authenticityStatus === "contested" ? "bg-red-500/15 text-red-400" : "bg-amber-500/15 text-amber-400"}`}>
+                {String(certification.authenticityStatus || "").toUpperCase()}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2">
+                <p className="text-[10px] text-[#D4AF37]/60 tracking-widest">ORIGINALITY TIMESTAMP</p>
+                <p className="text-white font-mono">{certification.originalityTimestamp || "—"}</p>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2">
+                <p className="text-[10px] text-[#D4AF37]/60 tracking-widest">HISTORICAL ESI</p>
+                <p className="text-white font-mono">{certification.historicalEsi ?? "—"}%</p>
+              </div>
+            </div>
+            {certification.evidenceItems?.length > 0 && (
+              <div className="overflow-x-auto rounded-lg border border-white/10">
+                <table className="w-full text-xs">
+                  <thead><tr className="bg-[#D4AF37]/10 text-[#D4AF37]"><th className="px-3 py-1.5 text-left">Document</th><th className="px-3 py-1.5 text-left">Timestamp</th><th className="px-3 py-1.5 text-left">ESI Marker</th></tr></thead>
+                  <tbody>
+                    {certification.evidenceItems.map((e, i) => (
+                      <tr key={i} className="border-t border-white/10 text-white/70">
+                        <td className="px-3 py-1.5">{e.document || "—"}</td>
+                        <td className="px-3 py-1.5 font-mono">{e.timestamp || "—"}</td>
+                        <td className="px-3 py-1.5 font-mono">{e.esiMarker || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <CleanDocRenderer content={certification.summary} />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#D4AF37]/25 bg-[#D4AF37]/5">
+              <span className="text-[10px] tracking-widest text-[#D4AF37]/80">CERTIFICATION SEAL</span>
+              <code className="text-[10px] text-white/60 truncate font-mono">{certification.certSeal}</code>
             </div>
           </div>
         )}
