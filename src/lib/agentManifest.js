@@ -9,10 +9,11 @@ export const AGENT_MANIFEST_BASE = {
   short_name: "Agent Wrapper",
   description: "PWA-AGENT-WRAPPER-1.0 · Generic Office — portable neutral container for AI services.",
   icons: [
-    { src: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png", sizes: "192x192", type: "image/png" },
-    { src: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png", sizes: "512x512", type: "image/png" },
+    { src: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+    { src: "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
   ],
   display: "standalone",
+  display_override: ["standalone"],
   theme_color: "#0d1117",
   background_color: "#ffffff",
 };
@@ -38,6 +39,7 @@ export function getAgentManifestUrl(domain = DEFAULT_AGENT_DOMAIN) {
   const startUrl = normalized || "https://your-domain.com";
   const manifest = {
     ...AGENT_MANIFEST_BASE,
+    id: "/agent-wrapper",
     start_url: startUrl,
     scope: startUrl,
   };

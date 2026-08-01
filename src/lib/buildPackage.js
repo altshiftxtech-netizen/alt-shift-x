@@ -93,11 +93,22 @@ function extractIconUrl(manifest) {
 // the user's own host, not a remote CDN that may block cross-origin installs).
 function localizeManifestIcons(manifest) {
   const out = { ...manifest };
+  // Stable per-PWA identity so each installs as its own app with its own icon
+  // (Chrome keys installed apps by manifest `id`, not name).
+  if (!out.id) out.id = "/" + (out.name || "pwa").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  if (!out.display_override) out.display_override = ["standalone"];
   out.icons = [
     { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
     { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
   ];
   return out;
+}
+
+// Registers the bundled service worker so a hosted ZIP PWA meets Chrome's
+// installability criteria (fetch-handling SW) — the desktop icon / taskbar pin
+// / app-list entry only appears once the SW is active. No user setup required.
+function swRegisterScript() {
+  return `<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){});});}</script>`;
 }
 
 // ── Quick-start INSTALL.txt ────────────────────────────────────────────────
@@ -298,6 +309,7 @@ export function generateShellHtml(tightened) {
   </div>
   <p class="footer">AI Agent Hardened · Self-Healing active</p>
   <script>${generateHardenedChatScript(tightened)}</script>
+  ${swRegisterScript()}
 </body>
 </html>`;
 }
@@ -392,6 +404,7 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   </div>
   <p class="footer">AI Agent Hardened · Sovereign PWA Shell</p>
   <script>${generateHardenedChatScript(tightened)}</script>
+  ${swRegisterScript()}
 </body>
 </html>`;
 

@@ -6,11 +6,12 @@ const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cff
 const BOBBY_MANIFEST_BASE = {
   short_name: "BOBby",
   display: "standalone",
+  display_override: ["standalone"],
   theme_color: "#000000",
   background_color: "#000000",
   icons: [
-    { src: BOBBY_LOGO, sizes: "192x192", type: "image/png" },
-    { src: BOBBY_LOGO, sizes: "512x512", type: "image/png" },
+    { src: BOBBY_LOGO, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+    { src: BOBBY_LOGO, sizes: "512x512", type: "image/png", purpose: "any maskable" },
   ],
 };
 
@@ -27,6 +28,7 @@ export function getBobbyManifestUrl(version = "1.0", domain = "") {
 
   const manifest = {
     ...BOBBY_MANIFEST_BASE,
+    id: isEnterprise ? "/bobby-1-1-enterprise" : "/bobby-1-0",
     name: isEnterprise ? "BOBby 1.1 Enterprise" : "BOBby 1.0",
     description: isEnterprise
       ? "BOBby 1.1 Enterprise · Sovereign build yielder — enterprise substrate access."
