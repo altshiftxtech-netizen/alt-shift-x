@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Loader2, Upload, Wand2, Sparkles, FileText, CheckCircle2, Bot } from "lucide-react";
+import CleanDocRenderer from "@/components/bobby/CleanDocRenderer";
+import BobbyDocSetRenderer from "@/components/bobby/BobbyDocSetRenderer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -371,14 +373,17 @@ export default function BobbyQuickEdits() {
               <h2 className="text-sm font-bold text-white">Generated Document</h2>
             </div>
             {generatedDoc ? (
-              <pre className="text-xs text-white/75 whitespace-pre-wrap break-words leading-relaxed max-h-[60vh] overflow-y-auto bg-black/40 rounded-lg p-4 border border-white/5">
-                {generatedDoc}
-              </pre>
+              <div className="max-h-[60vh] overflow-y-auto bg-black/40 rounded-lg p-4 border border-white/5">
+                <CleanDocRenderer content={generatedDoc} />
+              </div>
             ) : (
               <p className="text-xs text-white/40 py-10 text-center">Configure the form and hit “Generate Document”, or upload + Apply to have Claire 1.0 feed the build.</p>
             )}
           </CardContent>
         </Card>
+
+        {/* ── Render Past Document Set (ESI woven through) ── */}
+        <BobbyDocSetRenderer />
       </main>
     </div>
   );

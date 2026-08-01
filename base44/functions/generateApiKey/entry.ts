@@ -1,38 +1,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.25";
-
-const generateRandomKey = () => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const bytes = new Uint32Array(32);
-  crypto.getRandomValues(bytes);
-  let key = "";
-  for (let i = 0; i < 32; i++) {
-    key += chars.charAt(bytes[i] % chars.length);
-  }
-  return key;
-};
-
-const hashKey = async (key) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(key);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-};
+import { generateRandomKey, hashKey, makeRateLimiter } from "../../shared/apiKeyCrypto.ts";
 
 // Rate limit: max 5 key generations per IP per minute
-const rlAttempts = new Map();
-const RL_WINDOW = 60_000;
-const RL_MAX = 5;
-function rlCheck(req) {
-  const fwd = req.headers.get("x-forwarded-for") || "";
-  const ip = (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
-  const now = Date.now();
-  const recent = (rlAttempts.get(ip) || []).filter((t) => now - t < RL_WINDOW);
-  if (recent.length >= RL_MAX) return false;
-  recent.push(now);
-  rlAttempts.set(ip, recent);
-  return true;
-}
+const rlCheck = makeRateLimiter(5, 60_000);
 
 Deno.serve(async (req) => {
   try {

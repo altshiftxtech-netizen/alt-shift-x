@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { getLockedManifestUrl } from "@/lib/lockedManifest";
 import { getAgentManifestUrl, DEFAULT_AGENT_DOMAIN } from "@/lib/agentManifest";
 import { getBobbyManifestUrl } from "@/lib/bobbyManifest";
+import WearableGatewayCard from "@/components/pwa/WearableGatewayCard";
 
 // PWA-DASHBOARD-PORTAL-1.0 — tier-based install logic.
 // TopTier (any active non-free subscription) → free "Install Now".
@@ -279,6 +280,9 @@ export default function PwaPortal() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Wearable & Voice Gateway — smartwatches + voice assistants via secure API key */}
+        <WearableGatewayCard isTopTier={isTopTier} isAdmin={isAdmin} loading={loading} />
 
         {/* My B.O.B.Init Builds — persisted, installable, downloadable */}
         <MyBuilds />

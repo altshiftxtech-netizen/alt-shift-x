@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Download, Loader2, ShieldCheck, FileText } from "lucide-react";
+import CleanDocRenderer from "@/components/bobby/CleanDocRenderer";
 
 // Right pane (80%) — the "Papers" view document canvas (PDF-reader aesthetic).
 // Download injects the ESI Seal hash into PDF metadata + a gold watermark.
@@ -166,7 +167,7 @@ export default function BobbyPaperView({ document: doc, esiSeal, sealedAt, onDow
                   <span className="text-xs font-mono text-[#D4AF37]/60 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="text-lg font-bold text-white">{s.heading}</h3>
                 </div>
-                <p className="text-sm text-white/70 leading-relaxed pl-7">{s.body}</p>
+                <div className="pl-7"><CleanDocRenderer content={s.body} /></div>
               </section>
             ))}
           </div>
