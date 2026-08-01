@@ -131,7 +131,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl={lockedManifestUrl} pwaName="Alt+Shift+X" swapManifest domainLocked zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" />
+                  <UniversalPwaInstall manifestUrl={lockedManifestUrl} pwaName="Alt+Shift+X" swapManifest domainLocked zipName="altshiftx-site-mirror" zipSubtitle="Hybrid Mirror · pwa.altshiftx.tech" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/beac80924_altxlogo2.jpg" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
@@ -181,7 +181,7 @@ export default function PwaPortal() {
                     />
                     <p className="text-[10px] text-slate-400 mt-1">Customize the deployment domain for your Agent Wrapper PWA.</p>
                   </div>
-                  <UniversalPwaInstall manifestUrl={agentManifestUrl} pwaName="Agent Wrapper" swapManifest zipName="altshiftx-agent-wrapper" zipSubtitle="PWA-AGENT-WRAPPER-1.0 · Generic Office" />
+                  <UniversalPwaInstall manifestUrl={agentManifestUrl} pwaName="Agent Wrapper" swapManifest zipName="altshiftx-agent-wrapper" zipSubtitle="PWA-AGENT-WRAPPER-1.0 · Generic Office" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/04ee9da8c_Copilot_20260730_173833.png" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>

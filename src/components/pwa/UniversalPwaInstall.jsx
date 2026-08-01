@@ -23,6 +23,7 @@ export default function UniversalPwaInstall({
   zipName = null,
   zipSubtitle = "",
   zipThemeColor = "#0d1117",
+  iconUrl = null,
 }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [installing, setInstalling] = useState(false);
@@ -102,6 +103,7 @@ export default function UniversalPwaInstall({
       await downloadStaticPwaZip(manifestUrl, zipName || pwaName, {
         subtitle: zipSubtitle,
         themeColor: zipThemeColor,
+        iconUrl,
       });
     } finally { setZipping(false); }
   };

@@ -34,7 +34,6 @@ function stripProprietary(text) {
 // orchestrator first (SOV-PWA-TIGHT-ORCH-X5-1.0); falls back to client-side
 // stripping if the function is unavailable so the PWA is always tight.
 async function tightenBuild(build) {
-  // Try server-side tightening first
   if (build?.id) {
     try {
       const res = await base44.functions.invoke("sovPwaTightOrch", { build_id: build.id });
@@ -42,7 +41,6 @@ async function tightenBuild(build) {
     } catch { /* fall through to client-side */ }
   }
 
-  // Client-side fallback — same stripping logic
   const h = build?.hardening || {};
   const hardening_badges = [
     h.hallucination_guard !== false && "Hallucination Guard",
@@ -70,6 +68,81 @@ async function tightenBuild(build) {
   };
 }
 
+// ── Icon fetcher ───────────────────────────────────────────────────────────
+// Fetches the icon image as an ArrayBuffer so it can be bundled directly into
+// the ZIP. Returns null if the fetch fails (the shell still works, just without
+// a local icon — the manifest's remote URL is the fallback).
+async function fetchIconBlob(iconUrl) {
+  if (!iconUrl) return null;
+  try {
+    const res = await fetch(iconUrl);
+    if (!res.ok) return null;
+    return await res.arrayBuffer();
+  } catch { return null; }
+}
+
+// Extract the best icon URL from a manifest object (prefer 512, then any).
+function extractIconUrl(manifest) {
+  const icons = manifest?.icons;
+  if (!Array.isArray(icons) || icons.length === 0) return null;
+  const icon512 = icons.find(i => (i.sizes || "").includes("512")) || icons[0];
+  return icon512?.src || null;
+}
+
+// Build a manifest with LOCAL icon references (so the icon always resolves on
+// the user's own host, not a remote CDN that may block cross-origin installs).
+function localizeManifestIcons(manifest) {
+  const out = { ...manifest };
+  out.icons = [
+    { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+    { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+  ];
+  return out;
+}
+
+// ── Quick-start INSTALL.txt ────────────────────────────────────────────────
+function generateInstallTxt(pwaName) {
+  return `QUICK START — ${pwaName} PWA Installation
+${"=".repeat(40 + pwaName.length)}
+
+This package is a fully installable Progressive Web App. Three ways to start:
+
+OPTION A — Quick Desktop Install (Chrome / Edge) [recommended]
+  1. Upload ALL files in this folder to any static host:
+     - Netlify, Vercel, GitHub Pages, Cloudflare Pages, or your own server.
+  2. Open the site URL in Chrome or Edge.
+  3. Click the install icon (⊕) in the address bar, or:
+     Menu (⋮) → "Install ${pwaName}" / "Install site as app".
+  4. The app installs to your desktop / start menu with its own icon.
+
+OPTION B — Quick Mobile Install
+  • Android (Chrome): open the site → menu (⋮) → "Install app"
+    or "Add to Home screen".
+  • iOS (Safari): open the site → tap Share (􀈂) → "Add to Home Screen"
+    → "Add". The app appears on the home screen with its icon.
+
+OPTION C — Run Locally (test before hosting)
+  1. Unzip this folder.
+  2. In a terminal, run:  npx serve .
+     (or:  python3 -m http.server 8000)
+  3. Open http://localhost:8000 in Chrome or Edge.
+  4. Click the install icon in the address bar to install.
+
+FILES IN THIS PACKAGE
+  • index.html      — the app shell (AI Agent Hardened chat scaffold)
+  • manifest.json   — PWA manifest (name, icons, theme color)
+  • icon-192.png    — home screen icon (192×192)
+  • icon-512.png    — high-resolution icon (512×512)
+  • sw.js            — service worker (offline caching + self-healing)
+  • LEGAL.md         — bundled legal documents
+
+NOTE
+  The icon (icon-192.png / icon-512.png) is bundled locally so it always
+  appears on the desktop / home screen after install. Both the manifest and
+  the HTML <link rel="apple-touch-icon"> point to these local files.
+`;
+}
+
 // ── Hardened chat scaffold script ──────────────────────────────────────────
 // Injected into every generated PWA so the chat has the smart auto-scroll fix
 // (no "creep") + AI Agent Hardening baked in. Only boolean guard flags + the
@@ -90,7 +163,6 @@ function generateHardenedChatScript(tightened) {
     var sendBtn = document.getElementById("send");
     var isNearBottom = true;
 
-    // Track scroll — only auto-scroll when user is near the bottom.
     messagesEl.addEventListener("scroll", function() {
       isNearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 80;
     });
@@ -100,11 +172,9 @@ function generateHardenedChatScript(tightened) {
       div.className = "msg " + role;
       div.textContent = text;
       messagesEl.appendChild(div);
-      // Instant scroll (not smooth) — prevents the "creep" animation stacking.
       if (isNearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // Audit-log every message to local storage (immutable append).
     function auditLog(role, text) {
       if (!AUDIT_LOGGING) return;
       try {
@@ -114,7 +184,6 @@ function generateHardenedChatScript(tightened) {
       } catch (e) {}
     }
 
-    // Confidence check stub. Replace with real confidence scoring.
     function checkConfidence(text) {
       return text.length > 3 ? 0.9 : 0.5;
     }
@@ -122,7 +191,7 @@ function generateHardenedChatScript(tightened) {
     function sendMessage() {
       var text = inputEl.value.trim();
       if (!text) return;
-      isNearBottom = true; // user just sent — expect to see the bottom
+      isNearBottom = true;
       addMessage("user", text);
       auditLog("user", text);
       inputEl.value = "";
@@ -134,7 +203,6 @@ function generateHardenedChatScript(tightened) {
 
       var confidence = checkConfidence(text);
 
-      // Hallucination Guard — fail-closed if confidence below threshold.
       if (HALLUCINATION_GUARD && confidence < CONFIDENCE_THRESHOLD) {
         addMessage("bot", "⚠ Confidence (" + confidence.toFixed(2) + ") below threshold (" + CONFIDENCE_THRESHOLD + "). Output blocked by hallucination guard.");
         auditLog("bot", "BLOCKED:low_confidence:" + confidence.toFixed(2));
@@ -185,6 +253,8 @@ function shellStyles(themeColor) {
 }
 
 // Generates a standalone PWA shell HTML from a TIGHTENED build (no proprietary data).
+// Includes <link rel="icon"> + <link rel="apple-touch-icon"> so the desktop icon
+// always appears after install.
 export function generateShellHtml(tightened) {
   const name = tightened.pwa_name || "PWA";
   const modules = (tightened.features || [])
@@ -201,7 +271,11 @@ export function generateShellHtml(tightened) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
   <meta name="theme-color" content="#0d1117" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="${name}" />
   <title>${name}</title>
   <style>${shellStyles("#0d1117")}</style>
 </head>
@@ -229,9 +303,11 @@ export function generateShellHtml(tightened) {
 }
 
 export function generateSwJs() {
+  // Cache the local icon files so the installed PWA always has its icon,
+  // even offline. This is what makes the desktop icon actually appear.
   return `// Self-Healing service worker
 const CACHE = "pwa-shell-v1";
-const ASSETS = ["./", "./index.html", "./manifest.json"];
+const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
 });
@@ -246,20 +322,34 @@ self.addEventListener("fetch", (e) => {
 
 // Builds and triggers a download of a ZIP package for a static (non-database)
 // PWA such as the Site Mirror or Agent Wrapper. Fetches the manifest from the
-// URL and packages it with a standalone shell + service worker.
+// URL and packages it with a standalone shell + service worker + bundled icon.
+//
+// iconUrl — the logo shown on the PWA Portal for this PWA. Bundled locally as
+//           icon-192.png / icon-512.png so the desktop icon always appears.
 export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
-  const { subtitle = "", themeColor = "#0d1117" } = opts;
+  const { subtitle = "", themeColor = "#0d1117", iconUrl = null } = opts;
 
   // Fetch the live manifest JSON
-  let manifestText = JSON.stringify({ name: pwaName }, null, 2);
+  let manifest = { name: pwaName };
+  let manifestText = JSON.stringify(manifest, null, 2);
   try {
     const res = await fetch(manifestUrl);
-    if (res.ok) manifestText = await res.text();
+    if (res.ok) {
+      manifestText = await res.text();
+      manifest = JSON.parse(manifestText);
+    }
   } catch { /* fall back to stub */ }
+
+  // Determine the icon to bundle: explicit iconUrl prop > manifest's icon
+  const sourceIconUrl = iconUrl || extractIconUrl(manifest);
+  const iconBlob = await fetchIconBlob(sourceIconUrl);
+
+  // Localize the manifest icons so they point to the bundled local files
+  const finalManifest = localizeManifestIcons(manifest);
+  const finalManifestText = JSON.stringify(finalManifest, null, 2);
 
   const safeName = (pwaName || "PWA").replace(/[<>]/g, "");
   const sub = subtitle ? `<p class="meta">${subtitle}</p>` : "";
-  // AI Agent Hardened defaults for static PWA shells
   const tightened = {
     pwa_name: safeName,
     database: "none",
@@ -276,7 +366,11 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
   <meta name="theme-color" content="${themeColor}" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="${safeName}" />
   <title>${safeName}</title>
   <style>${shellStyles(themeColor)}</style>
 </head>
@@ -302,20 +396,26 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
 </html>`;
 
   const zip = new JSZip();
-  zip.file("manifest.json", manifestText);
+  zip.file("manifest.json", finalManifestText);
   zip.file("index.html", shellHtml);
   zip.file("sw.js", generateSwJs());
+  // Bundle the icon as a local file so it appears on the desktop after install.
+  // Same image for 192 + 512 — browsers scale to the declared size.
+  if (iconBlob) {
+    zip.file("icon-192.png", iconBlob);
+    zip.file("icon-512.png", iconBlob);
+  }
   addLegalAssets(zip);
+  zip.file("INSTALL.txt", generateInstallTxt(pwaName || "PWA"));
   zip.file(
     "README.txt",
     `PWA Package\n` +
       `===========\n\n` +
       `PWA:       ${pwaName}\n` +
       `Manifest:  ${manifestUrl}\n` +
+      `Icon:      ${sourceIconUrl || "(none)"}\n` +
       `Hardening: AI Agent Hardened (fail-closed, hallucination guard, audit logging)\n\n` +
-      `Deploy these files on any static host (Netlify, Vercel, GitHub\n` +
-      `Pages, or your own server). manifest.json + sw.js make this\n` +
-      `installable as a standalone PWA.`
+      `See INSTALL.txt for quick-start instructions.`
   );
 
   const blob = await zip.generateAsync({ type: "blob" });
@@ -331,16 +431,30 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
 
 // Builds and triggers a download of a ZIP package for a B.O.B.Init build record.
 // Runs the SOV-PWA-TIGHT-ORCH-X5-1.0 orchestrator to strip proprietary info
-// before generating the shell, so nothing leaks.
+// before generating the shell, so nothing leaks. Bundles the build's icon
+// locally so the desktop icon always appears after install.
 export async function downloadBuildZip(build) {
   // Tighten the build — strips proprietary codes, ESI, build codes, full hardening JSON
   const tightened = await tightenBuild(build);
 
+  // Extract the icon URL from the (pre-tightening) manifest and fetch it
+  const sourceIconUrl = extractIconUrl(tightened.manifest);
+  const iconBlob = await fetchIconBlob(sourceIconUrl);
+
+  // Localize the manifest icons to point to the bundled local files
+  const finalManifest = localizeManifestIcons(tightened.manifest || { name: tightened.pwa_name });
+
   const zip = new JSZip();
-  zip.file("manifest.json", JSON.stringify(tightened.manifest || { name: tightened.pwa_name }, null, 2));
+  zip.file("manifest.json", JSON.stringify(finalManifest, null, 2));
   zip.file("index.html", generateShellHtml(tightened));
   zip.file("sw.js", generateSwJs());
+  // Bundle the icon locally — this is what makes the desktop icon appear.
+  if (iconBlob) {
+    zip.file("icon-192.png", iconBlob);
+    zip.file("icon-512.png", iconBlob);
+  }
   addLegalAssets(zip);
+  zip.file("INSTALL.txt", generateInstallTxt(tightened.pwa_name || "PWA"));
   zip.file(
     "README.txt",
     `PWA Package\n` +
@@ -351,9 +465,7 @@ export async function downloadBuildZip(build) {
       `  Guards: ${(tightened.hardening_badges || []).join(", ") || "none"}\n` +
       `  Confidence threshold: ${tightened.confidence_threshold}\n` +
       `Modules:   ${(tightened.features || []).join(", ") || "none"}\n\n` +
-      `Deploy these files on any static host (Netlify, Vercel, GitHub\n` +
-      `Pages, or your own server). manifest.json + sw.js make this\n` +
-      `installable as a standalone PWA.\n\n` +
+      `See INSTALL.txt for quick-start instructions.\n\n` +
       `The bundled index.html contains an AI Agent Hardened chat scaffold\n` +
       `with smart auto-scroll (no creep), audit logging, and a fail-closed\n` +
       `hallucination guard. Wire your agent API endpoint into the\n` +
