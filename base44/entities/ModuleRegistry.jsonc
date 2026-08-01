@@ -1,0 +1,41 @@
+{
+  "name": "ModuleRegistry",
+  "type": "object",
+  "properties": {
+    "moduleKey": {
+      "type": "string",
+      "description": "Unique module key, e.g. SOV-BOBBY-CONCEPT-1.0"
+    },
+    "requiredSealLevel": {
+      "type": "string",
+      "default": "sealed",
+      "description": "Minimum seal level required to yield this module"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "When false, the module is disabled in the gate"
+    }
+  },
+  "required": [
+    "moduleKey"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

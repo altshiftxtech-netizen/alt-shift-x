@@ -48,6 +48,7 @@ import ExpertMindsEnterprise from './pages/ExpertMindsEnterprise';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PwaPortal from './pages/PwaPortal';
+import BobbyShell from './pages/BobbyShell';
 import SovereignPwaPolicy from './pages/SovereignPwaPolicy';
 import PwaAgent from './pages/PwaAgent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -248,6 +249,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
         <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
         <Route path="/dashboard/pwa" element={<PwaPortal />} />
+        <Route path="/dashboard/bobby" element={<BobbyShell />} />
         <Route path="/pipeline-key/:id" element={<PipelineKeyReveal />} />
         <Route path="/dashboard/testing" element={<TestingDashboard />} />
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />

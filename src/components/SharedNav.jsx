@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown, ListChecks } from "lucide-react";
+import { Menu, X, LayoutDashboard, Package, BarChart2, Key, Settings, ShieldCheck, ChevronDown, TrendingUp, Trophy, DollarSign, Bot, Share2, Sparkles, Smartphone, Terminal, Crown, ListChecks, ScrollText } from "lucide-react";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -15,6 +15,7 @@ const USER_NAV = [
   { to: "/dashboard/api-keys", label: "API Keys", icon: Key },
   { to: "/dashboard/webhooks", label: "Webhooks", icon: Key },
   { to: "/dashboard/pwa", label: "PWA", icon: Smartphone },
+  { to: "/dashboard/bobby", label: "BOBby", icon: ScrollText },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

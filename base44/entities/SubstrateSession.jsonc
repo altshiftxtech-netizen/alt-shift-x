@@ -1,0 +1,78 @@
+{
+  "name": "SubstrateSession",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "Base44 user ID of the operator whose session is gated"
+    },
+    "sealStatus": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "sealed"
+      ],
+      "default": "unverified",
+      "description": "SOV-AUTH-SEAL-CERT-1.0 seal state. 'sealed' authorizes gated module access."
+    },
+    "authorizedModules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Module keys the sealed session is authorized to yield (e.g. SOV-BOBBY-CONCEPT-1.0)"
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current seal was issued"
+    }
+  },
+  "required": [
+    "userId"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.userId": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.userId": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.userId": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
