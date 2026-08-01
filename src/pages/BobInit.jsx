@@ -62,7 +62,7 @@ export default function BobInit({ navMode = "user" }) {
   const parseCommand = (raw) => {
     const trimmed = raw.trim();
     if (!trimmed) return;
-    appendLine("input", `$ ${trimmed}`);
+    appendLine("input", `PS C:\\Users\\casey> ${trimmed}`);
 
     const parts = trimmed.split(/\s+/);
     const cmd = parts[0];
@@ -277,7 +277,10 @@ export default function BobInit({ navMode = "user" }) {
                 <span>B.O.B. Powershell · B.O.B.Init Terminal</span>
               </div>
 
-              {/* Output */}
+              {/* Body — the screen IS the prompt field. Output streams, then the
+                  live PS prompt line sits inline at the bottom. Enter echoes the
+                  command as output and yields a fresh prompt — exactly like
+                  Windows PowerShell, but with bob init commands + project.json. */}
               <div
                 ref={terminalRef}
                 onClick={() => inputRef.current?.focus()}
@@ -295,27 +298,21 @@ export default function BobInit({ navMode = "user" }) {
                     )}
                   </div>
                 ))}
-                <div ref={terminalEndRef} />
-              </div>
 
-              {/* Prompt line — PS prefix + flat input, no pills/rounded frames */}
-              <div className="flex items-center gap-1.5 px-4 py-2.5 border-t border-[#1f1f1f] shrink-0">
-                <span className="text-[#f2f2f2] whitespace-nowrap">PS C:\Users\casey&gt;</span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={command}
-                  onChange={(e) => setCommand(e.target.value)}
-                  placeholder="bob init --stack nextjs --shim auto"
-                  className="flex-1 min-w-0 bg-transparent text-[#f2f2f2] text-[13px] focus:outline-none placeholder:text-[#555] caret-[#f2f2f2]"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  className="text-[#2478d5] text-xs font-mono hover:text-[#5aa1ff] whitespace-nowrap"
-                >
-                  Run ▸
-                </button>
+                {/* Live prompt — inline at the end of the stream; no separate field */}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[#f2f2f2] whitespace-nowrap">PS C:\Users\casey&gt;</span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={command}
+                    onChange={(e) => setCommand(e.target.value)}
+                    placeholder="bob init --stack nextjs --shim auto"
+                    className="flex-1 min-w-0 bg-transparent text-[#f2f2f2] text-[13px] focus:outline-none placeholder:text-[#555] caret-[#f2f2f2]"
+                    autoFocus
+                  />
+                </div>
+                <div ref={terminalEndRef} />
               </div>
             </form>
 
