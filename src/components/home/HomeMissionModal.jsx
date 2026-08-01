@@ -1,5 +1,8 @@
 import React from "react";
-import { X, Compass } from "lucide-react";
+import { X } from "lucide-react";
+
+const MISSION_LOGO =
+  "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/fa600c7d4_purplealtshiftxlogo.jpg";
 
 const MISSION =
   "Alt + Shift + X is a B2B and B2C marketplace where businesses buy, sell, build, and manage operational intelligence components — protocols, training modules, reasoning frameworks, speed configurations, and pre-built AI agent solutions. It serves as the central exchange for organizations that want to enhance their AI agent capabilities with domain-specific, plug-and-play components built on the YottaJoule / Claire architecture.";
@@ -27,9 +30,11 @@ export default function HomeMissionModal({ open, onClose }) {
           style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-violet-500 to-violet-700">
-              <Compass className="w-4 h-4 text-white" strokeWidth={2} />
-            </div>
+            <img
+              src={MISSION_LOGO}
+              alt="Alt+Shift+X logo"
+              className="w-9 h-9 rounded-lg object-cover shrink-0"
+            />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-400">Platform</p>
               <p className="text-[15px] font-bold tracking-tight text-white">Our Mission</p>
