@@ -21,6 +21,7 @@ export default function BobbyChatBar({ document }) {
   const send = async () => {
     const text = input.trim();
     if (!text || sending) return;
+    setOpen(true); // reveal the exchange + yielding indicator immediately
     const next = [...messages, { role: "user", text }];
     setMessages(next);
     setInput("");
@@ -69,6 +70,7 @@ export default function BobbyChatBar({ document }) {
       )}
       <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5">
         <button
+          type="button"
           onClick={() => setOpen((o) => !o)}
           className="shrink-0 p-2 rounded-lg text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
           aria-label="Toggle chat"
@@ -83,6 +85,7 @@ export default function BobbyChatBar({ document }) {
           className="flex-1 min-w-0 bg-white/5 border border-[#D4AF37]/20 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#D4AF37]/50"
         />
         <button
+          type="button"
           onClick={send}
           disabled={sending || !input.trim()}
           className="shrink-0 px-3 py-2 rounded-lg bg-[#D4AF37] text-black text-xs font-bold disabled:opacity-40 flex items-center gap-1.5 transition-opacity"
