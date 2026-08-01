@@ -88,6 +88,15 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Cross-browser / cross-device snap-to-fit safeguards */
+  img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+  button, a, select, input, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* Cosmic "Raffles" doorway — slow comet streak drifting across the nebula */

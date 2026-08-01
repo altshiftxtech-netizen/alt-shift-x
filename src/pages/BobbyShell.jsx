@@ -4,6 +4,7 @@ import BobbyHeader from "@/components/bobby/BobbyHeader";
 import BobbySidebar from "@/components/bobby/BobbySidebar";
 import BobbyPaperView from "@/components/bobby/BobbyPaperView";
 import BobbyGate from "@/components/bobby/BobbyGate";
+import BobbyChatBar from "@/components/bobby/BobbyChatBar";
 
 // BOBbyShell — the developer's canvas. Server-gated by fn_initGate.
 // Layout: header (bob init dropdown) · left sidebar 20% (TOC) · right pane 80% (papers).
@@ -118,7 +119,7 @@ export default function BobbyShell() {
           sealing={sealing}
         />
 
-        <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <div className="flex flex-1 overflow-hidden flex-col md:flex-row min-w-0">
           <BobbySidebar
             modules={modules}
             activeModule={activeModule}
@@ -127,12 +128,16 @@ export default function BobbyShell() {
             sealStatus={sealStatus}
           />
 
-          {sealStatus === "sealed" ? (
-            <BobbyPaperView document={document} esiSeal={esiSeal} sealedAt={sealedAt} />
-          ) : (
-            <BobbyGate sealStatus={sealStatus} onSeal={sealSession} sealing={sealing} />
-          )}
+          <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
+            {sealStatus === "sealed" ? (
+              <BobbyPaperView document={document} esiSeal={esiSeal} sealedAt={sealedAt} />
+            ) : (
+              <BobbyGate sealStatus={sealStatus} onSeal={sealSession} sealing={sealing} />
+            )}
+          </div>
         </div>
+
+        <BobbyChatBar document={document} />
       </div>
     </div>
   );

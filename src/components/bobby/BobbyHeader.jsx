@@ -1,5 +1,6 @@
 import React from "react";
-import { ChevronDown, ShieldCheck, Lock, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronDown, ShieldCheck, Lock, Loader2, Wand2 } from "lucide-react";
 
 const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png";
 
@@ -38,6 +39,14 @@ export default function BobbyHeader({ sealStatus, modules, activeModule, onSelec
           )}
           {sealed ? "SEALED" : "UNSEALED"}
         </div>
+
+        {/* Quick Edits gate — opens the rapid-build / Claire 1.0 page */}
+        <Link
+          to="/builder/bobby/quick-edits"
+          className="shrink-0 hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-colors"
+        >
+          <Wand2 className="w-3.5 h-3.5" /> Quick Edits
+        </Link>
 
         {/* bob init dropdown */}
         <div className="relative">

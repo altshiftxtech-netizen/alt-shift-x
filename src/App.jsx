@@ -49,6 +49,7 @@ import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import MobileApp from './pages/MobileApp';
 import PwaPortal from './pages/PwaPortal';
 import BobbyShell from './pages/BobbyShell';
+import BobbyQuickEdits from './pages/BobbyQuickEdits';
 import SovereignPwaPolicy from './pages/SovereignPwaPolicy';
 import PwaAgent from './pages/PwaAgent';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -265,6 +266,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/profile" element={<BuilderProfile />} />
         <Route path="/builder/bob" element={<BobBuilder />} />
         <Route path="/builder/bobby" element={<BobbyShell />} />
+        <Route path="/builder/bobby/quick-edits" element={<BobbyQuickEdits />} />
         <Route path="/builder/bob-init" element={<BuilderBobInit />} />
         <Route path="/builder/features" element={<BuilderFeatures />} />
         <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
