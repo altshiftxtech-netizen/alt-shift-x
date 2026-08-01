@@ -207,7 +207,7 @@ export default function PwaPortal() {
             <CardContent className="pt-6 pb-6">
               <div className="flex items-start gap-3 mb-4">
                 <img
-                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png"
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png"
                   alt="BOBby logo"
                   className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-300 bg-black"
                 />
@@ -225,7 +225,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
               ) : isTopTier || isAdmin ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl={bobbyManifest10} pwaName="BOBby 1.0" swapManifest zipName="bobby-1.0" zipSubtitle="BOBby-BUILDER-1.0 · Build Yielder" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png" />
+                  <UniversalPwaInstall manifestUrl={bobbyManifest10} pwaName="BOBby 1.0" swapManifest zipName="bobby-1.0" zipSubtitle="BOBby-BUILDER-1.0 · Build Yielder" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png" />
                   <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
                   </p>
@@ -246,7 +246,7 @@ export default function PwaPortal() {
             <CardContent className="pt-6 pb-6">
               <div className="flex items-start gap-3 mb-4">
                 <img
-                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png"
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png"
                   alt="BOBby Enterprise logo"
                   className="w-11 h-11 rounded-xl object-cover shrink-0 border border-amber-300 bg-black"
                 />
@@ -264,7 +264,7 @@ export default function PwaPortal() {
                 <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking access...</div>
               ) : isEnterprise ? (
                 <div className="space-y-2">
-                  <UniversalPwaInstall manifestUrl={bobbyManifest11} pwaName="BOBby 1.1 Enterprise" swapManifest zipName="bobby-1.1-enterprise" zipSubtitle="BOBby-ENTERPRISE-1.1 · Sovereign Yield" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png" />
+                  <UniversalPwaInstall manifestUrl={bobbyManifest11} pwaName="BOBby 1.1 Enterprise" swapManifest zipName="bobby-1.1-enterprise" zipSubtitle="BOBby-ENTERPRISE-1.1 · Sovereign Yield" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png" />
                   <p className="text-xs text-amber-700 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> Enterprise role verified.
                   </p>

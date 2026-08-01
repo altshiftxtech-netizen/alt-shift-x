@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ShieldCheck, Lock, Loader2, Wand2 } from "lucide-react";
 
-const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png";
+const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png";
 
 // Header — holds the `bob init` dropdown. On selection, triggers fn_initGate.
 // If not sealed, shows a gold lock and the gate handles the denied state inline.

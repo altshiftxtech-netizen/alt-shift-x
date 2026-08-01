@@ -12,7 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
-const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png";
+const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png";
 
 const DOC_TYPES = ["Concept Paper", "Enterprise Valuation", "Pitch Deck", "Technical Spec", "Legal Brief", "Operations Plan"];
 const TONES = ["Formal", "Technical", "Persuasive", "Concise"];

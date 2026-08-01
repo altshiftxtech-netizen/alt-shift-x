@@ -1,7 +1,7 @@
 // BOBby PWA manifests — BOBby the Build Yielder.
 // 1.0 = standard builder yield; 1.1 = enterprise yield (enterprise role only).
 
-const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png";
+const BOBBY_LOGO = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5af913bb7_Copilot_20260801_162657.png";
 
 const BOBBY_MANIFEST_BASE = {
   short_name: "BOBby",
