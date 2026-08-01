@@ -274,7 +274,7 @@ export default function BobInit({ navMode = "user" }) {
               {/* Title bar */}
               <div className="flex items-center gap-2 px-3 py-1.5 border-b border-[#1f1f1f] text-[11px] text-[#9a9a9a] shrink-0">
                 <span className="text-[#2478d5] font-bold">▣</span>
-                <span>Windows PowerShell · B.O.B.Init Terminal</span>
+                <span>B.O.B. Powershell · B.O.B.Init Terminal</span>
               </div>
 
               {/* Output */}
