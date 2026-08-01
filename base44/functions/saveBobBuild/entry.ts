@@ -5,10 +5,12 @@ function generatePwaManifest(input) {
   const stack = (input.stack || "altshiftx").toUpperCase();
   const name = input.pwa_name || `${stack}-AGENT-1.0`;
   const moduleCount = (input.feature_labels || []).length;
+  const h = input.hardening || {};
+  const hardeningActive = h.hallucination_guard !== false;
   return {
     name,
     short_name: name.substring(0, 12),
-    description: `B.O.B.Init hardened PWA — ${moduleCount} modules, ESI ${input.esi_score || 0}/100`,
+    description: `B.O.B.Init hardened PWA — ${moduleCount} modules, ESI ${input.esi_score || 0}/100, DB: ${input.database || "none"}, 110% hardened: ${hardeningActive ? "on" : "off"}`,
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -42,21 +44,24 @@ export default async function(req) {
     const body = await req.json();
     const {
       stack, shim, budget, tier,
+      database, hardening,
       selected_features, feature_labels, rules,
       code_files, api_fields, esi_score,
       pwa_name, build_code
     } = body;
 
     const manifest = generatePwaManifest({
-      stack, pwa_name, feature_labels, esi_score
+      stack, pwa_name, feature_labels, esi_score, database, hardening
     });
 
     const record = await base44.entities.BobBuild.create({
       builder_id: user.id,
       stack: stack || null,
+      database: database || null,
       shim: shim || null,
       budget: budget || null,
       tier: tier || null,
+      hardening: hardening || {},
       selected_features: selected_features || [],
       feature_labels: feature_labels || [],
       rules: rules || "",

@@ -34,6 +34,9 @@ export default function BuilderFeatures() {
         g.features.filter((f) => selected[f.id]).map((f) => f.label.split("(")[0].trim())
       );
       const esi_score = calculateEsi(selected);
+      // Read database + hardening config persisted by the B.O.B.Init terminal
+      let bobConfig = {};
+      try { bobConfig = JSON.parse(localStorage.getItem("bob_init_config") || "{}"); } catch {}
       const res = await base44.functions.invoke("saveBobBuild", {
         selected_features: selectedIds,
         feature_labels,
@@ -41,6 +44,8 @@ export default function BuilderFeatures() {
         code_files: uploadedFiles.map((f) => f.name || f),
         api_fields: apiFields.filter((f) => f.key && f.key.trim()),
         esi_score,
+        database: bobConfig.database || "",
+        hardening: bobConfig.hardening || {},
         pwa_name: "Alt+Shift+X PWA",
       });
       setRendering(false);

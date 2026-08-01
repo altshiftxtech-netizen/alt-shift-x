@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Project stack chosen in the B.O.B.Init terminal (e.g. nextjs, react)"
     },
+    "database": {
+      "type": "string",
+      "description": "Database engine selected for the PWA (e.g. mongodb, postgresql, mysql, sqlite, supabase, redis)"
+    },
     "shim": {
       "type": "string",
       "description": "Self-Healing Shim mode (auto/manual)"
@@ -20,6 +24,53 @@
     },
     "tier": {
       "type": "string"
+    },
+    "hardening": {
+      "type": "object",
+      "description": "110% Hardened Standard configuration \u2014 fail-closed ComponentFramework settings",
+      "properties": {
+        "hallucination_guard": {
+          "type": "boolean",
+          "default": true
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "default": 0.85
+        },
+        "audit_logging": {
+          "type": "boolean",
+          "default": true
+        },
+        "regulatory_framework": {
+          "type": "string",
+          "default": "Blackstone Protocol"
+        },
+        "environment": {
+          "type": "string",
+          "default": "production"
+        },
+        "rollback_strategy": {
+          "type": "string",
+          "default": "automatic"
+        },
+        "x1_ledger": {
+          "type": "boolean",
+          "default": true
+        },
+        "x2_sensor": {
+          "type": "boolean",
+          "default": true
+        },
+        "x4_guard": {
+          "type": "boolean",
+          "default": true
+        },
+        "x5_healing": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "default": {}
     },
     "selected_features": {
       "type": "array",

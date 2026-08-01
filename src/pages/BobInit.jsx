@@ -7,6 +7,8 @@ import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
 import BudgetGauge, { getBudgetTier } from "@/components/bob-init/BudgetGauge";
 import BuildSequence from "@/components/bob-init/BuildSequence";
+import DatabasePicker from "@/components/bob-init/DatabasePicker";
+import HardeningConfigPanel, { DEFAULT_HARDENING } from "@/components/bob-init/HardeningConfigPanel";
 import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
 import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
@@ -17,6 +19,7 @@ import { useAuth } from "@/lib/AuthContext";
 
 const HELP_TEXT = `Available commands:
   bob init --stack <stack> --shim <auto|manual>   Initialize a new B2B build
+  bob init --database <mongodb|postgresql|...>    Set the PWA database engine
   bob build                                        Execute the build pipeline
   bob registry list                                List audited registry components
   bob status                                       Show current build state
@@ -24,8 +27,8 @@ const HELP_TEXT = `Available commands:
   bob help                                         Show this help message
 
 Examples:
-  bob init --stack nextjs --shim auto
-  bob init --stack react --shim auto --budget 15000
+  bob init --stack nextjs --shim auto --database mongodb
+  bob init --stack react --shim auto --budget 15000 --database postgresql
   bob build`;
 
 export default function BobInit({ navMode = "user" }) {
@@ -39,6 +42,8 @@ export default function BobInit({ navMode = "user" }) {
   const [chatToCode, setChatToCode] = useState(false); // Plain-English mode for non-coders
   const [historyRefresh, setHistoryRefresh] = useState(0); // bump to reload history panel
   const [expandedPipeline, setExpandedPipeline] = useState(null);
+  const [database, setDatabase] = useState("");
+  const [hardening, setHardening] = useState(DEFAULT_HARDENING);
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -82,12 +87,14 @@ export default function BobInit({ navMode = "user" }) {
   };
 
   const handleBobInit = (args) => {
-    let stack = null, shim = "auto", budgetFlag = null;
+    let stack = null, shim = "auto", budgetFlag = null, dbFlag = null;
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--stack") stack = args[++i];
       else if (args[i] === "--shim") shim = args[++i];
       else if (args[i] === "--budget") budgetFlag = Number(args[++i]);
+      else if (args[i] === "--database") dbFlag = args[++i];
     }
+    if (dbFlag) setDatabase(dbFlag);
 
     if (!stack) {
       appendLine("error", "Missing --stack argument. Example: bob init --stack nextjs --shim auto");
@@ -96,12 +103,14 @@ export default function BobInit({ navMode = "user" }) {
 
     if (budgetFlag !== null) setBudget(budgetFlag);
 
-    const config = { stack, shim, budget: budgetFlag ?? budget };
+    const config = { stack, shim, budget: budgetFlag ?? budget, database: dbFlag || database };
     setStackConfig(config);
     setBuildDone(false);
     appendLine("system", `✓ Stack initialized: ${stack}`, `Great! B.O.B. is now set up to build a ${stack} application.`);
     appendLine("system", `  Shim mode: ${shim}`, `Self-healing is set to ${shim} — this means your app will auto-fix itself if APIs change.`);
     appendLine("system", `  Budget: $${(budgetFlag ?? budget).toLocaleString()}`, `Your budget is set to $${(budgetFlag ?? budget).toLocaleString()}.`);
+    appendLine("system", `  Database: ${dbFlag || database || "none selected"}`, `Database is set to ${dbFlag || database || "none — pick one from the sidebar"}.`);
+    appendLine("system", `  Hardening: ${hardening.hallucination_guard ? "110% ✓" : "off"}`, `Hardening is ${hardening.hallucination_guard ? "enabled (110% standard)" : "off — enable it from the sidebar"}.`);
     appendLine("system", `  Tier: ${getBudgetTier(budgetFlag ?? budget).label}`, `This qualifies for the "${getBudgetTier(budgetFlag ?? budget).label}" tier of features.`);
     appendLine("system", `Ready. Run 'bob build' to execute the pipeline.`, `Everything looks good! Type "bob build" and hit Run to start building your app.`);
   };
@@ -269,10 +278,14 @@ export default function BobInit({ navMode = "user" }) {
                 stack: stackConfig?.stack,
                 shim: stackConfig?.shim,
                 budget: stackConfig?.budget ?? budget,
+                database,
+                hardening,
                 tier: buildTier.label,
                 tierColor: buildTier.color,
                 timestamp: new Date().toISOString(),
               });
+              // Persist config so the Feature Selection page + saveBobBuild can pick it up
+              try { localStorage.setItem("bob_init_config", JSON.stringify({ database, hardening })); } catch {}
               setHistoryRefresh((r) => r + 1);
               appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your app has been built, audited, and is ready to deploy. The self-healing layer is active so it will auto-fix itself if APIs change.");
               appendLine("system", "  ✓ Saved to build history.", "This build was saved to your history — click 'Build History' in the sidebar to view or restore it anytime.");
@@ -307,6 +320,8 @@ export default function BobInit({ navMode = "user" }) {
           {/* Sidebar — budget + build summary + history */}
           <div className="space-y-4">
             <BudgetGauge budget={budget} setBudget={setBudget} />
+            <DatabasePicker database={database} onChange={setDatabase} />
+            <HardeningConfigPanel hardening={hardening} onChange={setHardening} />
             <BobInitHistory refreshKey={historyRefresh} onRestore={restoreBuild} />
 
             {/* Build summary */}
@@ -321,6 +336,8 @@ export default function BobInit({ navMode = "user" }) {
                     <div className="flex justify-between"><span className="text-[#8b949e]">Shim</span><span className="text-cyan-400">{stackConfig.shim}</span></div>
                     <div className="flex justify-between"><span className="text-[#8b949e]">Tier</span><span className={tier.color}>{tier.label}</span></div>
                     <div className="flex justify-between"><span className="text-[#8b949e]">Budget</span><span className="text-[#3fb950]">${stackConfig.budget.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Database</span><span className="text-cyan-400">{database || "—"}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Hardening</span><span className="text-cyan-400">{hardening.hallucination_guard ? "110% ✓" : "Off"}</span></div>
                     <div className="border-t border-[#30363d] pt-2 space-y-1">
                       <div className="flex justify-between"><span className="text-[#8b949e]">Build Fee</span><span className="text-[#3fb950]">${buildPrice.toLocaleString()}</span></div>
                       <div className="flex justify-between"><span className="text-[#8b949e]">Maintenance</span><span className="text-amber-400">${maintenanceFee}/mo</span></div>
