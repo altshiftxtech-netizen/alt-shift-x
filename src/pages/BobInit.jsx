@@ -46,11 +46,15 @@ export default function BobInit({ navMode = "user" }) {
   const [database, setDatabase] = useState("");
   const [hardening, setHardening] = useState(DEFAULT_HARDENING);
   const [workflow, setWorkflow] = useState("prompt"); // "prompt" (Windows-style command) | "projectjson"
+  const terminalRef = useRef(null);
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Scroll ONLY the terminal container — never the page. scrollIntoView on the
+  // end-marker was scrolling the nearest scrollable ancestor (the page itself),
+  // which made the whole layout "creep" upward on every new line.
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
   }, [history]);
 
   const appendLine = (type, text, plain) => setHistory((h) => [...h, { type, text, plain }]);
@@ -262,44 +266,57 @@ export default function BobInit({ navMode = "user" }) {
               <BobInitProjectJson onSubmit={handleProjectJson} />
             ) : (
             <>
-            {/* Terminal output */}
-            <div
-              className="rounded-xl border border-[#30363d] bg-[#010409] p-4 font-mono text-xs h-80 overflow-y-auto no-scrollbar"
-              onClick={() => inputRef.current?.focus()}
+            {/* PowerShell-style terminal — output + prompt in one large flat window */}
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col bg-[#0c0c0c] border border-[#1f1f1f] h-[60vh] min-h-[440px] font-mono text-[#f2f2f2]"
             >
-              {history.map((line, idx) => (
-                <div key={idx} className="mb-1">
-                  <div className={`whitespace-pre-wrap ${line.type === "input" ? "text-cyan-400" : line.type === "error" ? "text-red-400" : "text-[#8b949e]"}`}>
-                    {line.text}
-                  </div>
-                  {chatToCode && line.plain && (
-                    <div className="ml-3 mb-1 pl-2 border-l-2 border-cyan-500/30 text-[#c9d1d9] text-[11px] leading-relaxed">
-                      <span className="text-cyan-500/60">💬 </span>{line.plain}
-                    </div>
-                  )}
-                </div>
-              ))}
-              <div ref={terminalEndRef} />
-            </div>
+              {/* Title bar */}
+              <div className="flex items-center gap-2 px-3 py-1.5 border-b border-[#1f1f1f] text-[11px] text-[#9a9a9a] shrink-0">
+                <span className="text-[#2478d5] font-bold">▣</span>
+                <span>Windows PowerShell · B.O.B.Init Terminal</span>
+              </div>
 
-            {/* Command input */}
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <div className="flex-1 flex items-center gap-2 rounded-xl border border-[#30363d] bg-[#010409] px-3">
-                <TerminalIcon className="w-4 h-4 text-[#3fb950] shrink-0" />
-                <span className="text-[#3fb950] font-mono text-sm">$</span>
+              {/* Output */}
+              <div
+                ref={terminalRef}
+                onClick={() => inputRef.current?.focus()}
+                className="flex-1 overflow-y-auto px-4 py-3 text-[13px] leading-relaxed no-scrollbar"
+              >
+                {history.map((line, idx) => (
+                  <div key={idx} className="mb-1">
+                    <div className={`whitespace-pre-wrap ${line.type === "input" ? "text-[#f2f2f2]" : line.type === "error" ? "text-[#ff6b6b]" : "text-[#cccccc]"}`}>
+                      {line.text}
+                    </div>
+                    {chatToCode && line.plain && (
+                      <div className="ml-3 mb-1 pl-2 border-l-2 border-[#2478d5]/40 text-[#bfbfbf] text-[12px] leading-relaxed">
+                        <span className="text-[#2478d5]">» </span>{line.plain}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div ref={terminalEndRef} />
+              </div>
+
+              {/* Prompt line — PS prefix + flat input, no pills/rounded frames */}
+              <div className="flex items-center gap-1.5 px-4 py-2.5 border-t border-[#1f1f1f] shrink-0">
+                <span className="text-[#f2f2f2] whitespace-nowrap">PS C:\Users\casey&gt;</span>
                 <input
                   ref={inputRef}
                   type="text"
                   value={command}
                   onChange={(e) => setCommand(e.target.value)}
                   placeholder="bob init --stack nextjs --shim auto"
-                  className="flex-1 bg-transparent text-[#c9d1d9] font-mono text-sm py-2 focus:outline-none placeholder:text-[#484f58]"
+                  className="flex-1 min-w-0 bg-transparent text-[#f2f2f2] text-[13px] focus:outline-none placeholder:text-[#555] caret-[#f2f2f2]"
                   autoFocus
                 />
+                <button
+                  type="submit"
+                  className="text-[#2478d5] text-xs font-mono hover:text-[#5aa1ff] whitespace-nowrap"
+                >
+                  Run ▸
+                </button>
               </div>
-              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white gap-1.5">
-                <Send className="w-3.5 h-3.5" /> Run
-              </Button>
             </form>
 
             {/* Chat-to-Code toggle — plain-English mode for non-coders */}
