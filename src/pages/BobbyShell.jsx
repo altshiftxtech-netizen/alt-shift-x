@@ -5,6 +5,7 @@ import BobbySidebar from "@/components/bobby/BobbySidebar";
 import BobbyPaperView from "@/components/bobby/BobbyPaperView";
 import BobbyGate from "@/components/bobby/BobbyGate";
 import BobbyChatBar from "@/components/bobby/BobbyChatBar";
+import BobbyTopBar from "@/components/bobby/BobbyTopBar";
 
 // BOBbyShell — the developer's canvas. Server-gated by fn_initGate.
 // Layout: header (bob init dropdown) · left sidebar 20% (TOC) · right pane 80% (papers).
@@ -111,6 +112,7 @@ export default function BobbyShell() {
       `}</style>
 
       <div className="relative z-10 flex flex-col h-screen">
+        <BobbyTopBar />
         <BobbyHeader
           sealStatus={sealStatus}
           modules={modules}

@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Loader2, Upload, Wand2, Sparkles, FileText, CheckCircle2, Bot } from "lucide-react";
 import CleanDocRenderer from "@/components/bobby/CleanDocRenderer";
 import BobbyDocSetRenderer from "@/components/bobby/BobbyDocSetRenderer";
+import BobbyTopBar from "@/components/bobby/BobbyTopBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -178,6 +179,7 @@ export default function BobbyQuickEdits() {
         />
       </div>
 
+      <BobbyTopBar />
       <header className="relative z-10 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-[#D4AF37]/20 bg-black/60 backdrop-blur-md">
         <div className="flex items-center gap-3 min-w-0">
           <img src={BOBBY_LOGO} alt="BOBby" className="w-9 h-9 rounded-lg object-cover shrink-0" />
