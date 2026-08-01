@@ -154,6 +154,182 @@ NOTE
 `;
 }
 
+// ── Licensed-product metadata & documentation ──────────────────────────────
+// Each ZIP ships as a professional licensed product: structured metadata
+// (product.json), a license summary (LICENSE.txt), a copyright notice
+// (COPYRIGHT.txt), and a polished README. Copyright is pinned to the
+// current year across all bundled docs.
+
+function generateProductJson(meta) {
+  const product = {
+    product_name: meta.name,
+    product_type: "Progressive Web Application (PWA) Shell",
+    version: meta.version || "1.0",
+    sku: meta.sku,
+    license_id: meta.sku,
+    publisher: { name: "Alt+Shift+X", website: "https://altshiftx.tech" },
+    copyright: "© 2026 Alt+Shift+X. All rights reserved.",
+    license: "Master End-User License Agreement (see MASTER_EULA.txt)",
+    build_date: new Date().toISOString(),
+    hardening: {
+      level: meta.hardeningLevel || "AI Agent Hardened",
+      badges: meta.hardeningBadges || [],
+      confidence_threshold: meta.confidenceThreshold || 0.85,
+    },
+    runtime: {
+      database: meta.database || "none",
+      start_url: meta.startUrl || "",
+      theme_color: meta.themeColor || "#0d1117",
+      display: "standalone",
+    },
+    modules: meta.features || [],
+    files: {
+      shell: "index.html",
+      manifest: "manifest.json",
+      service_worker: "sw.js",
+      icons: ["icon-192.png", "icon-512.png"],
+      legal: ["MASTER_EULA.txt", "PORTABLE_DISCLAIMER.txt", "PRIVACY_MANIFEST.txt", "OPERATOR_GUIDE.txt", "LEGAL.md", "LICENSE.txt", "COPYRIGHT.txt"],
+      metadata: ["product.json", "README.txt", "INSTALL.txt"],
+    },
+    notice: "Inert architectural shell (AI Agent Hardened). Operational risk is borne solely by the Operator per the Master EULA.",
+  };
+  return JSON.stringify(product, null, 2);
+}
+
+function generateLicenseTxt(meta) {
+  return `LICENSE — ${meta.name}
+${"=".repeat(10 + (meta.name || "").length)}
+
+Product:        ${meta.name}
+Version:        ${meta.version || "1.0"}
+SKU / License:  ${meta.sku}
+Publisher:      Alt+Shift+X (https://altshiftx.tech)
+Copyright:      © 2026 Alt+Shift+X. All rights reserved.
+Issued:         ${new Date().toISOString()}
+
+LICENSE SUMMARY
+---------------
+This software is licensed, not sold. Alt+Shift+X grants you a limited,
+non-exclusive, non-transferable, revocable license to install and operate
+this PWA shell as a standalone Progressive Web Application on devices you
+own or control, solely for your own operational use.
+
+You may NOT:
+  • Resell, sublicense, or rebrand this shell as your own product.
+  • Host this shell as a paid service to third parties.
+  • Remove or alter copyright notices, license keys, or legal documents.
+
+The full governing terms are in MASTER_EULA.txt. This LICENSE.txt is a
+summary for quick reference; in any conflict, MASTER_EULA.txt controls.
+
+Copyright © 2026 Alt+Shift+X. All rights reserved.
+`;
+}
+
+function generateCopyrightTxt() {
+  return `COPYRIGHT NOTICE
+================
+
+© 2026 Alt+Shift+X. All rights reserved.
+
+All files in this package — including the application shell (index.html),
+service worker (sw.js), web manifest (manifest.json), icon assets
+(icon-192.png, icon-512.png), metadata (product.json), and documentation —
+are the intellectual property of Alt+Shift+X and are licensed to the
+Operator under the Master End-User License Agreement (MASTER_EULA.txt).
+
+No part of this package may be reproduced, redistributed, or resold
+without the express written permission of Alt+Shift+X, except as expressly
+permitted by the Master EULA.
+
+For licensing inquiries, contact Alt+Shift+X at https://altshiftx.tech.
+
+— END OF COPYRIGHT NOTICE —
+`;
+}
+
+function generateReadme(meta) {
+  const badges = (meta.hardeningBadges || []).join(", ") || "none";
+  const modules = (meta.features || []).length
+    ? meta.features.map((f) => "    • " + f).join("\n")
+    : "    (none)";
+  return `${meta.name}
+${"=".repeat((meta.name || "").length)}
+
+PROGRESSIVE WEB APPLICATION — LICENSED PRODUCT PACKAGE
+Copyright © 2026 Alt+Shift+X. All rights reserved.
+
+PRODUCT METADATA
+----------------
+  Product:      ${meta.name}
+  Version:      ${meta.version || "1.0"}
+  SKU:          ${meta.sku}
+  Type:         Progressive Web Application (PWA) Shell
+  Publisher:    Alt+Shift+X (https://altshiftx.tech)
+  License:      Master EULA (see MASTER_EULA.txt)
+  Hardening:    ${meta.hardeningLevel || "AI Agent Hardened"} [${badges}]
+  Confidence:   >= ${meta.confidenceThreshold || 0.85}
+  Database:     ${meta.database || "none"}
+  Built:        ${new Date().toISOString()}
+
+DESCRIPTION
+-----------
+${meta.subtitle ? meta.subtitle : "An inert, AI Agent Hardened PWA shell produced by Alt+Shift+X."}
+This package installs as a standalone desktop and mobile app with its own
+icon, taskbar/dock entry, and app-list registration. No app store required.
+
+WHAT'S IN THIS PACKAGE
+----------------------
+  index.html              Application shell (AI Agent Hardened chat scaffold)
+  manifest.json           PWA web manifest (name, icons, theme, display)
+  sw.js                   Service worker (offline caching, self-healing)
+  icon-192.png            Home-screen / taskbar icon (192x192, maskable)
+  icon-512.png            High-resolution icon (512x512, maskable)
+  product.json            Structured product metadata (machine-readable)
+  LICENSE.txt             License summary (full terms: MASTER_EULA.txt)
+  COPYRIGHT.txt           Copyright notice
+  MASTER_EULA.txt         Master End-User License Agreement
+  PORTABLE_DISCLAIMER.txt  No-Agreement notice
+  PRIVACY_MANIFEST.txt    Local-First privacy architecture
+  OPERATOR_GUIDE.txt      Clean & Legal operation handbook
+  LEGAL.md                Consolidated legal bundle
+  INSTALL.txt             Quick-start installation guide
+
+MODULES
+-------
+${modules}
+
+SYSTEM REQUIREMENTS
+-------------------
+  • A modern browser: Chrome, Edge, Firefox, or Safari (latest 2 versions).
+  • For desktop install: Chrome or Edge (recommended).
+  • A static web host OR a local server (npx serve / python http.server).
+
+QUICK START
+----------
+See INSTALL.txt for full step-by-step instructions. Short version:
+  1. Upload all files to any static host (or run "npx serve ." locally).
+  2. Open the URL in Chrome or Edge.
+  3. Click the install icon in the address bar -> "Install".
+  4. The app appears on your desktop / start menu / home screen with its icon.
+
+SUPPORT
+------
+  • Documentation: see OPERATOR_GUIDE.txt
+  • Legal: see MASTER_EULA.txt and LEGAL.md
+  • Contact: https://altshiftx.tech
+
+NOTICE
+------
+This PWA is an inert architectural shell. Operational risk — including all
+outcomes of any agent or automation running inside the shell — is borne
+solely by the Operator per the Master EULA. Alt+Shift+X assumes no
+responsibility for operator-directed activity.
+
+Copyright © 2026 Alt+Shift+X. All rights reserved.
+`;
+}
+
 // ── Hardened chat scaffold script ──────────────────────────────────────────
 // Injected into every generated PWA so the chat has the smart auto-scroll fix
 // (no "creep") + AI Agent Hardening baked in. Only boolean guard flags + the
@@ -419,17 +595,18 @@ export async function downloadStaticPwaZip(manifestUrl, pwaName, opts = {}) {
     zip.file("icon-512.png", iconBlob);
   }
   addLegalAssets(zip);
+  const sku = "ASX-PWA-" + Date.now().toString(36).toUpperCase().slice(-6);
+  const meta = {
+    name: safeName, version: "1.0", sku, subtitle,
+    database: "none", hardeningLevel: "AI Agent Hardened",
+    hardeningBadges: tightened.hardening_badges, confidenceThreshold: 0.85,
+    features: [], startUrl: finalManifest.start_url || "", themeColor,
+  };
+  zip.file("product.json", generateProductJson(meta));
+  zip.file("LICENSE.txt", generateLicenseTxt(meta));
+  zip.file("COPYRIGHT.txt", generateCopyrightTxt());
   zip.file("INSTALL.txt", generateInstallTxt(pwaName || "PWA"));
-  zip.file(
-    "README.txt",
-    `PWA Package\n` +
-      `===========\n\n` +
-      `PWA:       ${pwaName}\n` +
-      `Manifest:  ${manifestUrl}\n` +
-      `Icon:      ${sourceIconUrl || "(none)"}\n` +
-      `Hardening: AI Agent Hardened (fail-closed, hallucination guard, audit logging)\n\n` +
-      `See INSTALL.txt for quick-start instructions.`
-  );
+  zip.file("README.txt", generateReadme(meta));
 
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);
@@ -467,23 +644,19 @@ export async function downloadBuildZip(build) {
     zip.file("icon-512.png", iconBlob);
   }
   addLegalAssets(zip);
+  const sku = "ASX-PWA-" + (build?.build_code || Date.now().toString(36).toUpperCase().slice(-6));
+  const meta = {
+    name: tightened.pwa_name, version: "1.0", sku,
+    subtitle: tightened.hardening_level, database: tightened.database,
+    hardeningLevel: tightened.hardening_level, hardeningBadges: tightened.hardening_badges,
+    confidenceThreshold: tightened.confidence_threshold, features: tightened.features,
+    startUrl: finalManifest.start_url || "", themeColor: "#0d1117",
+  };
+  zip.file("product.json", generateProductJson(meta));
+  zip.file("LICENSE.txt", generateLicenseTxt(meta));
+  zip.file("COPYRIGHT.txt", generateCopyrightTxt());
   zip.file("INSTALL.txt", generateInstallTxt(tightened.pwa_name || "PWA"));
-  zip.file(
-    "README.txt",
-    `PWA Package\n` +
-      `===========\n\n` +
-      `PWA Name:  ${tightened.pwa_name}\n` +
-      `Database:  ${tightened.database}\n` +
-      `Hardening: ${tightened.hardening_level}\n` +
-      `  Guards: ${(tightened.hardening_badges || []).join(", ") || "none"}\n` +
-      `  Confidence threshold: ${tightened.confidence_threshold}\n` +
-      `Modules:   ${(tightened.features || []).join(", ") || "none"}\n\n` +
-      `See INSTALL.txt for quick-start instructions.\n\n` +
-      `The bundled index.html contains an AI Agent Hardened chat scaffold\n` +
-      `with smart auto-scroll (no creep), audit logging, and a fail-closed\n` +
-      `hallucination guard. Wire your agent API endpoint into the\n` +
-      `sendMessage() function to activate it.`
-  );
+  zip.file("README.txt", generateReadme(meta));
 
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);

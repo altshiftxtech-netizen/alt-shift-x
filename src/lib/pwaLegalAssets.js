@@ -6,6 +6,7 @@ const EFFECTIVE_DATE = "July 31, 2026";
 export const MASTER_EULA = `MASTER END-USER LICENSE AGREEMENT (EULA)
 Sovereign PWA Shell — Alt+Shift+X
 Effective Date: ${EFFECTIVE_DATE}
+Copyright © 2026 Alt+Shift+X. All rights reserved.
 
 1. ACCEPTANCE
 By downloading, installing, booting, or otherwise operating this PWA package
@@ -74,6 +75,7 @@ you and Alt+Shift+X regarding the Software.
 export const PORTABLE_DISCLAIMER = `PORTABLE DISCLAIMER — NO-AGREEMENT NOTICE
 Sovereign PWA Shell
 Effective Date: ${EFFECTIVE_DATE}
+Copyright © 2026 Alt+Shift+X. All rights reserved.
 
 1. NO CONTRACT FORMATION
 This PWA is delivered as an inert, neutral architectural shell. Downloading,
@@ -108,6 +110,7 @@ remains in full force and effect.
 export const PRIVACY_MANIFEST = `PRIVACY MANIFEST — LOCAL-FIRST DATA ARCHITECTURE
 Sovereign PWA Shell
 Effective Date: ${EFFECTIVE_DATE}
+Copyright © 2026 Alt+Shift+X. All rights reserved.
 
 1. LOCAL-FIRST DESIGN
 This PWA is engineered as a Local-First application. All data created, stored,
@@ -155,6 +158,7 @@ as technical proof of the Local-First architecture.
 export const OPERATOR_GUIDE = `OPERATOR GUIDE — CLEAN & LEGAL HANDBOOK
 Sovereign PWA Shell
 Effective Date: ${EFFECTIVE_DATE}
+Copyright © 2026 Alt+Shift+X. All rights reserved.
 
 This handbook helps you operate your Sovereign PWA asset in a compliant,
 low-risk manner.
@@ -209,6 +213,7 @@ your local data export before uninstalling.
 // Combined LEGAL.md placed at the ZIP root for easy access.
 export const LEGAL_MD = `# Sovereign PWA — Legal Bundle
 Effective Date: ${EFFECTIVE_DATE}
+Copyright © 2026 Alt+Shift+X. All rights reserved.
 
 This file consolidates the four legal assets bundled with every Sovereign PWA
 download package. Keep it with your copy of the Software.
