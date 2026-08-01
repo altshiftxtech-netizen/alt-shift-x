@@ -13,6 +13,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { getLockedManifestUrl } from "@/lib/lockedManifest";
 import { getAgentManifestUrl, DEFAULT_AGENT_DOMAIN } from "@/lib/agentManifest";
+import { getBobbyManifestUrl } from "@/lib/bobbyManifest";
 
 // PWA-DASHBOARD-PORTAL-1.0 — tier-based install logic.
 // TopTier (any active non-free subscription) → free "Install Now".
@@ -42,6 +43,7 @@ export default function PwaPortal() {
 
   const isTopTier = sub && sub.plan !== "free" && ["active", "trialing", "past_due"].includes(sub.status);
   const isAdmin = user?.role === "admin";
+  const isEnterprise = (sub && sub.plan === "enterprise" && ["active", "trialing", "past_due"].includes(sub.status)) || isAdmin;
 
   // The Site Mirror PWA manifest is permanently locked to pwa.altshiftx.tech.
   const lockedManifestUrl = useMemo(() => getLockedManifestUrl(), []);
@@ -49,6 +51,8 @@ export default function PwaPortal() {
   // The Agent Wrapper PWA domain is user-configurable (not locked).
   const [agentDomain, setAgentDomain] = useState(DEFAULT_AGENT_DOMAIN);
   const agentManifestUrl = useMemo(() => getAgentManifestUrl(agentDomain), [agentDomain]);
+  const bobbyManifest10 = useMemo(() => getBobbyManifestUrl("1.0"), []);
+  const bobbyManifest11 = useMemo(() => getBobbyManifestUrl("1.1"), []);
 
   return (
     <div className="min-h-screen">
@@ -192,6 +196,84 @@ export default function PwaPortal() {
                     <Link to="/pricing"><Lock className="w-4 h-4" /> Upgrade to Install</Link>
                   </Button>
                   <p className="text-xs text-slate-400">Free-tier needs a plan upgrade.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* BOBby 1.0 PWA — standard builder yield */}
+          <Card className="border-slate-200">
+            <CardContent className="pt-6 pb-6">
+              <div className="flex items-start gap-3 mb-4">
+                <img
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png"
+                  alt="BOBby logo"
+                  className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-300 bg-black"
+                />
+                <div>
+                  <h2 className="font-bold text-[#343A40] text-base" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+                    BOBby 1.0
+                  </h2>
+                  <p className="text-xs text-slate-400">BOBby-BUILDER-1.0 · Build Yielder</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-500 mb-4">
+                The developer's canvas as a standalone PWA. Prompt-to-concept yield, sealed by the Sovereign Substrate.
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking tier...</div>
+              ) : isTopTier || isAdmin ? (
+                <div className="space-y-2">
+                  <UniversalPwaInstall manifestUrl={bobbyManifest10} pwaName="BOBby 1.0" swapManifest zipName="bobby-1.0" zipSubtitle="BOBby-BUILDER-1.0 · Build Yielder" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png" />
+                  <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> TopTier — free install.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button asChild className="bg-slate-700 hover:bg-slate-800 text-white gap-2 w-full">
+                    <Link to="/pricing"><Lock className="w-4 h-4" /> Upgrade to Install</Link>
+                  </Button>
+                  <p className="text-xs text-slate-400">Free-tier needs a plan upgrade.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* BOBby 1.1 Enterprise PWA — enterprise role only */}
+          <Card className="border-amber-200 bg-amber-50/40">
+            <CardContent className="pt-6 pb-6">
+              <div className="flex items-start gap-3 mb-4">
+                <img
+                  src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png"
+                  alt="BOBby Enterprise logo"
+                  className="w-11 h-11 rounded-xl object-cover shrink-0 border border-amber-300 bg-black"
+                />
+                <div>
+                  <h2 className="font-bold text-[#343A40] text-base flex items-center gap-1.5" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+                    BOBby 1.1 Enterprise
+                  </h2>
+                  <p className="text-xs text-amber-700/70">BOBby-ENTERPRISE-1.1 · Sovereign Yield</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-500 mb-4">
+                Enterprise-grade yield with the full Sovereign Triad unlocked. Restricted to the enterprise user role.
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Checking access...</div>
+              ) : isEnterprise ? (
+                <div className="space-y-2">
+                  <UniversalPwaInstall manifestUrl={bobbyManifest11} pwaName="BOBby 1.1 Enterprise" swapManifest zipName="bobby-1.1-enterprise" zipSubtitle="BOBby-ENTERPRISE-1.1 · Sovereign Yield" iconUrl="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/24e433342_image.png" />
+                  <p className="text-xs text-amber-700 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Enterprise role verified.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button asChild className="bg-amber-600 hover:bg-amber-700 text-white gap-2 w-full">
+                    <Link to="/enterprise"><Lock className="w-4 h-4" /> Enterprise Access Required</Link>
+                  </Button>
+                  <p className="text-xs text-amber-700/70">BOBby 1.1 is restricted to the enterprise user role.</p>
                 </div>
               )}
             </CardContent>

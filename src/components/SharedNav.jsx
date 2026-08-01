@@ -15,7 +15,6 @@ const USER_NAV = [
   { to: "/dashboard/api-keys", label: "API Keys", icon: Key },
   { to: "/dashboard/webhooks", label: "Webhooks", icon: Key },
   { to: "/dashboard/pwa", label: "PWA", icon: Smartphone },
-  { to: "/dashboard/bobby", label: "BOBby", icon: ScrollText },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -31,6 +30,7 @@ const BUILDER_NAV = [
 
 const BUILDER_NAV_MORE = [
   { to: "/builder/bob", label: "BOB Builder", icon: Bot },
+  { to: "/builder/bobby", label: "BOBby", icon: ScrollText },
   { to: "/builder/bob-init", label: "B.O.B.Init", icon: Terminal },
   { to: "/enterprise/expertminds", label: "ExpertMinds", icon: Crown },
   { to: "/builder/trust", label: "Trust", icon: ShieldCheck },

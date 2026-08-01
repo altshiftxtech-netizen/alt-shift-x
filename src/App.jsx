@@ -249,7 +249,6 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard/setup/:id" element={<ComponentSetup />} />
         <Route path="/dashboard/subscription" element={<SubscriptionDashboard />} />
         <Route path="/dashboard/pwa" element={<PwaPortal />} />
-        <Route path="/dashboard/bobby" element={<BobbyShell />} />
         <Route path="/pipeline-key/:id" element={<PipelineKeyReveal />} />
         <Route path="/dashboard/testing" element={<TestingDashboard />} />
         <Route path="/dashboard/sandbox" element={<SandboxManagement />} />
@@ -265,6 +264,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/publish" element={<BuilderPublish />} />
         <Route path="/builder/profile" element={<BuilderProfile />} />
         <Route path="/builder/bob" element={<BobBuilder />} />
+        <Route path="/builder/bobby" element={<BobbyShell />} />
         <Route path="/builder/bob-init" element={<BuilderBobInit />} />
         <Route path="/builder/features" element={<BuilderFeatures />} />
         <Route path="/builder/components/:id/versions" element={<ComponentVersionHistory />} />
