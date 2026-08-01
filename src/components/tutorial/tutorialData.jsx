@@ -1,4 +1,4 @@
-import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck, Bot, FileText, GitBranch, Sparkles, Trophy, DollarSign, Share2, Receipt } from "lucide-react";
+import { Play, BookOpen, Zap, Users, BarChart3, Lock, ShieldCheck, Bot, FileText, GitBranch, Sparkles, Trophy, DollarSign, Share2, Receipt, Terminal, Smartphone, Wand2, ScrollText } from "lucide-react";
 
 // Each tutorial has sections; each section has step-by-step instructions and an optional video URL.
 export const TUTORIALS = [
@@ -276,6 +276,172 @@ export const TUTORIALS = [
           "Switch to the Framework tab to set component metadata, compliance, and branding.",
           "Use the Deploy tab to finalize and publish your component.",
           "Paid plans unlock document exports and advanced deployment tools.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "bob-init",
+    title: "B.O.B.Init — Rendering a PWA",
+    description: "Use the build terminal to configure, harden, and render a Sovereign PWA package",
+    icon: Terminal,
+    video: null,
+    sections: [
+      {
+        title: "Opening B.O.B.Init",
+        steps: [
+          "Go to Builder Portal → More → B.O.B.Init (Sovereign and admin accounts only).",
+          "The terminal interface opens — it's a command-style workspace for rendering builds.",
+          "If you're not on a Sovereign plan, you'll see an upgrade prompt instead of the terminal.",
+        ],
+      },
+      {
+        title: "Choosing your stack & database",
+        steps: [
+          "Pick your project stack (e.g. Next.js or React) from the terminal controls.",
+          "Use the Database Picker to select an engine: MongoDB, PostgreSQL, MySQL, SQLite, Supabase, or Redis.",
+          "Every build defaults to an explicit database selection before it can render.",
+        ],
+      },
+      {
+        title: "Configuring the 110% Hardened Standard",
+        steps: [
+          "Open the Hardening Config panel and toggle the X1–X5 components (Ledger, Sensor, Guard, Healing).",
+          "Set the Hallucination Guard, Confidence Threshold, and Audit Logging.",
+          "These fail-closed settings are injected into the generated manifest.",
+        ],
+      },
+      {
+        title: "Rendering & downloading the build",
+        steps: [
+          "Run the build sequence from the terminal — a BobBuild record is saved with its manifest and ESI score.",
+          "The build appears in the Sovereign PWA Portal under 'My Builds'.",
+          "Install it as a PWA or download the licensed ZIP (manifest, service worker, icons, and legal docs).",
+        ],
+      },
+    ],
+  },
+  {
+    id: "bobby-yielder",
+    title: "BOBby the Build Yielder",
+    description: "The developer canvas — read Sovereign documents and chat with BOBby",
+    icon: ScrollText,
+    video: null,
+    sections: [
+      {
+        title: "Opening BOBby",
+        steps: [
+          "Go to Builder Portal → More → BOBby (builder-only, at /builder/bobby).",
+          "The canvas opens on a pure-black substrate with a gold document index on the left.",
+          "Before anything yields, your session must be sealed.",
+        ],
+      },
+      {
+        title: "Sealing your session",
+        steps: [
+          "Click Seal to authorize the Sovereign Substrate gate (fn_initGate).",
+          "The status badge flips from UNSEALED to SEALED, unlocking the document index.",
+          "If the seal is denied, the gate shows an inline prompt — no redirect.",
+        ],
+      },
+      {
+        title: "Reading a document",
+        steps: [
+          "Use the 'bob init' dropdown in the header to select a module.",
+          "The PDF-reader-style paper view renders the document with its ESI seal hash and watermark.",
+          "Use the left-hand Table of Contents to jump between sections.",
+        ],
+      },
+      {
+        title: "Chatting with BOBby",
+        steps: [
+          "Use the prompt field pinned to the bottom of the canvas to ask BOBby about your documents or build.",
+          "Click the chat icon to expand the message rail and review the conversation.",
+          "Press Enter (or Send) to yield a reply from the BOBby assistant.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "quick-edits-claire",
+    title: "Quick Edits & Claire 1.0",
+    description: "Rapidly generate a build from a form and have Claire 1.0 analyze your documents",
+    icon: Wand2,
+    video: null,
+    sections: [
+      {
+        title: "Opening Quick Edits",
+        steps: [
+          "From the BOBby header, click the 'Quick Edits' button.",
+          "The Quick Edits page opens with a build form on the left and document analysis on the right.",
+          "Use 'Back to BOBby' to return to the canvas.",
+        ],
+      },
+      {
+        title: "Configuring the build form",
+        steps: [
+          "Pick a document type, tone, length, and audience.",
+          "Tick the sections to include (Executive Summary, Financials, Roadmap, IP & Valuation, etc.).",
+          "Toggle hardening (Hallucination Guard, Audit Logging, ESI Seal), set the confidence slider, and choose a database and output format.",
+          "Add optional instructions in the prompt field, then click 'Generate Document'.",
+        ],
+      },
+      {
+        title: "Uploading a document for analysis",
+        steps: [
+          "Upload a PDF, DOCX, TXT, or MD file into the Document Analysis panel.",
+          "Click 'Apply' — this initiates extraction and the Claire 1.0 evaluation of the document.",
+          "The extracted facts and Claire's evaluation appear in the panel.",
+        ],
+      },
+      {
+        title: "Directing Claire & updating documents",
+        steps: [
+          "Type what Claire should do with the analyzed document (e.g. 'merge the financials and tighten the risk section').",
+          "Click 'Update Documents' — the generated document is only changed after you direct the agent.",
+          "Review the updated document in the preview at the bottom.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "pwa-portal",
+    title: "The Sovereign PWA Portal",
+    description: "Install Alt+Shift+X as a standalone desktop or mobile app",
+    icon: Smartphone,
+    video: null,
+    sections: [
+      {
+        title: "Opening the PWA Portal",
+        steps: [
+          "Go to Dashboard → PWA.",
+          "The portal lists every installable Sovereign PWA shell.",
+          "Your tier and service-worker status show at the top.",
+        ],
+      },
+      {
+        title: "Installing a PWA",
+        steps: [
+          "Site Mirror PWA mirrors the full site (TopTier — free install on any paid plan).",
+          "Agent Wrapper PWA is a portable container you can deploy to your own domain.",
+          "BOBby 1.0 and BOBby 1.1 Enterprise are available as standalone build-yielder apps.",
+          "Follow the browser-specific install prompt (Chrome/Edge) or the manual steps for iOS/Safari/Firefox.",
+        ],
+      },
+      {
+        title: "Downloading a build ZIP",
+        steps: [
+          "Your saved B.O.B.Init builds appear under 'My Builds'.",
+          "Install a build as a PWA, or download the licensed ZIP (manifest, service worker, icons, EULA, and install guide).",
+          "Free-tier users see an upgrade prompt; TopTier and admins install for free.",
+        ],
+      },
+      {
+        title: "Enterprise access",
+        steps: [
+          "BOBby 1.1 Enterprise is role-gated to the enterprise user role.",
+          "Other shells unlock on any paid (TopTier) plan.",
+          "Read the Sovereign PWA legal notice before initializing the substrate.",
         ],
       },
     ],

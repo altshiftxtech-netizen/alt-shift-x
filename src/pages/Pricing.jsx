@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit, Sparkles } from "lucide-react";
+import { Check, X, Zap, Shield, Building2, Crown, Star, Rocket, FileText, BrainCircuit, Sparkles, BookOpen } from "lucide-react";
 import PricingSharePanel from "@/components/pricing/PricingSharePanel";
 import SovereignTierBanner from "@/components/pricing/SovereignTierBanner";
 import SovereignApexCard from "@/components/pricing/SovereignApexCard";
@@ -383,6 +383,16 @@ export default function Pricing() {
               {COMPONENT_TIERS.map(tier => (
                 <ComponentTypeCard key={tier.type} tier={tier} />
               ))}
+            </div>
+          </div>
+
+          {/* Knowledge Book Tiles — live $29/mo cinema intelligence components */}
+          <div className="max-w-4xl mx-auto px-4 mb-6">
+            <div className="bg-rose-50 border border-rose-200 rounded-xl px-5 py-3 flex items-start gap-3">
+              <BookOpen className="w-4 h-4 text-rose-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-rose-800">
+                <strong>Knowledge Book Tiles — from $29/mo:</strong> Cinematic and literary intelligence distilled into deployable agent cognition. Browse the <Link to="/marketplace" className="underline">marketplace</Link> for titles like Vertigo, Citizen Kane, Seven Samurai, In the Mood for Love, and more.
+              </p>
             </div>
           </div>
 
