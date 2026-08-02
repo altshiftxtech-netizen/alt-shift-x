@@ -12,7 +12,11 @@ const EMOJI_RE =
   /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
 
 function stripEmoji(text) {
-  return (text || "").replace(EMOJI_RE, "").replace(/\s{2,}/g, " ").trim();
+  return (text || "")
+    .replace(EMOJI_RE, "")
+    .replace(/[^\S\n]{2,}/g, " ")   // collapse horizontal whitespace, KEEP newlines so markdown headings/lists parse
+    .replace(/\n{3,}/g, "\n\n")     // cap blank-line runs
+    .trim();
 }
 
 // Parses a ```chart-bar block: each line "Label: number" → bar.
@@ -84,6 +88,9 @@ export default function CleanDocRenderer({ content, className = "" }) {
           h1: ({ children }) => <h1 className="text-xl font-bold text-white mt-4 mb-2">{children}</h1>,
           h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-4 mb-2">{children}</h2>,
           h3: ({ children }) => <h3 className="text-base font-semibold text-[#D4AF37] mt-3 mb-1.5">{children}</h3>,
+          h4: ({ children }) => <h4 className="text-sm font-bold text-white mt-2.5 mb-1">{children}</h4>,
+          h5: ({ children }) => <h5 className="text-sm font-semibold text-white/90 mt-2 mb-1">{children}</h5>,
+          h6: ({ children }) => <h6 className="text-xs font-bold uppercase tracking-wider text-[#D4AF37]/70 mt-2 mb-1">{children}</h6>,
           ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1 text-white/70">{children}</ul>,
           ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1 text-white/70">{children}</ol>,
           a: ({ children, href }) => <a href={href} className="text-[#D4AF37] underline hover:text-[#e6c454]">{children}</a>,

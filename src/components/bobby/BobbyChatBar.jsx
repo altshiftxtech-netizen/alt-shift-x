@@ -77,8 +77,7 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
       const esiSeal = await computeSeal(sealText);
       const sealedAt = new Date().toISOString();
       if (onYieldDocument) onYieldDocument({ document: doc, esiSeal, sealedAt });
-      setMessages((m) => [...m, { role: "bot", text: "**Documents yielded.** Promoted to the canvas — navigate them in the paper view." }]);
-      setOpen(false); // collapse so the operator can read/navigate the document
+      setMessages((m) => [...m, { role: "bot", text: "**Documents yielded.** Promoted to the canvas — minimize this chat when you're ready to read." }]);
     } catch (e) {
       setMessages((m) => [...m, { role: "bot", text: "Yield failed: " + (e.message || "substrate error") }]);
     } finally {
