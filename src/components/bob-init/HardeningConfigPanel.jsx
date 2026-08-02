@@ -1,5 +1,5 @@
-import React from "react";
-import { ShieldCheck, Gauge, FileText, Lock } from "lucide-react";
+import React, { useState } from "react";
+import { ShieldCheck, Gauge, FileText, Lock, ChevronDown, CheckSquare, Square } from "lucide-react";
 
 // Default 110% Hardened Standard configuration — fail-closed foundation.
 export const DEFAULT_HARDENING = {
@@ -35,14 +35,26 @@ function Toggle({ label, desc, checked, onToggle }) {
 }
 
 export default function HardeningConfigPanel({ hardening, onChange }) {
+  const [open, setOpen] = useState(true);
   const h = { ...DEFAULT_HARDENING, ...hardening };
   const set = (key, val) => onChange({ ...h, [key]: val });
 
+  // Regulatory frameworks are multi-select (checkboxes). Stored as a comma-joined
+  // string in `regulatory_framework` to stay compatible with the existing schema.
+  const frameworks = (h.regulatory_framework || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const toggleFramework = (f) => {
+    const next = frameworks.includes(f) ? frameworks.filter((x) => x !== f) : [...frameworks, f];
+    set("regulatory_framework", next.join(", "));
+  };
+
   return (
-    <div className="rounded-xl border border-[#30363d] bg-[#0d1117] p-3 space-y-3">
-      <div className="flex items-center gap-1.5 text-xs font-mono text-[#8b949e] uppercase tracking-wider">
+    <div className="rounded-xl border border-[#30363d] bg-[#0d1117]">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="w-full flex items-center gap-1.5 text-xs font-mono text-[#8b949e] uppercase tracking-wider px-3 pt-3 pb-2">
         <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> 110% Hardening
-      </div>
+        <ChevronDown className={`w-3.5 h-3.5 ml-auto text-[#484f58] transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+      <div className="px-3 pb-3 space-y-3">
 
       <Toggle label="Hallucination Guard" desc="Fail-closed — blocks low-confidence outputs" checked={h.hallucination_guard} onToggle={() => set("hallucination_guard", !h.hallucination_guard)} />
       <Toggle label="Audit Logging" desc="Immutable hash-chain of all decisions" checked={h.audit_logging} onToggle={() => set("audit_logging", !h.audit_logging)} />
@@ -64,14 +76,18 @@ export default function HardeningConfigPanel({ hardening, onChange }) {
       </div>
 
       <div>
-        <label className="text-[10px] font-mono text-[#484f58] flex items-center gap-1 mb-1"><FileText className="w-3 h-3" /> Regulatory Framework</label>
-        <select
-          value={h.regulatory_framework}
-          onChange={(e) => set("regulatory_framework", e.target.value)}
-          className="w-full rounded-lg border border-[#30363d] bg-[#010409] text-[#c9d1d9] font-mono text-xs px-2 py-1.5 focus:outline-none focus:border-cyan-500"
-        >
-          {FRAMEWORKS.map((f) => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <label className="text-[10px] font-mono text-[#484f58] flex items-center gap-1 mb-1"><FileText className="w-3 h-3" /> Regulatory Frameworks (select all that apply)</label>
+        <div className="grid grid-cols-1 gap-1">
+          {FRAMEWORKS.map((f) => {
+            const on = frameworks.includes(f);
+            return (
+              <button key={f} type="button" onClick={() => toggleFramework(f)} className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-all ${on ? "border-cyan-500/40 bg-cyan-500/5" : "border-[#30363d] bg-[#010409]"}`}>
+                {on ? <CheckSquare className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Square className="w-3.5 h-3.5 text-[#484f58] shrink-0" />}
+                <span className={`text-xs font-mono ${on ? "text-cyan-400" : "text-[#8b949e]"}`}>{f}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-1.5 pt-1 border-t border-[#30363d]">
@@ -85,6 +101,8 @@ export default function HardeningConfigPanel({ hardening, onChange }) {
       <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-400/70">
         <Lock className="w-3 h-3" /> Env: {h.environment} · Rollback: {h.rollback_strategy}
       </div>
+      </div>
+      )}
     </div>
   );
 }

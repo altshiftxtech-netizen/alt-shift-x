@@ -15,7 +15,7 @@ const STARTER = `{
   "stack": { "frontend": "Next.js", "middleware": "TypeScript", "backend": "Express.js", "proxy": "NGINX" },
   "connectivity": { "local_server": "enabled", "frontier_bridge": ["GPT-4o","Claude-3-Opus"], "registry": "altshiftx-private-core" },
   "features": ["Magna-Dev-Full-Access","Sovereign-Apex-Hardening","Self-Healing-API-Shims"],
-  "branding": { "colorway": "Sovereign_Gold", "logo_url": "[PENDING_UPLOAD]", "terminal_aesthetic": "PowerShell" },
+  "branding": { "colorway": "Sovereign_Gold", "logo_url": "[PENDING_UPLOAD]" },
   "compliance": { "wv_retention_vault": "linked", "fragmentation_level": "K-of-N" }
 }`;
 
@@ -100,7 +100,7 @@ export default function BobInitCodeMode({ brand, setBrand, docs, setDocs, onSubm
           </ul>
         )}
 
-        <BobInitCapabilities brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} projectJson={parsed} />
+        <BobInitCapabilities brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} projectJson={parsed} hidePreview />
 
         <Button onClick={initialize} className="w-full bg-[#3fb950] hover:bg-[#3fb950]/90 text-black font-bold font-mono gap-2">
           <FileJson className="w-4 h-4" /> Initialize Project — Half-Price

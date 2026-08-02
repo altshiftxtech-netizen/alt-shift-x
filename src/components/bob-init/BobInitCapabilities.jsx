@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Upload, X, FileText, CheckCircle2, Loader2, Copy, Eye, Image as ImageIcon } from "lucide-react";
+import { Upload, X, FileText, CheckCircle2, Loader2, Copy, Eye, Image as ImageIcon, AlertTriangle } from "lucide-react";
 
 // BobInitCapabilities — the shared "everything a mode needs" rail, used by ALL
 // B.O.B.Init authoring modes (Command Prompt, project.json code, Text-to-Code).
@@ -17,7 +17,7 @@ const DOC_SLOTS = [
 const labelCls = "text-[10px] tracking-[0.2em] text-[#3fb950]/70";
 const inputCls = "w-full bg-[#010409] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#c9d1d9] focus:outline-none focus:border-[#3fb950]/60 font-mono";
 
-export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, projectJson }) {
+export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, projectJson, hidePreview }) {
   const [logoUploading, setLogoUploading] = useState(false);
   const [uploadingKey, setUploadingKey] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -62,27 +62,35 @@ export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, pr
       {/* Brand mirror */}
       <div>
         <span className={`flex items-center gap-1.5 mb-2 ${labelCls}`}><ImageIcon className="w-3 h-3" /> BRAND MIRROR</span>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            {brand?.logoUrl && brand.logoUrl !== "[PENDING_UPLOAD]" ? (
-              <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-2">
-                <img src={brand.logoUrl} alt="logo" className="w-5 h-5 rounded object-contain" />
-                <span className="text-[10px] font-mono text-[#c9d1d9] truncate flex-1">logo</span>
-                <button onClick={() => setBrand((b) => ({ ...b, logoUrl: "[PENDING_UPLOAD]" }))} className="text-[#8b949e] hover:text-white"><X className="w-3 h-3" /></button>
-              </div>
-            ) : (
-              <>
-                <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) uploadLogo(f); }} />
-                <button type="button" onClick={() => logoRef.current?.click()} disabled={logoUploading} className="w-full flex items-center gap-1.5 text-[10px] font-mono text-[#8b949e] bg-[#0d1117] hover:bg-[#161b22] border border-dashed border-[#30363d] hover:border-[#3fb950]/50 px-2 py-2 rounded-lg disabled:opacity-50">
-                  {logoUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Upload logo
-                </button>
-              </>
-            )}
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              {brand?.logoUrl && brand.logoUrl !== "[PENDING_UPLOAD]" ? (
+                <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-2">
+                  <img src={brand.logoUrl} alt="logo" className="w-5 h-5 rounded object-contain" />
+                  <span className="text-[10px] font-mono text-[#c9d1d9] truncate flex-1">logo</span>
+                  <button onClick={() => setBrand((b) => ({ ...b, logoUrl: "[PENDING_UPLOAD]" }))} className="text-[#8b949e] hover:text-white"><X className="w-3 h-3" /></button>
+                </div>
+              ) : (
+                <>
+                  <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) uploadLogo(f); }} />
+                  <button type="button" onClick={() => logoRef.current?.click()} disabled={logoUploading} className="w-full flex items-center gap-1.5 text-[10px] font-mono text-[#8b949e] bg-[#0d1117] hover:bg-[#161b22] border border-dashed border-[#30363d] hover:border-[#3fb950]/50 px-2 py-2 rounded-lg disabled:opacity-50">
+                    {logoUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Upload logo
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-1.5">
+              <input type="color" value={brand?.colorHex || "#D4AF37"} onChange={(e) => setBrand((b) => ({ ...b, colorHex: e.target.value }))} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 shrink-0" />
+              <input type="text" value={brand?.colorHex || ""} onChange={(e) => setBrand((b) => ({ ...b, colorHex: e.target.value }))} placeholder="#D4AF37" className="flex-1 min-w-0 bg-transparent text-[10px] font-mono text-[#c9d1d9] focus:outline-none placeholder:text-[#484f58]" />
+            </div>
           </div>
-          <div>
-            <select value={brand?.colorway || COLORWAYS[0]} onChange={(e) => setBrand((b) => ({ ...b, colorway: e.target.value }))} className={inputCls}>
-              {COLORWAYS.map((c) => <option key={c} value={c} className="bg-[#0d1117]">{c}</option>)}
-            </select>
+          <input type="url" value={brand?.url || ""} onChange={(e) => setBrand((b) => ({ ...b, url: e.target.value }))} placeholder="https://your-brand-url.com" className={inputCls} />
+          <div className="flex items-start gap-1.5 rounded-md border border-amber-500/25 bg-amber-500/5 px-2 py-1.5">
+            <AlertTriangle className="w-3 h-3 text-amber-400 mt-0.5 shrink-0" />
+            <p className="text-[9px] text-amber-400/80 font-mono leading-relaxed">
+              Only upload material you are licensed to use. Do not mirror third-party brands, copyrighted logos, or trademarked assets without authorization. Unauthorized use is removed and may restrict your account.
+            </p>
           </div>
         </div>
       </div>
@@ -115,7 +123,8 @@ export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, pr
         </div>
       </div>
 
-      {/* Copyable JSON preview */}
+      {/* Copyable JSON preview — hidden in code mode (the raw JSON is the source) */}
+      {!hidePreview && (
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <span className={`flex items-center gap-1.5 ${labelCls}`}><Eye className="w-3 h-3" /> JSON PREVIEW</span>
@@ -127,6 +136,7 @@ export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, pr
           {previewText || <span className="text-[#484f58]">// initialize a project to preview the manifest</span>}
         </pre>
       </div>
+      )}
     </div>
   );
 }

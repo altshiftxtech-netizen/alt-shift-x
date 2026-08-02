@@ -13,6 +13,7 @@ import BobInitHandbook from "@/components/bob-init/BobInitHandbook";
 import BobInitProjectJson from "@/components/bob-init/BobInitProjectJson";
 import BobInitCodeMode from "@/components/bob-init/BobInitCodeMode";
 import BobInitCapabilities from "@/components/bob-init/BobInitCapabilities";
+import PwaFunctionalityTest from "@/components/bob-init/PwaFunctionalityTest";
 import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -60,7 +61,7 @@ export default function BobInit({ navMode = "user" }) {
   const [database, setDatabase] = useState("");
   const [hardening, setHardening] = useState(DEFAULT_HARDENING);
   const [mode, setMode] = useState("command");
-  const [brand, setBrand] = useState({ logoUrl: "[PENDING_UPLOAD]", colorway: "Generic_Office_Slate" });
+  const [brand, setBrand] = useState({ logoUrl: "[PENDING_UPLOAD]", colorway: "Generic_Office_Slate", colorHex: "#D4AF37", url: "" });
   const [docs, setDocs] = useState({});
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
@@ -398,6 +399,9 @@ export default function BobInit({ navMode = "user" }) {
                 </div>
               </>
             )}
+
+            {/* PWA functionality test — available in every mode */}
+            <PwaFunctionalityTest stackConfig={stackConfig} hardening={hardening} brand={brand} database={database} mode={mode} />
 
             {/* Build sequence — common to all modes */}
             {buildActive && <BuildSequence active={buildActive} onComplete={onBuildComplete} />}
