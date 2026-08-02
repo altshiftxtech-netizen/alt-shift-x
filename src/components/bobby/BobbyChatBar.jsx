@@ -5,6 +5,26 @@ import CleanDocRenderer from "@/components/bobby/CleanDocRenderer";
 
 const YIELD_RE = /\byield\b/i;
 
+const DOC_SCHEMA = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    subtitle: { type: "string" },
+    sections: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          heading: { type: "string" },
+          body: { type: "string", description: "Markdown. Use proper GFM tables (header row + delimiter row | :--- | + data rows) wherever comparing things, with a blank line before each table. ```chart-bar blocks allowed for numeric trends." },
+        },
+        required: ["heading", "body"],
+      },
+    },
+  },
+  required: ["title", "subtitle", "sections"],
+};
+
 // SHA-256 ESI seal for a promoted document.
 async function computeSeal(text) {
   try {
@@ -15,69 +35,97 @@ async function computeSeal(text) {
   }
 }
 
-// BobbyChatBar — a floating, collapsible chat panel. Minimizes to a single gold
-// button so the operator can view & navigate the document unobstructed. Bot
-// replies render through CleanDocRenderer (markdown rendered, so no literal
-// ** or ## markers). "Yield Documents" — via the button or by typing "yield" —
-// promotes the conversation into a structured document on the canvas through
-// onYieldDocument.
+const convoText = (msgs) => msgs.map((m) => `${m.role === "user" ? "Operator" : "BOBby"}: ${m.text}`).join("\n");
+
+// BobbyChatBar — floating, collapsible chat. The living document is built on the
+// canvas as the conversation flows: after every exchange (prompt + reply) the
+// draft document is regenerated from the full conversation and promoted to the
+// canvas. "Yield Documents" (button or typing "yield") runs a final review pass
+// and finalizes the document on the canvas. The operator collapses the chat
+// manually whenever they want to read/navigate.
 export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "bot", text: "BOBby online. Talk through your concept, then say **yield documents** (or hit Yield) to promote it to the canvas." },
+    { role: "bot", text: "BOBby online. Talk through your concept — the document builds on the canvas as we go. Say **yield** (or hit Yield) to review & finalize." },
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [yielding, setYielding] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const scrollRef = useRef(null);
+  const draftRef = useRef(null);     // the current living document (avoids stale state in async)
+  const draftSeqRef = useRef(0);    // cancels stale in-flight draft updates
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, open]);
 
-  // Promote the conversation into a structured document on the canvas.
+  // Regenerate the living document from the full conversation and promote it to
+  // the canvas. Best-effort + sequenced so a newer exchange always wins.
+  const updateDraft = async (convoMessages) => {
+    const seq = ++draftSeqRef.current;
+    setDrafting(true);
+    try {
+      const current = draftRef.current;
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt:
+          (current
+            ? "You are BOBby, the Build Yielder. Here is the current living document:\n" + JSON.stringify(current) +
+              "\n\nUpdate and expand it to fully incorporate EVERYTHING discussed in the conversation below. Keep strong existing sections, refine them, and add new sections as the concept grows."
+            : "You are BOBby, the Build Yielder. Create the initial living document from the conversation below."
+          ) +
+          " Return the complete structured document. Use proper GFM tables (a header row, a delimiter row like | :--- |, then data rows) wherever you compare things, with a blank line before each table. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
+        response_json_schema: DOC_SCHEMA,
+      });
+      if (seq !== draftSeqRef.current) return; // a newer exchange superseded this one
+      const out = res?.output || res;
+      const doc = {
+        title: out.title || "Living Document",
+        subtitle: out.subtitle || "Draft — updated as you chat",
+        sections: (out.sections || []).map((s) => ({ heading: s.heading, body: s.body })),
+      };
+      draftRef.current = doc;
+      const sealText = doc.sections.map((s) => s.heading + s.body).join("|") + "|" + doc.title;
+      const esiSeal = await computeSeal(sealText);
+      if (seq !== draftSeqRef.current) return;
+      if (onYieldDocument) onYieldDocument({ document: doc, esiSeal, sealedAt: new Date().toISOString() });
+    } catch {
+      // draft update is best-effort — never block the conversation
+    } finally {
+      if (seq === draftSeqRef.current) setDrafting(false);
+    }
+  };
+
+  // Final review + finalize: review the living document, fill gaps, ensure tables
+  // are proper, then populate the finalized document on the canvas.
   const yieldDocuments = async (convoMessages = messages) => {
+    draftSeqRef.current++; // invalidate any in-flight draft update
+    setDrafting(false);
     setYielding(true);
     setOpen(true);
     try {
-      const convo = convoMessages.map((m) => `${m.role === "user" ? "Operator" : "BOBby"}: ${m.text}`).join("\n");
-      const schema = {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          subtitle: { type: "string" },
-          sections: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                heading: { type: "string" },
-                body: { type: "string", description: "Markdown. GFM tables and ```chart-bar blocks allowed." },
-              },
-              required: ["heading", "body"],
-            },
-          },
-        },
-        required: ["title", "subtitle", "sections"],
-      };
+      const current = draftRef.current;
       const res = await base44.integrations.Core.InvokeLLM({
         prompt:
-          "You are BOBby, the Build Yielder on the Sovereign Substrate. Consolidate the following conversation into ONE coherent structured document the operator can read on the canvas. " +
-          "Synthesize the concept into clean sections (use GFM tables where useful, ```chart-bar blocks for numeric trends). Do NOT use emojis. " +
-          "Each section body may weave in an ESI seal note. Return the consolidated document.\n\nConversation:\n" + convo,
-        response_json_schema: schema,
+          (current
+            ? "You are BOBby, the Build Yielder. Here is the current living document:\n" + JSON.stringify(current) +
+              "\n\nReview it for completeness and accuracy. Fill any gaps, ensure EVERY comparison is a proper GFM table (header row + delimiter row | :--- | + data rows, blank line before each table), tighten the prose, and finalize it as the yielded document."
+            : "You are BOBby, the Build Yielder. Build the final structured document from the conversation below."
+          ) +
+          " Return the complete final structured document. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
+        response_json_schema: DOC_SCHEMA,
       });
       const out = res?.output || res;
       const doc = {
         title: out.title || "Yielded Document",
-        subtitle: out.subtitle || "Promoted by BOBby from conversation",
+        subtitle: out.subtitle || "Final — yielded by BOBby",
         sections: (out.sections || []).map((s) => ({ heading: s.heading, body: s.body })),
       };
+      draftRef.current = doc;
       const sealText = doc.sections.map((s) => s.heading + s.body).join("|") + "|" + doc.title;
       const esiSeal = await computeSeal(sealText);
-      const sealedAt = new Date().toISOString();
-      if (onYieldDocument) onYieldDocument({ document: doc, esiSeal, sealedAt });
-      setMessages((m) => [...m, { role: "bot", text: "**Documents yielded.** Promoted to the canvas — minimize this chat when you're ready to read." }]);
+      if (onYieldDocument) onYieldDocument({ document: doc, esiSeal, sealedAt: new Date().toISOString() });
+      setMessages((m) => [...m, { role: "bot", text: "**Documents yielded & finalized.** Promoted to the canvas — minimize this chat to read." }]);
     } catch (e) {
       setMessages((m) => [...m, { role: "bot", text: "Yield failed: " + (e.message || "substrate error") }]);
     } finally {
@@ -88,11 +136,11 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
   const send = async () => {
     const text = input.trim();
     if (!text || sending || yielding) return;
-    setOpen(true); // reveal the exchange + yielding indicator immediately
+    setOpen(true); // reveal the exchange + indicator immediately
     const next = [...messages, { role: "user", text }];
     setMessages(next);
     setInput("");
-    // "yield" keyword → promote the conversation straight to the canvas.
+    // "yield" keyword → review & finalize straight to the canvas.
     if (YIELD_RE.test(text)) {
       await yieldDocuments(next);
       return;
@@ -100,13 +148,16 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
     setSending(true);
     try {
       const docContext = activeDoc?.title ? `\n\nActive document context: "${activeDoc.title}".` : "";
-      const convo = next.map((m) => `${m.role === "user" ? "Operator" : "BOBby"}: ${m.text}`).join("\n");
+      const convo = convoText(next);
       const res = await base44.integrations.Core.InvokeLLM({
         prompt:
           `You are BOBby, the Build Yielder on the Alt+Shift+X Sovereign Substrate. Help the operator think through documents, builds, and sovereign architecture. Reply in clean prose — you may use markdown headings/lists/tables, but never leave raw ** or ## markers; render them properly. Keep it tight and actionable.${docContext}\n\nConversation so far:\n${convo}\n\nBOBby:`,
       });
       const reply = typeof res === "string" ? res : res?.output || JSON.stringify(res);
-      setMessages((m) => [...m, { role: "bot", text: reply }]);
+      const withReply = [...next, { role: "bot", text: reply }];
+      setMessages(withReply);
+      // Build/update the living document on the canvas from the full exchange.
+      updateDraft(withReply);
     } catch {
       setMessages((m) => [...m, { role: "bot", text: "Substrate link interrupted. Retry in a moment." }]);
     } finally {
@@ -114,8 +165,9 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
     }
   };
 
-  const busy = sending || yielding;
+  const busy = sending || yielding || drafting;
   const hasUserTurn = messages.some((m) => m.role === "user");
+  const statusText = yielding ? "reviewing & yielding…" : drafting ? "building document…" : "thinking…";
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 print:hidden">
@@ -154,7 +206,7 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
             {busy && (
               <div className="flex justify-start">
                 <div className="px-3 py-2 rounded-lg text-xs text-white/50 bg-white/5 border border-white/10 flex items-center gap-1.5">
-                  <Loader2 className="w-3 h-3 animate-spin" /> {yielding ? "yielding documents…" : "yielding…"}
+                  <Loader2 className="w-3 h-3 animate-spin" /> {statusText}
                 </div>
               </div>
             )}

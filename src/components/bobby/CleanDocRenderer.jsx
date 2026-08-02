@@ -19,6 +19,26 @@ function stripEmoji(text) {
     .trim();
 }
 
+// GFM tables only parse when a blank line precedes the header row. The LLM often
+// omits that blank line (text immediately followed by `| ... |`), which renders
+// the pipes literally. This inserts a blank line before any table row that
+// directly follows non-blank, non-table content — so tables always render.
+function normalizeTables(md) {
+  if (!md) return md;
+  const lines = md.split("\n");
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isTable = /^\s*\|/.test(line);
+    const prev = out.length ? out[out.length - 1] : null;
+    const prevBlank = prev == null || prev.trim() === "";
+    const prevIsTable = prev != null && /^\s*\|/.test(prev);
+    if (isTable && !prevBlank && !prevIsTable) out.push(""); // separate table from preceding text
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
 // Parses a ```chart-bar block: each line "Label: number" → bar.
 function parseChartBar(src) {
   const rows = src
@@ -52,7 +72,7 @@ function ChartBar({ data }) {
 }
 
 export default function CleanDocRenderer({ content, className = "" }) {
-  const cleaned = useMemo(() => stripEmoji(content), [content]);
+  const cleaned = useMemo(() => normalizeTables(stripEmoji(content)), [content]);
   return (
     <div className={`text-sm text-white/75 leading-relaxed ${className}`}>
       <ReactMarkdown
