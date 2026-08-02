@@ -69,6 +69,7 @@ export default function BobInit({ navMode = "user" }) {
   const [projectName, setProjectName] = useState("");
   const [nameLocked, setNameLocked] = useState(false);
   const [version, setVersion] = useState("1.0.0");
+  const [reverted, setReverted] = useState(false);
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -129,6 +130,7 @@ export default function BobInit({ navMode = "user" }) {
     const config = { stack, shim, budget: budgetFlag ?? budget, database: dbFlag || database, mode: "command", halfPrice: false, name: projectName || "Untitled Project", version };
     setStackConfig(config);
     setBuildDone(false);
+    setReverted(false);
     appendLine("system", `✓ Stack initialized: ${stack}`, `Great! B.O.B. is now set up to build a ${stack} application.`);
     appendLine("system", `  Name: ${projectName || "(awaiting reference docs)"}`, `Project name extracted from your reference documents.`);
     appendLine("system", `  Version: ${version}`, `Version set to ${version}.`);
@@ -191,12 +193,14 @@ export default function BobInit({ navMode = "user" }) {
   };
 
   const restoreBuild = (entry) => {
-    setStackConfig({ stack: entry.stack, shim: entry.shim, budget: entry.budget, mode: entry.mode || "command", halfPrice: !!entry.halfPrice, name: entry.name, version: entry.version });
+    setStackConfig({ stack: entry.stack, shim: entry.shim, budget: entry.budget, mode: "texttocode", halfPrice: !!entry.halfPrice, name: entry.name, version: entry.version });
     setBudget(entry.budget);
+    setMode("texttocode");
     if (entry.name) setProjectName(entry.name);
     if (entry.version) setVersion(entry.version);
     setBuildDone(false);
-    appendLine("system", `↩ Restored build: ${entry.stack} ($${entry.budget?.toLocaleString()}, ${entry.tier}${entry.halfPrice ? ", HALF-PRICE" : ""})`, `Loaded a previous build. Type 'bob build' to rebuild.`);
+    setReverted(true);
+    appendLine("system", `↩ Restored build: ${entry.stack} ($${entry.budget?.toLocaleString()}, ${entry.tier}${entry.halfPrice ? ", HALF-PRICE" : ""}) — locked to Text-to-Code mode`, `Loaded a previous build. Editing is locked to Text-to-Code mode — switch modes to start a new build.`);
     inputRef.current?.focus();
   };
 
@@ -206,6 +210,7 @@ export default function BobInit({ navMode = "user" }) {
     setStackConfig(null);
     setBuildActive(false);
     setBuildDone(false);
+    setReverted(false);
     appendLine("system", "Terminal reset. Ready for new build.");
   };
 
@@ -234,6 +239,7 @@ export default function BobInit({ navMode = "user" }) {
     setStackConfig(cfg);
     persistConfig(cfg);
     setBuildDone(false);
+    setReverted(false);
   };
 
   const tier = getBudgetTier(stackConfig?.budget ?? budget);
@@ -365,9 +371,14 @@ export default function BobInit({ navMode = "user" }) {
         {/* Mode switcher (dropdown) */}
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-[10px] tracking-[0.2em] text-[#3fb950]/70 font-mono">AUTHORING MODE</span>
-          <select value={mode} onChange={(e) => setMode(e.target.value)} className={`${inputCls} max-w-sm`}>
+          <select value={mode} onChange={(e) => setMode(e.target.value)} disabled={reverted} className={`${inputCls} max-w-sm ${reverted ? "opacity-60 cursor-not-allowed" : ""}`}>
             {MODES.map((m) => <option key={m.value} value={m.value} className="bg-[#0d1117]">{m.label}</option>)}
           </select>
+          {reverted && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-1">
+              <RotateCcw className="w-3 h-3" /> Reverted — Text-to-Code only
+            </span>
+          )}
           {mode === "projectjson" && (
             <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#3fb950] bg-[#3fb950]/10 border border-[#3fb950]/30 rounded-full px-2 py-1">
               <BadgePercent className="w-3 h-3" /> Half-price at checkout
