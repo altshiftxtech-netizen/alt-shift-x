@@ -71,6 +71,13 @@ export default function BobbyShell() {
     }
   };
 
+  // Promote a yielded document from the BOBby chat into the canvas (paper view).
+  const yieldDocument = ({ document: doc, esiSeal, sealedAt: sa }) => {
+    setDocument(doc);
+    setEsiSeal(esiSeal || null);
+    setSealedAt(sa || null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -131,7 +138,7 @@ export default function BobbyShell() {
           />
 
           <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
-            {sealStatus === "sealed" ? (
+            {sealStatus === "sealed" || document ? (
               <BobbyPaperView document={document} esiSeal={esiSeal} sealedAt={sealedAt} />
             ) : (
               <BobbyGate sealStatus={sealStatus} onSeal={sealSession} sealing={sealing} />
@@ -139,7 +146,7 @@ export default function BobbyShell() {
           </div>
         </div>
 
-        <BobbyChatBar document={document} />
+        <BobbyChatBar document={document} onYieldDocument={yieldDocument} />
       </div>
     </div>
   );
