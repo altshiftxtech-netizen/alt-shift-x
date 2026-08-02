@@ -238,6 +238,71 @@ export default function BobInit({ navMode = "user" }) {
     appendLine("system", "  ✓ Saved to build history.", "Saved to history — click Build History to view or restore.");
   };
 
+  // Build Summary + Pipeline cards — extracted so the sidebar can reorder them
+  // per authoring mode (code mode hoists Hardening to the top, drops Budget/DB).
+  const buildSummaryCard = (
+            <Card className="border-[#30363d] bg-[#0d1117]">
+              <CardContent className="pt-4 pb-4 space-y-3">
+                <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Build Summary</h3>
+                {stackConfig ? (
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Stack</span><span className="text-cyan-400">{stackConfig.stack}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Mode</span><span className={halfPrice ? "text-[#3fb950]" : "text-cyan-400"}>{stackConfig.mode === "projectjson" ? "Code (½ price)" : stackConfig.mode === "texttocode" ? "Text-to-Code" : "Command"}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Tier</span><span className={tier.color}>{tier.label}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Budget</span><span className="text-[#3fb950]">${stackConfig.budget.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Database</span><span className="text-cyan-400">{database || "—"}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Hardening</span><span className="text-cyan-400">{hardening.hallucination_guard ? "110% ✓" : "Off"}</span></div>
+                    <div className="border-t border-[#30363d] pt-2 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-[#8b949e]">Build Fee</span>
+                        <span className={halfPrice ? "text-[#3fb950]" : "text-[#3fb950]"}>
+                          ${buildPrice.toLocaleString()}{halfPrice && <span className="text-[9px] text-[#484f58] line-through ml-1">$9,500</span>}
+                        </span>
+                      </div>
+                      <div className="flex justify-between"><span className="text-[#8b949e]">Maintenance</span><span className="text-amber-400">${maintenanceFee}/mo</span></div>
+                      {halfPrice && <div className="flex items-center gap-1 text-[9px] text-[#3fb950]"><BadgePercent className="w-2.5 h-2.5" /> Half-price applied (code mode)</div>}
+                    </div>
+                    {buildDone ? (
+                      <>
+                        <div className="mt-2 rounded-md bg-[#3fb950]/10 border border-[#3fb950]/30 px-2 py-1.5 text-[#3fb950]">✓ {stackConfig.stack.toUpperCase()}-AGENT-1.0 ready</div>
+                        <Link to="/builder/features" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-xs py-2.5 transition-all hover:from-cyan-500 hover:to-cyan-400"><Rocket className="w-4 h-4" /> Render PWA</Link>
+                      </>
+                    ) : !buildActive && (
+                      <Button onClick={handleBobBuild} className="w-full mt-2 bg-[#3fb950] hover:bg-[#3fb950]/90 text-black font-bold font-mono text-xs gap-1.5"><Play className="w-3.5 h-3.5" /> Execute Build{halfPrice ? " · ½ price" : ""}</Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-[#484f58] font-mono">No project initialized. Pick a mode and initialize to begin.</p>
+                )}
+              </CardContent>
+            </Card>
+  );
+  const pipelineCard = (
+            <Card className="border-[#30363d] bg-[#0d1117]">
+              <CardContent className="pt-4 pb-4 space-y-2">
+                <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> Pipeline</h3>
+                {[
+                  { icon: TerminalIcon, label: "UI Terminal", code: "BOB-INIT-UI-1.0", desc: "The command-line interface where you type 'bob init' and 'bob build'. The entry point for all B.O.B.Init operations." },
+                  { icon: Cpu, label: "Engine", code: "BOB-INIT-ENGINE-1.0", desc: "The core build engine that assembles hardened components from the audited registry into a deployable PWA." },
+                  { icon: Package, label: "Registry", code: "BOB-INIT-REGISTRY-1.0", desc: "The curated catalog of seL4-verified, OCap-audited components. Every dependency is checked before it enters your build." },
+                  { icon: Shield, label: "Self-Healing Shim", code: "BOB-INIT-SHIM-1.0", desc: "The auto-repair layer. When external APIs drift or break, the shim patches your app automatically." },
+                ].map(({ icon: Icon, label, code, desc }) => {
+                  const isOpen = expandedPipeline === code;
+                  return (
+                    <div key={code}>
+                      <button onClick={() => setExpandedPipeline(isOpen ? null : code)} className="w-full flex items-center gap-2 text-left hover:bg-[#161b22] rounded-lg p-1 -m-1 transition-colors">
+                        <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <div className="flex-1 min-w-0"><p className="text-xs text-[#c9d1d9]">{label}</p><p className="text-[10px] text-[#484f58] font-mono">{code}</p></div>
+                        <ChevronRight className={`w-3 h-3 text-[#484f58] transition-transform shrink-0 ${isOpen ? "rotate-90 text-cyan-400" : ""}`} />
+                      </button>
+                      {isOpen && <p className="ml-6 mt-1 mb-1 text-[11px] text-[#8b949e] leading-relaxed">{desc}</p>}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+  );
+
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9]">
       <SharedNav mode={navMode} theme="dev" />
@@ -338,77 +403,25 @@ export default function BobInit({ navMode = "user" }) {
             {buildActive && <BuildSequence active={buildActive} onComplete={onBuildComplete} />}
           </div>
 
-          {/* Sidebar — Budget · Database · Build Summary · Pipeline · Hardening · History */}
+          {/* Sidebar — code mode hoists Hardening to the top (Budget/DB live in the code) */}
           <div className="space-y-4">
-            <BudgetGauge budget={budget} setBudget={setBudget} />
-            <DatabasePicker database={database} onChange={setDatabase} />
-
-            {/* Build summary (moved above Hardening) */}
-            <Card className="border-[#30363d] bg-[#0d1117]">
-              <CardContent className="pt-4 pb-4 space-y-3">
-                <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Build Summary</h3>
-                {stackConfig ? (
-                  <div className="space-y-2 text-xs font-mono">
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Stack</span><span className="text-cyan-400">{stackConfig.stack}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Mode</span><span className={halfPrice ? "text-[#3fb950]" : "text-cyan-400"}>{stackConfig.mode === "projectjson" ? "Code (½ price)" : stackConfig.mode === "texttocode" ? "Text-to-Code" : "Command"}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Tier</span><span className={tier.color}>{tier.label}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Budget</span><span className="text-[#3fb950]">${stackConfig.budget.toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Database</span><span className="text-cyan-400">{database || "—"}</span></div>
-                    <div className="flex justify-between"><span className="text-[#8b949e]">Hardening</span><span className="text-cyan-400">{hardening.hallucination_guard ? "110% ✓" : "Off"}</span></div>
-                    <div className="border-t border-[#30363d] pt-2 space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-[#8b949e]">Build Fee</span>
-                        <span className={halfPrice ? "text-[#3fb950]" : "text-[#3fb950]"}>
-                          ${buildPrice.toLocaleString()}{halfPrice && <span className="text-[9px] text-[#484f58] line-through ml-1">$9,500</span>}
-                        </span>
-                      </div>
-                      <div className="flex justify-between"><span className="text-[#8b949e]">Maintenance</span><span className="text-amber-400">${maintenanceFee}/mo</span></div>
-                      {halfPrice && <div className="flex items-center gap-1 text-[9px] text-[#3fb950]"><BadgePercent className="w-2.5 h-2.5" /> Half-price applied (code mode)</div>}
-                    </div>
-                    {buildDone ? (
-                      <>
-                        <div className="mt-2 rounded-md bg-[#3fb950]/10 border border-[#3fb950]/30 px-2 py-1.5 text-[#3fb950]">✓ {stackConfig.stack.toUpperCase()}-AGENT-1.0 ready</div>
-                        <Link to="/builder/features" className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-bold text-xs py-2.5 transition-all hover:from-cyan-500 hover:to-cyan-400"><Rocket className="w-4 h-4" /> Render PWA</Link>
-                      </>
-                    ) : !buildActive && (
-                      <Button onClick={handleBobBuild} className="w-full mt-2 bg-[#3fb950] hover:bg-[#3fb950]/90 text-black font-bold font-mono text-xs gap-1.5"><Play className="w-3.5 h-3.5" /> Execute Build{halfPrice ? " · ½ price" : ""}</Button>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-xs text-[#484f58] font-mono">No project initialized. Pick a mode and initialize to begin.</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pipeline (moved above Hardening) */}
-            <Card className="border-[#30363d] bg-[#0d1117]">
-              <CardContent className="pt-4 pb-4 space-y-2">
-                <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> Pipeline</h3>
-                {[
-                  { icon: TerminalIcon, label: "UI Terminal", code: "BOB-INIT-UI-1.0", desc: "The command-line interface where you type 'bob init' and 'bob build'. The entry point for all B.O.B.Init operations." },
-                  { icon: Cpu, label: "Engine", code: "BOB-INIT-ENGINE-1.0", desc: "The core build engine that assembles hardened components from the audited registry into a deployable PWA." },
-                  { icon: Package, label: "Registry", code: "BOB-INIT-REGISTRY-1.0", desc: "The curated catalog of seL4-verified, OCap-audited components. Every dependency is checked before it enters your build." },
-                  { icon: Shield, label: "Self-Healing Shim", code: "BOB-INIT-SHIM-1.0", desc: "The auto-repair layer. When external APIs drift or break, the shim patches your app automatically." },
-                ].map(({ icon: Icon, label, code, desc }) => {
-                  const isOpen = expandedPipeline === code;
-                  return (
-                    <div key={code}>
-                      <button onClick={() => setExpandedPipeline(isOpen ? null : code)} className="w-full flex items-center gap-2 text-left hover:bg-[#161b22] rounded-lg p-1 -m-1 transition-colors">
-                        <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        <div className="flex-1 min-w-0"><p className="text-xs text-[#c9d1d9]">{label}</p><p className="text-[10px] text-[#484f58] font-mono">{code}</p></div>
-                        <ChevronRight className={`w-3 h-3 text-[#484f58] transition-transform shrink-0 ${isOpen ? "rotate-90 text-cyan-400" : ""}`} />
-                      </button>
-                      {isOpen && <p className="ml-6 mt-1 mb-1 text-[11px] text-[#8b949e] leading-relaxed">{desc}</p>}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            <HardeningConfigPanel hardening={hardening} onChange={setHardening} />
-
-            {/* Build history (under Build Summary / Pipeline) */}
-            <BobInitHistory refreshKey={historyRefresh} onRestore={restoreBuild} />
+            {mode === "projectjson" ? (
+              <>
+                <HardeningConfigPanel hardening={hardening} onChange={setHardening} />
+                {buildSummaryCard}
+                {pipelineCard}
+                <BobInitHistory refreshKey={historyRefresh} onRestore={restoreBuild} />
+              </>
+            ) : (
+              <>
+                <BudgetGauge budget={budget} setBudget={setBudget} />
+                <DatabasePicker database={database} onChange={setDatabase} />
+                {buildSummaryCard}
+                {pipelineCard}
+                <HardeningConfigPanel hardening={hardening} onChange={setHardening} />
+                <BobInitHistory refreshKey={historyRefresh} onRestore={restoreBuild} />
+              </>
+            )}
           </div>
         </div>
 
