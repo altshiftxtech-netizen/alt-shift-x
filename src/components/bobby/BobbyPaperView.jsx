@@ -125,7 +125,7 @@ export default function BobbyPaperView({ document: doc, esiSeal, sealedAt, onDow
   };
 
   return (
-    <div className="relative flex-1 flex flex-col bg-[#0a0a0a]/60 backdrop-blur-md">
+    <div className="relative flex-1 min-h-0 flex flex-col bg-[#0a0a0a]/60 backdrop-blur-md">
       <BobbyDocNav sections={doc.sections} containerRef={scrollRef} />
       {/* Paper toolbar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-[#D4AF37]/15">
@@ -148,7 +148,7 @@ export default function BobbyPaperView({ document: doc, esiSeal, sealedAt, onDow
       </div>
 
       {/* The paper */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-6 py-8">
         <div className="max-w-3xl mx-auto">
           {/* ESI seal badge */}
           {esiSeal && (
