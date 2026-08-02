@@ -16,6 +16,7 @@ import BobInitCapabilities from "@/components/bob-init/BobInitCapabilities";
 import PwaFunctionalityTest from "@/components/bob-init/PwaFunctionalityTest";
 import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 // B.O.B.Init — the "Machine that Builds Machines."
 // Three authoring modes, all teaching you to code while they build:
@@ -49,6 +50,7 @@ const inputCls = "w-full bg-[#010409] border border-[#30363d] rounded-lg px-3 py
 
 export default function BobInit({ navMode = "user" }) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [budget, setBudget] = useState(9500);
   const [command, setCommand] = useState("");
   const [history, setHistory] = useState([{ type: "system", text: "B.O.B.Init Terminal v1.0 — BOB-INIT-UI-TERMINAL-1.0\nType 'bob help' to get started." }]);
@@ -258,6 +260,10 @@ export default function BobInit({ navMode = "user" }) {
     setHistoryRefresh((r) => r + 1);
     appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your PWA Agent Wrapper is built, audited, and ready to deploy.");
     appendLine("system", "  ✓ Saved to build history.", "Saved to history — click Build History to view or restore.");
+    toast({
+      title: "🎉 Oi, that's B.O.B in-it!",
+      description: "Right, guv'nor — your build's wrapped up proper and tucked away in the history. Lovely jubbly! Cheers, mate!",
+    });
   };
 
   // Build Summary + Pipeline cards — extracted so the sidebar can reorder them
