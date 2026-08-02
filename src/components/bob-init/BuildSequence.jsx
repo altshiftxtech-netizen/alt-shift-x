@@ -14,7 +14,7 @@ const STAGES = [
   { id: "finalize", label: "Finalizing output Component record + Maintenance Manifest", icon: CheckCircle2 },
 ];
 
-export default function BuildSequence({ active, onComplete }) {
+export default function BuildSequence({ active, onComplete, onPreComplete }) {
   const [currentStage, setCurrentStage] = useState(-1);
   const [done, setDone] = useState(false);
   const scrollRef = useRef(null);
@@ -31,6 +31,9 @@ export default function BuildSequence({ active, onComplete }) {
         setDone(true);
         onComplete?.();
         return;
+      }
+      if (i === STAGES.length - 2) {
+        onPreComplete?.();
       }
       setCurrentStage(i);
     }, 900);

@@ -267,11 +267,16 @@ export default function BobInit({ navMode = "user" }) {
     setHistoryRefresh((r) => r + 1);
     appendLine("system", "✓ Build pipeline complete. Output ready for deployment.", "All done! Your PWA Agent Wrapper is built, audited, and ready to deploy.");
     appendLine("system", "  ✓ Saved to build history.", "Saved to history — click Build History to view or restore.");
+  };
+
+  // Fires ~2s before the build sequence finishes — the cockney vocalization
+  // and toast land early so you hear it the moment the build is wrapping up.
+  const onPreComplete = () => {
     toast({
       title: "🎉 Oi, that's B.O.B in-it!",
       description: "Right, guv'nor — your build's wrapped up proper and tucked away in the history. Lovely jubbly! Cheers, mate!",
     });
-    speak("Oi! That's B.O.B in-it! Your build's wrapped up proper, guv'nor. Lovely jubbly! Cheers, mate!");
+    speak("Oi! That's B.O.B in-it! Your build's wrapped up proper, guv'nor. Lovely jubbly! Cheers, mate!", { rateBoost: 1.15 });
   };
 
   // Build Summary + Pipeline cards — extracted so the sidebar can reorder them
@@ -467,7 +472,7 @@ export default function BobInit({ navMode = "user" }) {
             <PwaFunctionalityTest stackConfig={stackConfig} hardening={hardening} brand={brand} database={database} mode={mode} />
 
             {/* Build sequence — common to all modes */}
-            {buildActive && <BuildSequence active={buildActive} onComplete={onBuildComplete} />}
+            {buildActive && <BuildSequence active={buildActive} onComplete={onBuildComplete} onPreComplete={onPreComplete} />}
           </div>
 
           {/* Sidebar — code mode hoists Hardening to the top (Budget/DB live in the code) */}

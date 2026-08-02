@@ -173,13 +173,13 @@ export function applyVoicePreset(id) {
 // anything currently speaking instead of cancelling it. This guarantees the
 // "On it" thinking line (spoken on send, while BOB types) always finishes
 // before a completion line like "Finished" plays.
-export function speak(text, { queue = false } = {}) {
+export function speak(text, { queue = false, rateBoost = 1 } = {}) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   const say = () => {
     const settings = getVoiceSettings();
     const u = new SpeechSynthesisUtterance(text);
     u.pitch = settings.pitch;
-    u.rate = settings.rate;
+    u.rate = Math.min(2, settings.rate * rateBoost);
     u.volume = 1;
     const voices = window.speechSynthesis.getVoices();
     // Honor an explicitly chosen / described voice first.
