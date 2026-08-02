@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson, FileText, GraduationCap, BadgePercent, Play } from "lucide-react";
+import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson, FileText, Check, Trash2, GraduationCap, BadgePercent, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
@@ -64,6 +64,7 @@ export default function BobInit({ navMode = "user" }) {
   const [brand, setBrand] = useState({ logoUrl: "[PENDING_UPLOAD]", colorway: "Generic_Office_Slate", colorHex: "#D4AF37", colors: ["#D4AF37"], url: "" });
   const [docs, setDocs] = useState({});
   const [projectName, setProjectName] = useState("");
+  const [nameLocked, setNameLocked] = useState(false);
   const [version, setVersion] = useState("1.0.0");
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
@@ -73,13 +74,16 @@ export default function BobInit({ navMode = "user" }) {
   }, [history]);
 
   // Command mode: auto-extract the project name from the reference documents.
+  // Stops overwriting once the user locks their own edit (check) — re-enables
+  // when they clear it (trash).
   useEffect(() => {
+    if (nameLocked) return;
     const doc = docs?.concept || docs?.whitepaper || Object.values(docs || {})[0];
     if (doc?.name) {
       const base = doc.name.replace(/\.[^.]+$/, "").replace(/[-_ ]?(concept|whitepaper|white[-_ ]?paper|valuation|10[-_ ]?year[-_ ]?plan)/gi, "").trim();
       setProjectName(base || "Untitled Project");
     }
-  }, [docs]);
+  }, [docs, nameLocked]);
 
   const appendLine = (type, text, plain) => setHistory((h) => [...h, { type, text, plain }]);
 
@@ -402,10 +406,13 @@ export default function BobInit({ navMode = "user" }) {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[9px] font-mono text-[#484f58] block mb-1">NAME (from reference docs)</label>
-                      <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
-                        <FileText className="w-3 h-3 text-cyan-400 shrink-0" />
-                        <span className="text-xs font-mono text-[#c9d1d9] truncate">{projectName || <span className="text-[#484f58]">— upload a reference doc</span>}</span>
+                      <div className={`flex items-center gap-1.5 bg-[#0d1117] border rounded-lg px-2.5 py-2 ${nameLocked ? "border-[#3fb950]/60" : "border-[#30363d]"}`}>
+                        <FileText className={`w-3 h-3 shrink-0 ${nameLocked ? "text-[#3fb950]" : "text-cyan-400"}`} />
+                        <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="— upload a reference doc" className="flex-1 min-w-0 bg-transparent text-xs font-mono text-[#c9d1d9] focus:outline-none placeholder:text-[#484f58]" />
+                        <button type="button" onClick={() => setNameLocked(true)} title="Save this name (stop auto-populate)" className={`shrink-0 ${nameLocked ? "text-[#3fb950]" : "text-[#8b949e] hover:text-[#3fb950]"}`}><Check className="w-3.5 h-3.5" /></button>
+                        <button type="button" onClick={() => { setProjectName(""); setNameLocked(false); }} title="Clear name (re-enable auto-populate)" className="shrink-0 text-[#8b949e] hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
+                      {nameLocked && <p className="text-[9px] font-mono text-[#3fb950] mt-1">✓ Name locked — auto-populate off</p>}
                     </div>
                     <div>
                       <label className="text-[9px] font-mono text-[#484f58] block mb-1">VERSION</label>
