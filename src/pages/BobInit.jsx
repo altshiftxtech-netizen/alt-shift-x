@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson, GraduationCap, BadgePercent, Play } from "lucide-react";
+import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson, FileText, GraduationCap, BadgePercent, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
@@ -63,12 +63,23 @@ export default function BobInit({ navMode = "user" }) {
   const [mode, setMode] = useState("command");
   const [brand, setBrand] = useState({ logoUrl: "[PENDING_UPLOAD]", colorway: "Generic_Office_Slate", colorHex: "#D4AF37", colors: ["#D4AF37"], url: "" });
   const [docs, setDocs] = useState({});
+  const [projectName, setProjectName] = useState("");
+  const [version, setVersion] = useState("1.0.0");
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
   }, [history]);
+
+  // Command mode: auto-extract the project name from the reference documents.
+  useEffect(() => {
+    const doc = docs?.concept || docs?.whitepaper || Object.values(docs || {})[0];
+    if (doc?.name) {
+      const base = doc.name.replace(/\.[^.]+$/, "").replace(/[-_ ]?(concept|whitepaper|white[-_ ]?paper|valuation|10[-_ ]?year[-_ ]?plan)/gi, "").trim();
+      setProjectName(base || "Untitled Project");
+    }
+  }, [docs]);
 
   const appendLine = (type, text, plain) => setHistory((h) => [...h, { type, text, plain }]);
 
@@ -108,10 +119,12 @@ export default function BobInit({ navMode = "user" }) {
     if (dbFlag) setDatabase(dbFlag);
     if (!stack) { appendLine("error", "Missing --stack argument. Example: bob init --stack nextjs --shim auto"); return; }
     if (budgetFlag !== null) setBudget(budgetFlag);
-    const config = { stack, shim, budget: budgetFlag ?? budget, database: dbFlag || database, mode: "command", halfPrice: false };
+    const config = { stack, shim, budget: budgetFlag ?? budget, database: dbFlag || database, mode: "command", halfPrice: false, name: projectName || "Untitled Project", version };
     setStackConfig(config);
     setBuildDone(false);
     appendLine("system", `✓ Stack initialized: ${stack}`, `Great! B.O.B. is now set up to build a ${stack} application.`);
+    appendLine("system", `  Name: ${projectName || "(awaiting reference docs)"}`, `Project name extracted from your reference documents.`);
+    appendLine("system", `  Version: ${version}`, `Version set to ${version}.`);
     appendLine("system", `  Shim mode: ${shim}`, `Self-healing is set to ${shim} — your app auto-fixes if APIs change.`);
     appendLine("system", `  Budget: $${(budgetFlag ?? budget).toLocaleString()}`, `Budget set to $${(budgetFlag ?? budget).toLocaleString()}.`);
     appendLine("system", `  Database: ${dbFlag || database || "none selected"}`, `Database is ${dbFlag || database || "none — pick one from the sidebar"}.`);
@@ -171,8 +184,10 @@ export default function BobInit({ navMode = "user" }) {
   };
 
   const restoreBuild = (entry) => {
-    setStackConfig({ stack: entry.stack, shim: entry.shim, budget: entry.budget, mode: entry.mode || "command", halfPrice: !!entry.halfPrice });
+    setStackConfig({ stack: entry.stack, shim: entry.shim, budget: entry.budget, mode: entry.mode || "command", halfPrice: !!entry.halfPrice, name: entry.name, version: entry.version });
     setBudget(entry.budget);
+    if (entry.name) setProjectName(entry.name);
+    if (entry.version) setVersion(entry.version);
     setBuildDone(false);
     appendLine("system", `↩ Restored build: ${entry.stack} ($${entry.budget?.toLocaleString()}, ${entry.tier}${entry.halfPrice ? ", HALF-PRICE" : ""})`, `Loaded a previous build. Type 'bob build' to rebuild.`);
     inputRef.current?.focus();
@@ -231,6 +246,8 @@ export default function BobInit({ navMode = "user" }) {
       tierColor: buildTier.color,
       mode: stackConfig?.mode || "command",
       halfPrice: stackConfig?.mode === "projectjson",
+      name: stackConfig?.name,
+      version: stackConfig?.version,
       timestamp: new Date().toISOString(),
     });
     persistConfig({ mode: stackConfig?.mode, halfPrice: stackConfig?.mode === "projectjson" });
@@ -247,6 +264,8 @@ export default function BobInit({ navMode = "user" }) {
                 <h3 className="text-xs font-mono text-[#8b949e] uppercase tracking-wider flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Build Summary</h3>
                 {stackConfig ? (
                   <div className="space-y-2 text-xs font-mono">
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Name</span><span className="text-cyan-400 truncate ml-2">{stackConfig.name || "—"}</span></div>
+                    <div className="flex justify-between"><span className="text-[#8b949e]">Version</span><span className="text-cyan-400">{stackConfig.version || "—"}</span></div>
                     <div className="flex justify-between"><span className="text-[#8b949e]">Stack</span><span className="text-cyan-400">{stackConfig.stack}</span></div>
                     <div className="flex justify-between"><span className="text-[#8b949e]">Mode</span><span className={halfPrice ? "text-[#3fb950]" : "text-cyan-400"}>{stackConfig.mode === "projectjson" ? "Code (½ price)" : stackConfig.mode === "texttocode" ? "Text-to-Code" : "Command"}</span></div>
                     <div className="flex justify-between"><span className="text-[#8b949e]">Tier</span><span className={tier.color}>{tier.label}</span></div>
@@ -376,6 +395,24 @@ export default function BobInit({ navMode = "user" }) {
                     </div>
                   </div>
                 </form>
+
+                {/* Project identity — name auto-extracted from reference docs, version user-set */}
+                <div className="rounded-lg border border-[#30363d] bg-[#010409] p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] text-[#3fb950]/70 font-mono"><FileJson className="w-3 h-3" /> PROJECT IDENTITY</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-mono text-[#484f58] block mb-1">NAME (from reference docs)</label>
+                      <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
+                        <FileText className="w-3 h-3 text-cyan-400 shrink-0" />
+                        <span className="text-xs font-mono text-[#c9d1d9] truncate">{projectName || <span className="text-[#484f58]">— upload a reference doc</span>}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-mono text-[#484f58] block mb-1">VERSION</label>
+                      <input type="text" value={version} onChange={(e) => setVersion(e.target.value)} placeholder="1.0.0" className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2 text-xs font-mono text-[#c9d1d9] focus:outline-none focus:border-[#3fb950]/60" />
+                    </div>
+                  </div>
+                </div>
 
                 <div className="flex items-center gap-2">
                   <button onClick={() => setChatToCode((v) => !v)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${chatToCode ? "bg-cyan-600/20 border-cyan-500 text-cyan-400" : "border-[#30363d] text-[#8b949e] hover:bg-[#161b22]"}`} title="Toggle plain-English explanations">
