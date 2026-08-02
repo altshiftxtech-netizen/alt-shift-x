@@ -17,6 +17,7 @@ import PwaFunctionalityTest from "@/components/bob-init/PwaFunctionalityTest";
 import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-init/BobInitHistory";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { speak } from "@/lib/bobSounds";
 
 // B.O.B.Init — the "Machine that Builds Machines."
 // Three authoring modes, all teaching you to code while they build:
@@ -264,6 +265,7 @@ export default function BobInit({ navMode = "user" }) {
       title: "🎉 Oi, that's B.O.B in-it!",
       description: "Right, guv'nor — your build's wrapped up proper and tucked away in the history. Lovely jubbly! Cheers, mate!",
     });
+    speak("Oi! That's B.O.B in-it! Your build's wrapped up proper, guv'nor. Lovely jubbly! Cheers, mate!");
   };
 
   // Build Summary + Pipeline cards — extracted so the sidebar can reorder them
