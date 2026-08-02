@@ -80,9 +80,27 @@ export default function BobInitCapabilities({ brand, setBrand, docs, setDocs, pr
                 </>
               )}
             </div>
-            <div className="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-1.5">
-              <input type="color" value={brand?.colorHex || "#D4AF37"} onChange={(e) => setBrand((b) => ({ ...b, colorHex: e.target.value }))} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 shrink-0" />
-              <input type="text" value={brand?.colorHex || ""} onChange={(e) => setBrand((b) => ({ ...b, colorHex: e.target.value }))} placeholder="#D4AF37" className="flex-1 min-w-0 bg-transparent text-[10px] font-mono text-[#c9d1d9] focus:outline-none placeholder:text-[#484f58]" />
+            <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2 py-1.5">
+              {(() => {
+                const colors = Array.isArray(brand?.colors) && brand.colors.length ? brand.colors : (brand?.colorHex ? [brand.colorHex] : ["#D4AF37"]);
+                const setColors = (next) => setBrand((b) => ({ ...b, colors: next, colorHex: next[0] || "" }));
+                return (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {colors.map((c, i) => (
+                      <div key={i} className="flex items-center gap-0.5">
+                        <input type="color" value={c} onChange={(e) => setColors(colors.map((x, j) => (j === i ? e.target.value : x)))} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0 shrink-0" />
+                        {colors.length > 1 && (
+                          <button type="button" onClick={() => setColors(colors.filter((_, j) => j !== i))} className="text-[#8b949e] hover:text-white"><X className="w-2.5 h-2.5" /></button>
+                        )}
+                      </div>
+                    ))}
+                    {colors.length < 5 && (
+                      <button type="button" onClick={() => setColors([...colors, "#3fb950"])} className="text-[10px] font-mono text-[#8b949e] hover:text-[#3fb950] px-1">+ add</button>
+                    )}
+                  </div>
+                );
+              })()}
+              <p className="text-[9px] font-mono text-[#484f58] mt-1">Up to 5 brand colors</p>
             </div>
           </div>
           <input type="url" value={brand?.url || ""} onChange={(e) => setBrand((b) => ({ ...b, url: e.target.value }))} placeholder="https://your-brand-url.com" className={inputCls} />

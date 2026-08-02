@@ -3,12 +3,12 @@ import { DollarSign, Gauge } from "lucide-react";
 
 // BudgetGauge — lets the admin set a project budget.
 // The builder scales the output tier to the price point:
-//   < $9,500      → Insufficient for Production Build
+//   < $9,500      → Low-End (below Production Build threshold)
 //   $9,500+       → Production Build (Standard) — 1 agent, Self-Healing Shim
 //   $15,000+      → Production Build (Enterprise) — multi-agent + B2B Registry Namespace
 //   + $500/mo per active agent for Maintenance Bridge
 const TIERS = [
-  { min: 0, max: 9499, label: "Insufficient", color: "text-red-400", bar: "bg-red-500", desc: "Below $9,500 Production Build threshold" },
+  { min: 0, max: 9499, label: "Low-End", color: "text-red-400", bar: "bg-red-500", desc: "Below $9,500 Production Build threshold" },
   { min: 9500, max: 14999, label: "Standard", color: "text-cyan-400", bar: "bg-cyan-500", desc: "1 agent · Self-Healing Shim · Registry Audit" },
   { min: 15000, max: 49999, label: "Enterprise", color: "text-blue-400", bar: "bg-blue-500", desc: "Multi-agent · B2B Registry Namespace · Priority Shim" },
   { min: 50000, max: Infinity, label: "Sovereign", color: "text-amber-400", bar: "bg-amber-500", desc: "Unlimited agents · Private Registry · Dedicated Shard" },

@@ -187,16 +187,19 @@ const SECTIONS = [
           <li><code className="text-amber-400">connectivity.frontier_bridge[]</code> — frontier models to bridge (<em>GPT-4o</em>, <em>Claude-3-Opus</em>, <em>Gemini-1.5-Pro</em>, <em>Llama-3</em>).</li>
           <li><code className="text-amber-400">connectivity.registry</code> — component registry, default <em>altshiftx-private-core</em>.</li>
           <li><code className="text-amber-400">features[]</code> — toggle hardened modules: <em>SOV-AUTH-MAX</em> (hardware-bound auth), <em>SOV-PWA-FUNCTIONALITY-CHECK-1.0</em> (verifies zero dead API nodes + service-worker install), <em>SELF-HEALING</em> (API shims), plus <em>PII-Fragmentation</em>, <em>D2D-Sync</em>, <em>Blackstone-Guard</em>.</li>
-          <li><code className="text-amber-400">branding.colorway</code> — <em>Generic_Office_Slate</em>, <em>Sovereign_Gold</em>, <em>Midnight</em>, <em>Clean_White</em>.</li>
-          <li><code className="text-amber-400">branding.logo_url</code> — upload a logo, or leave <em>[PENDING_UPLOAD]</em>.</li>
-          <li><code className="text-amber-400">branding.terminal_aesthetic</code> — <em>Classic_Prompt</em>, <em>B.O.B. Powershell</em> (the default B.O.B.Init command shell), <em>Bash</em>, <em>Minimal</em>.</li>
+          <li><code className="text-amber-400">branding.colors[]</code> — up to <strong>5 brand colors</strong> (hex). Pick a palette and B.O.B. mirrors it across the PWA shell.</li>
+          <li><code className="text-amber-400">branding.logo_url</code> — upload a logo, or leave <em>[PENDING_UPLOAD]</em>. Only use assets you are licensed to mirror.</li>
+          <li><code className="text-amber-400">branding.url</code> — your brand's canonical URL, baked into the manifest.</li>
           <li><code className="text-amber-400">compliance.wv_retention_vault</code> — <em>linked</em> or <em>off</em>.</li>
           <li><code className="text-amber-400">compliance.fragmentation_level</code> — <em>K-of-N</em>, <em>full</em>, <em>none</em>.</li>
           <li><code className="text-amber-400">valuation</code> — <em>number</em>. The 10-year projected value for the ESI Audit Tracker (e.g. <em>12500000</em>).</li>
         </ul>
         <p className="mt-2"><strong className="text-cyan-400">Text-to-Code:</strong> Prefer plain language? Write a paragraph and BOB fills the form, making assumptions for anything missing.</p>
         <p className="mt-1"><strong className="text-cyan-400">Reference documents:</strong> upload a Concept, White Paper, Valuation, and 10-Year Plan — BOB builds for the plan.</p>
-        <p className="mt-1"><strong className="text-cyan-400">Functionality check:</strong> run the check before Initialize so the shell is operational — no second shell needed.</p>
+        <p className="mt-1"><strong className="text-cyan-400">PWA Functionality Test:</strong> a collapsible test card in every mode. Run it before you build — it scans your config (stack, features, brand, hardening, database) and flags gaps. Hardening-off and no-database are <em>warnings</em>, not failures.</p>
+        <p className="mt-1"><strong className="text-cyan-400">110% Hardening:</strong> a collapsible card. Regulatory Frameworks are now multi-select (Blackstone Protocol, Forensic Parity, HIPAA, GDPR, SOC 2) — check all that apply.</p>
+        <p className="mt-1"><strong className="text-cyan-400">Build History:</strong> every build is logged. Expand an entry to see a <em>stagnant PWA preview</em> (no sandbox) and hit <strong>Revert to this build</strong> to restore its full config.</p>
+        <p className="mt-1"><strong className="text-cyan-400">Budget tiers:</strong> Low-End ($0–$9,499), Standard, Enterprise, Sovereign.</p>
       </>
     ),
   },
