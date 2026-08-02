@@ -16,7 +16,16 @@ const DOC_SCHEMA = {
         type: "object",
         properties: {
           heading: { type: "string" },
-          body: { type: "string", description: "Markdown. Use proper GFM tables (header row + delimiter row | :--- | + data rows) wherever comparing things, with a blank line before each table. ```chart-bar blocks allowed for numeric trends." },
+          body: {
+            type: "string",
+            description:
+              "Markdown for a PRESENTATION-READY document. Choose the RIGHT visual tool for each block of data, do NOT dump raw numbers in prose: " +
+              "(1) GFM tables (header row + delimiter row | :--- | + data rows, blank line before the table) for side-by-side comparisons or line-item breakdowns; " +
+              "(2) ```chart-bar blocks (each line 'Label: number') for comparing quantities across categories; " +
+              "(3) ```chart-pie blocks (each line 'Label: number') for share-of-whole / composition splits; " +
+              "(4) ```chart-line blocks (each line 'Label: number', ordered) for trends over time/stages. " +
+              "Prefer charts over tables whenever the data is numeric trends, shares, or ranked comparisons. Keep tables for dense multi-column reference data. Introduce every chart/table with one short sentence. No emojis, no raw ** or ## markers.",
+          },
         },
         required: ["heading", "body"],
       },
@@ -74,7 +83,7 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
               "\n\nUpdate and expand it to fully incorporate EVERYTHING discussed in the conversation below. Keep strong existing sections, refine them, and add new sections as the concept grows."
             : "You are BOBby, the Build Yielder. Create the initial living document from the conversation below."
           ) +
-          " Return the complete structured document. Use proper GFM tables (a header row, a delimiter row like | :--- |, then data rows) wherever you compare things, with a blank line before each table. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
+          " Return the complete structured document. Make it PRESENTATION-READY: use ```chart-bar blocks (each line 'Label: number') for quantity comparisons, ```chart-pie blocks for share/composition splits, ```chart-line blocks for trends, and GFM tables (header row + delimiter row | :--- | + data rows, blank line before) for dense reference data — prefer charts over tables for any numeric trend or share. Introduce every chart/table with one short sentence. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
         response_json_schema: DOC_SCHEMA,
       });
       if (seq !== draftSeqRef.current) return; // a newer exchange superseded this one
@@ -112,7 +121,7 @@ export default function BobbyChatBar({ document: activeDoc, onYieldDocument }) {
               "\n\nReview it for completeness and accuracy. Fill any gaps, ensure EVERY comparison is a proper GFM table (header row + delimiter row | :--- | + data rows, blank line before each table), tighten the prose, and finalize it as the yielded document."
             : "You are BOBby, the Build Yielder. Build the final structured document from the conversation below."
           ) +
-          " Return the complete final structured document. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
+          " Return the complete final structured document, PRESENTATION-READY: use ```chart-bar blocks (each line 'Label: number') for quantity comparisons, ```chart-pie blocks for share/composition splits, ```chart-line blocks for trends, and GFM tables for dense reference data — prefer charts over tables for numeric trends or shares. Introduce every chart/table with one short sentence. Do not use emojis or raw ** / ## markers — render markdown properly.\n\nConversation:\n" + convoText(convoMessages),
         response_json_schema: DOC_SCHEMA,
       });
       const out = res?.output || res;
