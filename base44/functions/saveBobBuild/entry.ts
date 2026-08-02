@@ -47,7 +47,8 @@ export default async function(req) {
       database, hardening,
       selected_features, feature_labels, rules,
       code_files, api_fields, esi_score,
-      pwa_name, build_code
+      pwa_name, build_code,
+      build_mode, half_price
     } = body;
 
     const manifest = generatePwaManifest({
@@ -61,6 +62,8 @@ export default async function(req) {
       shim: shim || null,
       budget: budget || null,
       tier: tier || null,
+      build_mode: build_mode || "command",
+      half_price: half_price === true,
       hardening: hardening || {},
       selected_features: selected_features || [],
       feature_labels: feature_labels || [],

@@ -46,6 +46,8 @@ export default function BuilderFeatures() {
         esi_score,
         database: bobConfig.database || "",
         hardening: bobConfig.hardening || {},
+        build_mode: bobConfig.mode || "command",
+        half_price: bobConfig.halfPrice === true,
         pwa_name: "Alt+Shift+X PWA",
       });
       setRendering(false);

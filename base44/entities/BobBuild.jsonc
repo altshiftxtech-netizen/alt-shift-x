@@ -25,6 +25,21 @@
     "tier": {
       "type": "string"
     },
+    "build_mode": {
+      "type": "string",
+      "enum": [
+        "command",
+        "projectjson",
+        "texttocode"
+      ],
+      "default": "command",
+      "description": "Which B.O.B.Init authoring mode produced this build. 'projectjson' (raw code mode) qualifies for the half-price PWA incentive."
+    },
+    "half_price": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this build was authored in project.json code mode \u2014 the build fee is halved ($4,750 instead of $9,500) as a learn-to-code incentive."
+    },
     "hardening": {
       "type": "object",
       "description": "110% Hardened Standard configuration \u2014 fail-closed ComponentFramework settings",
