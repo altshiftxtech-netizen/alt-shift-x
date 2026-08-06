@@ -28,10 +28,11 @@ import { base44 } from "@/api/base44Client";
 
 const RUNNING = ["pending", "in_progress", "running"];
 // After the reply text stops changing, wait this long before calling the turn
-// done. 1500ms covers natural LLM streaming pauses (token gaps, inter-paragraph
-// breaks) without feeling sluggish; if it fires prematurely anyway, handleUpdate
-// re-opens the turn when new text arrives so the response never freezes.
-const SETTLE_MS = 1500;
+// done. 2500ms covers natural LLM streaming pauses (token gaps, inter-paragraph
+// breaks, tool-call handoffs) without feeling sluggish; if it fires prematurely
+// anyway, handleUpdate re-opens the turn when new text arrives or the server
+// reports the message is still generating, so the response never freezes.
+const SETTLE_MS = 2500;
 // Absolute ceiling: even a dead stream clears the indicator after this.
 const WATCHDOG_MS = 60000;
 
@@ -218,14 +219,20 @@ export default function useBobChat() {
       // catch a subsequent stream death. Skip when there are queued follow-ups —
       // those mean the turn intentionally closed for the next send.
       const last = msgs[msgs.length - 1];
+      const lastRunning = last && last.status && RUNNING.includes(last.status);
+      // Re-open if new text arrived OR the server says the last message is
+      // still being generated (status: pending/in_progress/running). The
+      // "still running" check is critical: without it, a mid-reply stall where
+      // the text hasn't changed YET (but the server is still generating) closes
+      // the turn permanently — the stall detector stops and the rest of the
+      // reply is lost.
       if (
-        isAssistantText(last) &&
-        last.content !== lastTextRef.current &&
-        queuedRef.current.length === 0
+        queuedRef.current.length === 0 &&
+        (lastRunning || (isAssistantText(last) && last.content !== lastTextRef.current))
       ) {
         turnOpenRef.current = true;
         setIsWorking(true);
-        lastTextRef.current = last.content;
+        lastTextRef.current = last.content || lastTextRef.current;
         clearTimers();
         settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
         watchdogRef.current = setTimeout(() => finishTurn(), WATCHDOG_MS);
