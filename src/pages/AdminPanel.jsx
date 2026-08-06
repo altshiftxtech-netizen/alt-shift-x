@@ -25,8 +25,9 @@ import BuildersTab from "@/components/admin/BuildersTab";
 import AiChangeLogTab from "@/components/admin/AiChangeLogTab";
 import AdminExpertMindsEnterpriseTab from "@/components/admin/ExpertMindsEnterpriseTab";
 import SiteDocumentsTab from "@/components/admin/SiteDocumentsTab";
+import AquillaDownloadTab from "@/components/admin/AquillaDownloadTab";
 
-const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence"];
+const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence", "Aquilla Binary"];
 
 const PLAN_LABELS = { starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
 const PLAN_COLORS = { starter: "bg-slate-100 text-slate-600", pro: "bg-violet-100 text-violet-700", enterprise: "bg-blue-100 text-blue-700" };
@@ -144,6 +145,7 @@ export default function AdminPanel() {
     "Financial Metrics": <FinancialMetricsTab />,
     "Component Upload": <ComponentUploadTab />,
     "Site Documents": <SiteDocumentsTab />,
+    "Aquilla Binary": <AquillaDownloadTab />,
     "Platform Intelligence": (
       <div className="space-y-4">
         <div className="bg-violet-50 border border-violet-100 rounded-xl p-5">
