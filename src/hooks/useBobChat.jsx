@@ -85,7 +85,19 @@ export default function useBobChat() {
       queuedRef.current = queuedRef.current.slice(1);
       setQueued([...queuedRef.current]);
       // Slight defer so React settles the "done" state before the next turn opens.
-      setTimeout(() => { flushRef.current?.(next); }, 80);
+      setTimeout(() => {
+        // Guard: if the user sent a NEW message during the 80ms defer, that
+        // message opened its own turn (turnOpenRef = true). Delivering the
+        // queued follow-up now would put two messages in-flight at once —
+        // BOB's responses interleave and land out of sequence. Re-queue at
+        // the front instead; the user's new turn will flush it when it ends.
+        if (turnOpenRef.current) {
+          queuedRef.current = [next, ...queuedRef.current];
+          setQueued([...queuedRef.current]);
+        } else {
+          flushRef.current?.(next);
+        }
+      }, 80);
     }
   }, []);
 
@@ -136,6 +148,22 @@ export default function useBobChat() {
     // already sent those messages) never re-delivered them. Now we block ANY
     // update whose message count is below the last server count we saw.
     if (msgs.length < (lastLenRef.current || 0)) return;
+
+    // Anti-stale: block same-count snapshots whose last assistant message lost
+    // text. The stall detector (10s poll) and focus/visibility resync both call
+    // getConversation, which can return a stale snapshot (server read-after-write
+    // lag) with the SAME message count but older content — the last assistant
+    // message is a shorter version of what the WebSocket stream already
+    // delivered. Without this, the stale snapshot overwrites the streamed reply
+    // and BOB's response appears to vanish mid-stream ("not responding").
+    if (msgs.length === (lastLenRef.current || 0) && msgs.length > 0 && lastTextRef.current) {
+      const newLast = msgs[msgs.length - 1];
+      if (newLast?.role === "assistant" && typeof newLast.content === "string" &&
+          newLast.content.length < lastTextRef.current.length) {
+        return;
+      }
+    }
+
     lastLenRef.current = msgs.length;
 
     // The server conversation is the authoritative record. We ALWAYS render
