@@ -79,7 +79,12 @@ const LICENSED = [
 
 function MessageBubble({ m }) {
   const isUser = m.role === "user";
-  const hasText = typeof m.content === "string" && m.content.trim().length > 0;
+  // Strip <one_line_narration> wrapper tags that BOB sometimes emits despite
+  // instructions not to — without rehype-raw, ReactMarkdown renders them as
+  // literal text, cluttering the bubble with raw XML markup.
+  const rawContent = typeof m.content === "string" ? m.content : "";
+  const cleanContent = rawContent.replace(/<\/?one_line_narration>/g, "");
+  const hasText = cleanContent.trim().length > 0;
   const runningTools = (m.tool_calls || []).filter(
     (t) => !t.status || ["pending", "in_progress", "running"].includes(t.status)
   );
@@ -95,7 +100,7 @@ function MessageBubble({ m }) {
       )}
       <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${isUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-slate-800 text-slate-200 rounded-tl-sm"}`}>
         {isUser ? (
-          <p className="whitespace-pre-wrap">{m.content}</p>
+          <p className="whitespace-pre-wrap">{cleanContent}</p>
         ) : (
           <ReactMarkdown
             className="prose prose-invert prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
@@ -105,9 +110,9 @@ function MessageBubble({ m }) {
                 : <pre className="bg-slate-900 rounded-lg p-3 overflow-x-auto text-xs text-green-400 my-2">{children}</pre>,
               p: ({ children }) => <p className="my-1">{children}</p>,
             }}
-          >{m.content}</ReactMarkdown>
+          >{cleanContent}</ReactMarkdown>
         )}
-        {!isUser && hasText && <BobMessageActions text={m.content} />}
+        {!isUser && hasText && <BobMessageActions text={cleanContent} />}
       </div>
     </div>
   );

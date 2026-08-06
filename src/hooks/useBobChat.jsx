@@ -290,14 +290,20 @@ export default function useBobChat() {
     clearTimers();
     turnOpenRef.current = false;
     pendingUserRef.current = null;
-    lastTextRef.current = "";
+    // Seed lastTextRef with the last assistant reply so the subscription's
+    // first update doesn't look like "new text arrived" and re-open the turn —
+    // which would flash the "Deep-Path Reasoning" indicator on a restored
+    // conversation that has no active query.
+    const msgs = full.messages || [];
+    const lastAssistant = [...msgs].reverse().find((m) => m.role === "assistant");
+    lastTextRef.current = typeof lastAssistant?.content === "string" ? lastAssistant.content : "";
     queuedRef.current = [];
     setQueued([]);
     setIsWorking(false);
     convRef.current = full;
-    lastLenRef.current = (full.messages || []).length;
+    lastLenRef.current = msgs.length;
     setConvId(full.id);
-    setMessages(full.messages || []);
+    setMessages(msgs);
     subscribe(full.id);
   }, [subscribe]);
 
