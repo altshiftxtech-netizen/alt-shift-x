@@ -3,6 +3,7 @@ import { ShieldCheck, Download, Loader2, AlertTriangle, CheckCircle2, KeyRound, 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import BlackstoneDisclaimerOverlay from "@/components/admin/BlackstoneDisclaimerOverlay";
 
 // PM-1A Deployment Payload generator tab.
 // Industrial Matte theme: Navy / Platinum / Crimson.
@@ -15,6 +16,7 @@ export default function Pm1aDeploymentTab() {
   const [apexKey, setApexKey] = useState("");
   const [status, setStatus] = useState("idle"); // idle | verifying | generating | success | error
   const [error, setError] = useState(null);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
     base44.auth.me()
@@ -41,6 +43,11 @@ export default function Pm1aDeploymentTab() {
 
   const handleGenerate = async () => {
     if (!apexKey.trim()) { setError("Apex Key is required."); return; }
+    setShowDisclaimer(true);
+  };
+
+  const handleAcceptDisclaimer = async () => {
+    setShowDisclaimer(false);
     setStatus("verifying");
     setError(null);
     try {
@@ -192,6 +199,12 @@ export default function Pm1aDeploymentTab() {
           </Button>
         </CardContent>
       </Card>
+
+      <BlackstoneDisclaimerOverlay
+        open={showDisclaimer}
+        onAccept={handleAcceptDisclaimer}
+        onCancel={() => setShowDisclaimer(false)}
+      />
     </div>
   );
 }
