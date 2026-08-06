@@ -99,10 +99,24 @@ export default function useBobChat() {
         }
       }, 80);
     }
+    // Final sync: the WebSocket stream may have silently died mid-turn, leaving
+    // the last few messages undelivered. Do one last fetch — if the server has
+    // new messages, handleUpdate re-opens the turn automatically. Without this,
+    // the stall detector (which only runs while isWorking) stops the moment the
+    // turn closes, and any straggler reply is lost forever ("long stall, no
+    // reply").
+    const id = subscribedIdRef.current;
+    if (id && handleUpdateRef.current) {
+      base44.agents.getConversation(id).then((full) => {
+        if (full?.messages) handleUpdateRef.current?.({ messages: full.messages });
+      }).catch(() => {});
+    }
   }, []);
 
   // Bound late (after `send` is defined) to avoid a TDZ cycle.
   const flushRef = useRef(null);
+  // Bound late so finishTurn can trigger a final sync without a circular dep.
+  const handleUpdateRef = useRef(null);
 
   // Is BOB still actively producing a reply for THIS turn?
   //
@@ -253,6 +267,10 @@ export default function useBobChat() {
       settleRef.current = null;
     }
   }, [finishTurn]);
+
+  // Wire handleUpdateRef so finishTurn can trigger a final sync without a
+  // circular dependency (handleUpdate → finishTurn → handleUpdate).
+  useEffect(() => { handleUpdateRef.current = handleUpdate; }, [handleUpdate]);
 
   const subscribe = useCallback((id) => {
     if (!id) return;
