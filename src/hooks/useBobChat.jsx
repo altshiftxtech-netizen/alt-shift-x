@@ -4,10 +4,6 @@ import { base44 } from "@/api/base44Client";
 /**
  * useBobChat — the SINGLE, authoritative chat engine for BOB.
  *
- * This replaces the old split between useAgentStream + a parallel page latch
- * (which caused: stuck "working" indicator, premature "your turn", ghost
- * messages like an un-typed "continue", and a frozen Send button).
- *
  * ONE source of truth, ONE send path. Everything funnels through `send()`.
  *
  * Responsibilities:
@@ -41,24 +37,31 @@ const hasText = (m) =>
 
 const isAssistantText = (m) => m && m.role === "assistant" && hasText(m);
 
+const isToolRunning = (m) =>
+  m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status));
+
 export default function useBobChat() {
   const [convId, setConvId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isWorking, setIsWorking] = useState(false);
-  const [queued, setQueued] = useState([]);  // follow-ups waiting for the current turn to finish
+  const [queued, setQueued] = useState([]);
 
-  const queuedRef = useRef([]);            // mirror of `queued` for use inside callbacks
-  const messagesRef = useRef([]);          // mirror of `messages` for stale-free reads in callbacks
-  const convRef = useRef(null);            // full conversation object (for addMessage)
+  const queuedRef = useRef([]);
+  const messagesRef = useRef([]);
+  const convRef = useRef(null);
   const unsubRef = useRef(null);
   const subscribedIdRef = useRef(null);
   const settleRef = useRef(null);
   const watchdogRef = useRef(null);
-  const pendingUserRef = useRef(null);     // optimistic user bubble awaiting server echo
-  const turnOpenRef = useRef(false);       // a user-initiated turn is in flight
-  const lastTextRef = useRef("");          // last assistant text (settle tracking)
-  const lastLenRef = useRef(0);            // last rendered message count (anti-flicker guard)
-  const onDoneRef = useRef(null);          // optional completion callback (sounds, notify)
+  const pendingUserRef = useRef(null);
+  const turnOpenRef = useRef(false);
+  const lastTextRef = useRef("");
+  const lastLenRef = useRef(0);
+  const onDoneRef = useRef(null);
+  // Late-bound refs (set after the functions they point to are defined) to
+  // break circular dependency chains without sacrificing stable callbacks.
+  const flushRef = useRef(null);
+  const handleUpdateRef = useRef(null);
 
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
@@ -67,8 +70,12 @@ export default function useBobChat() {
     if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
   };
 
+  // ── Turn lifecycle ──────────────────────────────────────────────────────────
+
   // Finish the current turn exactly once. Fires the completion callback only if
-  // the turn was user-initiated and ended on a real spoken reply.
+  // the turn was user-initiated and ended on a real spoken reply, then flushes
+  // the next queued follow-up and does a final sync to catch straggler replies
+  // the WebSocket may have failed to deliver.
   const finishTurn = useCallback((msgs) => {
     clearTimers();
     setIsWorking(false);
@@ -78,9 +85,8 @@ export default function useBobChat() {
       const last = (msgs || [])[(msgs || []).length - 1];
       if (isAssistantText(last)) onDoneRef.current(last, msgs);
     }
-    // The turn is done — flush the NEXT queued follow-up (if any). Each queued
-    // message opens its own turn, so they're delivered one at a time, in order:
-    // BOB answers the original, then picks up the follow-up.
+    // Flush the next queued follow-up (if any). Each queued message opens its
+    // own turn, so they're delivered one at a time, in order.
     if (queuedRef.current.length > 0) {
       const next = queuedRef.current[0];
       queuedRef.current = queuedRef.current.slice(1);
@@ -88,10 +94,10 @@ export default function useBobChat() {
       // Slight defer so React settles the "done" state before the next turn opens.
       setTimeout(() => {
         // Guard: if the user sent a NEW message during the 80ms defer, that
-        // message opened its own turn (turnOpenRef = true). Delivering the
-        // queued follow-up now would put two messages in-flight at once —
-        // BOB's responses interleave and land out of sequence. Re-queue at
-        // the front instead; the user's new turn will flush it when it ends.
+        // message opened its own turn. Delivering the queued follow-up now would
+        // put two messages in-flight at once — BOB's responses interleave and
+        // land out of sequence. Re-queue at the front instead; the user's new
+        // turn will flush it when it ends.
         if (turnOpenRef.current) {
           queuedRef.current = [next, ...queuedRef.current];
           setQueued([...queuedRef.current]);
@@ -104,8 +110,7 @@ export default function useBobChat() {
     // the last few messages undelivered. Do one last fetch — if the server has
     // new messages, handleUpdate re-opens the turn automatically. Without this,
     // the stall detector (which only runs while isWorking) stops the moment the
-    // turn closes, and any straggler reply is lost forever ("long stall, no
-    // reply").
+    // turn closes, and any straggler reply is lost forever.
     const id = subscribedIdRef.current;
     if (id && handleUpdateRef.current) {
       base44.agents.getConversation(id).then((full) => {
@@ -114,63 +119,21 @@ export default function useBobChat() {
     }
   }, []);
 
-  // Bound late (after `send` is defined) to avoid a TDZ cycle.
-  const flushRef = useRef(null);
-  // Bound late so finishTurn can trigger a final sync without a circular dep.
-  const handleUpdateRef = useRef(null);
+  // ── Stream reconciliation ────────────────────────────────────────────────────
 
-  // Is BOB still actively producing a reply for THIS turn?
-  //
-  // IMPORTANT: spoken text alone does NOT mean the turn is done. BOB often narrates
-  // mid-batch ("Building now…", "1 of 16 ✅ — continuing in parallel") while tools
-  // keep running. Returning "not working" the instant any text appeared made the
-  // amber indicator flash off while BOB was clearly still working. Instead we treat
-  // the turn as ongoing whenever ANY tool (on the last message OR earlier this turn)
-  // is still running, and otherwise hand off to the settle timer — which only
-  // finishes once the reply text has actually stopped changing.
-  const detectWorking = (msgs) => {
-    if (!turnOpenRef.current) return false;
-    if (!msgs || msgs.length === 0) return true; // sent, nothing back yet
-    const last = msgs[msgs.length - 1];
-
-    if (last.role === "user") return true; // reply incoming
-
-    // Any tool still running anywhere this turn → definitely working.
-    const anyToolRunning = msgs.some(
-      (m) => m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
-    );
-    if (anyToolRunning) return true;
-    if (last.status && RUNNING.includes(last.status)) return true;
-
-    // Tools settled. If BOB has spoken, stay "working" and let the settle timer
-    // (driven by handleUpdate) close the turn once the text stops changing — this
-    // keeps the amber indicator on through the whole stream instead of blinking off.
-    // If nothing has been spoken yet, keep working until something is said.
-    return true;
-  };
-
+  // The single handler for ALL conversation updates (WebSocket stream, stall
+  // detector poll, visibility resync, and the final sync in finishTurn).
   const handleUpdate = useCallback((data) => {
     let msgs = data.messages || [];
 
     // CRITICAL: Never let a shorter/staler message list wipe the visible
-    // messages — this is what caused BOB's replies to vanish. The stall
-    // detector (10s poll) and focus/visibility resync both call
-    // getConversation, which can return a stale snapshot (server read-after-
+    // messages. The stall detector (10s poll) and focus/visibility resync both
+    // call getConversation, which can return a stale snapshot (server read-after-
     // write lag) that's BEHIND what the WebSocket stream already delivered.
-    // The old guard only blocked this when no turn was open, but the stall
-    // detector runs DURING a turn — exactly when the guard was disabled — so
-    // the stale snapshot replaced the streamed reply and the stream (having
-    // already sent those messages) never re-delivered them. Now we block ANY
-    // update whose message count is below the last server count we saw.
     if (msgs.length < (lastLenRef.current || 0)) return;
 
     // Anti-stale: block same-count snapshots whose last assistant message lost
-    // text. The stall detector (10s poll) and focus/visibility resync both call
-    // getConversation, which can return a stale snapshot (server read-after-write
-    // lag) with the SAME message count but older content — the last assistant
-    // message is a shorter version of what the WebSocket stream already
-    // delivered. Without this, the stale snapshot overwrites the streamed reply
-    // and BOB's response appears to vanish mid-stream ("not responding").
+    // text (same read-after-write lag, but content shrank instead of count).
     if (msgs.length === (lastLenRef.current || 0) && msgs.length > 0 && lastTextRef.current) {
       const newLast = msgs[msgs.length - 1];
       if (newLast?.role === "assistant" && typeof newLast.content === "string" &&
@@ -178,31 +141,20 @@ export default function useBobChat() {
         return;
       }
     }
-
     lastLenRef.current = msgs.length;
 
     // The server conversation is the authoritative record. We ALWAYS render
-    // server messages in server order and never reorder them — that guarantees
-    // the exchange is an accurate, factual transcript.
-    //
-    // The only local addition is the optimistic user bubble for the message we
-    // just sent, shown until the server echoes it back. We APPEND it at the end
-    // (never inserted back into history), and only while the server's user-turn
-    // count hasn't yet caught up to what we sent — so it can never land ahead of
-    // an earlier assistant reply or duplicate a repeated message.
+    // server messages in server order and never reorder them. The only local
+    // addition is the optimistic user bubble, shown until the server echoes it.
     const pending = pendingUserRef.current;
     if (pending) {
       const serverUserCount = msgs.reduce((n, m) => n + (m.role === "user" ? 1 : 0), 0);
-      // The server's most recent user message already carries our pending text →
-      // the echo has landed, so drop the optimistic copy to avoid a duplicate
-      // bubble (the flash the user saw before it "went back to the right order").
       const lastServerUser = [...msgs].reverse().find((m) => m.role === "user");
       const echoed =
         lastServerUser &&
         typeof lastServerUser.content === "string" &&
         lastServerUser.content === (pending.content || "");
       if (serverUserCount >= (pending._expectedUserCount || 0) || echoed) {
-        // Server has caught up to (or past) our optimistic message → trust it.
         pendingUserRef.current = null;
       } else {
         msgs = [...msgs, pending];
@@ -210,22 +162,18 @@ export default function useBobChat() {
     }
     setMessages(msgs);
 
+    const last = msgs[msgs.length - 1];
+
+    // ── Turn closed: check if we should re-open ──────────────────────────────
     if (!turnOpenRef.current) {
-      // The settle timer closed the turn, but if new assistant text is still
-      // arriving, BOB was mid-response — a natural streaming pause triggered
-      // the settle timer prematurely. Re-open the turn so the working indicator
-      // and stall detector resume; without this, the response freezes mid-
-      // sentence and the stall detector (which only runs while isWorking) can't
-      // catch a subsequent stream death. Skip when there are queued follow-ups —
-      // those mean the turn intentionally closed for the next send.
-      const last = msgs[msgs.length - 1];
+      // Re-open if new assistant text arrived OR the server says the last
+      // message is still being generated. The "still running" check is critical:
+      // without it, a mid-reply stall where the text hasn't changed YET (but the
+      // server is still generating) closes the turn permanently — the stall
+      // detector stops and the rest of the reply is lost. Skip when there are
+      // queued follow-ups — those mean the turn intentionally closed for the
+      // next send.
       const lastRunning = last && last.status && RUNNING.includes(last.status);
-      // Re-open if new text arrived OR the server says the last message is
-      // still being generated (status: pending/in_progress/running). The
-      // "still running" check is critical: without it, a mid-reply stall where
-      // the text hasn't changed YET (but the server is still generating) closes
-      // the turn permanently — the stall detector stops and the rest of the
-      // reply is lost.
       if (
         queuedRef.current.length === 0 &&
         (lastRunning || (isAssistantText(last) && last.content !== lastTextRef.current))
@@ -242,41 +190,30 @@ export default function useBobChat() {
       return;
     }
 
-    const working = detectWorking(msgs);
-    if (!working) { finishTurn(msgs); return; }
-
+    // ── Turn open: track settle / tool state ──────────────────────────────────
     setIsWorking(true);
 
-    // Settle: once BOB has spoken AND no tool is still running, start (or restart)
+    const anyToolRunning = msgs.some(isToolRunning);
+
+    // Settle: once BOB has spoken AND no tool is still running, start (or reset)
     // the settle timer. While the text keeps changing we push the timer out; the
-    // moment it stops changing for SETTLE_MS the turn closes and the indicator
-    // flips green. A still-running tool keeps the timer cleared so we never finish
-    // mid-batch.
-    const last = msgs[msgs.length - 1];
-    const anyToolRunning = msgs.some(
-      (m) => m.role === "assistant" && (m.tool_calls || []).some((t) => t.status && RUNNING.includes(t.status))
-    );
+    // moment it stops changing for SETTLE_MS the turn closes. A still-running
+    // tool keeps the timer cleared so we never finish mid-batch.
     if (isAssistantText(last) && !anyToolRunning) {
       if (last.content !== lastTextRef.current) {
-        // Text still changing → reset the settle window.
         lastTextRef.current = last.content;
         if (settleRef.current) clearTimeout(settleRef.current);
         settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
       } else if (!settleRef.current) {
-        // Text already stable and no timer pending (e.g. tools just finished after
-        // the last text update) → arm the settle window so the turn can close.
         settleRef.current = setTimeout(() => finishTurn(msgs), SETTLE_MS);
       }
     } else if (anyToolRunning && settleRef.current) {
-      // A new tool started after text settled → cancel the pending finish; we're
-      // still working. The amber indicator stays on.
       clearTimeout(settleRef.current);
       settleRef.current = null;
     }
   }, [finishTurn]);
 
-  // Wire handleUpdateRef so finishTurn can trigger a final sync without a
-  // circular dependency (handleUpdate → finishTurn → handleUpdate).
+  // Wire the late-bound refs.
   useEffect(() => { handleUpdateRef.current = handleUpdate; }, [handleUpdate]);
 
   const subscribe = useCallback((id) => {
@@ -316,9 +253,6 @@ export default function useBobChat() {
 
   // Stall detector: while working, periodically poll the conversation to catch
   // responses the WebSocket stream failed to deliver (silent stream death).
-  // Without this, BOB appears stalled until the user tabs away/back — and when
-  // resync finally fires, the stalled reply + the next reply land together
-  // ("two responses at once").
   const stallRef = useRef(null);
   useEffect(() => {
     if (!isWorking) {
@@ -338,15 +272,12 @@ export default function useBobChat() {
 
   // ── Public actions ─────────────────────────────────────────────────────────
 
-  // Load an existing conversation object into the chat.
   const openConversation = useCallback((full) => {
     clearTimers();
     turnOpenRef.current = false;
     pendingUserRef.current = null;
     // Seed lastTextRef with the last assistant reply so the subscription's
-    // first update doesn't look like "new text arrived" and re-open the turn —
-    // which would flash the "Deep-Path Reasoning" indicator on a restored
-    // conversation that has no active query.
+    // first update doesn't look like "new text arrived" and re-open the turn.
     const msgs = full.messages || [];
     const lastAssistant = [...msgs].reverse().find((m) => m.role === "assistant");
     lastTextRef.current = typeof lastAssistant?.content === "string" ? lastAssistant.content : "";
@@ -360,7 +291,6 @@ export default function useBobChat() {
     subscribe(full.id);
   }, [subscribe]);
 
-  // Blank slate — a fresh conversation is created lazily on the next send.
   const resetBoard = useCallback(() => {
     clearTimers();
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
@@ -381,19 +311,16 @@ export default function useBobChat() {
     const c = await base44.agents.createConversation({ agent_name: "bob_builder", metadata: { name } });
     convRef.current = c;
     setConvId(c.id);
-    // Fresh conversation — reset the anti-shrink guard so the old conversation's
-    // message count doesn't block the first server updates on the new conv.
     lastLenRef.current = 0;
     return c;
   }, []);
 
-  // Low-level deliver: actually opens a turn and posts the message to BOB.
-  // Used both for a normal send AND when a queued follow-up is flushed.
+  // Low-level deliver: opens a turn and posts the message to BOB. Used both for
+  // a normal send and when a queued follow-up is flushed.
   const deliver = useCallback(async ({ content, file_urls } = {}) => {
     const text = (content || "").trim();
     if (!text && !(file_urls && file_urls.length)) return null;
 
-    // Open the turn FIRST so the indicator shows instantly.
     turnOpenRef.current = true;
     lastTextRef.current = "";
     setIsWorking(true);
@@ -402,9 +329,7 @@ export default function useBobChat() {
 
     const c = convRef.current || await initConv();
 
-    // Optimistic user bubble (reconciled by handleUpdate). Record how many user
-    // messages should exist on the server once this one lands — that's the exact
-    // point at which we can stop showing the optimistic copy without reordering.
+    // Optimistic user bubble (reconciled by handleUpdate).
     if (text || (file_urls && file_urls.length)) {
       const priorUserCount = messagesRef.current.reduce(
         (n, m) => n + (m.role === "user" && m !== pendingUserRef.current ? 1 : 0), 0
@@ -427,13 +352,10 @@ export default function useBobChat() {
     return c;
   }, [finishTurn, initConv, subscribe]);
 
-  // Keep finishTurn's flush wired to the real deliver fn.
   useEffect(() => { flushRef.current = deliver; }, [deliver]);
 
-  // THE one and only send path used by the UI.
-  // If BOB is mid-turn, the follow-up is QUEUED (shown as a stacked pending
-  // bubble) and delivered automatically the moment the current turn finishes —
-  // so builders can keep typing without interrupting BOB's work.
+  // THE one and only send path used by the UI. If BOB is mid-turn, the follow-up
+  // is QUEUED and delivered automatically when the current turn finishes.
   const send = useCallback(async ({ content, file_urls } = {}) => {
     const text = (content || "").trim();
     if (!text && !(file_urls && file_urls.length)) return null;
@@ -448,7 +370,6 @@ export default function useBobChat() {
     return deliver({ content, file_urls });
   }, [deliver]);
 
-  // Remove a still-waiting queued follow-up before it's delivered.
   const removeQueued = useCallback((index) => {
     queuedRef.current = queuedRef.current.filter((_, i) => i !== index);
     setQueued([...queuedRef.current]);
@@ -462,7 +383,6 @@ export default function useBobChat() {
     setQueued([]);
   }, []);
 
-  // Register a completion callback (sounds / notify). Called with (lastMsg, msgs).
   const setOnDone = useCallback((fn) => { onDoneRef.current = fn; }, []);
 
   return {
