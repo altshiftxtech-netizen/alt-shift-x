@@ -254,8 +254,19 @@ export default function BobBuilder() {
     const saved = localStorage.getItem("bob_active_conv");
     if (saved) {
       try {
-        const full = await base44.agents.getConversation(saved);
-        if (full && (full.messages || []).length > 0) { enterRestored(full); return; }
+        // Guard: never restore a trashed or cleared conversation — the user
+        // wiped the board, so the old localStorage ID points at a project that
+        // is now in the Trash. Restoring it silently routes new messages into a
+        // trashed conversation the user can't see in the main history list,
+        // making BOB's replies appear to vanish. Check ConversationMeta first.
+        const metaMap = await loadMetaMap("bob_builder");
+        const meta = metaMap[saved];
+        if (meta?.trashed || meta?.cleared) {
+          localStorage.removeItem("bob_active_conv");
+        } else {
+          const full = await base44.agents.getConversation(saved);
+          if (full && (full.messages || []).length > 0) { enterRestored(full); return; }
+        }
       } catch { localStorage.removeItem("bob_active_conv"); }
     }
     try {
