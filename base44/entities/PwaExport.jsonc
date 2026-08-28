@@ -1,0 +1,74 @@
+{
+  "name": "PwaExport",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "PWA display name (e.g. PM-1A, SOV-WEARABLE-GATEWAY)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string (e.g. 1.0.0)"
+    },
+    "date_wired": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Bob wired up this complete zip package"
+    },
+    "component_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Component codes bundled into this PWA zip package"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL to the pre-built zip package (wired by Bob). If set, the download button fetches this directly."
+    },
+    "generate_function": {
+      "type": "string",
+      "description": "Optional backend function name for on-demand zip generation (e.g. generatePm1aPayload). Used when file_url is not set."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of the PWA package"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Only active exports appear in the admin dropdown"
+    }
+  },
+  "required": [
+    "name",
+    "version"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
