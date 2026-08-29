@@ -86,7 +86,7 @@ export default function PwaExportsSection() {
           selected.generate_function,
           apexKey.trim() ? { apex_key: apexKey.trim() } : {}
         );
-        const data = response.data ?? response;
+        const data = await (response.data ?? response);
         // Function returns { filename, zip (base64), files } — decode to a real zip
         const b64 = data?.zip;
         if (!b64) {
