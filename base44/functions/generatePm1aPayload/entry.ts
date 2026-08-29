@@ -60,21 +60,23 @@ export default async function(req) {
 
     const body = await req.json();
     const apexKey = body?.apex_key;
-    if (!apexKey || typeof apexKey !== 'string' || apexKey.trim().length < 8) {
-      return Response.json({ error: 'Apex Key required (Sovereign Ledger secondary verification)' }, { status: 400 });
-    }
 
-    // ── Apex Key verification (Sovereign Ledger handshake) ───────────────────
-    const keyHash = await sha256(apexKey.trim());
-    const keys = await base44.asServiceRole.entities.EnterpriseKey.filter({
-      key_hash: keyHash, status: 'active',
-    }, '-created_date', 10);
-
-    const verifiedKey = keys.find(k => k.status === 'active');
-    if (!verifiedKey) {
-      return Response.json({
-        error: 'Apex Key verification failed — key not found or revoked in the Sovereign Ledger.',
-      }, { status: 403 });
+    // ── Apex Key verification (Sovereign Ledger handshake) — optional ─────────
+    // When an Apex Key is provided, verify it against the Sovereign Ledger and
+    // embed the verification metadata in the payload. When omitted, the payload
+    // is still generated but flagged as unverified.
+    let verifiedKey = null;
+    if (apexKey && typeof apexKey === 'string' && apexKey.trim().length >= 8) {
+      const keyHash = await sha256(apexKey.trim());
+      const keys = await base44.asServiceRole.entities.EnterpriseKey.filter({
+        key_hash: keyHash, status: 'active',
+      }, '-created_date', 10);
+      verifiedKey = keys.find(k => k.status === 'active');
+      if (!verifiedKey) {
+        return Response.json({
+          error: 'Apex Key verification failed — key not found or revoked in the Sovereign Ledger.',
+        }, { status: 403 });
+      }
     }
 
     // ── Fetch the PM-1A-BOOTSTRAP-1.0 component manifest ──────────────────────
@@ -96,11 +98,14 @@ export default async function(req) {
       version: '1.0',
       generated_at: new Date().toISOString(),
       generated_by: user.id,
-      apex_verification: {
+      apex_verification: verifiedKey ? {
         verified: true,
         enterprise_key_label: verifiedKey.label,
         sovereign_ledger: 'SOVEREIGN-KEY-MANAGER-1.0',
         verified_at: new Date().toISOString(),
+      } : {
+        verified: false,
+        note: 'Apex Key not provided — payload generated without Sovereign Ledger verification.',
       },
       builder_id: user.id,
       master_endpoint: PM1A_MASTER_ENDPOINT,

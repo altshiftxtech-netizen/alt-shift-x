@@ -82,14 +82,9 @@ export default function PwaExportsSection() {
         document.body.removeChild(a);
       } else if (selected.generate_function) {
         // On-demand generation via backend function (e.g. generatePm1aPayload)
-        if (!apexKey.trim()) {
-          setError("Apex Key is required for on-demand generation.");
-          setDownloading(false);
-          return;
-        }
         const response = await base44.functions.invoke(
           selected.generate_function,
-          { apex_key: apexKey.trim() }
+          apexKey.trim() ? { apex_key: apexKey.trim() } : {}
         );
         const data = response.data ?? response;
         const payloadStr =
@@ -212,7 +207,7 @@ export default function PwaExportsSection() {
             <div className="flex items-center gap-2">
               <KeyRound className="w-3.5 h-3.5 text-slate-400" />
               <p className="text-[11px] font-bold text-slate-300">
-                Sovereign Ledger Apex Key
+                Sovereign Ledger Apex Key <span className="text-slate-500 font-normal">(optional)</span>
               </p>
             </div>
             <input
