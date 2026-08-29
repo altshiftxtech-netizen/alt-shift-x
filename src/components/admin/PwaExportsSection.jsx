@@ -87,13 +87,19 @@ export default function PwaExportsSection() {
           apexKey.trim() ? { apex_key: apexKey.trim() } : {}
         );
         const data = response.data ?? response;
-        const payloadStr =
-          typeof data === "string" ? data : JSON.stringify(data, null, 2);
-        const blob = new Blob([payloadStr], { type: "application/zip" });
+        // Function returns { filename, zip (base64), files } — decode to a real zip
+        const b64 = data?.zip;
+        if (!b64) {
+          throw new Error("No zip payload returned from generator.");
+        }
+        const binStr = atob(b64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+        const blob = new Blob([bytes], { type: "application/zip" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${selected.name}-${selected.version || "1.0.0"}.zip`;
+        a.download = data?.filename || `${selected.name}-${selected.version || "1.0.0"}.zip`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

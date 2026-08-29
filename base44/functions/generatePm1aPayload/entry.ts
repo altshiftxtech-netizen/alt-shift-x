@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import JSZip from 'npm:jszip@3.10.1';
 
 // PM-1A Deployment Payload Generator
 //
@@ -129,16 +130,45 @@ export default async function(req) {
       success_indicator: 'Patriot Machine 1A: Setup Complete. Substrate Active.',
     };
 
-    // ── Return as downloadable .pwa payload ────────────────────────────────────
-    const filename = `PM-1A-DEPLOYMENT-${Date.now()}.pwa`;
-    const fileContent = JSON.stringify(payload, null, 2);
+    // ── Build a real .zip archive containing all deployment documents ─────────
+    const zip = new JSZip();
+    zip.file('manifest.json', JSON.stringify(payload.pwa_manifest, null, 2));
+    zip.file('self-healing.js', SELF_HEALING_SCRIPT);
+    zip.file('offline-bootloader.js', OFFLINE_BOOTLOADER);
+    zip.file('boot-sequence.json', JSON.stringify(payload.boot_sequence, null, 2));
+    zip.file('apex-verification.json', JSON.stringify(payload.apex_verification, null, 2));
+    zip.file('payload.json', JSON.stringify(payload, null, 2));
+    zip.file('README.txt', [
+      'PM-1A Deployment Package',
+      '========================',
+      `Artifact: ${payload.artifact_code}`,
+      `Version: ${payload.version}`,
+      `Generated: ${payload.generated_at}`,
+      `Builder: ${payload.builder_id}`,
+      `Master Endpoint: ${payload.master_endpoint}`,
+      '',
+      'Contents:',
+      '  manifest.json          — PWA web-app manifest',
+      '  self-healing.js        — Self-healing shim script',
+      '  offline-bootloader.js  — Offline-first bootloader',
+      '  boot-sequence.json     — Boot sequence steps',
+      '  apex-verification.json — Sovereign Ledger verification status',
+      '  payload.json           — Full deployment payload',
+    ].join('\n'));
 
-    return new Response(fileContent, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
+    const zipBytes = await zip.generateAsync({
+      type: 'uint8array',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 },
+    });
+
+    // Base64-encode the zip so it survives the SDK's JSON response pipeline
+    const b64 = btoa(String.fromCharCode(...zipBytes));
+
+    return Response.json({
+      filename: `PM-1A-DEPLOYMENT-${Date.now()}.zip`,
+      zip: b64,
+      files: ['manifest.json', 'self-healing.js', 'offline-bootloader.js', 'boot-sequence.json', 'apex-verification.json', 'payload.json', 'README.txt'],
     });
   } catch (error) {
     console.error('generatePm1aPayload error:', error);
