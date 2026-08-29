@@ -15,6 +15,14 @@ import { base44 } from "@/api/base44Client";
 export default function PwaExportsSection() {
   const [exports, setExports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me()
+      .then((u) => setRole(u?.role))
+      .catch(() => setRole(null));
+  }, []);
+
   const [selectedId, setSelectedId] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
@@ -103,6 +111,15 @@ export default function PwaExportsSection() {
     return (
       <div className="flex justify-center py-16">
         <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
+  // Restrict to admin and staff roles only
+  if (role !== null && role !== "admin" && role !== "staff") {
+    return (
+      <div className="text-center py-16 text-slate-400 text-sm">
+        Admin or staff access required to download PWA packages.
       </div>
     );
   }
