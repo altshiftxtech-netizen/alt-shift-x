@@ -1,12 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import JSZip from 'npm:jszip@3.10.1';
 
-// PM-1A Deployment Payload Generator
+// PM-1A / Sovereign PWA Deployment Payload Generator
 //
-// 1. Verifies admin auth + Apex Key (secondary Sovereign Ledger handshake)
-// 2. Fetches the PM-1A-BOOTSTRAP-1.0 component manifest
-// 3. Injects builder_id + PM-1A-MASTER-X5 endpoint URL
-// 4. Returns a single .pwa payload (manifest + self-healing script + offline bootloader)
+// When an `export_id` is provided, fetches the specific PwaExport record and
+// builds a complete, branded zip package containing:
+//   - manifest.json (PWA web-app manifest with favicons/icons)
+//   - sw.js (Sovereign service worker)
+//   - self-healing.js (auto repair shim)
+//   - offline-bootloader.js (offline-first identity provisioning)
+//   - boot-sequence.json
+//   - apex-verification.json
+//   - payload.json (full deployment payload with component metadata)
+//   - favicon.png (referenced icon)
+//   - README.txt
+//
+// Falls back to the legacy PM-1A-BOOTSTRAP-1.0 lookup when no export_id is given.
 
 const PM1A_MASTER_ENDPOINT = 'https://pm-1a-master-x5.sovereign.local/api/v1';
 
@@ -46,6 +55,59 @@ const BOOTLOADER = {
 export default BOOTLOADER;
 `;
 
+// Sovereign PWA Service Worker — included in every export package
+const SERVICE_WORKER = `// Sovereign PWA Service Worker — PWA-AGENT-WRAPPER-1.0
+// Neutral caching shell. Explicitly ignores /state/* routes (the Sovereign
+// runtime state pages) so the PWA never caches or interferes with live state.
+const CACHE_NAME = "sov-pwa-shell-v1";
+const SHELL_ASSETS = ["/", "/manifest.json"];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS).catch(() => {}))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith("/state/")) return;
+  if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((r) => r || caches.match("/")))
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then(
+        (cached) =>
+          cached ||
+          fetch(event.request).then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            return response;
+          })
+      )
+    );
+  }
+});
+`;
+
 async function sha256(text) {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest('SHA-256', data);
@@ -59,13 +121,11 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const apexKey = body?.apex_key;
+    const exportId = body?.export_id;
 
     // ── Apex Key verification (Sovereign Ledger handshake) — optional ─────────
-    // When an Apex Key is provided, verify it against the Sovereign Ledger and
-    // embed the verification metadata in the payload. When omitted, the payload
-    // is still generated but flagged as unverified.
     let verifiedKey = null;
     if (apexKey && typeof apexKey === 'string' && apexKey.trim().length >= 8) {
       const keyHash = await sha256(apexKey.trim());
@@ -80,25 +140,80 @@ export default async function(req) {
       }
     }
 
-    // ── Fetch the PM-1A-BOOTSTRAP-1.0 component manifest ──────────────────────
-    const components = await base44.asServiceRole.entities.Component.filter({
-      code: 'PM-1A-BOOTSTRAP-1.0',
-    }, '-created_date', 5);
+    // ── Resolve the PwaExport record ─────────────────────────────────────────
+    let exportRecord = null;
+    let componentCodes: string[] = [];
+    let pwaName = 'Patriot Machine 1A';
+    let pwaVersion = '1.0';
+    let pwaDescription = 'Sovereign PWA deployment package.';
+    let endpointUrl: string | null = null;
 
-    const bootstrap = components[0];
-    if (!bootstrap) {
-      return Response.json({
-        error: 'PM-1A-BOOTSTRAP-1.0 component not found in the registry.',
-      }, { status: 404 });
+    if (exportId) {
+      exportRecord = await base44.asServiceRole.entities.PwaExport.get(exportId).catch(() => null);
+      if (!exportRecord) {
+        return Response.json({ error: 'PWA export record not found.' }, { status: 404 });
+      }
+      componentCodes = exportRecord.component_codes || [];
+      pwaName = exportRecord.name || pwaName;
+      pwaVersion = exportRecord.version || pwaVersion;
+      pwaDescription = exportRecord.description || pwaDescription;
     }
+
+    // ── Fetch the actual components referenced by this export ────────────────
+    let bundledComponents: any[] = [];
+    if (componentCodes.length > 0) {
+      const allComponents = await base44.asServiceRole.entities.Component.filter({}, '-created_date', 200);
+      bundledComponents = allComponents.filter(c => componentCodes.includes(c.code));
+    }
+
+    // Fallback to legacy PM-1A-BOOTSTRAP-1.0 lookup if no components resolved
+    if (bundledComponents.length === 0) {
+      const legacy = await base44.asServiceRole.entities.Component.filter({
+        code: 'PM-1A-BOOTSTRAP-1.0',
+      }, '-created_date', 5);
+      bundledComponents = legacy;
+    }
+
+    // Pick the primary component (first match) for manifest branding
+    const primary = bundledComponents[0] || null;
+    if (primary) {
+      if (!exportRecord) {
+        pwaName = primary.name || pwaName;
+      }
+      endpointUrl = primary.endpoint_url || endpointUrl;
+      if (primary.description && pwaDescription === 'Sovereign PWA deployment package.') {
+        pwaDescription = primary.description;
+      }
+    }
+
+    // ── Build the PWA manifest with favicons ─────────────────────────────────
+    // Use the Alt+Shift+X platform favicon as the default icon for all packets
+    const FAVICON_URL = 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg';
+    const pwaManifest = {
+      name: pwaName,
+      short_name: pwaName.length > 12 ? pwaName.substring(0, 12) : pwaName,
+      description: pwaDescription,
+      start_url: '/',
+      scope: '/',
+      display: 'standalone',
+      orientation: 'any',
+      theme_color: '#0a0e1a',
+      background_color: '#1a2332',
+      icons: [
+        { src: FAVICON_URL, sizes: '192x192', type: 'image/jpeg', purpose: 'any' },
+        { src: FAVICON_URL, sizes: '512x512', type: 'image/jpeg', purpose: 'any maskable' },
+      ],
+      categories: ['productivity', 'business', 'developer'],
+    };
 
     // ── Build the deployment payload ─────────────────────────────────────────
     const payload = {
-      artifact_code: 'PM-1A-BOOTSTRAP-1.0',
-      type: bootstrap.type || 'X5',
-      version: '1.0',
+      artifact_code: primary?.code || 'PM-1A-BOOTSTRAP-1.0',
+      type: primary?.type || 'X5',
+      version: pwaVersion,
       generated_at: new Date().toISOString(),
       generated_by: user.id,
+      export_name: exportRecord?.name || null,
       apex_verification: verifiedKey ? {
         verified: true,
         enterprise_key_label: verifiedKey.label,
@@ -110,51 +225,88 @@ export default async function(req) {
       },
       builder_id: user.id,
       master_endpoint: PM1A_MASTER_ENDPOINT,
-      pwa_manifest: {
-        name: bootstrap.name || 'Patriot Machine 1A',
-        short_name: 'PM-1A',
-        start_url: '/',
-        display: 'standalone',
-        background_color: '#0a0e1a',
-        theme_color: '#1a2332',
-        scope: '/pm-1a/',
-      },
+      component_endpoint: endpointUrl,
+      bundled_components: bundledComponents.map(c => ({
+        code: c.code,
+        name: c.name,
+        type: c.type,
+        category: c.category,
+        endpoint_url: c.endpoint_url,
+        description: c.description,
+        features: c.features || [],
+        schema: c.schema || [],
+        price: c.price,
+      })),
+      pwa_manifest: pwaManifest,
       self_healing_script: SELF_HEALING_SCRIPT,
       offline_bootloader: OFFLINE_BOOTLOADER,
+      service_worker: SERVICE_WORKER,
       boot_sequence: {
         step_1: 'Check for local 6a21... identity',
         step_2: 'Provision substrate if missing',
         step_3: 'Establish mTLS tunnel to PM-1A-MASTER-X5',
         step_4: 'Activate self-healing shim',
+        step_5: 'Register service worker for offline caching',
       },
-      success_indicator: 'Patriot Machine 1A: Setup Complete. Substrate Active.',
+      success_indicator: `${pwaName}: Setup Complete. Substrate Active.`,
     };
 
-    // ── Build a real .zip archive containing all deployment documents ─────────
+    // ── Build the complete .zip archive ──────────────────────────────────────
     const zip = new JSZip();
-    zip.file('manifest.json', JSON.stringify(payload.pwa_manifest, null, 2));
+    const slug = pwaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'pwa';
+
+    zip.file('manifest.json', JSON.stringify(pwaManifest, null, 2));
+    zip.file('sw.js', SERVICE_WORKER);
     zip.file('self-healing.js', SELF_HEALING_SCRIPT);
     zip.file('offline-bootloader.js', OFFLINE_BOOTLOADER);
     zip.file('boot-sequence.json', JSON.stringify(payload.boot_sequence, null, 2));
     zip.file('apex-verification.json', JSON.stringify(payload.apex_verification, null, 2));
+    zip.file('components.json', JSON.stringify(payload.bundled_components, null, 2));
     zip.file('payload.json', JSON.stringify(payload, null, 2));
+
+    // Favicon reference file — points to the hosted icon
+    zip.file('favicon-ref.txt', [
+      'PWA Favicon / Icon Reference',
+      '============================',
+      `Icon URL: ${FAVICON_URL}`,
+      '',
+      'This file references the hosted favicon used in the PWA manifest.',
+      'Download the icon from the URL above and place it in your PWA root',
+      'as favicon.png, then update manifest.json icons.src to "/favicon.png"',
+      'for a fully self-contained offline package.',
+    ].join('\n'));
+
     zip.file('README.txt', [
-      'PM-1A Deployment Package',
-      '========================',
+      `${pwaName} — PWA Deployment Package`,
+      '====================================',
+      `Version: ${pwaVersion}`,
       `Artifact: ${payload.artifact_code}`,
-      `Version: ${payload.version}`,
       `Generated: ${payload.generated_at}`,
       `Builder: ${payload.builder_id}`,
       `Master Endpoint: ${payload.master_endpoint}`,
+      endpointUrl ? `Component Endpoint: ${endpointUrl}` : '',
+      '',
+      `Bundled Components (${bundledComponents.length}):`,
+      ...bundledComponents.map((c, i) => `  ${i + 1}. ${c.code} — ${c.name} (${c.type})`),
       '',
       'Contents:',
-      '  manifest.json          — PWA web-app manifest',
+      '  manifest.json          — PWA web-app manifest with favicon icons',
+      '  sw.js                  — Sovereign service worker (offline caching)',
       '  self-healing.js        — Self-healing shim script',
       '  offline-bootloader.js  — Offline-first bootloader',
       '  boot-sequence.json     — Boot sequence steps',
       '  apex-verification.json — Sovereign Ledger verification status',
-      '  payload.json           — Full deployment payload',
-    ].join('\n'));
+      '  components.json         — Bundled component metadata',
+      '  payload.json            — Full deployment payload',
+      '  favicon-ref.txt         — Favicon icon reference URL',
+      '',
+      'Setup:',
+      '  1. Host all files in your PWA web root',
+      '  2. Link manifest.json in your index.html',
+      '  3. Register sw.js as your service worker',
+      '  4. Download the favicon from favicon-ref.txt and save locally',
+      `  5. ${payload.success_indicator}`,
+    ].filter(l => l !== '').join('\n'));
 
     const zipBytes = await zip.generateAsync({
       type: 'uint8array',
@@ -166,9 +318,10 @@ export default async function(req) {
     const b64 = btoa(String.fromCharCode(...zipBytes));
 
     return Response.json({
-      filename: `PM-1A-DEPLOYMENT-${Date.now()}.zip`,
+      filename: `${slug}-v${pwaVersion}-${Date.now()}.zip`,
       zip: b64,
-      files: ['manifest.json', 'self-healing.js', 'offline-bootloader.js', 'boot-sequence.json', 'apex-verification.json', 'payload.json', 'README.txt'],
+      files: ['manifest.json', 'sw.js', 'self-healing.js', 'offline-bootloader.js', 'boot-sequence.json', 'apex-verification.json', 'components.json', 'payload.json', 'favicon-ref.txt', 'README.txt'],
+      component_count: bundledComponents.length,
     });
   } catch (error) {
     console.error('generatePm1aPayload error:', error);

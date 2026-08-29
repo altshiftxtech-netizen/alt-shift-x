@@ -84,7 +84,7 @@ export default function PwaExportsSection() {
         // On-demand generation via backend function (e.g. generatePm1aPayload)
         const response = await base44.functions.invoke(
           selected.generate_function,
-          apexKey.trim() ? { apex_key: apexKey.trim() } : {}
+          { export_id: selected.id, ...(apexKey.trim() ? { apex_key: apexKey.trim() } : {}) }
         );
         const data = await (response.data ?? response);
         // Function returns { filename, zip (base64), files } — decode to a real zip
