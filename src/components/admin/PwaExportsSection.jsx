@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, Package, Search, AlertTriangle } from "lucide-react";
+import { Download, Loader2, Package, Search, AlertTriangle, KeyRound } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // PWA Exports section — lets admins select a wired PWA package from a
@@ -27,6 +27,7 @@ export default function PwaExportsSection() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
+  const [apexKey, setApexKey] = useState("");
 
   useEffect(() => {
     base44.entities.PwaExport.list("-date_wired", 5000)
@@ -81,9 +82,14 @@ export default function PwaExportsSection() {
         document.body.removeChild(a);
       } else if (selected.generate_function) {
         // On-demand generation via backend function (e.g. generatePm1aPayload)
+        if (!apexKey.trim()) {
+          setError("Apex Key is required for on-demand generation.");
+          setDownloading(false);
+          return;
+        }
         const response = await base44.functions.invoke(
           selected.generate_function,
-          {}
+          { apex_key: apexKey.trim() }
         );
         const data = response.data ?? response;
         const payloadStr =
@@ -197,6 +203,25 @@ export default function PwaExportsSection() {
                 ? "⚡ On-demand generation via backend function"
                 : "⚠ No zip package wired up yet"}
             </p>
+          </div>
+        )}
+
+        {/* Apex Key input — required for on-demand generation packages */}
+        {selected && selected.generate_function && (
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+              <p className="text-[11px] font-bold text-slate-300">
+                Sovereign Ledger Apex Key
+              </p>
+            </div>
+            <input
+              type="password"
+              value={apexKey}
+              onChange={(e) => setApexKey(e.target.value)}
+              placeholder="Enter Apex Key (ENT-XXXX-XXXX-XXXX)"
+              className="w-full bg-slate-950 text-slate-200 text-sm font-mono px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-slate-500"
+            />
           </div>
         )}
 
