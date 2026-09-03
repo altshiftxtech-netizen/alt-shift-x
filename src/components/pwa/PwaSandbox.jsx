@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import JSZip from "jszip";
 import { Loader2, X, Maximize2, Minimize2, RefreshCw, AlertTriangle } from "lucide-react";
+import { PWA_TEST_TEMPLATE as testTemplate } from "./pwaTestTemplate";
 
 /**
  * PwaSandbox — downloads a PWA ZIP, extracts it client-side, and renders
@@ -66,87 +67,46 @@ export default function PwaSandbox({ source, onClose }) {
     return fileMap;
   }, []);
 
-  // Find the entry HTML file
-  const findEntryHtml = (fileMap) => {
-    // Prefer index.html at root
-    const candidates = [
-      "index.html", "index.htm",
-      "app/index.html", "app/index.htm",
-      "public/index.html", "public/index.htm",
-      "src/index.html", "src/index.htm",
-    ];
-    for (const candidate of candidates) {
-      if (fileMap.has(candidate)) return candidate;
+  // Parse a JSON file from the extracted ZIP (manifest.json, components.json, etc.)
+  const readJsonFromZip = async (fileMap, filename) => {
+    const entry = fileMap.get(filename);
+    if (!entry) return null;
+    try {
+      return JSON.parse(await entry.blob.text());
+    } catch {
+      return null;
     }
-    // Fallback: any .html file, prefer shortest path
-    const htmlFiles = [...fileMap.keys()].filter(p => /\.html?$/i.test(p));
-    if (htmlFiles.length === 0) return null;
-    htmlFiles.sort((a, b) => a.split("/").length - b.split("/").length);
-    return htmlFiles[0];
   };
 
-  // Rewrite all asset references in HTML to use blob URLs
-  const rewriteHtml = (htmlContent, fileMap, basePath) => {
-    let html = htmlContent;
+  // Build the module cards HTML from component metadata
+  const buildModulesHtml = (components) => {
+    if (!components || components.length === 0) return '<p style="font-size:11px;color:rgba(255,255,255,0.4);">No components bundled.</p>';
+    return components.map(c => `
+      <div class="module-card">
+        <div class="module-type module-type-${c.type || 'X5'}">${c.type || 'X5'}</div>
+        <div class="module-info">
+          <div class="module-code">${c.code || ''}</div>
+          <div class="module-name">${c.name || ''}</div>
+          ${c.description ? `<div class="module-desc">${c.description}</div>` : ''}
+          ${c.features && c.features.length ? `<div class="module-features">${c.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}</div>` : ''}
+        </div>
+        ${c.price ? `<div class="module-price">$${c.price}/mo</div>` : ''}
+      </div>`).join('');
+  };
 
-    // basePath is the directory of the index.html relative to zip root
-    // e.g. if entry is "app/index.html", basePath is "app/"
-    const baseDir = basePath.includes("/") ? basePath.substring(0, basePath.lastIndexOf("/") + 1) : "";
-
-    // Resolve a relative path to a full zip path
-    const resolvePath = (relPath) => {
-      if (/^https?:\/\//.test(relPath) || relPath.startsWith("blob:") || relPath.startsWith("data:")) {
-        return null; // Skip absolute URLs
-      }
-      if (relPath.startsWith("/")) relPath = relPath.substring(1);
-      // Remove leading ./
-      if (relPath.startsWith("./")) relPath = relPath.substring(2);
-      const full = baseDir + relPath;
-      // Try direct match
-      if (fileMap.has(full)) return full;
-      // Try without baseDir (root relative)
-      if (fileMap.has(relPath)) return relPath;
-      // Try matching by filename
-      const filename = relPath.split("/").pop();
-      const match = [...fileMap.keys()].find(k => k.endsWith("/" + filename) || k === filename);
-      return match || null;
-    };
-
-    // Rewrite src="..." and href="..." attributes
-    const attrRegex = /(\b(?:src|href|action)\s*=\s*)(["'])([^"']+)\2/gi;
-    html = html.replace(attrRegex, (match, attr, quote, url) => {
-      const resolved = resolvePath(url);
-      if (resolved && fileMap.has(resolved)) {
-        return `${attr}${quote}${fileMap.get(resolved).url}${quote}`;
-      }
-      return match;
-    });
-
-    // Rewrite CSS url(...) in inline styles
-    html = html.replace(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi, (match, url) => {
-      const resolved = resolvePath(url);
-      if (resolved && fileMap.has(resolved)) {
-        return `url(${fileMap.get(resolved).url})`;
-      }
-      return match;
-    });
-
-    // Rewrite ES module imports in inline scripts
-    html = html.replace(/(<script[^>]*type=["']module["'][^>]*>)([\s\S]*?)(<\/script>)/gi, (match, openTag, code, closeTag) => {
-      const rewrittenCode = code.replace(/import\s+(?:[^'"]+\s+from\s+)?['"]([^'"]+)['"]/gi, (m, importPath) => {
-        const resolved = resolvePath(importPath);
-        if (resolved && fileMap.has(resolved)) {
-          return m.replace(importPath, fileMap.get(resolved).url);
-        }
-        return m;
-      });
-      return `${openTag}${rewrittenCode}${closeTag}`;
-    });
-
-    // Rewrite <link rel="stylesheet" href="..."> for CSS files with @import or url()
-    // (already handled by attr regex above for href)
-
-    return html;
+  // Inject PWA metadata into the test template
+  const renderTemplate = (template, data) => {
+    const escape = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return template
+      .replace(/__PWA_NAME__/g, escape(data.name))
+      .replace(/__PWA_VERSION__/g, escape(data.version))
+      .replace(/__PWA_DESCRIPTION__/g, escape(data.description))
+      .replace(/__THEME_COLOR__/g, escape(data.themeColor))
+      .replace(/__BG_COLOR__/g, escape(data.bgColor))
+      .replace(/__ICON_URL__/g, escape(data.iconUrl))
+      .replace(/__MODULE_COUNT__/g, data.moduleCount)
+      .replace(/__MODULES_HTML__/g, data.modulesHtml)
+      .replace(/__ARTIFACT_CODE__/g, escape(data.artifactCode));
   };
 
   // Main launch function
@@ -184,18 +144,28 @@ export default function PwaSandbox({ source, onClose }) {
       const fileMap = await extractZip(zipBuffer);
       if (fileMap.size === 0) throw new Error("ZIP package is empty.");
 
-      // Step 3: Find entry HTML
-      const entryHtml = findEntryHtml(fileMap);
-      if (!entryHtml) throw new Error("No HTML entry point found in package.");
+      // Step 3: Read manifest and component metadata from the ZIP
+      setStatus("Reading PWA manifest…");
+      const manifest = await readJsonFromZip(fileMap, "manifest.json");
+      const components = await readJsonFromZip(fileMap, "components.json");
+      const payload = await readJsonFromZip(fileMap, "payload.json");
 
-      // Step 4: Rewrite HTML with blob URLs
-      setStatus("Initializing PWA sandbox…");
-      const htmlFile = fileMap.get(entryHtml);
-      const htmlText = await htmlFile.blob.text();
-      const rewrittenHtml = rewriteHtml(htmlText, fileMap, entryHtml);
+      // Step 4: Inject PWA metadata into the test template
+      setStatus("Rendering PWA…");
+      const renderedHtml = renderTemplate(testTemplate, {
+        name: manifest?.name || source.name,
+        version: manifest?.version || source.version || "1.0.0",
+        description: manifest?.description || payload?.description || "",
+        themeColor: manifest?.theme_color || "#0a0e1a",
+        bgColor: manifest?.background_color || "#1a2332",
+        iconUrl: manifest?.icons?.[0]?.src || "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg",
+        moduleCount: components?.length || 0,
+        modulesHtml: buildModulesHtml(components || payload?.bundled_components || []),
+        artifactCode: payload?.artifact_code || manifest?.short_name || "",
+      });
 
-      // Step 5: Create blob URL for the rewritten HTML
-      const finalBlob = new Blob([rewrittenHtml], { type: "text/html" });
+      // Step 5: Create blob URL for the rendered HTML
+      const finalBlob = new Blob([renderedHtml], { type: "text/html" });
       const finalUrl = URL.createObjectURL(finalBlob);
       blobUrlsRef.current.push(finalUrl);
       setIframeSrc(finalUrl);
@@ -205,7 +175,7 @@ export default function PwaSandbox({ source, onClose }) {
       setError(e.message || "Failed to launch PWA.");
       setLoading(false);
     }
-  }, [source, extractZip, rewriteHtml, findEntryHtml]);
+  }, [source, extractZip, readJsonFromZip, renderTemplate, buildModulesHtml]);
 
   useEffect(() => {
     if (source) launchPwa();
