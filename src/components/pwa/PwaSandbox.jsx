@@ -292,18 +292,11 @@ export default function PwaSandbox({ source, onClose }) {
         }
       }
 
-      // --- Attempt to register the actual service worker from the ZIP ---
+      // --- Service worker: blob: URLs cannot register SWs (browser limitation) ---
+      // Show the SW source code and note it would register on a real deployment
       var swUrl = ${JSON.stringify(swUrl)};
-      if (swUrl && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.register(swUrl)
-          .then(function(reg) {
-            log('Service worker registered (sw.js)', 'success');
-          })
-          .catch(function(err) {
-            log('SW registration: ' + err.message, 'error');
-          });
-      } else if (swUrl) {
-        log('ServiceWorker API unavailable in sandbox', 'error');
+      if (swUrl) {
+        log('sw.js present — SW registration skipped in sandbox (blob: protocol not supported by browsers; works on real deployment)');
       }
 
       // --- Import and run the actual offline-bootloader.js from the ZIP ---
