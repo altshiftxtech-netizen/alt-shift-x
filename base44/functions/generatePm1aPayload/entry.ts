@@ -114,6 +114,295 @@ async function sha256(text) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function buildIndexHtml(name, version, description, artifactCode, components, bootSequence) {
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const compJson = JSON.stringify(components || []);
+  const bootJson = JSON.stringify(bootSequence || {});
+  const manifest = { name, version, description, artifactCode };
+  const manifestJson = JSON.stringify(manifest);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0e1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>${esc(name)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0e1a; color: #e2e8f0; min-height: 100vh; overflow-x: hidden;
+    }
+    /* Boot overlay */
+    #boot-overlay {
+      position: fixed; inset: 0; z-index: 100; background: #0a0e1a;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; transition: opacity 0.5s ease;
+    }
+    #boot-overlay.hidden { opacity: 0; pointer-events: none; }
+    .boot-logo {
+      width: 72px; height: 72px; border-radius: 18px; object-fit: cover;
+      box-shadow: 0 0 40px rgba(251,191,36,0.3);
+      animation: boot-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes boot-pulse {
+      0%,100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    .boot-name { font-size: 18px; font-weight: 800; color: #fff; }
+    .boot-version { font-size: 11px; color: #64748b; }
+    .boot-console {
+      width: 280px; max-width: 80vw; min-height: 80px; margin-top: 8px;
+      font-family: 'SF Mono', Monaco, monospace; font-size: 10px; color: #4ade80;
+      text-align: left; line-height: 1.6; opacity: 0.8;
+    }
+    .boot-console .line { opacity: 0; animation: fade-in 0.3s forwards; }
+    .boot-console .line.ok::before { content: '✓ '; color: #4ade80; }
+    .boot-console .line.wait::before { content: '⟳ '; color: #fbbf24; }
+    .boot-console .line.fail::before { content: '✗ '; color: #f87171; }
+    @keyframes fade-in { to { opacity: 1; } }
+    .boot-progress {
+      width: 200px; height: 2px; background: #1e293b; border-radius: 1px; overflow: hidden; margin-top: 4px;
+    }
+    .boot-progress-bar { height: 100%; width: 0; background: #fbbf24; transition: width 0.4s ease; }
+
+    /* App shell */
+    #app { opacity: 0; transition: opacity 0.5s ease; min-height: 100vh; }
+    #app.visible { opacity: 1; }
+    .header {
+      background: linear-gradient(135deg, #0a0e1a, #1a2332);
+      padding: 16px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #1e293b;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .header img { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; }
+    .header h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    .header p { font-size: 10px; color: #64748b; }
+    .header .badge {
+      margin-left: auto; font-size: 9px; font-weight: 700; padding: 4px 8px;
+      border-radius: 6px; background: #052e16; color: #4ade80; border: 1px solid #14532d;
+    }
+    .body { max-width: 640px; margin: 0 auto; padding: 16px; }
+    .identity-bar {
+      background: #052e16; border: 1px solid #14532d; border-radius: 10px; padding: 10px 12px;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .identity-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: boot-pulse 2s infinite; }
+    .identity-bar .label { font-size: 10px; color: #4ade80; font-weight: 600; }
+    .identity-bar .id { font-size: 10px; font-family: monospace; color: #64748b; margin-left: auto; }
+    .section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: #475569; margin: 16px 0 10px;
+    }
+    .module-card {
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;
+      display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .module-card:active { transform: scale(0.98); }
+    .module-card:hover { border-color: #334155; }
+    .module-type {
+      width: 36px; height: 36px; border-radius: 8px; display: flex;
+      align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .module-type-X1 { background: #172554; color: #60a5fa; }
+    .module-type-X2 { background: #3b0764; color: #c084fc; }
+    .module-type-X3 { background: #052e16; color: #4ade80; }
+    .module-type-X4 { background: #451a03; color: #fb923c; }
+    .module-type-X5 { background: #500724; color: #f472b6; }
+    .module-info { flex: 1; min-width: 0; }
+    .module-code { font-size: 9px; font-family: monospace; color: #475569; }
+    .module-name { font-size: 13px; font-weight: 600; color: #f1f5f9; margin: 2px 0; }
+    .module-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+    .module-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .feature-tag { font-size: 8px; padding: 2px 6px; border-radius: 4px; background: #1e293b; color: #94a3b8; }
+    .module-price { font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap; }
+    .footer {
+      padding: 16px; text-align: center; border-top: 1px solid #1e293b; margin-top: 20px;
+    }
+    .footer .status { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #4ade80; font-weight: 600; }
+    .footer .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: boot-pulse 2s infinite; }
+    .footer .version { font-size: 9px; color: #334155; margin-top: 4px; }
+    .console-panel {
+      background: #020617; border: 1px solid #1e293b; border-radius: 10px; padding: 10px;
+      margin-top: 12px; font-family: 'SF Mono', Monaco, monospace; font-size: 9px; color: #64748b;
+      max-height: 120px; overflow-y: auto;
+    }
+    .console-panel .entry { margin-bottom: 2px; }
+    .console-panel .entry .ts { color: #334155; }
+    .console-panel .entry .msg { color: #94a3b8; }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px;
+      background: #fbbf24; color: #0a0e1a; font-size: 12px; font-weight: 700; border: none; cursor: pointer;
+    }
+    .action-btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+  <!-- Boot overlay -->
+  <div id="boot-overlay">
+    <img class="boot-logo" src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${esc(name)}">
+    <div class="boot-name">${esc(name)}</div>
+    <div class="boot-version">v${esc(version)}</div>
+    <div class="boot-progress"><div class="boot-progress-bar" id="boot-bar"></div></div>
+    <div class="boot-console" id="boot-console"></div>
+  </div>
+
+  <!-- App -->
+  <div id="app">
+    <div class="header">
+      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${esc(name)}">
+      <div>
+        <h1>${esc(name)}</h1>
+        <p>v${esc(version)}</p>
+      </div>
+      <span class="badge" id="status-badge">ACTIVE</span>
+    </div>
+    <div class="body">
+      <div class="identity-bar">
+        <div class="dot"></div>
+        <span class="label">Substrate Identity</span>
+        <span class="id" id="identity-id">—</span>
+      </div>
+      <div class="section-label">Installed Modules</div>
+      <div id="module-list"></div>
+      <div class="section-label">Runtime Console</div>
+      <div class="console-panel" id="console-panel"></div>
+    </div>
+    <div class="footer">
+      <div class="status"><div class="dot"></div> Substrate Active</div>
+      <div class="version">${esc(artifactCode)} · v${esc(version)}</div>
+    </div>
+  </div>
+
+  <script type="module">
+    const COMPONENTS = ${compJson};
+    const BOOT_STEPS = ${bootJson};
+    const PWA_META = ${manifestJson};
+
+    const consoleEl = document.getElementById('boot-console');
+    const consolePanel = document.getElementById('console-panel');
+    const bootBar = document.getElementById('boot-bar');
+    const bootOverlay = document.getElementById('boot-overlay');
+    const appEl = document.getElementById('app');
+
+    function logBoot(text, type) {
+      const line = document.createElement('div');
+      line.className = 'line ' + (type || '');
+      line.style.animationDelay = (consoleEl.children.length * 0.1) + 's';
+      line.textContent = text;
+      consoleEl.appendChild(line);
+    }
+    function logRuntime(text) {
+      const entry = document.createElement('div');
+      entry.className = 'entry';
+      const ts = new Date().toLocaleTimeString();
+      entry.innerHTML = '<span class="ts">[' + ts + ']</span> <span class="msg">' + text + '</span>';
+      consolePanel.appendChild(entry);
+      consolePanel.scrollTop = consolePanel.scrollHeight;
+    }
+
+    function renderModules() {
+      const list = document.getElementById('module-list');
+      if (!COMPONENTS.length) {
+        list.innerHTML = '<p style="font-size:12px;color:#475569;text-align:center;padding:16px;">No modules installed.</p>';
+        return;
+      }
+      list.innerHTML = COMPONENTS.map(c => {
+        const type = c.type || 'X5';
+        const features = (c.features || []).slice(0, 4).map(f => '<span class="feature-tag">' + (f || '').replace(/</g,'&lt;') + '</span>').join('');
+        return '<div class="module-card">' +
+          '<div class="module-type module-type-' + type + '">' + type + '</div>' +
+          '<div class="module-info">' +
+            '<div class="module-code">' + (c.code || '') + '</div>' +
+            '<div class="module-name">' + (c.name || '') + '</div>' +
+            (c.description ? '<div class="module-desc">' + c.description.replace(/</g,'&lt;') + '</div>' : '') +
+            (features ? '<div class="module-features">' + features + '</div>' : '') +
+          '</div>' +
+          (c.price ? '<div class="module-price">$' + c.price + '/mo</div>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    async function runBoot() {
+      const steps = Object.values(BOOT_STEPS);
+      const total = Math.max(steps.length, 1);
+      let progress = 0;
+
+      logBoot('Initializing ' + PWA_META.name + ' v' + PWA_META.version, 'ok');
+      await sleep(300);
+
+      // Step 1: Identity provisioning
+      logBoot(steps[0] || 'Checking substrate identity…', 'wait');
+      let identity = null;
+      try {
+        const stored = localStorage.getItem('pm1a_identity');
+        if (stored && stored.startsWith('6a21')) {
+          identity = stored;
+          logBoot('Existing identity found: ' + identity.substring(0, 12) + '…', 'ok');
+        } else {
+          logBoot('No identity — provisioning new substrate…', 'wait');
+          const bytes = new Uint8Array(16);
+          crypto.getRandomValues(bytes);
+          identity = '6a21' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+          localStorage.setItem('pm1a_identity', identity);
+          logBoot('New identity provisioned: ' + identity.substring(0, 12) + '…', 'ok');
+        }
+        document.getElementById('identity-id').textContent = identity.substring(0, 20) + '…';
+      } catch (e) {
+        logBoot('Identity provisioning failed: ' + e.message, 'fail');
+      }
+      progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
+      await sleep(400);
+
+      // Step 2: Service worker
+      logBoot(steps[4] || 'Registering service worker…', 'wait');
+      if ('serviceWorker' in navigator) {
+        try {
+          const reg = await navigator.serviceWorker.register('sw.js');
+          logBoot('Service worker registered: ' + reg.scope, 'ok');
+        } catch (e) {
+          logBoot('SW registration skipped (blob:// limitation)', 'fail');
+        }
+      } else {
+        logBoot('Service worker not supported', 'fail');
+      }
+      progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
+      await sleep(300);
+
+      // Remaining boot steps
+      for (let i = 2; i < steps.length; i++) {
+        logBoot(steps[i], 'wait');
+        await sleep(300);
+        logBoot('Complete', 'ok');
+        progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
+      }
+
+      bootBar.style.width = '100%';
+      logBoot('Substrate active — launching app', 'ok');
+      await sleep(400);
+
+      // Transition to app
+      bootOverlay.classList.add('hidden');
+      appEl.classList.add('visible');
+      renderModules();
+      logRuntime('App launched — ' + COMPONENTS.length + ' modules loaded');
+      logRuntime('Identity: ' + (identity || 'unknown').substring(0, 16) + '…');
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // Start boot
+    runBoot().catch(e => { logBoot('Boot failed: ' + e.message, 'fail'); });
+  </script>
+</body>
+</html>`;
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -263,6 +552,7 @@ export default async function(req) {
     zip.file('apex-verification.json', JSON.stringify(payload.apex_verification, null, 2));
     zip.file('components.json', JSON.stringify(payload.bundled_components, null, 2));
     zip.file('payload.json', JSON.stringify(payload, null, 2));
+    zip.file('index.html', buildIndexHtml(pwaName, pwaVersion, pwaDescription, payload.artifact_code, payload.bundled_components, payload.boot_sequence));
 
     // Favicon reference file — points to the hosted icon
     zip.file('favicon-ref.txt', [
