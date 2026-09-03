@@ -133,6 +133,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import PwaHost from './pages/PwaHost';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -201,6 +202,7 @@ const AuthenticatedApp = () => {
       <Route path="/legal/dpa" element={<LegalDpa />} />
       <Route path="/legal/childrens-safety" element={<LegalChildrensSafety />} />
       <Route path="/mobile" element={<MobileApp />} />
+      <Route path="/pwa-host/:id" element={<PwaHost />} />
       <Route path="/legal/sovereign-pwa" element={<SovereignPwaPolicy />} />
       <Route path="/agent" element={<PwaAgent />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />

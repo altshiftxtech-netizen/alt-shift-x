@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Beaker, Loader2, Zap, Wrench, ExternalLink,
-  AlertTriangle, CheckCircle2, XCircle, Bomb,
+  AlertTriangle, CheckCircle2, XCircle, Bomb, Server,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -36,6 +36,7 @@ export default function PwaTestLab() {
   const [stressReport, setStressReport] = useState(null);
   const [error, setError] = useState(null);
   const [launching, setLaunching] = useState(false);
+  const [hosting, setHosting] = useState(false);
 
   useEffect(() => {
     base44.entities.PwaExport.list("-date_wired", 500)
@@ -91,6 +92,28 @@ export default function PwaTestLab() {
       setError(e.message || "Launch failed.");
     } finally {
       setLaunching(false);
+    }
+  }, [selected]);
+
+  const hostPwa = useCallback(async () => {
+    if (!selected) return;
+    setHosting(true);
+    setError(null);
+    try {
+      const res = await base44.functions.invoke("sovPwaServerHost", { export_id: selected.id });
+      const data = res.data || res;
+      if (data?.launch_url) {
+        // Update the local export record so the Launch button picks up the new URL
+        setExports((prev) => prev.map((e) =>
+          e.id === selected.id ? { ...e, launch_url: data.launch_url } : e
+        ));
+      } else {
+        throw new Error(data?.error || "Hosting failed — no URL returned.");
+      }
+    } catch (e) {
+      setError(e.message || "Hosting failed.");
+    } finally {
+      setHosting(false);
     }
   }, [selected]);
 
@@ -225,10 +248,19 @@ export default function PwaTestLab() {
         </select>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <Button
+            onClick={hostPwa}
+            disabled={!selected || fixing || stressTesting || hosting || launching}
+            className="gap-1.5 text-xs"
+            style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
+          >
+            {hosting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Server className="w-3.5 h-3.5" style={{ color: "#10b981" }} />}
+            Host
+          </Button>
           <Button
             onClick={launchPwa}
-            disabled={!selected || fixing || stressTesting || launching}
+            disabled={!selected || fixing || stressTesting || launching || hosting}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
@@ -326,8 +358,8 @@ export default function PwaTestLab() {
               <p className="text-xs font-bold text-slate-200">PWA Test Mode</p>
             </div>
             <p className="text-[11px] text-slate-400">
-              Click <span className="font-bold text-amber-400">Launch</span> to download the PWA package to your device.
-              If a hosted URL is configured, it opens the deployed PWA in a new tab instead.
+              Click <span className="font-bold text-emerald-400">Host</span> to generate a hosted launch URL via
+              SOV-PWA-SERVER-HOST-1.0, then click <span className="font-bold text-amber-400">Launch</span> to open it.
             </p>
             {selected.launch_url ? (
               <>
