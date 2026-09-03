@@ -166,9 +166,9 @@ export default function PwaTestLab() {
     );
   }
 
-  const frameUrl = selected
-    ? `${APP_URL}/?sov_token=${SOV_ADMIN_TOKEN}&pwa=${encodeURIComponent(selected.name)}`
-    : `${APP_URL}/?sov_token=${SOV_ADMIN_TOKEN}`;
+  const PWA_THEME = "#0a0e1a";
+  const PWA_BG = "#1a2332";
+  const FAVICON_URL = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg";
 
   return (
     <Card className="border-slate-700 bg-slate-900">
@@ -328,10 +328,13 @@ export default function PwaTestLab() {
               })}
             </div>
 
-            {/* Active device frame */}
+            {/* Active device frame — manifest-driven PWA shell preview */}
             {(() => {
               const frame = DEVICE_FRAMES[activeDevice];
               const Icon = frame.icon;
+              const frameW = Math.min(frame.width, 600);
+              const frameH = Math.min(frame.height, 500);
+              const isMobile = frame.label === "Mobile";
               return (
                 <div className="overflow-auto bg-slate-950 rounded-lg border border-slate-700 p-4">
                   <div className="flex items-center gap-2 mb-3">
@@ -344,19 +347,61 @@ export default function PwaTestLab() {
                     </span>
                   </div>
                   <div
-                    className="mx-auto bg-black rounded-xl border-4 border-slate-800 overflow-hidden shadow-2xl"
-                    style={{
-                      width: Math.min(frame.width, 600),
-                      height: Math.min(frame.height, 500),
-                    }}
+                    key={`${frameKey}-${activeDevice}`}
+                    className="mx-auto rounded-xl border-4 border-slate-800 overflow-hidden shadow-2xl flex flex-col"
+                    style={{ width: frameW, height: frameH, backgroundColor: PWA_BG }}
                   >
-                    <iframe
-                      key={`${frameKey}-${activeDevice}`}
-                      src={frameUrl}
-                      title={`${frame.label} simulator`}
-                      className="w-full h-full border-0"
-                      sandbox="allow-scripts allow-same-origin allow-forms"
-                    />
+                    {/* Mock status bar */}
+                    <div
+                      className="flex items-center justify-between px-3 py-1.5 text-[10px] font-mono flex-shrink-0"
+                      style={{ backgroundColor: PWA_THEME, color: "#94a3b8" }}
+                    >
+                      <span>{new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
+                      <span className="font-bold truncate max-w-[60%]">{selected.name}</span>
+                      <span>100%</span>
+                    </div>
+                    {/* App shell — PWA manifest preview */}
+                    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center" style={{ backgroundColor: PWA_BG }}>
+                      <img
+                        src={FAVICON_URL}
+                        alt="PWA icon"
+                        className="rounded-2xl mb-3 shadow-lg"
+                        style={{ width: isMobile ? 48 : 72, height: isMobile ? 48 : 72, objectFit: "cover" }}
+                      />
+                      <p className="text-sm font-bold text-slate-100 mb-1" style={{ fontSize: isMobile ? 12 : 14 }}>
+                        {selected.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mb-3" style={{ fontSize: isMobile ? 9 : 11 }}>
+                        v{selected.version || "1.0.0"}
+                      </p>
+                      {selected.description && (
+                        <p className="text-[10px] text-slate-500 max-w-[80%] line-clamp-2 mb-3" style={{ fontSize: isMobile ? 8 : 10 }}>
+                          {selected.description}
+                        </p>
+                      )}
+                      <div
+                        className="rounded-lg px-3 py-1.5 text-[10px] font-bold"
+                        style={{ backgroundColor: "#dc2626", color: "#fff", fontSize: isMobile ? 9 : 11 }}
+                      >
+                        ▶ Launch PWA
+                      </div>
+                      {/* Manifest metadata */}
+                      <div className="mt-4 space-y-0.5 text-[9px] text-slate-600 font-mono" style={{ fontSize: isMobile ? 7 : 9 }}>
+                        <p>display: standalone</p>
+                        <p>theme: {PWA_THEME}</p>
+                        <p>scope: /</p>
+                        <p>components: {selected.component_codes?.length || 0}</p>
+                      </div>
+                    </div>
+                    {/* Mock nav bar */}
+                    <div
+                      className="flex items-center justify-around py-2 flex-shrink-0"
+                      style={{ backgroundColor: PWA_THEME }}
+                    >
+                      {["🏠", "📦", "⚙️"].map((emoji, i) => (
+                        <span key={i} className="text-[14px] opacity-60">{emoji}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               );
