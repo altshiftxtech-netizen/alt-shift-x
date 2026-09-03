@@ -11,8 +11,16 @@ export default function PwaHost() {
 
   useEffect(() => {
     if (!id) return;
-    base44.entities.PwaExport.get(id)
-      .then((data) => { setPwa(data); setLoading(false); })
+    base44.functions.invoke("getHostedPwa", { export_id: id })
+      .then((res) => {
+        const data = res.data || res;
+        if (data?.ok || data?.name) {
+          setPwa(data);
+        } else {
+          setError(data?.error || "Failed to load PWA");
+        }
+        setLoading(false);
+      })
       .catch((e) => { setError(e.message || "Failed to load PWA"); setLoading(false); });
   }, [id]);
 
