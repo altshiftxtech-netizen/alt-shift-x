@@ -228,13 +228,10 @@ export default function PwaHost() {
         const fetchRes = await fetch(data.file_url);
         if (!fetchRes.ok) throw new Error(`Download failed: ${fetchRes.status}`);
         zipBuffer = await fetchRes.arrayBuffer();
-      } else if (data.generate_function) {
-        setStatus("Generating PWA package…");
-        const genRes = await base44.functions.invoke(data.generate_function, { export_id: data.id });
-        const genData = genRes.data ?? genRes;
-        const b64 = genData?.zip;
-        if (!b64) throw new Error("No zip payload returned from generator.");
-        const binStr = atob(b64);
+      } else if (data.zip) {
+        // Server already generated the ZIP via service role
+        setStatus("Decoding PWA package…");
+        const binStr = atob(data.zip);
         const bytes = new Uint8Array(binStr.length);
         for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
         zipBuffer = bytes.buffer;
