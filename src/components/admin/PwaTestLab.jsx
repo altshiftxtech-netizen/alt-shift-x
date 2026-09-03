@@ -35,6 +35,7 @@ export default function PwaTestLab() {
   const [report, setReport] = useState(null);
   const [stressReport, setStressReport] = useState(null);
   const [error, setError] = useState(null);
+  const [launching, setLaunching] = useState(false);
 
   useEffect(() => {
     base44.entities.PwaExport.list("-date_wired", 500)
@@ -44,14 +45,53 @@ export default function PwaTestLab() {
 
   const selected = exports.find((e) => e.id === selectedId);
 
-  const launchPwa = useCallback(() => {
+  const launchPwa = useCallback(async () => {
     if (!selected) return;
-    if (selected.launch_url) {
-      window.open(selected.launch_url, "_blank", "noopener,noreferrer");
-      return;
+    setLaunching(true);
+    setError(null);
+    try {
+      // If a hosted launch_url exists, open it directly
+      if (selected.launch_url) {
+        window.open(selected.launch_url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      // Otherwise, download the actual PWA product (ZIP package)
+      if (selected.file_url) {
+        const a = document.createElement("a");
+        a.href = selected.file_url;
+        a.download = `${selected.name}-${selected.version || "1.0.0"}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+      if (selected.generate_function) {
+        const response = await base44.functions.invoke(selected.generate_function, {
+          export_id: selected.id,
+        });
+        const data = await (response.data ?? response);
+        const b64 = data?.zip;
+        if (!b64) throw new Error("No zip payload returned from generator.");
+        const binStr = atob(b64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+        const blob = new Blob([bytes], { type: "application/zip" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = data?.filename || `${selected.name}-${selected.version || "1.0.0"}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      }
+      setError("This PWA export has no hosted URL, file_url, or generate function.");
+    } catch (e) {
+      setError(e.message || "Launch failed.");
+    } finally {
+      setLaunching(false);
     }
-    const url = `${APP_URL}/?pwa_test=${encodeURIComponent(selected.id)}&pwa_name=${encodeURIComponent(selected.name)}&sov_token=${SOV_ADMIN_TOKEN}`;
-    window.open(url, "_blank", "noopener,noreferrer");
   }, [selected]);
 
   const runFix = useCallback(async () => {
@@ -188,11 +228,11 @@ export default function PwaTestLab() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button
             onClick={launchPwa}
-            disabled={!selected || fixing || stressTesting}
+            disabled={!selected || fixing || stressTesting || launching}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
-            <ExternalLink className="w-3.5 h-3.5" style={{ color: "#fbbf24" }} />
+            {launching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5" style={{ color: "#fbbf24" }} />}
             Launch
           </Button>
           <Button
@@ -286,8 +326,8 @@ export default function PwaTestLab() {
               <p className="text-xs font-bold text-slate-200">PWA Test Mode</p>
             </div>
             <p className="text-[11px] text-slate-400">
-              Click <span className="font-bold text-amber-400">Launch</span> to open the PWA in a new browser tab.
-              The app runs in test mode — interact with it fully to validate the build.
+              Click <span className="font-bold text-amber-400">Launch</span> to download the PWA package to your device.
+              If a hosted URL is configured, it opens the deployed PWA in a new tab instead.
             </p>
             {selected.launch_url ? (
               <>
@@ -295,18 +335,31 @@ export default function PwaTestLab() {
                   {selected.launch_url}
                 </div>
                 <p className="text-[10px] text-emerald-500 font-semibold">
-                  ✓ Launch URL configured — opens the deployed PWA
+                  ✓ Hosted URL — opens the deployed PWA in a new tab
+                </p>
+              </>
+            ) : selected.file_url ? (
+              <>
+                <div className="bg-slate-950 rounded p-2 text-[10px] text-sky-400 font-mono break-all">
+                  {selected.file_url}
+                </div>
+                <p className="text-[10px] text-sky-500 font-semibold">
+                  ✓ Pre-built ZIP — downloads the package directly
+                </p>
+              </>
+            ) : selected.generate_function ? (
+              <>
+                <div className="bg-slate-950 rounded p-2 text-[10px] text-amber-400 font-mono break-all">
+                  {selected.generate_function}()
+                </div>
+                <p className="text-[10px] text-amber-500 font-semibold">
+                  ⚡ On-demand generation — builds and downloads the ZIP package
                 </p>
               </>
             ) : (
-              <>
-                <div className="bg-slate-950 rounded p-2 text-[10px] text-slate-500 font-mono break-all">
-                  {APP_URL}/?pwa_test={selected.id}&pwa_name={encodeURIComponent(selected.name)}&sov_token={SOV_ADMIN_TOKEN}
-                </div>
-                <p className="text-[10px] text-amber-500">
-                  ⚠ No launch_url set — set one on the PwaExport record to point Launch at the deployed PWA
-                </p>
-              </>
+              <p className="text-[10px] text-red-500">
+                ⚠ No launch URL, file_url, or generate function — cannot launch
+              </p>
             )}
             <p className="text-[10px] text-slate-500">
               Components bundled: {selected.component_codes?.length || 0} · Version: {selected.version || "1.0.0"}
