@@ -87,8 +87,8 @@ export default function PwaSandbox({ source, onClose }) {
     }
   };
 
-  // Build runtime HTML — a proper PWA splash page that boots and reveals the app
-  const buildRuntimeHtml = (fileMap, manifest, components, payload, bootSequence, source) => {
+  // Build runtime HTML — renders the actual PWA app from the ZIP's files
+  const buildRuntimeHtml = async (fileMap, manifest, components, payload, bootSequence, source) => {
     const manifestUrl = fileMap.get("manifest.json")?.url || "";
     const bootloaderUrl = fileMap.get("offline-bootloader.js")?.url || "";
     const swUrl = fileMap.get("sw.js")?.url || "";
@@ -110,37 +110,13 @@ export default function PwaSandbox({ source, onClose }) {
 
     const escapeHtml = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-    const moduleCardsHtml = bundledComponents.length > 0
-      ? bundledComponents.map(c => `
-        <div class="module-card">
-          <div class="module-type module-type-${escapeHtml(c.type || 'X5')}">${escapeHtml(c.type || 'X5')}</div>
-          <div class="module-info">
-            <div class="module-code">${escapeHtml(c.code || '')}</div>
-            <div class="module-name">${escapeHtml(c.name || '')}</div>
-            ${c.description ? `<div class="module-desc">${escapeHtml(c.description)}</div>` : ''}
-            ${c.features && c.features.length ? `<div class="module-features">${c.features.map(f => `<span class="feature-tag">${escapeHtml(f)}</span>`).join('')}</div>` : ''}
-          </div>
-          ${c.price ? `<div class="module-price">$${c.price}/mo</div>` : ''}
-        </div>`).join('')
-      : '<p style="font-size:11px;color:rgba(255,255,255,0.4);">No components bundled.</p>';
-
-    const bootStepsHtml = bootStepEntries.length > 0
-      ? bootStepEntries.map(([key, label]) => `
-        <div class="boot-step" data-step="${escapeHtml(key)}">
-          <div class="check"></div>
-          <div class="label">${escapeHtml(label)}</div>
-        </div>`).join('')
-      : '<div class="boot-step"><div class="check"></div><div class="label">No boot sequence defined</div></div>';
-
-    // Build a list of files in the ZIP for the file browser
-    const fileListHtml = Array.from(fileMap.keys()).map(path => {
-      const entry = fileMap.get(path);
-      return `<div class="file-row" data-url="${entry.url}" data-path="${escapeHtml(path)}">
-        <span class="file-icon">📄</span>
-        <span class="file-path">${escapeHtml(path)}</span>
-        <span class="file-size">${(entry.blob.size)} bytes</span>
-      </div>`;
-    }).join('');
+    // If the ZIP contains an index.html, use it directly — it's the actual PWA app
+    // (with its own splash page if one was programmed). Otherwise, render the app
+    // canvas from the manifest/component metadata with no synthetic splash.
+    const indexHtmlEntry = fileMap.get("index.html") || fileMap.get("index.htm");
+    if (indexHtmlEntry) {
+      return await indexHtmlEntry.blob.text();
+    }
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -157,39 +133,6 @@ export default function PwaSandbox({ source, onClose }) {
       background: ${escapeHtml(bgColor)}; color: #e2e8f0; min-height: 100vh;
       overflow-x: hidden;
     }
-
-    /* ── Splash Screen ── */
-    .splash {
-      position: fixed; inset: 0; z-index: 100;
-      background: radial-gradient(ellipse at center, ${escapeHtml(themeColor)} 0%, ${escapeHtml(bgColor)} 70%);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; transition: opacity 0.6s ease, visibility 0.6s ease;
-    }
-    .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .splash-logo {
-      width: 80px; height: 80px; border-radius: 20px; object-fit: cover;
-      box-shadow: 0 0 40px rgba(255,255,255,0.15);
-      animation: logo-pulse 2s ease-in-out infinite;
-    }
-    @keyframes logo-pulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(255,255,255,0.15); }
-      50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(255,255,255,0.25); }
-    }
-    .splash-name { font-size: 22px; font-weight: 800; color: #fff; text-align: center; }
-    .splash-version { font-size: 12px; color: rgba(255,255,255,0.5); }
-    .splash-progress {
-      width: 160px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px;
-      overflow: hidden; margin-top: 8px;
-    }
-    .splash-progress-bar {
-      height: 100%; background: #4ade80; border-radius: 2px; width: 0;
-      transition: width 0.5s ease;
-    }
-    .splash-status { font-size: 11px; color: rgba(255,255,255,0.4); min-height: 16px; }
-
-    /* ── App Canvas ── */
-    .app { opacity: 0; transition: opacity 0.6s ease; min-height: 100vh; }
-    .app.visible { opacity: 1; }
     .app-header {
       background: linear-gradient(135deg, ${escapeHtml(themeColor)}, ${escapeHtml(bgColor)});
       padding: 20px 16px; display: flex; align-items: center; gap: 12px;
@@ -245,17 +188,8 @@ export default function PwaSandbox({ source, onClose }) {
 </head>
 <body>
 
-  <!-- Splash Screen -->
-  <div class="splash" id="splash">
-    <img class="splash-logo" src="${escapeHtml(iconUrl)}" alt="${escapeHtml(pwaName)}">
-    <div class="splash-name">${escapeHtml(pwaName)}</div>
-    <div class="splash-version">v${escapeHtml(pwaVersion)}</div>
-    <div class="splash-progress"><div class="splash-progress-bar" id="progress-bar"></div></div>
-    <div class="splash-status" id="splash-status">Initializing…</div>
-  </div>
-
   <!-- App Canvas -->
-  <div class="app" id="app">
+  <div class="app" id="app" style="opacity:1;">
     <div class="app-header">
       <img src="${escapeHtml(iconUrl)}" alt="${escapeHtml(pwaName)}">
       <div>
@@ -292,32 +226,6 @@ export default function PwaSandbox({ source, onClose }) {
 
   <script>
     (function() {
-      var splash = document.getElementById('splash');
-      var app = document.getElementById('app');
-      var progressBar = document.getElementById('progress-bar');
-      var statusEl = document.getElementById('splash-status');
-
-      var steps = ${JSON.stringify(bootStepEntries.map(([k, label]) => label))};
-      var stepIndex = 0;
-      var totalSteps = steps.length || 1;
-
-      function runNextStep() {
-        if (stepIndex < steps.length) {
-          var label = steps[stepIndex];
-          statusEl.textContent = label;
-          progressBar.style.width = Math.round(((stepIndex + 1) / totalSteps) * 100) + '%';
-          stepIndex++;
-          setTimeout(runNextStep, 700);
-        } else {
-          progressBar.style.width = '100%';
-          statusEl.textContent = 'Ready';
-          setTimeout(function() {
-            splash.classList.add('hidden');
-            app.classList.add('visible');
-          }, 400);
-        }
-      }
-
       // Import and run the actual offline-bootloader.js from the ZIP
       var bootloaderUrl = ${JSON.stringify(bootloaderUrl)};
       if (bootloaderUrl) {
@@ -327,9 +235,6 @@ export default function PwaSandbox({ source, onClose }) {
           }
         }).catch(function() {});
       }
-
-      // Start boot sequence
-      setTimeout(runNextStep, 600);
     })();
   </script>
 </body>
@@ -379,7 +284,7 @@ export default function PwaSandbox({ source, onClose }) {
 
       // Step 4: Build runtime HTML that loads and executes the actual files
       setStatus("Launching PWA runtime…");
-      const runtimeHtml = buildRuntimeHtml(fileMap, manifest, components, payload, bootSequence, source);
+      const runtimeHtml = await buildRuntimeHtml(fileMap, manifest, components, payload, bootSequence, source);
 
       // Step 5: Open the PWA app in a new browser tab
       const finalBlob = new Blob([runtimeHtml], { type: "text/html" });
@@ -393,7 +298,7 @@ export default function PwaSandbox({ source, onClose }) {
       setError(e.message || "Failed to launch PWA.");
       setLoading(false);
     }
-  }, [source, extractZip, buildRuntimeHtml]);
+  }, [source, extractZip]);
 
   useEffect(() => {
     if (source) launchPwa();
