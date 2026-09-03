@@ -2,19 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Beaker, Loader2, Smartphone, Tablet, Monitor, Zap, Wrench,
-  AlertTriangle, CheckCircle2, XCircle, Bomb, RefreshCw,
+  Beaker, Loader2, Zap, Wrench, ExternalLink,
+  AlertTriangle, CheckCircle2, XCircle, Bomb,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const APP_URL = "https://unlock-agent-flow.base44.app";
 const SOV_ADMIN_TOKEN = "SOV-ADMIN-PM1A-X5";
-
-const DEVICE_FRAMES = [
-  { label: "Mobile", icon: Smartphone, width: 375, height: 667 },
-  { label: "Tablet", icon: Tablet, width: 768, height: 1024 },
-  { label: "Desktop", icon: Monitor, width: 1280, height: 800 },
-];
 
 function CheckRow({ check }) {
   return (
@@ -36,14 +30,11 @@ export default function PwaTestLab() {
   const [exports, setExports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState("");
-  const [testing, setTesting] = useState(false);
   const [fixing, setFixing] = useState(false);
   const [stressTesting, setStressTesting] = useState(false);
   const [report, setReport] = useState(null);
   const [stressReport, setStressReport] = useState(null);
   const [error, setError] = useState(null);
-  const [activeDevice, setActiveDevice] = useState(0);
-  const [frameKey, setFrameKey] = useState(0);
 
   useEffect(() => {
     base44.entities.PwaExport.list("-date_wired", 500)
@@ -53,19 +44,10 @@ export default function PwaTestLab() {
 
   const selected = exports.find((e) => e.id === selectedId);
 
-  const runTest = useCallback(async () => {
+  const launchPwa = useCallback(() => {
     if (!selected) return;
-    setTesting(true);
-    setError(null);
-    setReport(null);
-    try {
-      const res = await base44.functions.invoke("testPwaExport", { export_id: selected.id });
-      setReport(res.data || res);
-    } catch (e) {
-      setError(e.message || "Test failed");
-    } finally {
-      setTesting(false);
-    }
+    const url = `${APP_URL}/?pwa_test=${encodeURIComponent(selected.id)}&pwa_name=${encodeURIComponent(selected.name)}&sov_token=${SOV_ADMIN_TOKEN}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }, [selected]);
 
   const runFix = useCallback(async () => {
@@ -151,11 +133,10 @@ export default function PwaTestLab() {
     localStorage.clear();
     sessionStorage.clear();
 
-    // Reset state and reload frames
+    // Reset state
     setReport(null);
     setStressReport(null);
     setError(null);
-    setFrameKey(k => k + 1);
   }, []);
 
   if (loading) {
@@ -202,17 +183,17 @@ export default function PwaTestLab() {
         {/* Action buttons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button
-            onClick={runTest}
-            disabled={!selected || testing || fixing || stressTesting}
+            onClick={launchPwa}
+            disabled={!selected || fixing || stressTesting}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
-            {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" style={{ color: "#fbbf24" }} />}
-            Test
+            <ExternalLink className="w-3.5 h-3.5" style={{ color: "#fbbf24" }} />
+            Launch
           </Button>
           <Button
             onClick={runFix}
-            disabled={!selected || testing || fixing || stressTesting}
+            disabled={!selected || fixing || stressTesting}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
@@ -221,7 +202,7 @@ export default function PwaTestLab() {
           </Button>
           <Button
             onClick={runStressTest}
-            disabled={!selected || testing || fixing || stressTesting}
+            disabled={!selected || fixing || stressTesting}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
@@ -230,7 +211,7 @@ export default function PwaTestLab() {
           </Button>
           <Button
             onClick={detonate}
-            disabled={testing || fixing || stressTesting}
+            disabled={fixing || stressTesting}
             className="gap-1.5 text-xs"
             style={{ backgroundColor: "#1a2332", color: "#e2e8f0", borderColor: "#64748b" }}
           >
@@ -293,119 +274,23 @@ export default function PwaTestLab() {
           </div>
         )}
 
-        {/* Device-accurate simulator frames */}
+        {/* Launch info panel */}
         {selected && (
-          <div className="space-y-3">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <p className="text-xs font-bold text-slate-300">Architect's View — Device Frames</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setFrameKey(k => k + 1)}
-                className="h-6 px-2 text-[10px] text-slate-400 hover:text-slate-200"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" /> Reload frames
-              </Button>
+              <ExternalLink className="w-4 h-4" style={{ color: "#fbbf24" }} />
+              <p className="text-xs font-bold text-slate-200">PWA Test Mode</p>
             </div>
-
-            {/* Device selector (mobile-friendly) */}
-            <div className="flex gap-1.5">
-              {DEVICE_FRAMES.map((frame, i) => {
-                const Icon = frame.icon;
-                return (
-                  <button
-                    key={frame.label}
-                    onClick={() => setActiveDevice(i)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
-                      activeDevice === i
-                        ? "bg-slate-700 text-slate-100"
-                        : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-700"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" /> {frame.label}
-                  </button>
-                );
-              })}
+            <p className="text-[11px] text-slate-400">
+              Click <span className="font-bold text-amber-400">Launch</span> to open the PWA in a new browser tab.
+              The app runs in test mode — interact with it fully to validate the build.
+            </p>
+            <div className="bg-slate-950 rounded p-2 text-[10px] text-slate-500 font-mono break-all">
+              {APP_URL}/?pwa_test={selected.id}&pwa_name={encodeURIComponent(selected.name)}&sov_token={SOV_ADMIN_TOKEN}
             </div>
-
-            {/* Active device frame — manifest-driven PWA shell preview */}
-            {(() => {
-              const frame = DEVICE_FRAMES[activeDevice];
-              const Icon = frame.icon;
-              const frameW = Math.min(frame.width, 600);
-              const frameH = Math.min(frame.height, 500);
-              const isMobile = frame.label === "Mobile";
-              return (
-                <div className="overflow-auto bg-slate-950 rounded-lg border border-slate-700 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon className="w-4 h-4 text-slate-400" />
-                    <span className="text-[11px] text-slate-400">
-                      {frame.label} — {frame.width}×{frame.height}
-                    </span>
-                    <span className="text-[10px] text-slate-600 ml-auto font-mono">
-                      sov_token={SOV_ADMIN_TOKEN}
-                    </span>
-                  </div>
-                  <div
-                    key={`${frameKey}-${activeDevice}`}
-                    className="mx-auto rounded-xl border-4 border-slate-800 overflow-hidden shadow-2xl flex flex-col"
-                    style={{ width: frameW, height: frameH, backgroundColor: PWA_BG }}
-                  >
-                    {/* Mock status bar */}
-                    <div
-                      className="flex items-center justify-between px-3 py-1.5 text-[10px] font-mono flex-shrink-0"
-                      style={{ backgroundColor: PWA_THEME, color: "#94a3b8" }}
-                    >
-                      <span>{new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
-                      <span className="font-bold truncate max-w-[60%]">{selected.name}</span>
-                      <span>100%</span>
-                    </div>
-                    {/* App shell — PWA manifest preview */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center" style={{ backgroundColor: PWA_BG }}>
-                      <img
-                        src={FAVICON_URL}
-                        alt="PWA icon"
-                        className="rounded-2xl mb-3 shadow-lg"
-                        style={{ width: isMobile ? 48 : 72, height: isMobile ? 48 : 72, objectFit: "cover" }}
-                      />
-                      <p className="text-sm font-bold text-slate-100 mb-1" style={{ fontSize: isMobile ? 12 : 14 }}>
-                        {selected.name}
-                      </p>
-                      <p className="text-[10px] text-slate-400 mb-3" style={{ fontSize: isMobile ? 9 : 11 }}>
-                        v{selected.version || "1.0.0"}
-                      </p>
-                      {selected.description && (
-                        <p className="text-[10px] text-slate-500 max-w-[80%] line-clamp-2 mb-3" style={{ fontSize: isMobile ? 8 : 10 }}>
-                          {selected.description}
-                        </p>
-                      )}
-                      <div
-                        className="rounded-lg px-3 py-1.5 text-[10px] font-bold"
-                        style={{ backgroundColor: "#dc2626", color: "#fff", fontSize: isMobile ? 9 : 11 }}
-                      >
-                        ▶ Launch PWA
-                      </div>
-                      {/* Manifest metadata */}
-                      <div className="mt-4 space-y-0.5 text-[9px] text-slate-600 font-mono" style={{ fontSize: isMobile ? 7 : 9 }}>
-                        <p>display: standalone</p>
-                        <p>theme: {PWA_THEME}</p>
-                        <p>scope: /</p>
-                        <p>components: {selected.component_codes?.length || 0}</p>
-                      </div>
-                    </div>
-                    {/* Mock nav bar */}
-                    <div
-                      className="flex items-center justify-around py-2 flex-shrink-0"
-                      style={{ backgroundColor: PWA_THEME }}
-                    >
-                      {["🏠", "📦", "⚙️"].map((emoji, i) => (
-                        <span key={i} className="text-[14px] opacity-60">{emoji}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+            <p className="text-[10px] text-slate-500">
+              Components bundled: {selected.component_codes?.length || 0} · Version: {selected.version || "1.0.0"}
+            </p>
           </div>
         )}
 
