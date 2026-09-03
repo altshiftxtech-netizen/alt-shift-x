@@ -6,6 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, Bomb,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import PwaSandbox from "@/components/pwa/PwaSandbox";
 
 const APP_URL = "https://unlock-agent-flow.base44.app";
 const SOV_ADMIN_TOKEN = "SOV-ADMIN-PM1A-X5";
@@ -36,6 +37,7 @@ export default function PwaTestLab() {
   const [stressReport, setStressReport] = useState(null);
   const [error, setError] = useState(null);
   const [launching, setLaunching] = useState(false);
+  const [sandboxSource, setSandboxSource] = useState(null);
 
   useEffect(() => {
     base44.entities.PwaExport.list("-date_wired", 500)
@@ -47,51 +49,17 @@ export default function PwaTestLab() {
 
   const launchPwa = useCallback(async () => {
     if (!selected) return;
-    setLaunching(true);
-    setError(null);
-    try {
-      // Only use launch_url if it's an actual external URL (not the internal /pwa-host/ metadata page)
-      if (selected.launch_url && !selected.launch_url.includes("/pwa-host/")) {
-        window.open(selected.launch_url, "_blank", "noopener,noreferrer");
-        return;
-      }
-      // Otherwise, download the actual PWA product (ZIP package)
-      if (selected.file_url) {
-        const a = document.createElement("a");
-        a.href = selected.file_url;
-        a.download = `${selected.name}-${selected.version || "1.0.0"}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        return;
-      }
-      if (selected.generate_function) {
-        const response = await base44.functions.invoke(selected.generate_function, {
-          export_id: selected.id,
-        });
-        const data = await (response.data ?? response);
-        const b64 = data?.zip;
-        if (!b64) throw new Error("No zip payload returned from generator.");
-        const binStr = atob(b64);
-        const bytes = new Uint8Array(binStr.length);
-        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-        const blob = new Blob([bytes], { type: "application/zip" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = data?.filename || `${selected.name}-${selected.version || "1.0.0"}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        return;
-      }
-      setError("This PWA export has no hosted URL, file_url, or generate function.");
-    } catch (e) {
-      setError(e.message || "Launch failed.");
-    } finally {
-      setLaunching(false);
+    // If there's a real external hosted URL, open it directly
+    if (selected.launch_url && !selected.launch_url.includes("/pwa-host/")) {
+      window.open(selected.launch_url, "_blank", "noopener,noreferrer");
+      return;
     }
+    // Otherwise, launch the PWA in the sandbox (extracts ZIP and renders the app)
+    if (selected.file_url || selected.generate_function) {
+      setSandboxSource(selected);
+      return;
+    }
+    setError("This PWA export has no hosted URL, file_url, or generate function.");
   }, [selected]);
 
 
@@ -327,7 +295,7 @@ export default function PwaTestLab() {
               <p className="text-xs font-bold text-slate-200">PWA Test Mode</p>
             </div>
             <p className="text-[11px] text-slate-400">
-              Click <span className="font-bold text-amber-400">Launch</span> to open the hosted PWA in a new tab.
+              Click <span className="font-bold text-amber-400">Launch</span> to run the PWA in a sandbox — extracts the ZIP and renders the app like it's installed on a device.
             </p>
             {selected.launch_url && !selected.launch_url.includes("/pwa-host/") ? (
               <>
@@ -374,6 +342,10 @@ export default function PwaTestLab() {
           </div>
         )}
       </CardContent>
+
+      {sandboxSource && (
+        <PwaSandbox source={sandboxSource} onClose={() => setSandboxSource(null)} />
+      )}
     </Card>
   );
 }
