@@ -300,7 +300,7 @@ export default function PwaTestLab() {
               <p className="text-xs font-bold text-slate-200">PWA Test Mode</p>
             </div>
             <p className="text-[11px] text-slate-400">
-              Click <span className="font-bold text-amber-400">Launch</span> to run the PWA in a sandbox — extracts the ZIP and renders the app like it's installed on a device.
+              Click <span className="font-bold text-amber-400">Launch</span> to open the PWA in a new browser tab — shows the splash screen, boot sequence, and app canvas.
             </p>
             {selected.launch_url && !selected.launch_url.includes("/pwa-host/") ? (
               <>

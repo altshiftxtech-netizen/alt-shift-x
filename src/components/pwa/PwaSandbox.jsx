@@ -155,29 +155,68 @@ export default function PwaSandbox({ source, onClose }) {
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: ${escapeHtml(bgColor)}; color: #e2e8f0; min-height: 100vh;
+      overflow-x: hidden;
     }
-    .app-shell { max-width: 600px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Splash Screen ── */
+    .splash {
+      position: fixed; inset: 0; z-index: 100;
+      background: radial-gradient(ellipse at center, ${escapeHtml(themeColor)} 0%, ${escapeHtml(bgColor)} 70%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .splash-logo {
+      width: 80px; height: 80px; border-radius: 20px; object-fit: cover;
+      box-shadow: 0 0 40px rgba(255,255,255,0.15);
+      animation: logo-pulse 2s ease-in-out infinite;
+    }
+    @keyframes logo-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(255,255,255,0.15); }
+      50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(255,255,255,0.25); }
+    }
+    .splash-name { font-size: 22px; font-weight: 800; color: #fff; text-align: center; }
+    .splash-version { font-size: 12px; color: rgba(255,255,255,0.5); }
+    .splash-progress {
+      width: 160px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px;
+      overflow: hidden; margin-top: 8px;
+    }
+    .splash-progress-bar {
+      height: 100%; background: #4ade80; border-radius: 2px; width: 0;
+      transition: width 0.5s ease;
+    }
+    .splash-status { font-size: 11px; color: rgba(255,255,255,0.4); min-height: 16px; }
+
+    /* ── App Canvas ── */
+    .app { opacity: 0; transition: opacity 0.6s ease; min-height: 100vh; }
+    .app.visible { opacity: 1; }
     .app-header {
       background: linear-gradient(135deg, ${escapeHtml(themeColor)}, ${escapeHtml(bgColor)});
-      padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;
+      padding: 20px 16px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
     }
-    .app-header img { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; }
-    .app-header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .app-header img { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
+    .app-header h1 { font-size: 17px; font-weight: 700; color: #fff; }
     .app-header p { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .app-body { flex: 1; padding: 16px; overflow-y: auto; }
-    .hero { text-align: center; padding: 20px 0 24px; }
-    .hero h2 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .hero p { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.5; max-width: 400px; margin: 0 auto; }
-    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin: 16px 0 10px; display: flex; align-items: center; gap: 6px; }
-    .section-title .badge { font-size: 9px; background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; }
+    .app-body { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
+    .hero { text-align: center; margin-bottom: 24px; }
+    .hero h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .hero p { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 420px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35); margin: 20px 0 12px;
+    }
+    .module-grid { display: grid; gap: 10px; }
     .module-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start;
+      border-radius: 14px; padding: 16px; display: flex; gap: 14px; align-items: flex-start;
+      transition: transform 0.15s ease, background 0.15s ease;
     }
+    .module-card:active { transform: scale(0.98); }
     .module-type {
-      width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 10px; display: flex;
+      align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
     }
     .module-type-X1 { background: #1e3a5f; color: #60a5fa; }
     .module-type-X2 { background: #3a1e5f; color: #c084fc; }
@@ -185,49 +224,38 @@ export default function PwaSandbox({ source, onClose }) {
     .module-type-X4 { background: #5f3a1e; color: #fb923c; }
     .module-type-X5 { background: #5f1e3a; color: #f472b6; }
     .module-info { flex: 1; min-width: 0; }
-    .module-code { font-size: 10px; font-family: monospace; color: rgba(255,255,255,0.4); }
-    .module-name { font-size: 13px; font-weight: 600; color: #fff; margin: 2px 0; }
-    .module-desc { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; }
-    .module-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-    .feature-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
-    .module-price { font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap; }
-    .boot-sequence { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-top: 8px; }
-    .boot-step { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 11px; color: rgba(255,255,255,0.5); }
-    .boot-step .check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .boot-step.done .check { background: #4ade80; border-color: #4ade80; }
-    .boot-step.done .check::after { content: '\\2713'; font-size: 9px; color: #0a0e1a; font-weight: bold; }
-    .boot-step .label { flex: 1; }
-    .boot-step .detail { font-size: 9px; color: rgba(255,255,255,0.3); font-family: monospace; }
-    .console-panel {
-      background: #0d1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;
-      padding: 10px; margin-top: 8px; max-height: 180px; overflow-y: auto; font-family: 'SF Mono', Monaco, monospace;
+    .module-code { font-size: 10px; font-family: monospace; color: rgba(255,255,255,0.35); }
+    .module-name { font-size: 14px; font-weight: 600; color: #fff; margin: 3px 0; }
+    .module-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+    .module-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .feature-tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+    .module-price { font-size: 13px; font-weight: 700; color: #fbbf24; white-space: nowrap; }
+    .app-footer {
+      padding: 20px 16px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 20px;
     }
-    .console-line { font-size: 10px; color: #8b949e; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); word-break: break-all; }
-    .console-line.error { color: #f87171; }
-    .console-line.success { color: #4ade80; }
-    .console-line .ts { color: #484f58; margin-right: 6px; }
-    .file-browser { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 8px; margin-top: 8px; }
-    .file-row { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 11px; cursor: pointer; }
-    .file-row:hover { background: rgba(255,255,255,0.06); }
-    .file-icon { flex-shrink: 0; }
-    .file-path { flex: 1; color: #c9d1d9; font-family: monospace; font-size: 10px; }
-    .file-size { color: #484f58; font-size: 9px; }
-    .file-viewer {
-      background: #0d1117; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
-      padding: 10px; margin-top: 6px; max-height: 200px; overflow: auto; font-family: monospace;
-      font-size: 10px; color: #c9d1d9; white-space: pre-wrap; word-break: break-all;
+    .app-footer .status {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4ade80; font-weight: 600;
     }
-    .app-footer { padding: 16px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
-    .app-footer .status { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #4ade80; }
-    .app-footer .status .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
-    .app-footer .status.failed { color: #f87171; }
-    .app-footer .status.failed .dot { background: #f87171; }
+    .app-footer .status .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite;
+    }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .app-footer .version { font-size: 9px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+    .app-footer .version { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 6px; }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+
+  <!-- Splash Screen -->
+  <div class="splash" id="splash">
+    <img class="splash-logo" src="${escapeHtml(iconUrl)}" alt="${escapeHtml(pwaName)}">
+    <div class="splash-name">${escapeHtml(pwaName)}</div>
+    <div class="splash-version">v${escapeHtml(pwaVersion)}</div>
+    <div class="splash-progress"><div class="splash-progress-bar" id="progress-bar"></div></div>
+    <div class="splash-status" id="splash-status">Initializing…</div>
+  </div>
+
+  <!-- App Canvas -->
+  <div class="app" id="app">
     <div class="app-header">
       <img src="${escapeHtml(iconUrl)}" alt="${escapeHtml(pwaName)}">
       <div>
@@ -241,112 +269,67 @@ export default function PwaSandbox({ source, onClose }) {
         <p>${escapeHtml(pwaDesc)}</p>
       </div>
 
-      <div class="section-title">Bundled Modules <span class="badge">${bundledComponents.length}</span></div>
-      <div id="module-list">${moduleCardsHtml}</div>
-
-      <div class="section-title">Boot Sequence</div>
-      <div class="boot-sequence" id="boot-sequence">${bootStepsHtml}</div>
-
-      <div class="section-title">Live Console</div>
-      <div class="console-panel" id="console-panel"></div>
-
-      <div class="section-title">Package Files <span class="badge">${fileMap.size}</span></div>
-      <div class="file-browser" id="file-browser">${fileListHtml}</div>
-      <div class="file-viewer" id="file-viewer" style="display:none;"></div>
+      <div class="section-label">Installed Modules</div>
+      <div class="module-grid">
+        ${bundledComponents.length > 0 ? bundledComponents.map(c => `
+        <div class="module-card">
+          <div class="module-type module-type-${escapeHtml(c.type || 'X5')}">${escapeHtml(c.type || 'X5')}</div>
+          <div class="module-info">
+            <div class="module-code">${escapeHtml(c.code || '')}</div>
+            <div class="module-name">${escapeHtml(c.name || '')}</div>
+            ${c.description ? `<div class="module-desc">${escapeHtml(c.description)}</div>` : ''}
+            ${c.features && c.features.length ? `<div class="module-features">${c.features.map(f => `<span class="feature-tag">${escapeHtml(f)}</span>`).join('')}</div>` : ''}
+          </div>
+          ${c.price ? `<div class="module-price">$${c.price}/mo</div>` : ''}
+        </div>`).join('') : '<p style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:20px;">No modules installed.</p>'}
+      </div>
     </div>
     <div class="app-footer">
-      <div class="status" id="footer-status"><div class="dot"></div> <span id="footer-text">Initializing…</span></div>
+      <div class="status"><div class="dot"></div> Substrate Active</div>
       <div class="version">${escapeHtml(artifactCode)} · v${escapeHtml(pwaVersion)}</div>
     </div>
   </div>
 
   <script>
     (function() {
-      var consoleEl = document.getElementById('console-panel');
-      var footerStatus = document.getElementById('footer-status');
-      var footerText = document.getElementById('footer-text');
-      var ts = function() { return new Date().toLocaleTimeString('en-US', {hour12:false}); };
-      var log = function(msg, type) {
-        var line = document.createElement('div');
-        line.className = 'console-line' + (type ? ' ' + type : '');
-        line.innerHTML = '<span class="ts">[' + ts() + ']</span>' + msg;
-        consoleEl.appendChild(line);
-        consoleEl.scrollTop = consoleEl.scrollHeight;
-        console.log('[PWA]', msg);
-      };
-      log('PWA package extracted — ' + ${fileMap.size} + ' files found');
+      var splash = document.getElementById('splash');
+      var app = document.getElementById('app');
+      var progressBar = document.getElementById('progress-bar');
+      var statusEl = document.getElementById('splash-status');
 
-      // --- Step through the real boot sequence ---
-      var steps = document.querySelectorAll('.boot-step');
+      var steps = ${JSON.stringify(bootStepEntries.map(([k, label]) => label))};
       var stepIndex = 0;
+      var totalSteps = steps.length || 1;
+
       function runNextStep() {
         if (stepIndex < steps.length) {
-          steps[stepIndex].classList.add('done');
-          var label = steps[stepIndex].querySelector('.label').textContent;
-          log('Boot: ' + label, 'success');
+          var label = steps[stepIndex];
+          statusEl.textContent = label;
+          progressBar.style.width = Math.round(((stepIndex + 1) / totalSteps) * 100) + '%';
           stepIndex++;
-          setTimeout(runNextStep, 600);
+          setTimeout(runNextStep, 700);
         } else {
-          log('Boot sequence complete', 'success');
-          footerText.textContent = 'Substrate Active';
+          progressBar.style.width = '100%';
+          statusEl.textContent = 'Ready';
+          setTimeout(function() {
+            splash.classList.add('hidden');
+            app.classList.add('visible');
+          }, 400);
         }
       }
 
-      // --- Service worker: blob: URLs cannot register SWs (browser limitation) ---
-      // Show the SW source code and note it would register on a real deployment
-      var swUrl = ${JSON.stringify(swUrl)};
-      if (swUrl) {
-        log('sw.js present — SW registration skipped in sandbox (blob: protocol not supported by browsers; works on real deployment)');
-      }
-
-      // --- Import and run the actual offline-bootloader.js from the ZIP ---
+      // Import and run the actual offline-bootloader.js from the ZIP
       var bootloaderUrl = ${JSON.stringify(bootloaderUrl)};
       if (bootloaderUrl) {
-        log('Importing offline-bootloader.js…');
         import(bootloaderUrl).then(function(mod) {
-          log('offline-bootloader.js loaded', 'success');
           if (mod && mod.default && typeof mod.default.boot === 'function') {
-            mod.default.boot().then(function(r) {
-              log('Bootloader: ' + JSON.stringify(r), 'success');
-            }).catch(function(e) {
-              log('Bootloader error: ' + e.message, 'error');
-            });
-          } else {
-            log('Bootloader module loaded (no boot function)', 'error');
+            mod.default.boot().catch(function() {});
           }
-        }).catch(function(e) {
-          log('Failed to import bootloader: ' + e.message, 'error');
-        });
+        }).catch(function() {});
       }
 
-      // --- Run the actual self-healing shim ---
-      var shUrl = ${JSON.stringify(selfHealingUrl)};
-      if (shUrl) {
-        fetch(shUrl).then(function(r) { return r.text(); }).then(function(code) {
-          log('self-healing.js: ' + code.split('\\n')[0].substring(0, 60));
-        }).catch(function(e) {
-          log('self-healing.js read error: ' + e.message, 'error');
-        });
-      }
-
-      // --- File browser: click a file to view its contents ---
-      var viewer = document.getElementById('file-viewer');
-      document.querySelectorAll('.file-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-          var url = row.getAttribute('data-url');
-          var path = row.getAttribute('data-path');
-          viewer.style.display = 'block';
-          viewer.textContent = 'Loading ' + path + '…';
-          fetch(url).then(function(r) { return r.text(); }).then(function(text) {
-            viewer.textContent = text;
-          }).catch(function(e) {
-            viewer.textContent = 'Error: ' + e.message;
-          });
-        });
-      });
-
-      // Start boot sequence after a brief delay
-      setTimeout(runNextStep, 800);
+      // Start boot sequence
+      setTimeout(runNextStep, 600);
     })();
   </script>
 </body>
