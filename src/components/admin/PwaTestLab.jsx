@@ -50,8 +50,8 @@ export default function PwaTestLab() {
     setLaunching(true);
     setError(null);
     try {
-      // If a hosted launch_url exists, open it directly
-      if (selected.launch_url) {
+      // Only use launch_url if it's an actual external URL (not the internal /pwa-host/ metadata page)
+      if (selected.launch_url && !selected.launch_url.includes("/pwa-host/")) {
         window.open(selected.launch_url, "_blank", "noopener,noreferrer");
         return;
       }
@@ -329,7 +329,7 @@ export default function PwaTestLab() {
             <p className="text-[11px] text-slate-400">
               Click <span className="font-bold text-amber-400">Launch</span> to open the hosted PWA in a new tab.
             </p>
-            {selected.launch_url ? (
+            {selected.launch_url && !selected.launch_url.includes("/pwa-host/") ? (
               <>
                 <div className="bg-slate-950 rounded p-2 text-[10px] text-emerald-400 font-mono break-all">
                   {selected.launch_url}
