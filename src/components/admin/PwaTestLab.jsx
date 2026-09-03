@@ -49,12 +49,17 @@ export default function PwaTestLab() {
 
   const launchPwa = useCallback(async () => {
     if (!selected) return;
-    // If there's a real external hosted URL, open it directly
+    // External hosted URL — open directly in a new tab
     if (selected.launch_url && !selected.launch_url.includes("/pwa-host/")) {
       window.open(selected.launch_url, "_blank", "noopener,noreferrer");
       return;
     }
-    // Otherwise, launch the PWA in the sandbox (extracts ZIP and renders the app)
+    // Internal hosted PWA route — open in a new tab
+    if (selected.launch_url && selected.launch_url.includes("/pwa-host/")) {
+      window.open(selected.launch_url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    // ZIP-based PWA — extract and open the app in a new tab
     if (selected.file_url || selected.generate_function) {
       setSandboxSource(selected);
       return;

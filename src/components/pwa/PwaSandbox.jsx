@@ -87,7 +87,7 @@ export default function PwaSandbox({ source, onClose }) {
     }
   };
 
-  // Build runtime HTML that actually loads and executes the ZIP's files
+  // Build runtime HTML — a proper PWA splash page that boots and reveals the app
   const buildRuntimeHtml = (fileMap, manifest, components, payload, bootSequence, source) => {
     const manifestUrl = fileMap.get("manifest.json")?.url || "";
     const bootloaderUrl = fileMap.get("offline-bootloader.js")?.url || "";
@@ -398,13 +398,14 @@ export default function PwaSandbox({ source, onClose }) {
       setStatus("Launching PWA runtime…");
       const runtimeHtml = buildRuntimeHtml(fileMap, manifest, components, payload, bootSequence, source);
 
-      // Step 5: Create blob URL for the runtime HTML
+      // Step 5: Open the PWA app in a new browser tab
       const finalBlob = new Blob([runtimeHtml], { type: "text/html" });
       const finalUrl = URL.createObjectURL(finalBlob);
       blobUrlsRef.current.push(finalUrl);
-      setIframeSrc(finalUrl);
-      setStatus("PWA running");
+      setStatus("Opening PWA in new tab…");
+      window.open(finalUrl, "_blank", "noopener,noreferrer");
       setLoading(false);
+      setTimeout(() => onClose(), 500);
     } catch (e) {
       setError(e.message || "Failed to launch PWA.");
       setLoading(false);
