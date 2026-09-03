@@ -28,6 +28,7 @@ import SiteDocumentsTab from "@/components/admin/SiteDocumentsTab";
 import AquillaDownloadTab from "@/components/admin/AquillaDownloadTab";
 import Pm1aDeploymentTab from "@/components/admin/Pm1aDeploymentTab";
 import PwaExportsSection from "@/components/admin/PwaExportsSection";
+import PwaTestLab from "@/components/admin/PwaTestLab";
 
 const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence", "Aquilla Binary", "PWA Management"];
 
@@ -151,6 +152,7 @@ export default function AdminPanel() {
     "PWA Management": (
       <div className="space-y-6">
         <PwaExportsSection />
+        <PwaTestLab />
         <Pm1aDeploymentTab />
       </div>
     ),

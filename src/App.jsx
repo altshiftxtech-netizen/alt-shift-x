@@ -40,6 +40,7 @@ import ApiKeys from './pages/ApiKeys';
 import AccountSettings from './pages/AccountSettings';
 import ComponentSetup from './pages/ComponentSetup';
 import AdminPanel from './pages/AdminPanel';
+import PwaTestLabPage from './pages/PwaTestLabPage';
 import Pricing from './pages/Pricing';
 import Enterprise from './pages/Enterprise';
 import EnterprisePipelines from './pages/EnterprisePipelines';
@@ -279,6 +280,7 @@ const AuthenticatedApp = () => {
         <Route path="/builder/social" element={<BuilderSocialDashboard />} />
         <Route path="/builder/kit-pairing" element={<BuilderKitPairing />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/pwa-test-lab" element={<PwaTestLabPage />} />
         <Route path="/admin/business-center" element={<BizCenter />} />
         <Route path="/admin/upkeeper" element={<UpKeeper />} />
         <Route path="/admin/raffles" element={<RaffleAdmin />} />
