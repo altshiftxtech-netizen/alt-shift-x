@@ -21,6 +21,8 @@ export default async function(req) {
       status: pwa.status,
       date_wired: pwa.date_wired,
       launch_url: pwa.launch_url,
+      file_url: pwa.file_url,
+      generate_function: pwa.generate_function,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
