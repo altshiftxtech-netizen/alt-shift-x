@@ -35,6 +35,10 @@
       "type": "string",
       "description": "Optional description of the PWA package"
     },
+    "launch_url": {
+      "type": "string",
+      "description": "URL where the PWA is deployed/hosted. If set, the Launch button opens this URL instead of the zip download."
+    },
     "status": {
       "type": "string",
       "enum": [

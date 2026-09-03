@@ -46,6 +46,10 @@ export default function PwaTestLab() {
 
   const launchPwa = useCallback(() => {
     if (!selected) return;
+    if (selected.launch_url) {
+      window.open(selected.launch_url, "_blank", "noopener,noreferrer");
+      return;
+    }
     const url = `${APP_URL}/?pwa_test=${encodeURIComponent(selected.id)}&pwa_name=${encodeURIComponent(selected.name)}&sov_token=${SOV_ADMIN_TOKEN}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }, [selected]);
@@ -285,9 +289,25 @@ export default function PwaTestLab() {
               Click <span className="font-bold text-amber-400">Launch</span> to open the PWA in a new browser tab.
               The app runs in test mode — interact with it fully to validate the build.
             </p>
-            <div className="bg-slate-950 rounded p-2 text-[10px] text-slate-500 font-mono break-all">
-              {APP_URL}/?pwa_test={selected.id}&pwa_name={encodeURIComponent(selected.name)}&sov_token={SOV_ADMIN_TOKEN}
-            </div>
+            {selected.launch_url ? (
+              <>
+                <div className="bg-slate-950 rounded p-2 text-[10px] text-emerald-400 font-mono break-all">
+                  {selected.launch_url}
+                </div>
+                <p className="text-[10px] text-emerald-500 font-semibold">
+                  ✓ Launch URL configured — opens the deployed PWA
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="bg-slate-950 rounded p-2 text-[10px] text-slate-500 font-mono break-all">
+                  {APP_URL}/?pwa_test={selected.id}&pwa_name={encodeURIComponent(selected.name)}&sov_token={SOV_ADMIN_TOKEN}
+                </div>
+                <p className="text-[10px] text-amber-500">
+                  ⚠ No launch_url set — set one on the PwaExport record to point Launch at the deployed PWA
+                </p>
+              </>
+            )}
             <p className="text-[10px] text-slate-500">
               Components bundled: {selected.component_codes?.length || 0} · Version: {selected.version || "1.0.0"}
             </p>
