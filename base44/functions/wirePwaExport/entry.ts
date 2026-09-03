@@ -17,12 +17,15 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json();
     const { name, version, date_wired, component_codes, file_url, generate_function, description, status, id } = body;
 
+    const APP_DOMAIN = "https://unlock-agent-flow.base44.app";
+
     if (!name || !version) {
       return Response.json({ error: 'name and version are required' }, { status: 400 });
     }
 
     // If an id is provided, update the existing record; otherwise create a new one.
     if (id) {
+      const launch_url = `${APP_DOMAIN}/pwa-host/${id}`;
       const updated = await base44.asServiceRole.entities.PwaExport.update(id, {
         name,
         version,
@@ -32,8 +35,9 @@ export default async function(req: Request): Promise<Response> {
         generate_function,
         description,
         status: status || 'active',
+        launch_url,
       });
-      return Response.json({ ok: true, id: updated.id, action: 'updated' });
+      return Response.json({ ok: true, id: updated.id, action: 'updated', launch_url });
     }
 
     const created = await base44.asServiceRole.entities.PwaExport.create({
@@ -46,7 +50,9 @@ export default async function(req: Request): Promise<Response> {
       description,
       status: status || 'active',
     });
-    return Response.json({ ok: true, id: created.id, action: 'created' });
+    const launch_url = `${APP_DOMAIN}/pwa-host/${created.id}`;
+    await base44.asServiceRole.entities.PwaExport.update(created.id, { launch_url });
+    return Response.json({ ok: true, id: created.id, action: 'created', launch_url });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
