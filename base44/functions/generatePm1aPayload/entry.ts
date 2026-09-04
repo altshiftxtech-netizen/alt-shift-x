@@ -406,13 +406,16 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
-
     const body = await req.json().catch(() => ({}));
     const apexKey = body?.apex_key;
     const exportId = body?.export_id;
+
+    // ── Auth: allow direct admin calls OR service-role invocations (from getHostedPwa) ──
+    let user = null;
+    let isServiceRole = false;
+    try { user = await base44.auth.me(); } catch { isServiceRole = true; }
+    if (!user && !isServiceRole) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user && user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
 
     // ── Apex Key verification (Sovereign Ledger handshake) — optional ─────────
     let verifiedKey = null;
@@ -501,7 +504,7 @@ export default async function(req) {
       type: primary?.type || 'X5',
       version: pwaVersion,
       generated_at: new Date().toISOString(),
-      generated_by: user.id,
+      generated_by: user?.id || 'service-role',
       export_name: exportRecord?.name || null,
       apex_verification: verifiedKey ? {
         verified: true,
@@ -512,7 +515,7 @@ export default async function(req) {
         verified: false,
         note: 'Apex Key not provided — payload generated without Sovereign Ledger verification.',
       },
-      builder_id: user.id,
+      builder_id: user?.id || 'service-role',
       master_endpoint: PM1A_MASTER_ENDPOINT,
       component_endpoint: endpointUrl,
       bundled_components: bundledComponents.map(c => ({

@@ -59,9 +59,9 @@ export default function PwaTestLab() {
       window.open(selected.launch_url, "_blank", "noopener,noreferrer");
       return;
     }
-    // ZIP-based PWA — extract and open the app in a new tab
+    // Decoupled Sovereign PWA Launch — open the platform-level Hi-Viz Canvas viewer
     if (selected.file_url || selected.generate_function) {
-      setSandboxSource(selected);
+      window.open(`/pwa-viewer/${selected.id}`, "_blank", "noopener,noreferrer");
       return;
     }
     setError("This PWA export has no hosted URL, file_url, or generate function.");
