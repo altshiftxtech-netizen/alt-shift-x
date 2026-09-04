@@ -49,22 +49,13 @@ export default function PwaTestLab() {
 
   const launchPwa = useCallback(async () => {
     if (!selected) return;
-    // External hosted URL — open directly in a new tab
+    // External hosted URL (not our /pwa-host route) — open directly
     if (selected.launch_url && !selected.launch_url.includes("/pwa-host/")) {
       window.open(selected.launch_url, "_blank", "noopener,noreferrer");
       return;
     }
-    // Internal hosted PWA route — open in a new tab
-    if (selected.launch_url && selected.launch_url.includes("/pwa-host/")) {
-      window.open(selected.launch_url, "_blank", "noopener,noreferrer");
-      return;
-    }
-    // Decoupled Sovereign PWA Launch — open the platform-level Hi-Viz Canvas viewer
-    if (selected.file_url || selected.generate_function) {
-      window.open(`/pwa-viewer/${selected.id}`, "_blank", "noopener,noreferrer");
-      return;
-    }
-    setError("This PWA export has no hosted URL, file_url, or generate function.");
+    // Always open the actual PWA app via PwaHost — never the test viewer
+    window.open(`/pwa-host/${selected.id}`, "_blank", "noopener,noreferrer");
   }, [selected]);
 
 
@@ -302,38 +293,12 @@ export default function PwaTestLab() {
             <p className="text-[11px] text-slate-400">
               Click <span className="font-bold text-amber-400">Launch</span> to open the PWA in a new browser tab — renders the actual app from the package files.
             </p>
-            {selected.launch_url && !selected.launch_url.includes("/pwa-host/") ? (
-              <>
-                <div className="bg-slate-950 rounded p-2 text-[10px] text-emerald-400 font-mono break-all">
-                  {selected.launch_url}
-                </div>
-                <p className="text-[10px] text-emerald-500 font-semibold">
-                  ✓ Hosted URL — opens the deployed PWA in a new tab
-                </p>
-              </>
-            ) : selected.file_url ? (
-              <>
-                <div className="bg-slate-950 rounded p-2 text-[10px] text-sky-400 font-mono break-all">
-                  {selected.file_url}
-                </div>
-                <p className="text-[10px] text-sky-500 font-semibold">
-                  ✓ Pre-built ZIP — downloads the package directly
-                </p>
-              </>
-            ) : selected.generate_function ? (
-              <>
-                <div className="bg-slate-950 rounded p-2 text-[10px] text-amber-400 font-mono break-all">
-                  {selected.generate_function}()
-                </div>
-                <p className="text-[10px] text-amber-500 font-semibold">
-                  ⚡ On-demand generation — builds and downloads the ZIP package
-                </p>
-              </>
-            ) : (
-              <p className="text-[10px] text-red-500">
-                ⚠ No launch URL, file_url, or generate function — cannot launch
-              </p>
-            )}
+            <div className="bg-slate-950 rounded p-2 text-[10px] text-amber-400 font-mono break-all">
+              /pwa-host/{selected.id}
+            </div>
+            <p className="text-[10px] text-amber-500 font-semibold">
+              ✓ Opens the actual PWA app in a new tab
+            </p>
             <p className="text-[10px] text-slate-500">
               Components bundled: {selected.component_codes?.length || 0} · Version: {selected.version || "1.0.0"}
             </p>
