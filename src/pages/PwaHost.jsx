@@ -223,18 +223,18 @@ export default function PwaHost() {
 
       // Otherwise, extract and render the ZIP inline
       let zipBuffer;
-      if (data.file_url) {
-        setStatus("Downloading package…");
-        const fetchRes = await fetch(data.file_url);
-        if (!fetchRes.ok) throw new Error(`Download failed: ${fetchRes.status}`);
-        zipBuffer = await fetchRes.arrayBuffer();
-      } else if (data.zip) {
-        // Server already generated the ZIP via service role
+      if (data.zip) {
+        // Server already generated the ZIP via service role — prefer inline payload
         setStatus("Decoding PWA package…");
         const binStr = atob(data.zip);
         const bytes = new Uint8Array(binStr.length);
         for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
         zipBuffer = bytes.buffer;
+      } else if (data.file_url) {
+        setStatus("Downloading package…");
+        const fetchRes = await fetch(data.file_url);
+        if (!fetchRes.ok) throw new Error(`Download failed: ${fetchRes.status}`);
+        zipBuffer = await fetchRes.arrayBuffer();
       } else {
         throw new Error("This PWA has no file_url or generate_function.");
       }

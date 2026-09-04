@@ -52,15 +52,15 @@ export default function PwaViewer() {
       setPwaMeta({ name: data.name, version: data.version, description: data.description, artifactCode: data.artifact_code });
 
       let zipBuffer;
-      if (data.file_url) {
-        const fetchRes = await fetch(data.file_url);
-        if (!fetchRes.ok) throw new Error(`Download failed: ${fetchRes.status}`);
-        zipBuffer = await fetchRes.arrayBuffer();
-      } else if (data.zip) {
+      if (data.zip) {
         const binStr = atob(data.zip);
         const bytes = new Uint8Array(binStr.length);
         for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
         zipBuffer = bytes.buffer;
+      } else if (data.file_url) {
+        const fetchRes = await fetch(data.file_url);
+        if (!fetchRes.ok) throw new Error(`Download failed: ${fetchRes.status}`);
+        zipBuffer = await fetchRes.arrayBuffer();
       } else {
         throw new Error("No ZIP payload available.");
       }
