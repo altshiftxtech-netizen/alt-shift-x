@@ -117,9 +117,37 @@ async function sha256(text) {
 function buildIndexHtml(name, version, description, artifactCode, components, bootSequence) {
   const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const compJson = JSON.stringify(components || []);
-  const bootJson = JSON.stringify(bootSequence || {});
-  const manifest = { name, version, description, artifactCode };
-  const manifestJson = JSON.stringify(manifest);
+  const primary = (components || [])[0] || {};
+  const compType = primary.type || 'X5';
+  const compName = primary.name || name;
+  const compDesc = primary.description || description || '';
+  const compFeatures = primary.features || [];
+  const compSchema = primary.schema || [];
+  const compCode = primary.code || artifactCode || '';
+
+  // Type-specific UI labels
+  const typeMeta = {
+    X1: { label: 'Reading Protocol', icon: '📖', action: 'Read', placeholder: 'Enter text or upload a document to analyze…' },
+    X2: { label: 'Prophecy Model', icon: '🔮', action: 'Predict', placeholder: 'Enter a scenario to forecast…' },
+    X3: { label: 'Speed Profile', icon: '⚡', action: 'Run', placeholder: 'Enter a task to optimize…' },
+    X4: { label: 'Reason Council', icon: '🧠', action: 'Deliberate', placeholder: 'Enter a question for the council…' },
+    X5: { label: 'Agent', icon: '🤖', action: 'Send', placeholder: 'Ask the agent anything…' },
+  };
+  const tm = typeMeta[compType] || typeMeta.X5;
+
+  // Build feature chips
+  const featureChips = compFeatures.length > 0
+    ? compFeatures.slice(0, 6).map(f => '<span class="chip">' + esc(f) + '</span>').join('')
+    : '';
+
+  // Build schema fields as form inputs
+  const schemaFields = compSchema.length > 0
+    ? compSchema.slice(0, 5).map(field => {
+        const fld = (field || '').toString();
+        return '<div class="schema-field"><label>' + esc(fld) + '</label>' +
+               '<input type="text" data-field="' + esc(fld) + '" placeholder="Enter ' + esc(fld) + '…"></div>';
+      }).join('')
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -130,274 +158,224 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
   <meta name="theme-color" content="#0a0e1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>${esc(name)}</title>
+  <title>${esc(compName)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0a0e1a; color: #e2e8f0; min-height: 100vh; overflow-x: hidden;
+      background: #0a0e1a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column;
     }
-    /* Boot overlay */
-    #boot-overlay {
-      position: fixed; inset: 0; z-index: 100; background: #0a0e1a;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 16px; transition: opacity 0.5s ease;
-    }
-    #boot-overlay.hidden { opacity: 0; pointer-events: none; }
-    .boot-logo {
-      width: 72px; height: 72px; border-radius: 18px; object-fit: cover;
-      box-shadow: 0 0 40px rgba(251,191,36,0.3);
-      animation: boot-pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes boot-pulse {
-      0%,100% { transform: scale(1); opacity: 0.9; }
-      50% { transform: scale(1.08); opacity: 1; }
-    }
-    .boot-name { font-size: 18px; font-weight: 800; color: #fff; }
-    .boot-version { font-size: 11px; color: #64748b; }
-    .boot-console {
-      width: 280px; max-width: 80vw; min-height: 80px; margin-top: 8px;
-      font-family: 'SF Mono', Monaco, monospace; font-size: 10px; color: #4ade80;
-      text-align: left; line-height: 1.6; opacity: 0.8;
-    }
-    .boot-console .line { opacity: 0; animation: fade-in 0.3s forwards; }
-    .boot-console .line.ok::before { content: '✓ '; color: #4ade80; }
-    .boot-console .line.wait::before { content: '⟳ '; color: #fbbf24; }
-    .boot-console .line.fail::before { content: '✗ '; color: #f87171; }
-    @keyframes fade-in { to { opacity: 1; } }
-    .boot-progress {
-      width: 200px; height: 2px; background: #1e293b; border-radius: 1px; overflow: hidden; margin-top: 4px;
-    }
-    .boot-progress-bar { height: 100%; width: 0; background: #fbbf24; transition: width 0.4s ease; }
-
-    /* App shell */
-    #app { opacity: 0; transition: opacity 0.5s ease; min-height: 100vh; }
-    #app.visible { opacity: 1; }
     .header {
       background: linear-gradient(135deg, #0a0e1a, #1a2332);
-      padding: 16px; display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 10px;
       position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #1e293b;
       box-shadow: 0 2px 20px rgba(0,0,0,0.3);
     }
-    .header img { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; }
-    .header h1 { font-size: 16px; font-weight: 700; color: #fff; }
-    .header p { font-size: 10px; color: #64748b; }
-    .header .badge {
-      margin-left: auto; font-size: 9px; font-weight: 700; padding: 4px 8px;
-      border-radius: 6px; background: #052e16; color: #4ade80; border: 1px solid #14532d;
+    .header .logo { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
+    .header .title-wrap { flex: 1; min-width: 0; }
+    .header h1 { font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header .subtitle { font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 6px; }
+    .header .type-badge {
+      font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 5px;
     }
-    .body { max-width: 640px; margin: 0 auto; padding: 16px; }
-    .identity-bar {
-      background: #052e16; border: 1px solid #14532d; border-radius: 10px; padding: 10px 12px;
-      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-    }
-    .identity-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: boot-pulse 2s infinite; }
-    .identity-bar .label { font-size: 10px; color: #4ade80; font-weight: 600; }
-    .identity-bar .id { font-size: 10px; font-family: monospace; color: #64748b; margin-left: auto; }
-    .section-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-      color: #475569; margin: 16px 0 10px;
-    }
-    .module-card {
+    .type-X1 { background: #172554; color: #60a5fa; }
+    .type-X2 { background: #3b0764; color: #c084fc; }
+    .type-X3 { background: #052e16; color: #4ade80; }
+    .type-X4 { background: #451a03; color: #fb923c; }
+    .type-X5 { background: #500724; color: #f472b6; }
+    .main { flex: 1; display: flex; flex-direction: column; max-width: 720px; width: 100%; margin: 0 auto; padding: 16px; }
+    .hero { text-align: center; margin-bottom: 16px; }
+    .hero .icon { font-size: 40px; margin-bottom: 8px; }
+    .hero h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .hero p { font-size: 12px; color: #64748b; line-height: 1.5; max-width: 420px; margin: 0 auto; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+    .chip { font-size: 10px; padding: 4px 10px; border-radius: 12px; background: #1e293b; color: #94a3b8; }
+    .interaction { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .output {
+      flex: 1; min-height: 180px; max-height: 340px; overflow-y: auto;
       background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;
-      display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; cursor: pointer;
-      transition: border-color 0.15s, transform 0.1s;
+      font-size: 13px; line-height: 1.6; color: #cbd5e1;
     }
-    .module-card:active { transform: scale(0.98); }
-    .module-card:hover { border-color: #334155; }
-    .module-type {
-      width: 36px; height: 36px; border-radius: 8px; display: flex;
-      align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    .output .msg-user { text-align: right; margin-bottom: 10px; }
+    .output .msg-user .bubble { display: inline-block; background: #1e3a5f; color: #dbeafe; padding: 8px 12px; border-radius: 12px 12px 2px 12px; max-width: 80%; }
+    .output .msg-agent { margin-bottom: 10px; }
+    .output .msg-agent .bubble { display: inline-block; background: #1a2332; color: #e2e8f0; padding: 8px 12px; border-radius: 12px 12px 12px 2px; max-width: 85%; }
+    .output .msg-agent .label { font-size: 9px; color: #64748b; margin-bottom: 3px; }
+    .output .empty { color: #475569; text-align: center; padding: 40px 0; font-size: 13px; }
+    .input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .input-row textarea {
+      flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 12px;
+      color: #e2e8f0; font-size: 13px; font-family: inherit; resize: none; min-height: 42px; max-height: 120px;
+      outline: none; transition: border-color 0.15s;
     }
-    .module-type-X1 { background: #172554; color: #60a5fa; }
-    .module-type-X2 { background: #3b0764; color: #c084fc; }
-    .module-type-X3 { background: #052e16; color: #4ade80; }
-    .module-type-X4 { background: #451a03; color: #fb923c; }
-    .module-type-X5 { background: #500724; color: #f472b6; }
-    .module-info { flex: 1; min-width: 0; }
-    .module-code { font-size: 9px; font-family: monospace; color: #475569; }
-    .module-name { font-size: 13px; font-weight: 600; color: #f1f5f9; margin: 2px 0; }
-    .module-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
-    .module-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-    .feature-tag { font-size: 8px; padding: 2px 6px; border-radius: 4px; background: #1e293b; color: #94a3b8; }
-    .module-price { font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap; }
-    .footer {
-      padding: 16px; text-align: center; border-top: 1px solid #1e293b; margin-top: 20px;
+    .input-row textarea:focus { border-color: #fbbf24; }
+    .input-row button {
+      background: #fbbf24; color: #0a0e1a; border: none; border-radius: 10px; padding: 10px 16px;
+      font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.1s;
     }
-    .footer .status { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #4ade80; font-weight: 600; }
-    .footer .status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: boot-pulse 2s infinite; }
-    .footer .version { font-size: 9px; color: #334155; margin-top: 4px; }
-    .console-panel {
-      background: #020617; border: 1px solid #1e293b; border-radius: 10px; padding: 10px;
-      margin-top: 12px; font-family: 'SF Mono', Monaco, monospace; font-size: 9px; color: #64748b;
-      max-height: 120px; overflow-y: auto;
+    .input-row button:active { transform: scale(0.95); }
+    .input-row button:disabled { opacity: 0.5; cursor: default; }
+    .schema-fields { display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .schema-fields.visible { display: flex; }
+    .schema-field label { font-size: 10px; color: #64748b; display: block; margin-bottom: 3px; }
+    .schema-field input {
+      width: 100%; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px;
+      color: #e2e8f0; font-size: 12px; outline: none;
     }
-    .console-panel .entry { margin-bottom: 2px; }
-    .console-panel .entry .ts { color: #334155; }
-    .console-panel .entry .msg { color: #94a3b8; }
-    .action-btn {
-      display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px;
-      background: #fbbf24; color: #0a0e1a; font-size: 12px; font-weight: 700; border: none; cursor: pointer;
+    .schema-field input:focus { border-color: #fbbf24; }
+    .toolbar { display: flex; gap: 6px; margin-bottom: 10px; }
+    .toolbar button {
+      background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; padding: 6px 10px;
+      font-size: 11px; cursor: pointer;
     }
-    .action-btn:active { transform: scale(0.96); }
+    .toolbar button.active { background: #334155; color: #fbbf24; }
+    .footer { padding: 10px 16px; text-align: center; border-top: 1px solid #1e293b; }
+    .footer .ver { font-size: 9px; color: #334155; }
   </style>
 </head>
 <body>
-  <!-- Boot overlay -->
-  <div id="boot-overlay">
-    <img class="boot-logo" src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${esc(name)}">
-    <div class="boot-name">${esc(name)}</div>
-    <div class="boot-version">v${esc(version)}</div>
-    <div class="boot-progress"><div class="boot-progress-bar" id="boot-bar"></div></div>
-    <div class="boot-console" id="boot-console"></div>
-  </div>
-
-  <!-- App -->
-  <div id="app">
-    <div class="header">
-      <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${esc(name)}">
-      <div>
-        <h1>${esc(name)}</h1>
-        <p>v${esc(version)}</p>
+  <div class="header">
+    <img class="logo" src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${esc(compName)}">
+    <div class="title-wrap">
+      <h1>${esc(compName)}</h1>
+      <div class="subtitle">
+        <span class="type-badge type-${esc(compType)}">${esc(compType)} · ${esc(tm.label)}</span>
+        <span>v${esc(version)}</span>
       </div>
-      <span class="badge" id="status-badge">ACTIVE</span>
-    </div>
-    <div class="body">
-      <div class="identity-bar">
-        <div class="dot"></div>
-        <span class="label">Substrate Identity</span>
-        <span class="id" id="identity-id">—</span>
-      </div>
-      <div class="section-label">Installed Modules</div>
-      <div id="module-list"></div>
-      <div class="section-label">Runtime Console</div>
-      <div class="console-panel" id="console-panel"></div>
-    </div>
-    <div class="footer">
-      <div class="status"><div class="dot"></div> Substrate Active</div>
-      <div class="version">${esc(artifactCode)} · v${esc(version)}</div>
     </div>
   </div>
 
-  <script type="module">
-    const COMPONENTS = ${compJson};
-    const BOOT_STEPS = ${bootJson};
-    const PWA_META = ${manifestJson};
+  <div class="main">
+    <div class="hero">
+      <div class="icon">${tm.icon}</div>
+      <h2>${esc(compName)}</h2>
+      <p>${esc(compDesc)}</p>
+      ${featureChips ? '<div class="chips">' + featureChips + '</div>' : ''}
+    </div>
 
-    const consoleEl = document.getElementById('boot-console');
-    const consolePanel = document.getElementById('console-panel');
-    const bootBar = document.getElementById('boot-bar');
-    const bootOverlay = document.getElementById('boot-overlay');
-    const appEl = document.getElementById('app');
+    <div class="interaction">
+      <div class="toolbar">
+        <button id="btn-chat" class="active">${esc(tm.action)}</button>
+        ${schemaFields ? '<button id="btn-schema">Configure</button>' : ''}
+      </div>
 
-    function logBoot(text, type) {
-      const line = document.createElement('div');
-      line.className = 'line ' + (type || '');
-      line.style.animationDelay = (consoleEl.children.length * 0.1) + 's';
-      line.textContent = text;
-      consoleEl.appendChild(line);
-    }
-    function logRuntime(text) {
-      const entry = document.createElement('div');
-      entry.className = 'entry';
-      const ts = new Date().toLocaleTimeString();
-      entry.innerHTML = '<span class="ts">[' + ts + ']</span> <span class="msg">' + text + '</span>';
-      consolePanel.appendChild(entry);
-      consolePanel.scrollTop = consolePanel.scrollHeight;
-    }
+      ${schemaFields ? '<div class="schema-fields" id="schema-fields">' + schemaFields + '</div>' : ''}
 
-    function renderModules() {
-      const list = document.getElementById('module-list');
-      if (!COMPONENTS.length) {
-        list.innerHTML = '<p style="font-size:12px;color:#475569;text-align:center;padding:16px;">No modules installed.</p>';
-        return;
+      <div class="output" id="output">
+        <div class="empty">${esc(tm.label)} ready. ${esc(tm.placeholder)}</div>
+      </div>
+
+      <div class="input-row">
+        <textarea id="input" placeholder="${esc(tm.placeholder)}" rows="1"></textarea>
+        <button id="send-btn">${esc(tm.action)}</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="ver">${esc(compCode)} · v${esc(version)}</div>
+  </div>
+
+  <script>
+    const COMP_TYPE = ${JSON.stringify(compType)};
+    const COMP_NAME = ${JSON.stringify(compName)};
+    const TM = ${JSON.stringify(tm)};
+    const SCHEMA_FIELDS = ${JSON.stringify(compSchema || [])};
+
+    const output = document.getElementById('output');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+    const btnChat = document.getElementById('btn-chat');
+    const btnSchema = document.getElementById('btn-schema');
+    const schemaFields = document.getElementById('schema-fields');
+
+    // Auto-resize textarea
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+
+    // Enter to send, Shift+Enter for newline
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        doSend();
       }
-      list.innerHTML = COMPONENTS.map(c => {
-        const type = c.type || 'X5';
-        const features = (c.features || []).slice(0, 4).map(f => '<span class="feature-tag">' + (f || '').replace(/</g,'&lt;') + '</span>').join('');
-        return '<div class="module-card">' +
-          '<div class="module-type module-type-' + type + '">' + type + '</div>' +
-          '<div class="module-info">' +
-            '<div class="module-code">' + (c.code || '') + '</div>' +
-            '<div class="module-name">' + (c.name || '') + '</div>' +
-            (c.description ? '<div class="module-desc">' + c.description.replace(/</g,'&lt;') + '</div>' : '') +
-            (features ? '<div class="module-features">' + features + '</div>' : '') +
-          '</div>' +
-          (c.price ? '<div class="module-price">$' + c.price + '/mo</div>' : '') +
-        '</div>';
-      }).join('');
-    }
+    });
 
-    async function runBoot() {
-      const steps = Object.values(BOOT_STEPS);
-      const total = Math.max(steps.length, 1);
-      let progress = 0;
+    sendBtn.addEventListener('click', doSend);
 
-      logBoot('Initializing ' + PWA_META.name + ' v' + PWA_META.version, 'ok');
-      await sleep(300);
-
-      // Step 1: Identity provisioning
-      logBoot(steps[0] || 'Checking substrate identity…', 'wait');
-      let identity = null;
-      try {
-        const stored = localStorage.getItem('pm1a_identity');
-        if (stored && stored.startsWith('6a21')) {
-          identity = stored;
-          logBoot('Existing identity found: ' + identity.substring(0, 12) + '…', 'ok');
-        } else {
-          logBoot('No identity — provisioning new substrate…', 'wait');
-          const bytes = new Uint8Array(16);
-          crypto.getRandomValues(bytes);
-          identity = '6a21' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-          localStorage.setItem('pm1a_identity', identity);
-          logBoot('New identity provisioned: ' + identity.substring(0, 12) + '…', 'ok');
-        }
-        document.getElementById('identity-id').textContent = identity.substring(0, 20) + '…';
-      } catch (e) {
-        logBoot('Identity provisioning failed: ' + e.message, 'fail');
-      }
-      progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
-      await sleep(400);
-
-      // Step 2: Service worker
-      logBoot(steps[4] || 'Registering service worker…', 'wait');
-      if ('serviceWorker' in navigator) {
-        try {
-          const reg = await navigator.serviceWorker.register('sw.js');
-          logBoot('Service worker registered: ' + reg.scope, 'ok');
-        } catch (e) {
-          logBoot('SW registration skipped (blob:// limitation)', 'fail');
-        }
-      } else {
-        logBoot('Service worker not supported', 'fail');
-      }
-      progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
-      await sleep(300);
-
-      // Remaining boot steps
-      for (let i = 2; i < steps.length; i++) {
-        logBoot(steps[i], 'wait');
-        await sleep(300);
-        logBoot('Complete', 'ok');
-        progress += 1; bootBar.style.width = Math.round(progress / total * 100) + '%';
-      }
-
-      bootBar.style.width = '100%';
-      logBoot('Substrate active — launching app', 'ok');
-      await sleep(400);
-
-      // Transition to app
-      bootOverlay.classList.add('hidden');
-      appEl.classList.add('visible');
-      renderModules();
-      logRuntime('App launched — ' + COMPONENTS.length + ' modules loaded');
-      logRuntime('Identity: ' + (identity || 'unknown').substring(0, 16) + '…');
+    // Toggle schema fields
+    if (btnSchema) {
+      btnSchema.addEventListener('click', () => {
+        schemaFields.classList.toggle('visible');
+        btnSchema.classList.toggle('active');
+        btnChat.classList.toggle('active');
+      });
+      btnChat.addEventListener('click', () => {
+        schemaFields.classList.remove('visible');
+        btnSchema.classList.remove('active');
+        btnChat.classList.add('active');
+      });
     }
 
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function addMessage(role, text) {
+      // Remove empty placeholder
+      const empty = output.querySelector('.empty');
+      if (empty) empty.remove();
 
-    // Start boot
-    runBoot().catch(e => { logBoot('Boot failed: ' + e.message, 'fail'); });
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-' + role;
+      if (role === 'agent') {
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = COMP_NAME;
+        wrap.appendChild(label);
+      }
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      wrap.appendChild(bubble);
+      output.appendChild(wrap);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function doSend() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage('user', text);
+      input.value = '';
+      input.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      // Collect schema field values
+      const schemaValues = {};
+      if (schemaFields) {
+        schemaFields.querySelectorAll('input').forEach(inp => {
+          if (inp.value.trim()) schemaValues[inp.dataset.field] = inp.value.trim();
+        });
+      }
+
+      // Simulate agent response based on component type
+      const responses = {
+        X1: 'Reading protocol engaged. I have analyzed your input: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '". Key themes identified and ready for deeper extraction.',
+        X2: 'Prophecy model activated. Based on the scenario: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '". Forecasting probability vectors and trend analysis.',
+        X3: 'Speed profile loaded. Optimizing for: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '". Performance metrics and acceleration vectors calculated.',
+        X4: 'Council is deliberating on: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '". Multiple perspectives are being weighed and synthesized.',
+        X5: 'Agent online. I received your request: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '". Processing and ready to assist further.',
+      };
+
+      const schemaNote = Object.keys(schemaValues).length > 0
+        ? ' (with parameters: ' + Object.entries(schemaValues).map(([k,v]) => k + '=' + v).join(', ') + ')'
+        : '';
+
+      setTimeout(() => {
+        addMessage('agent', (responses[COMP_TYPE] || responses.X5) + schemaNote);
+        sendBtn.disabled = false;
+        input.focus();
+      }, 600);
+    }
   </script>
 </body>
 </html>`;

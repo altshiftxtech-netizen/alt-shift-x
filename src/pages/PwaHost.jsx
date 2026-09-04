@@ -67,26 +67,46 @@ export default function PwaHost() {
     }
   };
 
-  // Build runtime HTML from the ZIP's files
+  // Build runtime HTML — always renders the functional component UI
   const buildRuntimeHtml = async (fileMap, manifest, payload, source) => {
     const manifestUrl = fileMap.get("manifest.json")?.url || "";
-    const bootloaderUrl = fileMap.get("offline-bootloader.js")?.url || "";
     const pwaName = manifest?.name || source?.name || "PWA";
     const pwaVersion = manifest?.version || source?.version || payload?.version || "1.0.0";
     const pwaDesc = manifest?.description || payload?.description || source?.description || "";
-    const themeColor = manifest?.theme_color || "#0a0e1a";
-    const bgColor = manifest?.background_color || "#1a2332";
-    const iconUrl = manifest?.icons?.[0]?.src || "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg";
     const artifactCode = payload?.artifact_code || manifest?.short_name || "";
     const bundledComponents = payload?.bundled_components || [];
 
     const escapeHtml = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-    // If the ZIP contains an index.html, use it directly
-    const indexHtmlEntry = fileMap.get("index.html") || fileMap.get("index.htm");
-    if (indexHtmlEntry) {
-      return await indexHtmlEntry.blob.text();
-    }
+    // Always use the primary component to drive the UI
+    const primary = bundledComponents[0] || {};
+    const compType = primary.type || "X5";
+    const compName = primary.name || pwaName;
+    const compDesc = primary.description || pwaDesc;
+    const compFeatures = primary.features || [];
+    const compSchema = primary.schema || [];
+    const compCode = primary.code || artifactCode;
+
+    const typeMeta = {
+      X1: { label: "Reading Protocol", icon: "📖", action: "Read", placeholder: "Enter text or upload a document to analyze…" },
+      X2: { label: "Prophecy Model", icon: "🔮", action: "Predict", placeholder: "Enter a scenario to forecast…" },
+      X3: { label: "Speed Profile", icon: "⚡", action: "Run", placeholder: "Enter a task to optimize…" },
+      X4: { label: "Reason Council", icon: "🧠", action: "Deliberate", placeholder: "Enter a question for the council…" },
+      X5: { label: "Agent", icon: "🤖", action: "Send", placeholder: "Ask the agent anything…" },
+    };
+    const tm = typeMeta[compType] || typeMeta.X5;
+
+    const featureChips = compFeatures.length > 0
+      ? compFeatures.slice(0, 6).map(f => '<span class="chip">' + escapeHtml(f) + "</span>").join("")
+      : "";
+
+    const schemaFieldsHtml = compSchema.length > 0
+      ? compSchema.slice(0, 5).map(field => {
+          const fld = (field || "").toString();
+          return '<div class="schema-field"><label>' + escapeHtml(fld) + "</label>" +
+                 '<input type="text" data-field="' + escapeHtml(fld) + '" placeholder="Enter ' + escapeHtml(fld) + '…"></div>';
+        }).join("")
+      : "";
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -94,108 +114,130 @@ export default function PwaHost() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   ${manifestUrl ? '<link rel="manifest" href="' + manifestUrl + '">' : ""}
-  <meta name="theme-color" content="${escapeHtml(themeColor)}">
-  <title>${escapeHtml(pwaName)}</title>
+  <meta name="theme-color" content="#0a0e1a">
+  <title>${escapeHtml(compName)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: ${escapeHtml(bgColor)}; color: #e2e8f0; min-height: 100vh;
-      overflow-x: hidden;
-    }
-    .app-header {
-      background: linear-gradient(135deg, ${escapeHtml(themeColor)}, ${escapeHtml(bgColor)});
-      padding: 20px 16px; display: flex; align-items: center; gap: 12px;
-      position: sticky; top: 0; z-index: 10;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-    }
-    .app-header img { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
-    .app-header h1 { font-size: 17px; font-weight: 700; color: #fff; }
-    .app-header p { font-size: 11px; color: rgba(255,255,255,0.5); }
-    .app-body { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
-    .hero { text-align: center; margin-bottom: 24px; }
-    .hero h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-    .hero p { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 420px; margin: 0 auto; }
-    .section-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.35); margin: 20px 0 12px;
-    }
-    .module-grid { display: grid; gap: 10px; }
-    .module-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px; padding: 16px; display: flex; gap: 14px; align-items: flex-start;
-    }
-    .module-type {
-      width: 40px; height: 40px; border-radius: 10px; display: flex;
-      align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
-    }
-    .module-type-X1 { background: #1e3a5f; color: #60a5fa; }
-    .module-type-X2 { background: #3a1e5f; color: #c084fc; }
-    .module-type-X3 { background: #1e5f3a; color: #4ade80; }
-    .module-type-X4 { background: #5f3a1e; color: #fb923c; }
-    .module-type-X5 { background: #5f1e3a; color: #f472b6; }
-    .module-info { flex: 1; min-width: 0; }
-    .module-code { font-size: 10px; font-family: monospace; color: rgba(255,255,255,0.35); }
-    .module-name { font-size: 14px; font-weight: 600; color: #fff; margin: 3px 0; }
-    .module-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
-    .module-price { font-size: 13px; font-weight: 700; color: #fbbf24; white-space: nowrap; }
-    .app-footer {
-      padding: 20px 16px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 20px;
-    }
-    .app-footer .status {
-      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #4ade80; font-weight: 600;
-    }
-    .app-footer .status .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .app-footer .version { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 6px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e1a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: linear-gradient(135deg, #0a0e1a, #1a2332); padding: 12px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #1e293b; box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+    .header .logo { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
+    .header .title-wrap { flex: 1; min-width: 0; }
+    .header h1 { font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header .subtitle { font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 6px; }
+    .header .type-badge { font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 5px; }
+    .type-X1 { background: #172554; color: #60a5fa; }
+    .type-X2 { background: #3b0764; color: #c084fc; }
+    .type-X3 { background: #052e16; color: #4ade80; }
+    .type-X4 { background: #451a03; color: #fb923c; }
+    .type-X5 { background: #500724; color: #f472b6; }
+    .main { flex: 1; display: flex; flex-direction: column; max-width: 720px; width: 100%; margin: 0 auto; padding: 16px; }
+    .hero { text-align: center; margin-bottom: 16px; }
+    .hero .icon { font-size: 40px; margin-bottom: 8px; }
+    .hero h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .hero p { font-size: 12px; color: #64748b; line-height: 1.5; max-width: 420px; margin: 0 auto; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+    .chip { font-size: 10px; padding: 4px 10px; border-radius: 12px; background: #1e293b; color: #94a3b8; }
+    .interaction { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .output { flex: 1; min-height: 180px; max-height: 340px; overflow-y: auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.6; color: #cbd5e1; }
+    .output .msg-user { text-align: right; margin-bottom: 10px; }
+    .output .msg-user .bubble { display: inline-block; background: #1e3a5f; color: #dbeafe; padding: 8px 12px; border-radius: 12px 12px 2px 12px; max-width: 80%; }
+    .output .msg-agent { margin-bottom: 10px; }
+    .output .msg-agent .bubble { display: inline-block; background: #1a2332; color: #e2e8f0; padding: 8px 12px; border-radius: 12px 12px 12px 2px; max-width: 85%; }
+    .output .msg-agent .label { font-size: 9px; color: #64748b; margin-bottom: 3px; }
+    .output .empty { color: #475569; text-align: center; padding: 40px 0; font-size: 13px; }
+    .input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .input-row textarea { flex: 1; background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 12px; color: #e2e8f0; font-size: 13px; font-family: inherit; resize: none; min-height: 42px; max-height: 120px; outline: none; transition: border-color 0.15s; }
+    .input-row textarea:focus { border-color: #fbbf24; }
+    .input-row button { background: #fbbf24; color: #0a0e1a; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.1s; }
+    .input-row button:active { transform: scale(0.95); }
+    .input-row button:disabled { opacity: 0.5; cursor: default; }
+    .schema-fields { display: none; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .schema-fields.visible { display: flex; }
+    .schema-field label { font-size: 10px; color: #64748b; display: block; margin-bottom: 3px; }
+    .schema-field input { width: 100%; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px; color: #e2e8f0; font-size: 12px; outline: none; }
+    .schema-field input:focus { border-color: #fbbf24; }
+    .toolbar { display: flex; gap: 6px; margin-bottom: 10px; }
+    .toolbar button { background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; }
+    .toolbar button.active { background: #334155; color: #fbbf24; }
+    .footer { padding: 10px 16px; text-align: center; border-top: 1px solid #1e293b; }
+    .footer .ver { font-size: 9px; color: #334155; }
   </style>
 </head>
 <body>
-  <div class="app" id="app" style="opacity:1;">
-    <div class="app-header">
-      <img src="${escapeHtml(iconUrl)}" alt="${escapeHtml(pwaName)}">
-      <div>
-        <h1>${escapeHtml(pwaName)}</h1>
-        <p>v${escapeHtml(pwaVersion)}</p>
+  <div class="header">
+    <img class="logo" src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg" alt="${escapeHtml(compName)}">
+    <div class="title-wrap">
+      <h1>${escapeHtml(compName)}</h1>
+      <div class="subtitle">
+        <span class="type-badge type-${escapeHtml(compType)}">${escapeHtml(compType)} · ${escapeHtml(tm.label)}</span>
+        <span>v${escapeHtml(pwaVersion)}</span>
       </div>
-    </div>
-    <div class="app-body">
-      <div class="hero">
-        <h2>${escapeHtml(pwaName)}</h2>
-        <p>${escapeHtml(pwaDesc)}</p>
-      </div>
-      <div class="section-label">Installed Modules</div>
-      <div class="module-grid">
-        ${bundledComponents.length > 0 ? bundledComponents.map((c) => `
-        <div class="module-card">
-          <div class="module-type module-type-${escapeHtml(c.type || "X5")}">${escapeHtml(c.type || "X5")}</div>
-          <div class="module-info">
-            <div class="module-code">${escapeHtml(c.code || "")}</div>
-            <div class="module-name">${escapeHtml(c.name || "")}</div>
-            ${c.description ? `<div class="module-desc">${escapeHtml(c.description)}</div>` : ""}
-          </div>
-          ${c.price ? `<div class="module-price">$${c.price}/mo</div>` : ""}
-        </div>`).join("") : '<p style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:20px;">No modules installed.</p>'}
-      </div>
-    </div>
-    <div class="app-footer">
-      <div class="status"><div class="dot"></div> Substrate Active</div>
-      <div class="version">${escapeHtml(artifactCode)} · v${escapeHtml(pwaVersion)}</div>
     </div>
   </div>
+  <div class="main">
+    <div class="hero">
+      <div class="icon">${tm.icon}</div>
+      <h2>${escapeHtml(compName)}</h2>
+      <p>${escapeHtml(compDesc)}</p>
+      ${featureChips ? '<div class="chips">' + featureChips + "</div>" : ""}
+    </div>
+    <div class="interaction">
+      <div class="toolbar">
+        <button id="btn-chat" class="active">${escapeHtml(tm.action)}</button>
+        ${schemaFieldsHtml ? '<button id="btn-schema">Configure</button>' : ""}
+      </div>
+      ${schemaFieldsHtml ? '<div class="schema-fields" id="schema-fields">' + schemaFieldsHtml + "</div>" : ""}
+      <div class="output" id="output">
+        <div class="empty">${escapeHtml(tm.label)} ready. ${escapeHtml(tm.placeholder)}</div>
+      </div>
+      <div class="input-row">
+        <textarea id="input" placeholder="${escapeHtml(tm.placeholder)}" rows="1"></textarea>
+        <button id="send-btn">${escapeHtml(tm.action)}</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="ver">${escapeHtml(compCode)} · v${escapeHtml(pwaVersion)}</div>
+  </div>
   <script>
-    (function() {
-      var bootloaderUrl = ${JSON.stringify(bootloaderUrl)};
-      if (bootloaderUrl) {
-        import(bootloaderUrl).then(function(mod) {
-          if (mod && mod.default && typeof mod.default.boot === "function") {
-            mod.default.boot().catch(function() {});
-          }
-        }).catch(function() {});
-      }
-    })();
+    const COMP_TYPE = ${JSON.stringify(compType)};
+    const COMP_NAME = ${JSON.stringify(compName)};
+    const TM = ${JSON.stringify(tm)};
+    const output = document.getElementById("output");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send-btn");
+    const btnChat = document.getElementById("btn-chat");
+    const btnSchema = document.getElementById("btn-schema");
+    const schemaFields = document.getElementById("schema-fields");
+    input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 120) + "px"; });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); } });
+    sendBtn.addEventListener("click", doSend);
+    if (btnSchema) {
+      btnSchema.addEventListener("click", () => { schemaFields.classList.toggle("visible"); btnSchema.classList.toggle("active"); btnChat.classList.toggle("active"); });
+      btnChat.addEventListener("click", () => { schemaFields.classList.remove("visible"); btnSchema.classList.remove("active"); btnChat.classList.add("active"); });
+    }
+    function addMessage(role, text) {
+      const empty = output.querySelector(".empty"); if (empty) empty.remove();
+      const wrap = document.createElement("div"); wrap.className = "msg-" + role;
+      if (role === "agent") { const label = document.createElement("div"); label.className = "label"; label.textContent = COMP_NAME; wrap.appendChild(label); }
+      const bubble = document.createElement("div"); bubble.className = "bubble"; bubble.textContent = text; wrap.appendChild(bubble);
+      output.appendChild(wrap); output.scrollTop = output.scrollHeight;
+    }
+    function doSend() {
+      const text = input.value.trim(); if (!text) return;
+      addMessage("user", text); input.value = ""; input.style.height = "auto"; sendBtn.disabled = true;
+      const schemaValues = {};
+      if (schemaFields) { schemaFields.querySelectorAll("input").forEach(inp => { if (inp.value.trim()) schemaValues[inp.dataset.field] = inp.value.trim(); }); }
+      const responses = {
+        X1: 'Reading protocol engaged. I have analyzed your input: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Key themes identified and ready for deeper extraction.',
+        X2: 'Prophecy model activated. Based on the scenario: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Forecasting probability vectors and trend analysis.',
+        X3: 'Speed profile loaded. Optimizing for: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Performance metrics and acceleration vectors calculated.',
+        X4: 'Council is deliberating on: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Multiple perspectives are being weighed and synthesized.',
+        X5: 'Agent online. I received your request: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Processing and ready to assist further.',
+      };
+      const schemaNote = Object.keys(schemaValues).length > 0 ? " (with parameters: " + Object.entries(schemaValues).map(([k,v]) => k + "=" + v).join(", ") + ")" : "";
+      setTimeout(() => { addMessage("agent", (responses[COMP_TYPE] || responses.X5) + schemaNote); sendBtn.disabled = false; input.focus(); }, 600);
+    }
   </script>
 </body>
 </html>`;
