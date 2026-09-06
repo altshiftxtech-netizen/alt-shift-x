@@ -285,6 +285,21 @@ export default function PwaHost() {
       const fileMap = await extractZip(zipBuffer);
       if (fileMap.size === 0) throw new Error("ZIP package is empty.");
 
+      // Binary pass-through: if the ZIP contains no web files (index.html /
+      // manifest.json), treat it as a native binary package and trigger a
+      // direct download of the original file_url instead of rendering a UI.
+      const hasIndexHtml = fileMap.has("index.html") || fileMap.has("index.htm");
+      const hasManifest = fileMap.has("manifest.json");
+      if (!hasIndexHtml && !hasManifest) {
+        const downloadUrl = data.file_url || data.launch_url;
+        if (downloadUrl) {
+          window.location.href = downloadUrl;
+          setLoading(false);
+          return;
+        }
+        throw new Error("Binary package has no downloadable file_url.");
+      }
+
       setStatus("Reading PWA files…");
       const manifest = await readJsonFromZip(fileMap, "manifest.json");
       const payload = await readJsonFromZip(fileMap, "payload.json");
