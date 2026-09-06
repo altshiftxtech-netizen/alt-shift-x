@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, Package, Search, AlertTriangle, KeyRound } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import JSZip from "jszip";
 
 // PWA Exports section — lets admins select a wired PWA package from a
 // dropdown and download the complete zip to their device.
@@ -72,40 +73,72 @@ export default function PwaExportsSection() {
     setDownloading(true);
     setError(null);
     try {
-      // If a pre-built zip URL exists, download it directly.
+      let zipBytes;
+      let filename = `${selected.name}-${selected.version || "1.0.0"}.zip`;
+
       if (selected.file_url) {
-        const a = document.createElement("a");
-        a.href = selected.file_url;
-        a.download = `${selected.name}-${selected.version || "1.0.0"}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // Fetch the pre-built zip so we can inject installers
+        try {
+          const res = await fetch(selected.file_url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          zipBytes = new Uint8Array(await res.arrayBuffer());
+        } catch {
+          // Fetch failed (CORS / 403 / 404) — fall back to direct link
+          const a = document.createElement("a");
+          a.href = selected.file_url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
       } else if (selected.generate_function) {
-        // On-demand generation via backend function (e.g. generatePm1aPayload)
+        // On-demand generation via backend function
         const response = await base44.functions.invoke(
           selected.generate_function,
           { export_id: selected.id, ...(apexKey.trim() ? { apex_key: apexKey.trim() } : {}) }
         );
         const data = await (response.data ?? response);
-        // Function returns { filename, zip (base64), files } — decode to a real zip
         const b64 = data?.zip;
-        if (!b64) {
-          throw new Error("No zip payload returned from generator.");
-        }
+        if (!b64) throw new Error("No zip payload returned from generator.");
         const binStr = atob(b64);
-        const bytes = new Uint8Array(binStr.length);
-        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-        const blob = new Blob([bytes], { type: "application/zip" });
+        zipBytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) zipBytes[i] = binStr.charCodeAt(i);
+        filename = data?.filename || filename;
+      } else {
+        setError("This PWA export has no zip package wired up yet.");
+        return;
+      }
+
+      // Inject install.bat / install.sh into the ZIP if missing
+      try {
+        const zip = await JSZip.loadAsync(zipBytes);
+        if (!zip.files["install.bat"]) {
+          zip.file("install.bat", '@echo off\r\nstart "" "%~dp0index.html"\r\n');
+        }
+        if (!zip.files["install.sh"]) {
+          zip.file("install.sh", '#!/bin/bash\nopen "index.html" 2>/dev/null || xdg-open "index.html"\n');
+        }
+        const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = data?.filename || `${selected.name}-${selected.version || "1.0.0"}.zip`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-      } else {
-        setError("This PWA export has no zip package wired up yet.");
+      } catch {
+        // JSZip failed — fall back to raw download
+        const blob = new Blob([zipBytes], { type: "application/zip" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
     } catch (e) {
       setError(e.message || "Download failed.");

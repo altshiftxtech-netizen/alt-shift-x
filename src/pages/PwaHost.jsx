@@ -3,6 +3,19 @@ import { useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import JSZip from "jszip";
 import { Loader2, AlertTriangle, Download } from "lucide-react";
+// install.bat / install.sh injection helper — used by both download paths
+const INSTALL_BAT = '@echo off\r\nstart "" "%~dp0index.html"\r\n';
+const INSTALL_SH = '#!/bin/bash\nopen "index.html" 2>/dev/null || xdg-open "index.html"\n';
+async function injectInstallers(zipBytes) {
+  try {
+    const zip = await JSZip.loadAsync(zipBytes);
+    if (!zip.files["install.bat"]) zip.file("install.bat", INSTALL_BAT);
+    if (!zip.files["install.sh"]) zip.file("install.sh", INSTALL_SH);
+    return await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+  } catch {
+    return new Blob([zipBytes], { type: "application/zip" });
+  }
+}
 
 export default function PwaHost() {
   const { id } = useParams();
@@ -259,14 +272,14 @@ export default function PwaHost() {
       }
 
       // Binary pass-through: if the server flagged this as a binary export
-      // and generated a valid ZIP, prepare a download for the user.
+      // and generated a valid ZIP, inject installers and prepare a download.
       if (data.binary && data.zip) {
         setStatus("Preparing download…");
         const binStr = atob(data.zip);
         const bytes = new Uint8Array(binStr.length);
         for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-        const blob = new Blob([bytes], { type: "application/zip" });
-        const downloadUrl = URL.createObjectURL(blob);
+        const finalBlob = await injectInstallers(bytes);
+        const downloadUrl = URL.createObjectURL(finalBlob);
         blobUrlsRef.current.push(downloadUrl);
         const safeName = (data.name || "export").replace(/[^a-zA-Z0-9-_ ]/g, "").trim() || "export";
         const safeVer = (data.version || "1.0.0").replace(/[^a-zA-Z0-9._-]/g, "");
