@@ -47,17 +47,28 @@ export default async function(req) {
       // If the file_url is a private URI (doesn't start with http), generate
       // a time-limited signed URL so the download is secure and not shareable.
       let downloadUrl = pwa.file_url;
+      let signError = null;
       if (!pwa.file_url.startsWith('http')) {
-        try {
-          const signed = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-            file_uri: pwa.file_url,
-            expires_in: 300, // 5 minutes
-          });
-          if (signed?.signed_url) {
-            downloadUrl = signed.signed_url;
+        // Private storage file — generate a time-limited signed URL
+        if (pwa.file_url.startsWith('mp/private/') || !pwa.file_url.startsWith('mp/')) {
+          try {
+            const signed = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+              file_uri: pwa.file_url,
+              expires_in: 300, // 5 minutes
+            });
+            if (signed?.signed_url) {
+              downloadUrl = signed.signed_url;
+            } else {
+              signError = 'No signed_url returned';
+            }
+          } catch (signErr) {
+            signError = signErr.message;
           }
-        } catch {
-          // Fall back to the raw URI if signing fails
+        } else {
+          // Public storage path (mp/public/...) — reconstruct the full URL
+          // on-demand so the raw URL isn't stored in the entity
+          const APP_ID = '6a19363c90f06323c4cfff73';
+          downloadUrl = `https://base44.app/api/apps/${APP_ID}/files/${pwa.file_url}`;
         }
       }
 
