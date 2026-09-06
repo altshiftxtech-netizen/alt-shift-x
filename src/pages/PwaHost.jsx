@@ -263,6 +263,14 @@ export default function PwaHost() {
         return;
       }
 
+      // Binary pass-through: if the server flagged this as a binary export
+      // (file_url without generate_function), redirect directly to the file
+      // without attempting ZIP extraction or PWA rendering.
+      if (data.binary && data.file_url) {
+        window.location.href = data.file_url;
+        return;
+      }
+
       // Otherwise, extract and render the ZIP inline
       let zipBuffer;
       if (data.zip) {

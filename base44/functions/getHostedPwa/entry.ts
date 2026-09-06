@@ -42,7 +42,7 @@ export default async function(req) {
       }
     }
 
-    // Fallback: return file_url for direct download
+    // Fallback: return file_url for direct download (binary pass-through)
     if (pwa.file_url) {
       return Response.json({
         ok: true,
@@ -56,6 +56,7 @@ export default async function(req) {
         launch_url: pwa.launch_url,
         file_url: pwa.file_url,
         generate_function: pwa.generate_function,
+        binary: true,
       });
     }
 
