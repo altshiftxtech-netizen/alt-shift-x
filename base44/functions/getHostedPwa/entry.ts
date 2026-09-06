@@ -42,8 +42,25 @@ export default async function(req) {
       }
     }
 
-    // Fallback: return file_url for direct download (binary pass-through)
+    // Fallback: binary pass-through (file_url without generate_function)
     if (pwa.file_url) {
+      // If the file_url is a private URI (doesn't start with http), generate
+      // a time-limited signed URL so the download is secure and not shareable.
+      let downloadUrl = pwa.file_url;
+      if (!pwa.file_url.startsWith('http')) {
+        try {
+          const signed = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+            file_uri: pwa.file_url,
+            expires_in: 300, // 5 minutes
+          });
+          if (signed?.signed_url) {
+            downloadUrl = signed.signed_url;
+          }
+        } catch {
+          // Fall back to the raw URI if signing fails
+        }
+      }
+
       return Response.json({
         ok: true,
         id: pwa.id,
@@ -53,10 +70,11 @@ export default async function(req) {
         component_codes: pwa.component_codes || [],
         status: pwa.status,
         date_wired: pwa.date_wired,
-        launch_url: pwa.launch_url,
-        file_url: pwa.file_url,
+        launch_url: downloadUrl,
+        file_url: downloadUrl,
         generate_function: pwa.generate_function,
         binary: true,
+        signed: !pwa.file_url.startsWith('http'),
       });
     }
 

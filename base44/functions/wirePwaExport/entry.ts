@@ -24,14 +24,16 @@ export default async function(req: Request): Promise<Response> {
     }
 
     // Binary pass-through: when a file_url is provided WITHOUT a generate_function,
-    // the export is a native binary package (e.g. install.exe). Set launch_url
-    // directly to the file_url so the Launch button downloads the binary instead
-    // of routing through the PWA host renderer.
+    // the export is a native binary package (e.g. install.exe).
+    // - Public URL: set launch_url directly to the file for instant download.
+    // - Private URI (doesn't start with http): route through /pwa-host/ so
+    //   getHostedPwa generates a fresh time-limited signed URL on every visit.
     const isBinaryPassThrough = file_url && !generate_function;
+    const isPrivateUri = file_url && !file_url.startsWith('http');
 
     // If an id is provided, update the existing record; otherwise create a new one.
     if (id) {
-      const launch_url = isBinaryPassThrough ? file_url : `${APP_DOMAIN}/pwa-host/${id}`;
+      const launch_url = (isBinaryPassThrough && !isPrivateUri) ? file_url : `${APP_DOMAIN}/pwa-host/${id}`;
       const updated = await base44.asServiceRole.entities.PwaExport.update(id, {
         name,
         version,
@@ -56,7 +58,7 @@ export default async function(req: Request): Promise<Response> {
       description,
       status: status || 'active',
     });
-    const launch_url = isBinaryPassThrough ? file_url : `${APP_DOMAIN}/pwa-host/${created.id}`;
+    const launch_url = (isBinaryPassThrough && !isPrivateUri) ? file_url : `${APP_DOMAIN}/pwa-host/${created.id}`;
     await base44.asServiceRole.entities.PwaExport.update(created.id, { launch_url });
     return Response.json({ ok: true, id: created.id, action: 'created', launch_url });
   } catch (error) {
