@@ -264,8 +264,30 @@ export default function PwaHost() {
       }
 
       // Binary pass-through: if the server flagged this as a binary export
-      // (file_url without generate_function), redirect directly to the file
-      // without attempting ZIP extraction or PWA rendering.
+      // and generated a valid ZIP, trigger a direct download instead of
+      // rendering a PWA UI.
+      if (data.binary && data.zip) {
+        setStatus("Preparing download…");
+        const binStr = atob(data.zip);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+        const blob = new Blob([bytes], { type: "application/zip" });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        const safeName = (data.name || "export").replace(/[^a-zA-Z0-9-_ ]/g, "").trim() || "export";
+        const safeVer = (data.version || "1.0.0").replace(/[^a-zA-Z0-9._-]/g, "");
+        a.download = `${safeName}-v${safeVer}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
+        setLoading(false);
+        setStatus("Download started.");
+        return;
+      }
+
+      // Binary pass-through with direct file_url (no generated ZIP)
       if (data.binary && data.file_url) {
         window.location.href = data.file_url;
         return;

@@ -11,12 +11,15 @@ export default async function(req) {
     const pwa = await base44.asServiceRole.entities.PwaExport.get(exportId);
     if (!pwa) return Response.json({ error: 'PWA export not found' }, { status: 404 });
 
-    // Always generate the ZIP server-side when generate_function is available.
-    // This ensures the ZIP data is returned directly (base64) so viewers don't
-    // depend on potentially dead external file_url hosts.
-    if (pwa.generate_function) {
+    // Always try to generate the ZIP server-side first — either via the
+    // configured generate_function, or by defaulting to generatePm1aPayload
+    // when the export has component_codes. This ensures a valid ZIP is
+    // returned even when the file_url is broken or points to dead storage.
+    const genFn = pwa.generate_function || (pwa.component_codes?.length > 0 ? 'generatePm1aPayload' : null);
+    const wasBinaryPassthrough = !pwa.generate_function && pwa.file_url;
+    if (genFn) {
       try {
-        const genRes = await base44.asServiceRole.functions.invoke(pwa.generate_function, {
+        const genRes = await base44.asServiceRole.functions.invoke(genFn, {
           export_id: pwa.id,
         });
         const genData = genRes.data ?? genRes;
@@ -33,8 +36,9 @@ export default async function(req) {
             date_wired: pwa.date_wired,
             launch_url: pwa.launch_url,
             file_url: pwa.file_url,
-            generate_function: pwa.generate_function,
+            generate_function: genFn,
             zip: zipB64,
+            binary: wasBinaryPassthrough,
           });
         }
       } catch (genError) {
