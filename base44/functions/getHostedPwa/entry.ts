@@ -11,12 +11,103 @@ export default async function(req) {
     const pwa = await base44.asServiceRole.entities.PwaExport.get(exportId);
     if (!pwa) return Response.json({ error: 'PWA export not found' }, { status: 404 });
 
-    // Always try to generate the ZIP server-side first — either via the
-    // configured generate_function, or by defaulting to generatePm1aPayload
-    // when the export has component_codes. This ensures a valid ZIP is
-    // returned even when the file_url is broken or points to dead storage.
+    const isBinaryPassthrough = !pwa.generate_function && pwa.file_url;
+
+    // For binary pass-through exports (file_url without generate_function),
+    // always try the original file first — the user expects the actual binary,
+    // not a generated PWA package.
+    if (isBinaryPassthrough) {
+      let downloadUrl = pwa.file_url;
+      let signed = false;
+
+      if (pwa.file_url.startsWith('http')) {
+        // Already a full URL — use as-is
+        downloadUrl = pwa.file_url;
+      } else if (pwa.file_url.startsWith('mp/public/') || pwa.file_url.startsWith('mp/public\\')) {
+        // Public storage path — reconstruct the full URL
+        const APP_ID = '6a19363c90f06323c4cfff73';
+        downloadUrl = `https://base44.app/api/apps/${APP_ID}/files/${pwa.file_url}`;
+      } else {
+        // Private storage file — generate a time-limited signed URL
+        try {
+          const signedRes = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+            file_uri: pwa.file_url,
+            expires_in: 300,
+          });
+          if (signedRes?.signed_url) {
+            downloadUrl = signedRes.signed_url;
+            signed = true;
+          }
+        } catch {
+          // Fall through to generation below
+        }
+      }
+
+      // Check if the file is actually accessible
+      if (downloadUrl) {
+        try {
+          const checkRes = await fetch(downloadUrl, { method: 'HEAD' });
+          if (checkRes.ok && checkRes.status !== 404) {
+            return Response.json({
+              ok: true,
+              id: pwa.id,
+              name: pwa.name,
+              version: pwa.version,
+              description: pwa.description,
+              component_codes: pwa.component_codes || [],
+              status: pwa.status,
+              date_wired: pwa.date_wired,
+              launch_url: downloadUrl,
+              file_url: downloadUrl,
+              generate_function: pwa.generate_function,
+              binary: true,
+              signed,
+            });
+          }
+        } catch {
+          // File not accessible — fall through to generation
+        }
+      }
+
+      // Original binary file is gone — try generatePm1aPayload as a fallback
+      // so the user at least gets a valid package, but mark it clearly.
+      if (pwa.component_codes?.length > 0) {
+        try {
+          const genRes = await base44.asServiceRole.functions.invoke('generatePm1aPayload', {
+            export_id: pwa.id,
+          });
+          const genData = genRes.data ?? genRes;
+          const zipB64 = genData?.zip;
+          if (zipB64) {
+            return Response.json({
+              ok: true,
+              id: pwa.id,
+              name: pwa.name,
+              version: pwa.version,
+              description: pwa.description,
+              component_codes: pwa.component_codes || [],
+              status: pwa.status,
+              date_wired: pwa.date_wired,
+              launch_url: pwa.launch_url,
+              file_url: pwa.file_url,
+              generate_function: 'generatePm1aPayload',
+              zip: zipB64,
+              binary: true,
+              fallback: true,
+            });
+          }
+        } catch {
+          // Generation also failed
+        }
+      }
+
+      return Response.json({
+        error: 'The original binary file is no longer available and could not be regenerated.',
+      }, { status: 404 });
+    }
+
+    // For non-binary exports with a generate_function, generate the ZIP
     const genFn = pwa.generate_function || (pwa.component_codes?.length > 0 ? 'generatePm1aPayload' : null);
-    const wasBinaryPassthrough = !pwa.generate_function && pwa.file_url;
     if (genFn) {
       try {
         const genRes = await base44.asServiceRole.functions.invoke(genFn, {
@@ -38,44 +129,20 @@ export default async function(req) {
             file_url: pwa.file_url,
             generate_function: genFn,
             zip: zipB64,
-            binary: wasBinaryPassthrough,
           });
         }
-      } catch (genError) {
-        // Fall through to file_url fallback if generation fails
+      } catch {
+        // Fall through to file_url fallback
       }
     }
 
-    // Fallback: binary pass-through (file_url without generate_function)
+    // Fallback: try file_url directly
     if (pwa.file_url) {
-      // If the file_url is a private URI (doesn't start with http), generate
-      // a time-limited signed URL so the download is secure and not shareable.
       let downloadUrl = pwa.file_url;
-      let signError = null;
       if (!pwa.file_url.startsWith('http')) {
-        // Private storage file — generate a time-limited signed URL
-        if (pwa.file_url.startsWith('mp/private/') || !pwa.file_url.startsWith('mp/')) {
-          try {
-            const signed = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-              file_uri: pwa.file_url,
-              expires_in: 300, // 5 minutes
-            });
-            if (signed?.signed_url) {
-              downloadUrl = signed.signed_url;
-            } else {
-              signError = 'No signed_url returned';
-            }
-          } catch (signErr) {
-            signError = signErr.message;
-          }
-        } else {
-          // Public storage path (mp/public/...) — reconstruct the full URL
-          // on-demand so the raw URL isn't stored in the entity
-          const APP_ID = '6a19363c90f06323c4cfff73';
-          downloadUrl = `https://base44.app/api/apps/${APP_ID}/files/${pwa.file_url}`;
-        }
+        const APP_ID = '6a19363c90f06323c4cfff73';
+        downloadUrl = `https://base44.app/api/apps/${APP_ID}/files/${pwa.file_url}`;
       }
-
       return Response.json({
         ok: true,
         id: pwa.id,
@@ -89,7 +156,6 @@ export default async function(req) {
         file_url: downloadUrl,
         generate_function: pwa.generate_function,
         binary: true,
-        signed: !pwa.file_url.startsWith('http'),
       });
     }
 

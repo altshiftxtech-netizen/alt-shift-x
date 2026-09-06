@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import JSZip from "jszip";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, Download } from "lucide-react";
 
 export default function PwaHost() {
   const { id } = useParams();
@@ -10,6 +10,7 @@ export default function PwaHost() {
   const [error, setError] = useState(null);
   const [status, setStatus] = useState("Loading PWA…");
   const [iframeSrc, setIframeSrc] = useState(null);
+  const [downloadInfo, setDownloadInfo] = useState(null);
   const blobUrlsRef = useRef([]);
 
   // Clean up blob URLs on unmount
@@ -257,15 +258,8 @@ export default function PwaHost() {
         return;
       }
 
-      // If there's an external launch_url, redirect to it
-      if (data.launch_url && !data.launch_url.includes("/pwa-host/")) {
-        window.location.href = data.launch_url;
-        return;
-      }
-
       // Binary pass-through: if the server flagged this as a binary export
-      // and generated a valid ZIP, trigger a direct download instead of
-      // rendering a PWA UI.
+      // and generated a valid ZIP, prepare a download for the user.
       if (data.binary && data.zip) {
         setStatus("Preparing download…");
         const binStr = atob(data.zip);
@@ -273,23 +267,31 @@ export default function PwaHost() {
         for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
         const blob = new Blob([bytes], { type: "application/zip" });
         const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = downloadUrl;
+        blobUrlsRef.current.push(downloadUrl);
         const safeName = (data.name || "export").replace(/[^a-zA-Z0-9-_ ]/g, "").trim() || "export";
         const safeVer = (data.version || "1.0.0").replace(/[^a-zA-Z0-9._-]/g, "");
-        a.download = `${safeName}-v${safeVer}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(downloadUrl), 10000);
+        setDownloadInfo({
+          url: downloadUrl,
+          filename: `${safeName}-v${safeVer}.zip`,
+          name: data.name,
+          version: data.version,
+          fallback: data.fallback,
+        });
         setLoading(false);
-        setStatus("Download started.");
+        setStatus("Ready to download.");
         return;
       }
 
       // Binary pass-through with direct file_url (no generated ZIP)
       if (data.binary && data.file_url) {
+        setStatus("Redirecting to download…");
         window.location.href = data.file_url;
+        return;
+      }
+
+      // If there's an external launch_url, redirect to it
+      if (data.launch_url && !data.launch_url.includes("/pwa-host/")) {
+        window.location.href = data.launch_url;
         return;
       }
 
@@ -366,6 +368,32 @@ export default function PwaHost() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 gap-2 p-6">
         <AlertTriangle className="w-8 h-8 text-red-500" />
         <p className="text-sm text-red-300 text-center max-w-xs">{error}</p>
+      </div>
+    );
+  }
+
+  if (downloadInfo) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 gap-4 p-6">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+          <Download className="w-8 h-8 text-amber-400" />
+        </div>
+        <h1 className="text-lg font-bold text-white text-center">{downloadInfo.name}</h1>
+        <p className="text-xs text-slate-400">Version {downloadInfo.version}</p>
+        {downloadInfo.fallback && (
+          <p className="text-[11px] text-amber-500/80 text-center max-w-sm">
+            Original binary file was unavailable — a generated package is provided instead.
+          </p>
+        )}
+        <a
+          href={downloadInfo.url}
+          download={downloadInfo.filename}
+          className="mt-2 px-6 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm rounded-lg transition-colors flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Download ZIP
+        </a>
+        <p className="text-[10px] text-slate-600 mt-2">Click the button to download your package.</p>
       </div>
     );
   }
