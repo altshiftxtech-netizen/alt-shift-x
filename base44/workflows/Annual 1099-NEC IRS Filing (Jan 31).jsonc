@@ -1,0 +1,44 @@
+{
+  "name": "Annual 1099-NEC IRS Filing (Jan 31)",
+  "description": "Each January 31, audits all 1099 records, computes annual nonemployee compensation, applies adjustments, and emails the compiled 1099-NEC filing package to the configured IRS/filing-agent address.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9 31 1 *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "annual_1099_nec_irs_filing_jan_31",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "fileAnnual1099s",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "fileAnnual1099s"
+  }
+}

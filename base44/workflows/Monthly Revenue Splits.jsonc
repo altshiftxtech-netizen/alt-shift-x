@@ -1,0 +1,46 @@
+{
+  "name": "Monthly Revenue Splits",
+  "description": "Automatically processes revenue splits for all builders on the 1st of each month, applying tier-based revenue share percentages, certification bonuses, and volume rebates.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 13 1 * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "monthly_revenue_splits",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "processRevenueSplits",
+            "args": {
+              "task_secret": "asx-internal-7Qf3pL9vKx2mNb8tR4wYzC6dHj1sUe5A"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "processRevenueSplits"
+  }
+}

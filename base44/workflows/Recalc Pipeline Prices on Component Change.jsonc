@@ -1,0 +1,39 @@
+{
+  "name": "Recalc Pipeline Prices on Component Change",
+  "description": "Whenever a component is added, removed, repriced, or its pipeline/publish status changes, re-sum each active pipeline's price from its included components.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "Component"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "recalc_pipeline_prices_on_component_change",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "recalcPipelinePrices",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "recalcPipelinePrices"
+  }
+}

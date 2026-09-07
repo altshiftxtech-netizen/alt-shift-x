@@ -1,0 +1,46 @@
+{
+  "name": "Auto Payout Engine (monthly)",
+  "description": "Monthly on the 1st: automatically transfers all approved builder revenue splits to their Stripe Connect accounts and notifies them.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 13 1 * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_payout_engine_monthly",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoPayoutEngine",
+            "args": {
+              "task_secret": "asx-internal-7Qf3pL9vKx2mNb8tR4wYzC6dHj1sUe5A"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "autoPayoutEngine"
+  }
+}
