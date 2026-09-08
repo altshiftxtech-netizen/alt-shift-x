@@ -76,38 +76,32 @@ export default function PwaExportsSection() {
       let zipBytes;
       let filename = `${selected.name}-${selected.version || "1.0.0"}.zip`;
 
-      if (selected.file_url) {
-        // Fetch the pre-built zip so we can inject installers
-        try {
-          const res = await fetch(selected.file_url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          zipBytes = new Uint8Array(await res.arrayBuffer());
-        } catch {
-          // Fetch failed (CORS / 403 / 404) — fall back to direct link
-          const a = document.createElement("a");
-          a.href = selected.file_url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          return;
-        }
-      } else if (selected.generate_function) {
-        // On-demand generation via backend function
-        const response = await base44.functions.invoke(
-          selected.generate_function,
-          { export_id: selected.id, ...(apexKey.trim() ? { apex_key: apexKey.trim() } : {}) }
-        );
-        const data = await (response.data ?? response);
-        const b64 = data?.zip;
-        if (!b64) throw new Error("No zip payload returned from generator.");
-        const binStr = atob(b64);
+      // Route through getHostedPwa — it handles signed URLs, private
+      // storage paths, and fallback generation server-side.
+      const response = await base44.functions.invoke("getHostedPwa", {
+        export_id: selected.id,
+      });
+      const data = await (response.data ?? response);
+
+      if (data?.zip) {
+        // Server returned a base64-encoded ZIP (generated or passthrough)
+        const binStr = atob(data.zip);
         zipBytes = new Uint8Array(binStr.length);
         for (let i = 0; i < binStr.length; i++) zipBytes[i] = binStr.charCodeAt(i);
-        filename = data?.filename || filename;
-      } else {
-        setError("This PWA export has no zip package wired up yet.");
+      } else if (data?.file_url) {
+        // Server returned a direct download URL (signed or public)
+        const a = document.createElement("a");
+        a.href = data.file_url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         return;
+      } else if (data?.launch_url) {
+        window.open(data.launch_url, "_blank");
+        return;
+      } else {
+        throw new Error(data?.error || "No package available for this export.");
       }
 
       // Inject install.bat / install.sh into the ZIP if missing
@@ -129,8 +123,8 @@ export default function PwaExportsSection() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch {
-        // JSZip failed — fall back to raw download
-        const blob = new Blob([zipBytes], { type: "application/zip" });
+        // JSZip couldn't parse the data — download raw bytes as-is
+        const blob = new Blob([zipBytes], { type: "application/octet-stream" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
