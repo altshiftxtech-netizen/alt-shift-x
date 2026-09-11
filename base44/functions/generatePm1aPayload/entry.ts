@@ -108,6 +108,18 @@ self.addEventListener("fetch", (event) => {
 });
 `;
 
+const INSTALL_BAT = '@echo off\r\nstart "" "%~dp0index.html"\r\n';
+const INSTALL_SH = '#!/bin/bash\nopen "index.html" 2>/dev/null || xdg-open "index.html"\n';
+
+function detectPersona(name: string, componentCodes: string[]): 'obsidian' | 'parchment' | 'maxviz' {
+  const n = (name || '').toLowerCase();
+  const codes = (componentCodes || []).join(' ').toLowerCase();
+  const combined = n + ' ' + codes;
+  if (combined.includes('gimmie g') || combined.includes('gmg') || combined.includes('gimmie-g')) return 'maxviz';
+  if (combined.includes('we the people') || combined.includes('wtp') || combined.includes('civic')) return 'parchment';
+  return 'obsidian';
+}
+
 async function sha256(text) {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest('SHA-256', data);
@@ -381,6 +393,269 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
 </html>`;
 }
 
+function buildParchmentHtml(name, version, description, artifactCode, components, bootSequence) {
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const primary = (components || [])[0] || {};
+  const compName = primary.name || name;
+  const compDesc = primary.description || description || '';
+  const compFeatures = primary.features || [];
+  const compCode = primary.code || artifactCode || '';
+
+  const featureChips = compFeatures.length > 0
+    ? compFeatures.slice(0, 6).map(f => '<span class="chip">' + esc(f) + '</span>').join('')
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#fbf7ee">
+  <title>${esc(compName)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100vw; height: 100vh; overflow: hidden; }
+    body { font-family: Georgia, 'Cinzel', 'Times New Roman', serif; background: #fbf7ee; color: #2b1d0c; display: flex; flex-direction: column; }
+    body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(139,94,52,0.1) 100%); pointer-events: none; z-index: 1; }
+    .header { background: linear-gradient(135deg, #f4ede0, #e8dcc8); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #8b5e34; box-shadow: 0 2px 12px rgba(74,53,37,0.15); position: relative; z-index: 2; flex-wrap: wrap; }
+    .header .seal { font-size: 22px; flex-shrink: 0; }
+    .header .title-wrap { flex: 1; min-width: 0; }
+    .header h1 { font-size: 16px; font-weight: 700; color: #2b1d0c; letter-spacing: 0.5px; }
+    .header .subtitle { font-size: 10px; color: #6b5239; font-style: italic; }
+    .header .badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 3px; background: #8b5e34; color: #fbf7ee; letter-spacing: 0.5px; white-space: nowrap; }
+    .header .btn { font-size: 10px; padding: 5px 10px; border-radius: 4px; background: #4a3525; color: #fbf7ee; border: 1px solid #8b5e34; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; transition: background 0.2s; }
+    .header .btn:hover { background: #8b5e34; }
+    .main { flex: 1; display: flex; flex-direction: column; max-width: 900px; width: 100%; margin: 0 auto; padding: 16px; overflow-y: auto; position: relative; z-index: 2; }
+    .hero { text-align: center; margin-bottom: 16px; }
+    .hero h2 { font-size: 24px; font-weight: 700; color: #2b1d0c; margin-bottom: 4px; font-family: 'Cinzel', Georgia, serif; }
+    .hero p { font-size: 13px; color: #5a4632; line-height: 1.6; max-width: 600px; margin: 0 auto; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+    .chip { font-size: 10px; padding: 4px 10px; border-radius: 12px; background: #f4ede0; color: #4a3525; border: 1px solid #8b5e34; }
+    .dossier { background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(74,53,37,0.08); }
+    .dossier h3 { font-size: 13px; font-weight: 700; color: #2b1d0c; margin-bottom: 8px; border-bottom: 1px solid #d4c4a8; padding-bottom: 4px; font-family: 'Cinzel', Georgia, serif; }
+    .feed { max-height: 200px; overflow-y: auto; font-size: 12px; line-height: 1.8; color: #4a3525; }
+    .feed .entry { padding: 4px 0; border-bottom: 1px dotted #d4c4a8; }
+    .feed .entry:last-child { border-bottom: none; }
+    .feed .entry .label { font-weight: 700; color: #8b5e34; }
+    .interaction { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .output { flex: 1; min-height: 140px; max-height: 300px; overflow-y: auto; background: #f4ede0; border: 1px solid #8b5e34; border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.7; color: #2b1d0c; }
+    .output .msg-user { text-align: right; margin-bottom: 8px; }
+    .output .msg-user .bubble { display: inline-block; background: #e8dcc8; color: #2b1d0c; padding: 8px 12px; border-radius: 6px 6px 0 6px; max-width: 80%; border: 1px solid #8b5e34; }
+    .output .msg-agent { margin-bottom: 8px; }
+    .output .msg-agent .bubble { display: inline-block; background: #f9f6ee; color: #2b1d0c; padding: 8px 12px; border-radius: 6px 6px 6px 0; max-width: 85%; border: 1px solid #d4c4a8; }
+    .output .msg-agent .label { font-size: 9px; color: #8b5e34; margin-bottom: 3px; font-weight: 700; }
+    .output .empty { color: #8b5e34; text-align: center; padding: 30px 0; font-style: italic; }
+    .input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .input-row textarea { flex: 1; background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 10px 12px; color: #2b1d0c; font-size: 12px; font-family: Georgia, serif; resize: none; min-height: 38px; max-height: 100px; outline: none; }
+    .input-row textarea:focus { border-color: #b8860b; }
+    .input-row button { background: #8b5e34; color: #fbf7ee; border: 1px solid #4a3525; border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
+    .input-row button:hover { background: #b8860b; }
+    .input-row button:disabled { opacity: 0.5; }
+    .footer { padding: 8px 16px; text-align: center; border-top: 2px solid #8b5e34; background: #f4ede0; position: relative; z-index: 2; }
+    .footer .ver { font-size: 9px; color: #8b5e34; font-style: italic; }
+    .state-hook { font-size: 9px; color: #6b5239; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="seal">⚖️</span>
+    <div class="title-wrap">
+      <h1>${esc(compName)}</h1>
+      <div class="subtitle">Civic Sovereign Standard · v${esc(version)}</div>
+    </div>
+    <span class="badge">Blackstone Legal Shield</span>
+    <button class="btn" onclick="alert('New Civic Dossier initiated.')">➕ New Dossier</button>
+    <button class="btn" onclick="alert('Constitutional Index opened.')">📜 Index</button>
+    <button class="btn" onclick="window.close()">🚪 Exit (Ctrl+Q)</button>
+  </div>
+  <div class="main">
+    <div class="hero">
+      <h2>⚖️ ${esc(compName)}</h2>
+      <p>${esc(compDesc)}</p>
+      ${featureChips ? '<div class="chips">' + featureChips + '</div>' : ''}
+    </div>
+    <div class="dossier">
+      <h3>Constitutional Jurisprudence Engine Feed</h3>
+      <div class="feed" id="feed">
+        <div class="entry"><span class="label">Art. I:</span> Legislative powers vested in Congress.</div>
+        <div class="entry"><span class="label">Art. II:</span> Executive power vested in the President.</div>
+        <div class="entry"><span class="label">Art. III:</span> Judicial power extends to all cases in law and equity.</div>
+        <div class="entry"><span class="label">Amend. I:</span> No law respecting establishment of religion, or prohibiting free exercise.</div>
+        <div class="entry"><span class="label">Amend. IV:</span> Right to be secure in persons, houses, papers, and effects.</div>
+        <div class="entry"><span class="label">Amend. XIV:</span> No State shall deprive any person of life, liberty, or property without due process.</div>
+      </div>
+    </div>
+    <div class="interaction">
+      <div class="output" id="output">
+        <div class="empty">Civic dossier ready. Present your constitutional query…</div>
+      </div>
+      <div class="input-row">
+        <textarea id="input" placeholder="Enter your constitutional inquiry…" rows="1"></textarea>
+        <button id="send-btn">Deliberate</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="state-hook">SOVEREIGN-MEMORY-CORE: C:\\SOVEREIGN-MEMORY-CORE</div>
+    <div class="ver">${esc(compCode)} · v${esc(version)}</div>
+  </div>
+  <script>
+    const COMP_NAME = ${JSON.stringify(compName)};
+    const output = document.getElementById('output');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 100) + 'px'; });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
+    sendBtn.addEventListener('click', doSend);
+    document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
+    function addMessage(role, text) {
+      const empty = output.querySelector('.empty'); if (empty) empty.remove();
+      const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
+      if (role === 'agent') { const label = document.createElement('div'); label.className = 'label'; label.textContent = COMP_NAME; wrap.appendChild(label); }
+      const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text; wrap.appendChild(bubble);
+      output.appendChild(wrap); output.scrollTop = output.scrollHeight;
+    }
+    function doSend() {
+      const text = input.value.trim(); if (!text) return;
+      addMessage('user', text); input.value = ''; input.style.height = 'auto'; sendBtn.disabled = true;
+      setTimeout(() => { addMessage('agent', 'Constitutional analysis engaged. Your inquiry: "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '" has been received. Examining precedent, statutory framework, and civic obligations.'); sendBtn.disabled = false; input.focus(); }, 600);
+    }
+  </script>
+</body>
+</html>`;
+}
+
+function buildMaxVizHtml(name, version, description, artifactCode, components, bootSequence) {
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const primary = (components || [])[0] || {};
+  const compName = primary.name || name;
+  const compDesc = primary.description || description || '';
+  const compFeatures = primary.features || [];
+  const compCode = primary.code || artifactCode || '';
+
+  const featureChips = compFeatures.length > 0
+    ? compFeatures.slice(0, 6).map(f => '<span class="chip">' + esc(f) + '</span>').join('')
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0f1d">
+  <title>${esc(compName)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0f1d; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: linear-gradient(135deg, #0a0f1d, #1a1f3d); padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #00CCFF; box-shadow: 0 0 20px rgba(0,204,255,0.2); flex-wrap: wrap; }
+    .header .mascot { font-size: 24px; flex-shrink: 0; }
+    .header .title-wrap { flex: 1; min-width: 0; }
+    .header h1 { font-size: 15px; font-weight: 800; color: #00CCFF; text-shadow: 0 0 8px rgba(0,204,255,0.4); }
+    .header .subtitle { font-size: 10px; color: #9900FF; font-weight: 600; }
+    .header .pill { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: linear-gradient(90deg, #00CCFF, #0066FF, #9900FF); color: #fff; white-space: nowrap; }
+    .header .safe { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #00FF66; color: #003300; white-space: nowrap; }
+    .header .btn { font-size: 11px; padding: 7px 12px; border-radius: 14px; background: linear-gradient(135deg, #0066FF, #00CCFF); color: #fff; border: none; cursor: pointer; font-weight: 700; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,102,255,0.3); }
+    .header .btn:hover { transform: scale(1.05); }
+    .header .btn:active { transform: scale(0.95); }
+    .main { flex: 1; display: flex; flex-direction: column; max-width: 800px; width: 100%; margin: 0 auto; padding: 16px; }
+    .hero { text-align: center; margin-bottom: 16px; }
+    .hero .mascot-big { font-size: 48px; margin-bottom: 6px; }
+    .hero h2 { font-size: 24px; font-weight: 800; background: linear-gradient(90deg, #00CCFF, #9900FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; }
+    .hero p { font-size: 13px; color: #8899bb; line-height: 1.5; max-width: 500px; margin: 0 auto; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+    .chip { font-size: 10px; padding: 4px 12px; border-radius: 16px; background: rgba(0,204,255,0.1); color: #00CCFF; border: 1px solid rgba(0,204,255,0.3); }
+    .hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .hub .card { background: linear-gradient(135deg, #11172e, #1a2040); border-radius: 16px; padding: 14px; text-align: center; cursor: pointer; transition: transform 0.15s; border: 2px solid rgba(0,204,255,0.2); }
+    .hub .card:hover { transform: translateY(-3px); border-color: #00CCFF; box-shadow: 0 6px 16px rgba(0,204,255,0.2); }
+    .hub .card .icon { font-size: 28px; margin-bottom: 4px; }
+    .hub .card .label { font-size: 11px; font-weight: 700; color: #00CCFF; }
+    .hub .card .desc { font-size: 9px; color: #6677aa; }
+    .interaction { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .output { flex: 1; min-height: 140px; max-height: 280px; overflow-y: auto; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 16px; padding: 14px; font-size: 13px; line-height: 1.6; color: #ddeeff; }
+    .output .msg-user { text-align: right; margin-bottom: 8px; }
+    .output .msg-user .bubble { display: inline-block; background: linear-gradient(135deg, #0066FF, #00CCFF); color: #fff; padding: 8px 12px; border-radius: 16px 16px 0 16px; max-width: 80%; }
+    .output .msg-agent { margin-bottom: 8px; }
+    .output .msg-agent .bubble { display: inline-block; background: linear-gradient(135deg, #9900FF, #0066FF); color: #fff; padding: 8px 12px; border-radius: 16px 16px 16px 0; max-width: 85%; }
+    .output .msg-agent .label { font-size: 9px; color: #9900FF; margin-bottom: 3px; font-weight: 700; }
+    .output .empty { color: #445577; text-align: center; padding: 30px 0; }
+    .input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .input-row textarea { flex: 1; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 14px; padding: 10px 12px; color: #fff; font-size: 13px; font-family: inherit; resize: none; min-height: 44px; max-height: 100px; outline: none; }
+    .input-row textarea:focus { border-color: #00CCFF; }
+    .input-row button { background: linear-gradient(135deg, #00CCFF, #0066FF); color: #fff; border: none; border-radius: 14px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,204,255,0.3); }
+    .input-row button:hover { transform: scale(1.05); }
+    .input-row button:active { transform: scale(0.95); }
+    .input-row button:disabled { opacity: 0.5; }
+    .footer { padding: 10px 16px; text-align: center; border-top: 2px solid rgba(0,204,255,0.3); }
+    .footer .ver { font-size: 9px; color: #445577; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="mascot">🤖</span>
+    <div class="title-wrap">
+      <h1>🎓 ${esc(compName)}</h1>
+      <div class="subtitle">Genesis · v${esc(version)}</div>
+    </div>
+    <span class="pill">Learn • Play • Grow</span>
+    <span class="safe">🟢 COPPA Child-Safe</span>
+    <button class="btn" onclick="alert('New Game!')">🎮 New Game</button>
+    <button class="btn" onclick="alert('Progress Vault!')">🏆 Progress Vault</button>
+    <button class="btn" onclick="window.close()">🚪 Exit (Ctrl+Q)</button>
+  </div>
+  <div class="main">
+    <div class="hero">
+      <div class="mascot-big">🤖🎓</div>
+      <h2>${esc(compName)}</h2>
+      <p>${esc(compDesc)}</p>
+      ${featureChips ? '<div class="chips">' + featureChips + '</div>' : ''}
+    </div>
+    <div class="hub">
+      <div class="card" onclick="document.getElementById('input').value='Memory Match'; doSend();"><div class="icon">🧠</div><div class="label">Memory</div><div class="desc">Brain training</div></div>
+      <div class="card" onclick="document.getElementById('input').value='Logic Puzzle'; doSend();"><div class="icon">🔢</div><div class="label">Logic</div><div class="desc">Problem solving</div></div>
+      <div class="card" onclick="document.getElementById('input').value='Language Quest'; doSend();"><div class="icon">📚</div><div class="label">Language</div><div class="desc">Word power</div></div>
+      <div class="card" onclick="document.getElementById('input').value='Visual Quest'; doSend();"><div class="icon">🎨</div><div class="label">Visual</div><div class="desc">Perception</div></div>
+    </div>
+    <div class="interaction">
+      <div class="output" id="output">
+        <div class="empty">Hi friend! I am Gimmie G! Pick a game or ask me anything! 🎮</div>
+      </div>
+      <div class="input-row">
+        <textarea id="input" placeholder="Type your question or pick a game above! 🎈" rows="1"></textarea>
+        <button id="send-btn">Let's Play!</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="ver">${esc(compCode)} · v${esc(version)} · COPPA Child-Safe Green Zone</div>
+  </div>
+  <script>
+    const COMP_NAME = ${JSON.stringify(compName)};
+    const output = document.getElementById('output');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 100) + 'px'; });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
+    sendBtn.addEventListener('click', doSend);
+    document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
+    function addMessage(role, text) {
+      const empty = output.querySelector('.empty'); if (empty) empty.remove();
+      const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
+      if (role === 'agent') { const label = document.createElement('div'); label.className = 'label'; label.textContent = COMP_NAME; wrap.appendChild(label); }
+      const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text; wrap.appendChild(bubble);
+      output.appendChild(wrap); output.scrollTop = output.scrollHeight;
+    }
+    function doSend() {
+      const text = input.value.trim(); if (!text) return;
+      addMessage('user', text); input.value = ''; input.style.height = 'auto'; sendBtn.disabled = true;
+      setTimeout(() => { addMessage('agent', 'Awesome! Let us explore "' + text.substring(0, 80) + (text.length > 80 ? '…' : '') + '" together! 🌟 Ready to learn, play, and grow!'); sendBtn.disabled = false; input.focus(); }, 500);
+    }
+  </script>
+</body>
+</html>`;
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -456,6 +731,14 @@ export default async function(req) {
       }
     }
 
+    // ── Detect export persona for theme-aware rendering ───────────────────────
+    const persona = detectPersona(pwaName, componentCodes);
+    const personaColors = persona === 'parchment'
+      ? { theme: '#fbf7ee', bg: '#f4ede0' }
+      : persona === 'maxviz'
+      ? { theme: '#0a0f1d', bg: '#0a0f1d' }
+      : { theme: '#0a0e1a', bg: '#1a2332' };
+
     // ── Build the PWA manifest with favicons ─────────────────────────────────
     // Use the Alt+Shift+X platform favicon as the default icon for all packets
     const FAVICON_URL = 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/72e7dd2d4_altxlogo2.jpeg';
@@ -467,8 +750,8 @@ export default async function(req) {
       scope: '/',
       display: 'standalone',
       orientation: 'any',
-      theme_color: '#0a0e1a',
-      background_color: '#1a2332',
+      theme_color: personaColors.theme,
+      background_color: personaColors.bg,
       icons: [
         { src: FAVICON_URL, sizes: '192x192', type: 'image/jpeg', purpose: 'any' },
         { src: FAVICON_URL, sizes: '512x512', type: 'image/jpeg', purpose: 'any maskable' },
@@ -479,6 +762,7 @@ export default async function(req) {
     // ── Build the deployment payload ─────────────────────────────────────────
     const payload = {
       artifact_code: primary?.code || 'PM-1A-BOOTSTRAP-1.0',
+      persona: persona,
       type: primary?.type || 'X5',
       version: pwaVersion,
       generated_at: new Date().toISOString(),
@@ -533,7 +817,12 @@ export default async function(req) {
     zip.file('apex-verification.json', JSON.stringify(payload.apex_verification, null, 2));
     zip.file('components.json', JSON.stringify(payload.bundled_components, null, 2));
     zip.file('payload.json', JSON.stringify(payload, null, 2));
-    zip.file('index.html', buildIndexHtml(pwaName, pwaVersion, pwaDescription, payload.artifact_code, payload.bundled_components, payload.boot_sequence));
+    const indexHtml = persona === 'parchment'
+      ? buildParchmentHtml(pwaName, pwaVersion, pwaDescription, payload.artifact_code, payload.bundled_components, payload.boot_sequence)
+      : persona === 'maxviz'
+      ? buildMaxVizHtml(pwaName, pwaVersion, pwaDescription, payload.artifact_code, payload.bundled_components, payload.boot_sequence)
+      : buildIndexHtml(pwaName, pwaVersion, pwaDescription, payload.artifact_code, payload.bundled_components, payload.boot_sequence);
+    zip.file('index.html', indexHtml);
 
     // Favicon reference file — points to the hosted icon
     zip.file('favicon-ref.txt', [
@@ -547,6 +836,8 @@ export default async function(req) {
       'for a fully self-contained offline package.',
     ].join('\n'));
 
+    zip.file('install.bat', INSTALL_BAT);
+    zip.file('install.sh', INSTALL_SH);
     zip.file('README.txt', [
       `${pwaName} — PWA Deployment Package`,
       '====================================',
@@ -572,7 +863,8 @@ export default async function(req) {
       '  favicon-ref.txt         — Favicon icon reference URL',
       '',
       'Setup:',
-      '  1. Host all files in your PWA web root',
+      '  1. Double-click install.bat (Windows) or run install.sh (Mac/Linux) to open the PWA',
+      '  2. Or host all files in your PWA web root',
       '  2. Link manifest.json in your index.html',
       '  3. Register sw.js as your service worker',
       '  4. Download the favicon from favicon-ref.txt and save locally',
@@ -591,7 +883,7 @@ export default async function(req) {
     return Response.json({
       filename: `${slug}-v${pwaVersion}-${Date.now()}.zip`,
       zip: b64,
-      files: ['manifest.json', 'sw.js', 'self-healing.js', 'offline-bootloader.js', 'boot-sequence.json', 'apex-verification.json', 'components.json', 'payload.json', 'favicon-ref.txt', 'README.txt'],
+      files: ['manifest.json', 'sw.js', 'self-healing.js', 'offline-bootloader.js', 'boot-sequence.json', 'apex-verification.json', 'components.json', 'payload.json', 'favicon-ref.txt', 'README.txt', 'install.bat', 'install.sh'],
       component_count: bundledComponents.length,
     });
   } catch (error) {
