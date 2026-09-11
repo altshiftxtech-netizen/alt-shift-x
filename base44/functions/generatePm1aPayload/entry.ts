@@ -108,8 +108,8 @@ self.addEventListener("fetch", (event) => {
 });
 `;
 
-const INSTALL_BAT = '@echo off\r\nstart "" "%~dp0index.html"\r\n';
-const INSTALL_SH = '#!/bin/bash\nopen "index.html" 2>/dev/null || xdg-open "index.html"\n';
+const INSTALL_BAT = '@echo off\r\nSET DIR=%~dp0\r\nSET HTML_PATH=%DIR%index.html\r\n:: Check for Edge or Chrome and launch in dedicated chromeless app window\r\nif exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" (\r\n    start "" "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" --app="file:///%HTML_PATH%" --start-maximized\r\n) else if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" (\r\n    start "" "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" --app="file:///%HTML_PATH%" --start-maximized\r\n) else (\r\n    start "" "%HTML_PATH%"\r\n)\r\n';
+const INSTALL_SH = '#!/bin/bash\nDIR="$(cd "$(dirname "$0")" && pwd)"\nHTML_PATH="$DIR/index.html"\n# Try Chrome or Chromium in app mode\nfor CMD in "google-chrome" "chromium" "chromium-browser" "microsoft-edge"; do\n  if command -v "$CMD" >/dev/null 2>&1; then\n    "$CMD" --app="file:///$HTML_PATH" --start-maximized &\n    exit 0\n  fi\ndone\n# Fallback: open with default handler\nopen "$HTML_PATH" 2>/dev/null || xdg-open "$HTML_PATH"\n';
 
 function detectPersona(name: string, componentCodes: string[]): 'obsidian' | 'parchment' | 'maxviz' {
   const n = (name || '').toLowerCase();
@@ -415,45 +415,45 @@ function buildParchmentHtml(name, version, description, artifactCode, components
   <title>${esc(compName)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { width: 100vw; height: 100vh; overflow: hidden; }
+    html, body { width: 100vw; height: 100vh; margin: 0; padding: 0; overflow: hidden; }
     body { font-family: Georgia, 'Cinzel', 'Times New Roman', serif; background: #fbf7ee; color: #2b1d0c; display: flex; flex-direction: column; }
     body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(139,94,52,0.1) 100%); pointer-events: none; z-index: 1; }
-    .header { background: linear-gradient(135deg, #f4ede0, #e8dcc8); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #8b5e34; box-shadow: 0 2px 12px rgba(74,53,37,0.15); position: relative; z-index: 2; flex-wrap: wrap; }
+    /* Fixed Top Header (56px) */
+    .header { height: 56px; background: linear-gradient(135deg, #f4ede0, #e8dcc8); padding: 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #8b5e34; box-shadow: 0 2px 12px rgba(74,53,37,0.15); position: relative; z-index: 2; flex-wrap: nowrap; flex-shrink: 0; overflow: hidden; }
     .header .seal { font-size: 22px; flex-shrink: 0; }
-    .header .title-wrap { flex: 1; min-width: 0; }
-    .header h1 { font-size: 16px; font-weight: 700; color: #2b1d0c; letter-spacing: 0.5px; }
+    .header .title-wrap { flex: 1; min-width: 0; overflow: hidden; }
+    .header h1 { font-size: 15px; font-weight: 700; color: #2b1d0c; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header .subtitle { font-size: 10px; color: #6b5239; font-style: italic; }
-    .header .badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 3px; background: #8b5e34; color: #fbf7ee; letter-spacing: 0.5px; white-space: nowrap; }
-    .header .btn { font-size: 10px; padding: 5px 10px; border-radius: 4px; background: #4a3525; color: #fbf7ee; border: 1px solid #8b5e34; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; transition: background 0.2s; }
+    .header .badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 3px; background: #8b5e34; color: #fbf7ee; letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0; }
+    .header .btn { font-size: 10px; padding: 5px 10px; border-radius: 4px; background: #4a3525; color: #fbf7ee; border: 1px solid #8b5e34; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
     .header .btn:hover { background: #8b5e34; }
-    .main { flex: 1; display: flex; flex-direction: column; max-width: 900px; width: 100%; margin: 0 auto; padding: 16px; overflow-y: auto; position: relative; z-index: 2; }
-    .hero { text-align: center; margin-bottom: 16px; }
-    .hero h2 { font-size: 24px; font-weight: 700; color: #2b1d0c; margin-bottom: 4px; font-family: 'Cinzel', Georgia, serif; }
-    .hero p { font-size: 13px; color: #5a4632; line-height: 1.6; max-width: 600px; margin: 0 auto; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
-    .chip { font-size: 10px; padding: 4px 10px; border-radius: 12px; background: #f4ede0; color: #4a3525; border: 1px solid #8b5e34; }
-    .dossier { background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(74,53,37,0.08); }
-    .dossier h3 { font-size: 13px; font-weight: 700; color: #2b1d0c; margin-bottom: 8px; border-bottom: 1px solid #d4c4a8; padding-bottom: 4px; font-family: 'Cinzel', Georgia, serif; }
-    .feed { max-height: 200px; overflow-y: auto; font-size: 12px; line-height: 1.8; color: #4a3525; }
+    .header .btn-fs { background: #2b1d0c; border-color: #2b1d0c; font-weight: 700; }
+    .header .btn-fs:hover { background: #4a3525; }
+    /* Central Viewport — two-column split, no outer page scroll */
+    .viewport { flex: 1; height: calc(100vh - 110px); display: flex; gap: 16px; padding: 12px; overflow: hidden; position: relative; z-index: 2; }
+    .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .pane-left { max-width: 40%; }
+    .pane-right { max-width: 60%; }
+    .pane h3 { font-size: 13px; font-weight: 700; color: #2b1d0c; margin-bottom: 8px; border-bottom: 1px solid #d4c4a8; padding-bottom: 4px; font-family: 'Cinzel', Georgia, serif; flex-shrink: 0; }
+    .dossier { background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 14px; flex: 1; overflow-y: auto; box-shadow: 0 2px 8px rgba(74,53,37,0.08); }
+    .feed { font-size: 12px; line-height: 1.8; color: #4a3525; }
     .feed .entry { padding: 4px 0; border-bottom: 1px dotted #d4c4a8; }
     .feed .entry:last-child { border-bottom: none; }
     .feed .entry .label { font-weight: 700; color: #8b5e34; }
-    .interaction { display: flex; flex-direction: column; gap: 10px; flex: 1; }
-    .output { flex: 1; min-height: 140px; max-height: 300px; overflow-y: auto; background: #f4ede0; border: 1px solid #8b5e34; border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.7; color: #2b1d0c; }
+    .output { flex: 1; overflow-y: auto; background: #f4ede0; border: 1px solid #8b5e34; border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.7; color: #2b1d0c; }
     .output .msg-user { text-align: right; margin-bottom: 8px; }
     .output .msg-user .bubble { display: inline-block; background: #e8dcc8; color: #2b1d0c; padding: 8px 12px; border-radius: 6px 6px 0 6px; max-width: 80%; border: 1px solid #8b5e34; }
     .output .msg-agent { margin-bottom: 8px; }
     .output .msg-agent .bubble { display: inline-block; background: #f9f6ee; color: #2b1d0c; padding: 8px 12px; border-radius: 6px 6px 6px 0; max-width: 85%; border: 1px solid #d4c4a8; }
-    .output .msg-agent .label { font-size: 9px; color: #8b5e34; margin-bottom: 3px; font-weight: 700; }
+    .output .msg-agent .label { font-size: 9px; color: #8b5e34;!margin-bottom: 3px; font-weight: 700; }
     .output .empty { color: #8b5e34; text-align: center; padding: 30px 0; font-style: italic; }
-    .input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .input-row textarea { flex: 1; background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 10px 12px; color: #2b1d0c; font-size: 12px; font-family: Georgia, serif; resize: none; min-height: 38px; max-height: 100px; outline: none; }
-    .input-row textarea:focus { border-color: #b8860b; }
-    .input-row button { background: #8b5e34; color: #fbf7ee; border: 1px solid #4a3525; border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
-    .input-row button:hover { background: #b8860b; }
-    .input-row button:disabled { opacity: 0.5; }
-    .footer { padding: 8px 16px; text-align: center; border-top: 2px solid #8b5e34; background: #f4ede0; position: relative; z-index: 2; }
-    .footer .ver { font-size: 9px; color: #8b5e34; font-style: italic; }
+    /* Fixed Bottom Composer Bar (54px) */
+    .composer { height: 54px; display: flex; gap: 8px; align-items: center; padding: 0 16px; border-top: 2px solid #8b5e34; background: #f4ede0; position: relative; z-index: 2; flex-shrink: 0; }
+    .composer textarea { flex: 1; background: #f9f6ee; border: 1px solid #8b5e34; border-radius: 6px; padding: 8px 12px; color: #2b1d0c; font-size: 12px; font-family: Georgia, serif; resize: none; height: 38px; outline: none; }
+    .composer textarea:focus { border-color: #b8860b; }
+    .composer button { background: #8b5e34; color: #fbf7ee; border: 1px solid #4a3525; border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; flex-shrink: 0; }
+    .composer button:hover { background: #b8860b; }
+    .composer button:disabled { opacity: 0.5; }
     .state-hook { font-size: 9px; color: #6b5239; font-family: monospace; }
   </style>
 </head>
@@ -465,50 +465,65 @@ function buildParchmentHtml(name, version, description, artifactCode, components
       <div class="subtitle">Civic Sovereign Standard · v${esc(version)}</div>
     </div>
     <span class="badge">Blackstone Legal Shield</span>
-    <button class="btn" onclick="alert('New Civic Dossier initiated.')">➕ New Dossier</button>
-    <button class="btn" onclick="alert('Constitutional Index opened.')">📜 Index</button>
-    <button class="btn" onclick="window.close()">🚪 Exit (Ctrl+Q)</button>
+    <button class="btn" onclick="alert('New Civic Dossier initiated.')">➕ New</button>
+    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)">⛶ Max Viz Fullscreen</button>
+    <button class="btn" onclick="window.close()">🚪 Exit</button>
   </div>
-  <div class="main">
-    <div class="hero">
-      <h2>⚖️ ${esc(compName)}</h2>
-      <p>${esc(compDesc)}</p>
-      ${featureChips ? '<div class="chips">' + featureChips + '</div>' : ''}
-    </div>
-    <div class="dossier">
-      <h3>Constitutional Jurisprudence Engine Feed</h3>
-      <div class="feed" id="feed">
-        <div class="entry"><span class="label">Art. I:</span> Legislative powers vested in Congress.</div>
-        <div class="entry"><span class="label">Art. II:</span> Executive power vested in the President.</div>
-        <div class="entry"><span class="label">Art. III:</span> Judicial power extends to all cases in law and equity.</div>
-        <div class="entry"><span class="label">Amend. I:</span> No law respecting establishment of religion, or prohibiting free exercise.</div>
-        <div class="entry"><span class="label">Amend. IV:</span> Right to be secure in persons, houses, papers, and effects.</div>
-        <div class="entry"><span class="label">Amend. XIV:</span> No State shall deprive any person of life, liberty, or property without due process.</div>
+  <div class="viewport">
+    <div class="pane pane-left">
+      <h3>📜 Constitutional Citations</h3>
+      <div class="dossier">
+        <div class="feed" id="feed">
+          <div class="entry"><span class="label">Art. I:</span> Legislative powers vested in Congress.</div>
+          <div class="entry"><span class="label">Art. II:</span> Executive power vested in the President.</div>
+          <div class="entry"><span class="label">Art. III:</span> Judicial power extends to all cases in law and equity.</div>
+          <div class="entry"><span class="label">Amend. I:</span> No law respecting establishment of religion, or prohibiting free exercise.</div>
+          <div class="entry"><span class="label">Amend. IV:</span> Right to be secure in persons, houses, papers, and effects.</div>
+          <div class="entry"><span class="label">Amend. XIV:</span> No State shall deprive any person of life, liberty, or property without due process.</div>
+        </div>
       </div>
     </div>
-    <div class="interaction">
+    <div class="pane pane-right">
+      <h3>⚖️ Deliberation Chat</h3>
       <div class="output" id="output">
         <div class="empty">Civic dossier ready. Present your constitutional query…</div>
       </div>
-      <div class="input-row">
-        <textarea id="input" placeholder="Enter your constitutional inquiry…" rows="1"></textarea>
-        <button id="send-btn">Deliberate</button>
-      </div>
     </div>
   </div>
-  <div class="footer">
-    <div class="state-hook">SOVEREIGN-MEMORY-CORE: C:\\SOVEREIGN-MEMORY-CORE</div>
-    <div class="ver">${esc(compCode)} · v${esc(version)}</div>
+  <div class="composer">
+    <textarea id="input" placeholder="Enter your constitutional inquiry…" rows="1"></textarea>
+    <button id="send-btn">Deliberate</button>
   </div>
   <script>
     const COMP_NAME = ${JSON.stringify(compName)};
     const output = document.getElementById('output');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
-    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 100) + 'px'; });
+    const fsBtn = document.getElementById('btn-fullscreen');
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 38) + 'px'; });
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
     sendBtn.addEventListener('click', doSend);
     document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
+    // Max Viz Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
+      else { document.exitFullscreen().catch(() => {}); }
+    }
+    fsBtn.addEventListener('click', toggleFullscreen);
+    // Hotkey: F11 or Ctrl+F
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F11' || (e.ctrlKey && e.key === 'f')) { e.preventDefault(); toggleFullscreen(); }
+    });
+    // Auto-fullscreen on first user interaction
+    let firstInteract = true;
+    function autoFullscreen() {
+      if (firstInteract && !document.fullscreenElement) {
+        firstInteract = false;
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }
+    document.addEventListener('click', autoFullscreen, { once: true });
+    document.addEventListener('keydown', autoFullscreen, { once: true });
     function addMessage(role, text) {
       const empty = output.querySelector('.empty'); if (empty) empty.remove();
       const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
@@ -548,47 +563,48 @@ function buildMaxVizHtml(name, version, description, artifactCode, components, b
   <title>${esc(compName)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0f1d; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
-    .header { background: linear-gradient(135deg, #0a0f1d, #1a1f3d); padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #00CCFF; box-shadow: 0 0 20px rgba(0,204,255,0.2); flex-wrap: wrap; }
+    html, body { width: 100vw; height: 100vh; margin: 0; padding: 0; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0f1d; color: #fff; display: flex; flex-direction: column; }
+    /* Fixed Top Header (56px) */
+    .header { height: 56px; background: linear-gradient(135deg, #0a0f1d, #1a1f3d); padding: 0 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #00CCFF; box-shadow: 0 0 20px rgba(0,204,255,0.2); flex-wrap: nowrap; flex-shrink: 0; overflow: hidden; }
     .header .mascot { font-size: 24px; flex-shrink: 0; }
-    .header .title-wrap { flex: 1; min-width: 0; }
-    .header h1 { font-size: 15px; font-weight: 800; color: #00CCFF; text-shadow: 0 0 8px rgba(0,204,255,0.4); }
+    .header .title-wrap { flex: 1; min-width: 0; overflow: hidden; }
+    .header h1 { font-size: 15px; font-weight: 800; color: #00CCFF; text-shadow: 0 0 8px rgba(0,204,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header .subtitle { font-size: 10px; color: #9900FF; font-weight: 600; }
-    .header .pill { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: linear-gradient(90deg, #00CCFF, #0066FF, #9900FF); color: #fff; white-space: nowrap; }
-    .header .safe { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #00FF66; color: #003300; white-space: nowrap; }
-    .header .btn { font-size: 11px; padding: 7px 12px; border-radius: 14px; background: linear-gradient(135deg, #0066FF, #00CCFF); color: #fff; border: none; cursor: pointer; font-weight: 700; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,102,255,0.3); }
+    .header .pill { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: linear-gradient(90deg, #00CCFF, #0066FF, #9900FF); color: #fff; white-space: nowrap; flex-shrink: 0; }
+    .header .safe { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #00FF66; color: #003300; white-space: nowrap; flex-shrink: 0; }
+    .header .btn { font-size: 11px; padding: 7px 12px; border-radius: 14px; background: linear-gradient(135deg, #0066FF, #00CCFF); color: #fff; border: none; cursor: pointer; font-weight: 700; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,102,255,0.3); flex-shrink: 0; }
     .header .btn:hover { transform: scale(1.05); }
     .header .btn:active { transform: scale(0.95); }
-    .main { flex: 1; display: flex; flex-direction: column; max-width: 800px; width: 100%; margin: 0 auto; padding: 16px; }
-    .hero { text-align: center; margin-bottom: 16px; }
-    .hero .mascot-big { font-size: 48px; margin-bottom: 6px; }
-    .hero h2 { font-size: 24px; font-weight: 800; background: linear-gradient(90deg, #00CCFF, #9900FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; }
-    .hero p { font-size: 13px; color: #8899bb; line-height: 1.5; max-width: 500px; margin: 0 auto; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
-    .chip { font-size: 10px; padding: 4px 12px; border-radius: 16px; background: rgba(0,204,255,0.1); color: #00CCFF; border: 1px solid rgba(0,204,255,0.3); }
-    .hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
-    .hub .card { background: linear-gradient(135deg, #11172e, #1a2040); border-radius: 16px; padding: 14px; text-align: center; cursor: pointer; transition: transform 0.15s; border: 2px solid rgba(0,204,255,0.2); }
-    .hub .card:hover { transform: translateY(-3px); border-color: #00CCFF; box-shadow: 0 6px 16px rgba(0,204,255,0.2); }
-    .hub .card .icon { font-size: 28px; margin-bottom: 4px; }
-    .hub .card .label { font-size: 11px; font-weight: 700; color: #00CCFF; }
-    .hub .card .desc { font-size: 9px; color: #6677aa; }
-    .interaction { display: flex; flex-direction: column; gap: 10px; flex: 1; }
-    .output { flex: 1; min-height: 140px; max-height: 280px; overflow-y: auto; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 16px; padding: 14px; font-size: 13px; line-height: 1.6; color: #ddeeff; }
+    .header .btn-fs { background: linear-gradient(135deg, #9900FF, #00CCFF); }
+    /* Central Viewport — two-column split, no outer page scroll */
+    .viewport { flex: 1; height: calc(100vh - 110px); display: flex; gap: 16px; padding: 12px; overflow: hidden; }
+    .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .pane-left { max-width: 40%; }
+    .pane-right { max-width: 60%; }
+    .pane h3 { font-size: 13px; font-weight: 700; color: #00CCFF; margin-bottom: 8px; flex-shrink: 0; }
+    .hub-panel { flex: 1; overflow-y: auto; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 16px; padding: 14px; }
+    .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hub-card { background: linear-gradient(135deg, #11172e, #1a2040); border-radius: 16px; padding: 14px; text-align: center; cursor: pointer; transition: transform 0.15s; border: 2px solid rgba(0,204,255,0.2); }
+    .hub-card:hover { transform: translateY(-3px); border-color: #00CCFF; box-shadow: 0 6px 16px rgba(0,204,255,0.2); }
+    .hub-card .icon { font-size: 28px; margin-bottom: 4px; }
+    .hub-card .label { font-size: 11px; font-weight: 700; color: #00CCFF; }
+    .hub-card .desc { font-size: 9px; color: #6677aa; }
+    .output { flex: 1; overflow-y: auto; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 16px; padding: 14px; font-size: 13px; line-height: 1.6; color: #ddeeff; }
     .output .msg-user { text-align: right; margin-bottom: 8px; }
     .output .msg-user .bubble { display: inline-block; background: linear-gradient(135deg, #0066FF, #00CCFF); color: #fff; padding: 8px 12px; border-radius: 16px 16px 0 16px; max-width: 80%; }
     .output .msg-agent { margin-bottom: 8px; }
     .output .msg-agent .bubble { display: inline-block; background: linear-gradient(135deg, #9900FF, #0066FF); color: #fff; padding: 8px 12px; border-radius: 16px 16px 16px 0; max-width: 85%; }
     .output .msg-agent .label { font-size: 9px; color: #9900FF; margin-bottom: 3px; font-weight: 700; }
     .output .empty { color: #445577; text-align: center; padding: 30px 0; }
-    .input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .input-row textarea { flex: 1; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 14px; padding: 10px 12px; color: #fff; font-size: 13px; font-family: inherit; resize: none; min-height: 44px; max-height: 100px; outline: none; }
-    .input-row textarea:focus { border-color: #00CCFF; }
-    .input-row button { background: linear-gradient(135deg, #00CCFF, #0066FF); color: #fff; border: none; border-radius: 14px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,204,255,0.3); }
-    .input-row button:hover { transform: scale(1.05); }
-    .input-row button:active { transform: scale(0.95); }
-    .input-row button:disabled { opacity: 0.5; }
-    .footer { padding: 10px 16px; text-align: center; border-top: 2px solid rgba(0,204,255,0.3); }
-    .footer .ver { font-size: 9px; color: #445577; }
+    /* Fixed Bottom Composer Bar (54px) */
+    .composer { height: 54px; display: flex; gap: 8px; align-items: center; padding: 0 16px; border-top: 2px solid rgba(0,204,255,0.3); background: #0a0f1d; flex-shrink: 0; }
+    .composer textarea { flex: 1; background: #11172e; border: 2px solid rgba(0,204,255,0.3); border-radius: 14px; padding: 8px 12px; color: #fff; font-size: 13px; font-family: inherit; resize: none; height: 38px; outline: none; }
+    .composer textarea:focus { border-color: #00CCFF; }
+    .composer button { background: linear-gradient(135deg, #00CCFF, #0066FF); color: #fff; border: none; border-radius: 14px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.15s; box-shadow: 0 4px 12px rgba(0,204,255,0.3); flex-shrink: 0; }
+    .composer button:hover { transform: scale(1.05); }
+    .composer button:active { transform: scale(0.95); }
+    .composer button:disabled { opacity: 0.5; }
   </style>
 </head>
 <body>
@@ -600,45 +616,63 @@ function buildMaxVizHtml(name, version, description, artifactCode, components, b
     </div>
     <span class="pill">Learn • Play • Grow</span>
     <span class="safe">🟢 COPPA Child-Safe</span>
-    <button class="btn" onclick="alert('New Game!')">🎮 New Game</button>
-    <button class="btn" onclick="alert('Progress Vault!')">🏆 Progress Vault</button>
-    <button class="btn" onclick="window.close()">🚪 Exit (Ctrl+Q)</button>
+    <button class="btn" onclick="alert('Progress Vault!')">🏆 Vault</button>
+    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)">⛶ Max Viz Fullscreen</button>
+    <button class="btn" onclick="window.close()">🚪 Exit</button>
   </div>
-  <div class="main">
-    <div class="hero">
-      <div class="mascot-big">🤖🎓</div>
-      <h2>${esc(compName)}</h2>
-      <p>${esc(compDesc)}</p>
-      ${featureChips ? '<div class="chips">' + featureChips + '</div>' : ''}
+  <div class="viewport">
+    <div class="pane pane-left">
+      <h3>🎯 Game Hub</h3>
+      <div class="hub-panel">
+        <div class="hub-grid">
+          <div class="hub-card" onclick="document.getElementById('input').value='Memory Match'; doSend();"><div class="icon">🧠</div><div class="label">Memory</div><div class="desc">Brain training</div></div>
+          <div class="hub-card" onclick="document.getElementById('input').value='Logic Puzzle'; doSend();"><div class="icon">🔢</div><div class="label">Logic</div><div class="desc">Problem solving</div></div>
+          <div class="hub-card" onclick="document.getElementById('input').value='Language Quest'; doSend();"><div class="icon">📚</div><div class="label">Language</div><div class="desc">Word power</div></div>
+          <div class="hub-card" onclick="document.getElementById('input').value='Visual Quest'; doSend();"><div class="icon">🎨</div><div class="label">Visual</div><div class="desc">Perception</div></div>
+        </div>
+      </div>
     </div>
-    <div class="hub">
-      <div class="card" onclick="document.getElementById('input').value='Memory Match'; doSend();"><div class="icon">🧠</div><div class="label">Memory</div><div class="desc">Brain training</div></div>
-      <div class="card" onclick="document.getElementById('input').value='Logic Puzzle'; doSend();"><div class="icon">🔢</div><div class="label">Logic</div><div class="desc">Problem solving</div></div>
-      <div class="card" onclick="document.getElementById('input').value='Language Quest'; doSend();"><div class="icon">📚</div><div class="label">Language</div><div class="desc">Word power</div></div>
-      <div class="card" onclick="document.getElementById('input').value='Visual Quest'; doSend();"><div class="icon">🎨</div><div class="label">Visual</div><div class="desc">Perception</div></div>
-    </div>
-    <div class="interaction">
+    <div class="pane pane-right">
+      <h3>💬 Deliberation Chat</h3>
       <div class="output" id="output">
         <div class="empty">Hi friend! I am Gimmie G! Pick a game or ask me anything! 🎮</div>
       </div>
-      <div class="input-row">
-        <textarea id="input" placeholder="Type your question or pick a game above! 🎈" rows="1"></textarea>
-        <button id="send-btn">Let's Play!</button>
-      </div>
     </div>
   </div>
-  <div class="footer">
-    <div class="ver">${esc(compCode)} · v${esc(version)} · COPPA Child-Safe Green Zone</div>
+  <div class="composer">
+    <textarea id="input" placeholder="Type your question or pick a game! 🎈" rows="1"></textarea>
+    <button id="send-btn">Let's Play!</button>
   </div>
   <script>
     const COMP_NAME = ${JSON.stringify(compName)};
     const output = document.getElementById('output');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
-    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 100) + 'px'; });
+    const fsBtn = document.getElementById('btn-fullscreen');
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 38) + 'px'; });
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
     sendBtn.addEventListener('click', doSend);
     document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
+    // Max Viz Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
+      else { document.exitFullscreen().catch(() => {}); }
+    }
+    fsBtn.addEventListener('click', toggleFullscreen);
+    // Hotkey: F11 or Ctrl+F
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F11' || (e.ctrlKey && e.key === 'f')) { e.preventDefault(); toggleFullscreen(); }
+    });
+    // Auto-fullscreen on first user interaction
+    let firstInteract = true;
+    function autoFullscreen() {
+      if (firstInteract && !document.fullscreenElement) {
+        firstInteract = false;
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }
+    document.addEventListener('click', autoFullscreen, { once: true });
+    document.addEventListener('keydown', autoFullscreen, { once: true });
     function addMessage(role, text) {
       const empty = output.querySelector('.empty'); if (empty) empty.remove();
       const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
