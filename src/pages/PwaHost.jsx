@@ -175,6 +175,9 @@ export default function PwaHost() {
     .toolbar button.active { background: #334155; color: #fbbf24; }
     .footer { padding: 10px 16px; text-align: center; border-top: 1px solid #1e293b; }
     .footer .ver { font-size: 9px; color: #334155; }
+    .thinking-dots::after { content: '...'; animation: think-pulse 1.2s infinite; }
+    @keyframes think-pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+    .msg-agent.thinking .bubble { opacity: 0.75; font-style: italic; }
   </style>
 </head>
 <body>
@@ -217,6 +220,65 @@ export default function PwaHost() {
     const COMP_TYPE = ${JSON.stringify(compType)};
     const COMP_NAME = ${JSON.stringify(compName)};
     const TM = ${JSON.stringify(tm)};
+    const COMP_CODE = ${JSON.stringify(compCode)};
+    const PWA_VERSION = ${JSON.stringify(pwaVersion)};
+    const PERSONA = ${JSON.stringify(payload?.persona || 'obsidian')};
+    const API_ENDPOINT = '/functions/pwaQueryEngine';
+    const SESSION_KEY = 'SOVEREIGN_SESSION_HISTORY';
+    const MAX_HISTORY = 50;
+
+    function loadHistory() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || '[]'); } catch { return []; } }
+    function saveHistory(h) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(h.slice(-MAX_HISTORY))); } catch {} }
+    function addToHistory(role, text) { var h = loadHistory(); h.push({ role: role, text: text, ts: Date.now() }); saveHistory(h); }
+    function renderHistory() {
+      var h = loadHistory(); if (h.length === 0) return;
+      var e = output.querySelector('.empty'); if (e) e.remove();
+      h.forEach(function(msg) {
+        var w = document.createElement('div'); w.className = 'msg-' + msg.role;
+        if (msg.role === 'agent') { var l = document.createElement('div'); l.className = 'label'; l.textContent = COMP_NAME; w.appendChild(l); }
+        var b = document.createElement('div'); b.className = 'bubble'; b.textContent = msg.text; w.appendChild(b);
+        output.appendChild(w);
+      });
+      output.scrollTop = output.scrollHeight;
+    }
+    function showThinking(msg) {
+      var e = output.querySelector('.empty'); if (e) e.remove();
+      var w = document.createElement('div'); w.className = 'msg-agent thinking'; w.id = 'thinking-indicator';
+      var l = document.createElement('div'); l.className = 'label'; l.textContent = COMP_NAME; w.appendChild(l);
+      var b = document.createElement('div'); b.className = 'bubble';
+      var s = document.createElement('span'); s.className = 'thinking-dots'; s.textContent = msg;
+      b.appendChild(s); w.appendChild(b); output.appendChild(w);
+      output.scrollTop = output.scrollHeight;
+    }
+    function hideThinking() { var t = document.getElementById('thinking-indicator'); if (t) t.remove(); }
+    function rotateThinking(phrases) {
+      var i = 0; var d = document.querySelector('#thinking-indicator .thinking-dots'); if (!d) return null;
+      return setInterval(function() { i = (i + 1) % phrases.length; d.textContent = phrases[i]; }, 1800);
+    }
+    async function fetchAIResponse(query, history) {
+      try {
+        var res = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ component_code: COMP_CODE, query: query, history: history, persona: PERSONA }) });
+        if (!res.ok) return null; var data = await res.json(); return data.response || null;
+      } catch (e) { return null; }
+    }
+    async function executeQuery(text, thinkingPhrases, offlineEngine) {
+      addToHistory('user', text);
+      showThinking(thinkingPhrases[0]);
+      var rotator = rotateThinking(thinkingPhrases);
+      var history = loadHistory();
+      var response = await fetchAIResponse(text, history);
+      if (rotator) clearInterval(rotator);
+      hideThinking();
+      if (!response) response = offlineEngine(text);
+      addToHistory('agent', response);
+      addMessage('agent', response);
+      sendBtn.disabled = false; input.focus();
+    }
+    function pm1aOfflineFallback(query) {
+      return 'Forensic Dossier Analysis (offline mode):\\n\\n1. ASSESSMENT: Query received for forensic analysis under Blackstone Protocol.\\n2. KEY FINDINGS: Offline mode active — connect to the internet for full LLM-powered analysis.\\n3. RISK VECTORS: Cannot verify Sovereign Ledger or golden hash without network access.\\n4. RECOMMENDED ACTIONS: Reconnect to the app\\'s online AI gateway for complete jurisprudence and forensic analysis.\\n\\nProtocol: Blackstone | Mode: Air-gapped';
+    }
+
     const output = document.getElementById("output");
     const input = document.getElementById("input");
     const sendBtn = document.getElementById("send-btn");
@@ -240,18 +302,10 @@ export default function PwaHost() {
     function doSend() {
       const text = input.value.trim(); if (!text) return;
       addMessage("user", text); input.value = ""; input.style.height = "auto"; sendBtn.disabled = true;
-      const schemaValues = {};
-      if (schemaFields) { schemaFields.querySelectorAll("input").forEach(inp => { if (inp.value.trim()) schemaValues[inp.dataset.field] = inp.value.trim(); }); }
-      const responses = {
-        X1: 'Reading protocol engaged. I have analyzed your input: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Key themes identified and ready for deeper extraction.',
-        X2: 'Prophecy model activated. Based on the scenario: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Forecasting probability vectors and trend analysis.',
-        X3: 'Speed profile loaded. Optimizing for: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Performance metrics and acceleration vectors calculated.',
-        X4: 'Council is deliberating on: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Multiple perspectives are being weighed and synthesized.',
-        X5: 'Agent online. I received your request: "' + text.substring(0, 80) + (text.length > 80 ? "…" : "") + '". Processing and ready to assist further.',
-      };
-      const schemaNote = Object.keys(schemaValues).length > 0 ? " (with parameters: " + Object.entries(schemaValues).map(([k,v]) => k + "=" + v).join(", ") + ")" : "";
-      setTimeout(() => { addMessage("agent", (responses[COMP_TYPE] || responses.X5) + schemaNote); sendBtn.disabled = false; input.focus(); }, 600);
+      var thinkingPhrases = ['Synthesizing response...', 'Analyzing query...', 'Processing through AI engine...', 'Evaluating context...', 'Formulating answer...'];
+      executeQuery(text, thinkingPhrases, pm1aOfflineFallback);
     }
+    renderHistory();
   </script>
 </body>
 </html>`;
