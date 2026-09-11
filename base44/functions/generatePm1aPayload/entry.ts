@@ -108,7 +108,46 @@ self.addEventListener("fetch", (event) => {
 });
 `;
 
-const INSTALL_BAT = '@echo off\r\nSET DIR=%~dp0\r\nSET HTML_PATH=%DIR%index.html\r\n:: Check for Edge or Chrome and launch in dedicated chromeless app window\r\nif exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" (\r\n    start "" "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" --app="file:///%HTML_PATH%" --start-maximized\r\n) else if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" (\r\n    start "" "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" --app="file:///%HTML_PATH%" --start-maximized\r\n) else (\r\n    start "" "%HTML_PATH%"\r\n)\r\n';
+const INSTALL_BAT = `@echo off
+SET DIR=%~dp0
+SET HTML_PATH=%DIR%index.html
+SET APP_NAME=PM-1A-Sovereign
+
+:: ── Provision Sovereign Memory Core policy directory ──
+if not exist "C:\\SOVEREIGN-MEMORY-CORE\\policy" mkdir "C:\\SOVEREIGN-MEMORY-CORE\\policy"
+
+:: ── Determine browser executable for chromeless app window ──
+SET BROWSER=
+if exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" (
+    SET BROWSER=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe
+) else if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" (
+    SET BROWSER=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe
+)
+
+:: ── Create Desktop Shortcut if it does not exist ──
+SET SHORTCUT_PATH=%USERPROFILE%\\Desktop\\%APP_NAME%.lnk
+if not exist "%SHORTCUT_PATH%" (
+    if not "%BROWSER%"=="" (
+        echo Set oWS = WScript.CreateObject("WScript.Shell") > "%TEMP%\\CreateShortcut.vbs"
+        echo sLinkFile = "%SHORTCUT_PATH%" >> "%TEMP%\\CreateShortcut.vbs"
+        echo Set oLink = oWS.CreateShortcut(sLinkFile) >> "%TEMP%\\CreateShortcut.vbs"
+        echo oLink.TargetPath = "%BROWSER%" >> "%TEMP%\\CreateShortcut.vbs"
+        echo oLink.Arguments = "--app=\"file:///%HTML_PATH%\" --start-maximized" >> "%TEMP%\\CreateShortcut.vbs"
+        echo oLink.WorkingDirectory = "%DIR%" >> "%TEMP%\\CreateShortcut.vbs"
+        echo oLink.IconLocation = "%BROWSER%,0" >> "%TEMP%\\CreateShortcut.vbs"
+        echo oLink.Save >> "%TEMP%\\CreateShortcut.vbs"
+        cscript //nologo "%TEMP%\\CreateShortcut.vbs"
+        del "%TEMP%\\CreateShortcut.vbs"
+    )
+)
+
+:: ── Launch chromeless app window immediately ──
+if not "%BROWSER%"=="" (
+    start "" "%BROWSER%" --app="file:///%HTML_PATH%" --start-maximized
+) else (
+    start "" "%HTML_PATH%"
+)
+`;
 const INSTALL_SH = '#!/bin/bash\nDIR="$(cd "$(dirname "$0")" && pwd)"\nHTML_PATH="$DIR/index.html"\n# Try Chrome or Chromium in app mode\nfor CMD in "google-chrome" "chromium" "chromium-browser" "microsoft-edge"; do\n  if command -v "$CMD" >/dev/null 2>&1; then\n    "$CMD" --app="file:///$HTML_PATH" --start-maximized &\n    exit 0\n  fi\ndone\n# Fallback: open with default handler\nopen "$HTML_PATH" 2>/dev/null || xdg-open "$HTML_PATH"\n';
 
 // ── Shared interactive engine infrastructure ──────────────────────────────
@@ -191,6 +230,159 @@ function buildSharedEngineJs(persona: string, compCode: string): string {
         return data.response || null;
       } catch (e) { return null; }
     }
+
+    // ── SOV-USB-AV-SENTINEL-1.0: 2-Tier Permission Gate Protocol ──
+    // Scans for auto-boot files on connected removable media. If an unsolicited
+    // auto-run file is detected, halts execution and shows a security dialog.
+    // When the user explicitly initiates a boot, allows seamless execution.
+    var USB_SENTINEL = {
+      autoBootFiles: ['autorun.inf', 'setup.exe', 'boot.bat', 'startup.bat', 'autoexec.bat'],
+      scanResults: [],
+      scanning: false,
+
+      // Check for auto-boot files in a directory listing
+      detectAutoBoot: function(fileList) {
+        var detected = [];
+        for (var i = 0; i < fileList.length; i++) {
+          var name = (fileList[i].name || '').toLowerCase();
+          if (this.autoBootFiles.indexOf(name) !== -1) {
+            detected.push(fileList[i]);
+          }
+        }
+        return detected;
+      },
+
+      // Compute SHA-256 checksum for forensic telemetry (async)
+      computeHash: async function(file) {
+        try {
+          var buf = await file.arrayBuffer();
+          var hash = await crypto.subtle.digest('SHA-256', buf);
+          return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        } catch (e) { return 'unavailable'; }
+      },
+
+      // 2-Tier gate: explicit user action = frictionless; unsolicited = halt + dialog
+      inspectDrive: async function(driveLetter, fileList, userInitiated) {
+        this.scanResults = [];
+        var autoBootFiles = this.detectAutoBoot(fileList);
+
+        if (autoBootFiles.length === 0) {
+          return { status: 'clean', autoBootDetected: false };
+        }
+
+        // Tier 1: User explicitly initiated the boot — allow seamless execution
+        if (userInitiated) {
+          return { status: 'authorized', autoBootDetected: true, files: autoBootFiles };
+        }
+
+        // Tier 2: Unsolicited auto-boot — halt and show security dialog
+        var forensicData = [];
+        for (var i = 0; i < autoBootFiles.length; i++) {
+          var f = autoBootFiles[i];
+          var hash = await this.computeHash(f);
+          forensicData.push({
+            name: f.name,
+            path: driveLetter + ':\\\\' + f.name,
+            size: f.size || 0,
+            sha256: hash
+          });
+        }
+        this.scanResults = forensicData;
+        this.showSecurityDialog(driveLetter, forensicData);
+        return { status: 'blocked', autoBootDetected: true, files: forensicData };
+      },
+
+      // Render the interactive security dialogue modal
+      showSecurityDialog: function(driveLetter, files) {
+        // Remove any existing sentinel modal
+        var existing = document.getElementById('usb-sentinel-modal');
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'usb-sentinel-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+        var dialog = document.createElement('div');
+        dialog.style.cssText = 'background:#1a0a0a;border:2px solid #dc2626;border-radius:12px;padding:24px;max-width:480px;width:90%;color:#e2e8f0;font-family:-apple-system,sans-serif;';
+
+        var header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:16px;';
+        header.innerHTML = '<span style="font-size:24px;">⚠️</span><span style="font-size:16px;font-weight:700;color:#ef4444;">Removable Media Auto-Boot Warning</span>';
+        dialog.appendChild(header);
+
+        var body = document.createElement('p');
+        body.style.cssText = 'font-size:13px;line-height:1.6;color:#cbd5e1;margin-bottom:16px;';
+        body.textContent = 'An automated execution file was detected on USB drive ' + driveLetter + ':. For your protection, automated execution was paused.';
+        dialog.appendChild(body);
+
+        // Forensic telemetry table
+        var telemetry = document.createElement('div');
+        telemetry.style.cssText = 'background:#0f0808;border:1px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;font-family:monospace;color:#fca5a5;';
+        var html = '';
+        files.forEach(function(f) {
+          html += '<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #7f1d1d;">';
+          html += '<div><strong>File:</strong> ' + f.path + '</div>';
+          html += '<div><strong>Size:</strong> ' + f.size + ' bytes</div>';
+          html += '<div><strong>SHA-256:</strong> ' + f.sha256 + '</div>';
+          html += '</div>';
+        });
+        telemetry.innerHTML = html;
+        dialog.appendChild(telemetry);
+
+        // Action buttons
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:8px;';
+
+        var keepBlocked = document.createElement('button');
+        keepBlocked.textContent = '🔒 Keep Blocked & Browse Files Safely';
+        keepBlocked.style.cssText = 'flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;';
+        keepBlocked.addEventListener('click', function() { overlay.remove(); });
+        btnRow.appendChild(keepBlocked);
+
+        var authorize = document.createElement('button');
+        authorize.textContent = '⚡ Authorize & Trigger Boot File';
+        authorize.style.cssText = 'flex:1;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;';
+        authorize.addEventListener('click', function() {
+          overlay.remove();
+          if (typeof onUsbBootAuthorized === 'function') onUsbBootAuthorized(driveLetter, files);
+        });
+        btnRow.appendChild(authorize);
+
+        dialog.appendChild(btnRow);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+      }
+    };
+
+    // ── iPhone Duo Dual-Sensor Camera Optimization ──
+    // Uses multi-lens hints for rear-facing camera with continuous exposure/focus
+    var CAMERA_OPTIMIZED = {
+      constraints: {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 3840 },
+          height: { ideal: 2160 }
+        }
+      },
+      // Request advanced camera capabilities when available
+      getAdvancedTrack: async function(stream) {
+        var track = stream.getVideoTracks()[0];
+        if (!track) return null;
+        var capabilities = track.getCapabilities ? track.getCapabilities() : {};
+        var settings = track.getSettings ? track.getSettings() : {};
+        var constraints = {};
+        if (capabilities.exposureMode && capabilities.exposureMode.indexOf('continuous') !== -1) {
+          constraints.exposureMode = 'continuous';
+        }
+        if (capabilities.focusMode && capabilities.focusMode.indexOf('continuous') !== -1) {
+          constraints.focusMode = 'continuous';
+        }
+        try {
+          if (Object.keys(constraints).length > 0) await track.applyConstraints({ advanced: [constraints] });
+        } catch (e) { /* advanced constraints not supported */ }
+        return track;
+      }
+    };
 
     // ── Async execution pipeline ──
     async function executeQuery(text, thinkingPhrases, offlineEngine) {
@@ -348,6 +540,10 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
     .toolbar button.active { background: #334155; color: #fbbf24; }
     .footer { padding: 10px 16px; text-align: center; border-top: 1px solid #1e293b; }
     .footer .ver { font-size: 9px; color: #334155; }
+    .win-controls { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+    .win-controls button { background: #1e293b; color: #64748b; border: 1px solid #334155; border-radius: 6px; width: 28px; height: 28px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .win-controls button:hover { background: #334155; color: #e2e8f0; }
+    .win-controls .btn-exit:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
     ${SHARED_ENGINE_CSS}
   </style>
 </head>
@@ -360,6 +556,11 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
         <span class="type-badge type-${esc(compType)}">${esc(compType)} · ${esc(tm.label)}</span>
         <span>v${esc(version)}</span>
       </div>
+    </div>
+    <div class="win-controls">
+      <button id="btn-minimize" title="Minimize">🗕</button>
+      <button id="btn-fullscreen" title="Max Viz Fullscreen (F11 / Ctrl+F)">🗖</button>
+      <button id="btn-exit" class="btn-exit" title="Exit">✕</button>
     </div>
   </div>
 
@@ -407,6 +608,30 @@ function buildIndexHtml(name, version, description, artifactCode, components, bo
     const btnChat = document.getElementById('btn-chat');
     const btnSchema = document.getElementById('btn-schema');
     const schemaFields = document.getElementById('schema-fields');
+    const fsBtn = document.getElementById('btn-fullscreen');
+    const minBtn = document.getElementById('btn-minimize');
+    const exitBtn = document.getElementById('btn-exit');
+
+    // ── Standardized Window Controls ──
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
+      else { document.exitFullscreen().catch(() => {}); }
+    }
+    if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F11' || (e.ctrlKey && e.key === 'f')) { e.preventDefault(); toggleFullscreen(); }
+    });
+    // Minimize — stream-kill active camera/mic then attempt to minimize
+    if (minBtn) minBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      window.close();
+    });
+    // Hard Exit — terminate streams, flush state, close
+    if (exitBtn) exitBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      try { localStorage.setItem('SOVEREIGN_EXIT_FLUSH', JSON.stringify({ ts: Date.now(), code: COMP_CODE })); } catch {}
+      window.close();
+    });
 
     // Auto-resize textarea
     input.addEventListener('input', () => {
@@ -621,8 +846,9 @@ function buildParchmentHtml(name, version, description, artifactCode, components
     </div>
     <span class="badge">Blackstone Legal Shield</span>
     <button class="btn" onclick="alert('New Civic Dossier initiated.')">➕ New</button>
-    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)">⛶ Max Viz Fullscreen</button>
-    <button class="btn" onclick="window.close()">🚪 Exit</button>
+    <button class="btn" id="btn-minimize" title="Minimize">🗕 Minimize</button>
+    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)">🗖 Max Viz</button>
+    <button class="btn" id="btn-exit" title="Hard Exit">✕ Exit</button>
   </div>
   <div class="viewport">
     <div class="pane pane-left">
@@ -657,30 +883,31 @@ function buildParchmentHtml(name, version, description, artifactCode, components
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
     const fsBtn = document.getElementById('btn-fullscreen');
+    const minBtn = document.getElementById('btn-minimize');
+    const exitBtn = document.getElementById('btn-exit');
     input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 38) + 'px'; });
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
     sendBtn.addEventListener('click', doSend);
-    document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
-    // Max Viz Fullscreen toggle
+    // ── Standardized Window Controls ──
     function toggleFullscreen() {
       if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
       else { document.exitFullscreen().catch(() => {}); }
     }
-    fsBtn.addEventListener('click', toggleFullscreen);
-    // Hotkey: F11 or Ctrl+F
+    if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'F11' || (e.ctrlKey && e.key === 'f')) { e.preventDefault(); toggleFullscreen(); }
     });
-    // Auto-fullscreen on first user interaction
-    let firstInteract = true;
-    function autoFullscreen() {
-      if (firstInteract && !document.fullscreenElement) {
-        firstInteract = false;
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-    }
-    document.addEventListener('click', autoFullscreen, { once: true });
-    document.addEventListener('keydown', autoFullscreen, { once: true });
+    // Minimize — stream-kill active camera/mic then minimize
+    if (minBtn) minBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      window.close();
+    });
+    // Hard Exit — terminate streams, flush state, close
+    if (exitBtn) exitBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      try { localStorage.setItem('SOVEREIGN_EXIT_FLUSH', JSON.stringify({ ts: Date.now(), code: COMP_CODE })); } catch {}
+      window.close();
+    });
     function addMessage(role, text) {
       const empty = output.querySelector('.empty'); if (empty) empty.remove();
       const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
@@ -890,8 +1117,9 @@ function buildMaxVizHtml(name, version, description, artifactCode, components, b
     <span class="pill">Learn • Play • Grow</span>
     <span class="safe">🟢 COPPA Child-Safe</span>
     <button class="btn" onclick="alert('Progress Vault!')">🏆 Vault</button>
-    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)">⛶ Max Viz Fullscreen</button>
-    <button class="btn" onclick="window.close()">🚪 Exit</button>
+    <button class="btn" id="btn-minimize" title="Minimize">🗕 Minimize</button>
+    <button class="btn btn-fs" id="btn-fullscreen" title="Toggle Max Viz Fullscreen (F11 / Ctrl+F)"> gridColumn Max Viz</button>
+    <button class="btn" id="btn-exit" title="Hard Exit">✕ Exit</button>
   </div>
   <div class="viewport">
     <div class="pane pane-left">
@@ -924,30 +1152,31 @@ function buildMaxVizHtml(name, version, description, artifactCode, components, b
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
     const fsBtn = document.getElementById('btn-fullscreen');
+    const minBtn = document.getElementById('btn-minimize');
+    const exitBtn = document.getElementById('btn-exit');
     input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 38) + 'px'; });
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
     sendBtn.addEventListener('click', doSend);
-    document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'q') { window.close(); } });
-    // Max Viz Fullscreen toggle
+    // ── Standardized Window Controls ──
     function toggleFullscreen() {
       if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
       else { document.exitFullscreen().catch(() => {}); }
     }
-    fsBtn.addEventListener('click', toggleFullscreen);
-    // Hotkey: F11 or Ctrl+F
+    if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'F11' || (e.ctrlKey && e.key === 'f')) { e.preventDefault(); toggleFullscreen(); }
     });
-    // Auto-fullscreen on first user interaction
-    let firstInteract = true;
-    function autoFullscreen() {
-      if (firstInteract && !document.fullscreenElement) {
-        firstInteract = false;
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-    }
-    document.addEventListener('click', autoFullscreen, { once: true });
-    document.addEventListener('keydown', autoFullscreen, { once: true });
+    // Minimize — stream-kill active camera/mic then minimize
+    if (minBtn) minBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      window.close();
+    });
+    // Hard Exit — terminate streams, flush state, close
+    if (exitBtn) exitBtn.addEventListener('click', () => {
+      if (window.activeStream) { window.activeStream.getTracks().forEach(t => t.stop()); }
+      try { localStorage.setItem('SOVEREIGN_EXIT_FLUSH', JSON.stringify({ ts: Date.now(), code: COMP_CODE })); } catch {}
+      window.close();
+    });
     function addMessage(role, text) {
       const empty = output.querySelector('.empty'); if (empty) empty.remove();
       const wrap = document.createElement('div'); wrap.className = 'msg-' + role;
@@ -1234,11 +1463,18 @@ export default async function(req) {
       '',
       'Setup:',
       '  1. Double-click install.bat (Windows) or run install.sh (Mac/Linux) to open the PWA',
-      '  2. Or host all files in your PWA web root',
-      '  2. Link manifest.json in your index.html',
-      '  3. Register sw.js as your service worker',
-      '  4. Download the favicon from favicon-ref.txt and save locally',
-      `  5. ${payload.success_indicator}`,
+      '  2. install.bat provisions C:\\SOVEREIGN-MEMORY-CORE\\policy\\ for PM-1A policy storage',
+      '  3. install.bat creates a desktop shortcut with the app icon (chromeless app window)',
+      '  4. Or host all files in your PWA web root',
+      '  5. Link manifest.json in your index.html',
+      '  6. Register sw.js as your service worker',
+      '  7. Download the favicon from favicon-ref.txt and save locally',
+      `  8. ${payload.success_indicator}`,
+      '',
+      'Window Controls:',
+      '  🗕 Minimize  — Kills active camera/mic streams and minimizes the window',
+      '  🗗 Max Viz   — Toggles fullscreen (F11 or Ctrl+F)',
+      '  ✕ Exit      — Terminates streams, flushes state to localStorage, and closes',
     ].filter(l => l !== '').join('\n'));
 
     const zipBytes = await zip.generateAsync({
