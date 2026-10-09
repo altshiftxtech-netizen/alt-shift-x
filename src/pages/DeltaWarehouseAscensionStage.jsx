@@ -37,7 +37,7 @@ export default function DeltaWarehouseAscensionStage() {
     if (!canvas) return;
 
     let particles = [];
-    const PARTICLE_COUNT = 60000;
+    const PARTICLE_COUNT = 45000;
     const BRAID_STRANDS = 12;
     let mouseX = canvas.width / 2;
     let mouseY = canvas.height / 2;
@@ -102,7 +102,7 @@ export default function DeltaWarehouseAscensionStage() {
       const h = canvas.height;
 
       // Fade trail
-      ctx.fillStyle = "rgba(5, 5, 8, 0.08)";
+      ctx.fillStyle = "rgba(3, 3, 6, 0.06)";
       ctx.fillRect(0, 0, w, h);
 
       const mouseVX = mouseX - prevMouseX;
@@ -172,16 +172,19 @@ export default function DeltaWarehouseAscensionStage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full bg-[#050508] overflow-hidden text-white font-sans">
-      {/* WebGPU Next-Dimension Canvas */}
+    <div className="relative min-h-screen w-full bg-[#030306] overflow-hidden text-white font-sans">
+      {/* Hyper-Ascension Particle Canvas */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-auto"
+        className="absolute inset-0 w-full h-full pointer-events-none opacity-60"
       />
 
+      {/* Ambient Optical Caustics / Radial Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/10 via-violet-600/15 to-cyan-500/10 blur-[140px] pointer-events-none" />
+
       {/* Sub-surface optical glass depth overlay */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#050508]/80" />
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(5,5,8,0.6) 100%)" }} />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#030306]/80" />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(3,3,6,0.6) 100%)" }} />
 
       {/* Floating Delta Header */}
       <div className="relative z-10 flex items-center justify-between px-6 md:px-10 py-6 backdrop-blur-md border-b border-white/10">
