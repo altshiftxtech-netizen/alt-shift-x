@@ -103,8 +103,9 @@ export default function DeltaWarehouseAscensionStage() {
       const w = canvas.width;
       const h = canvas.height;
 
-      // Fade trail
-      ctx.fillStyle = "rgba(3, 3, 6, 0.12)";
+      // Clear fully each frame for discrete pixelated particles
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(3, 3, 6, 1)";
       ctx.fillRect(0, 0, w, h);
 
       const mouseVX = mouseX - prevMouseX;
