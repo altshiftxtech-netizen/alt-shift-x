@@ -20,7 +20,10 @@ export default function DeltaWarehouseAscensionStage() {
   // Fetch Delta productions (components with DELTA-PROD- prefix or Marketplace & Deployment Kits)
   useEffect(() => {
     base44.entities.Component.filter(
-      { code: { $regex: "DELTA-PROD-", $options: "i" } },
+      { $or: [
+        { code: { $regex: "DELTA-PROD-", $options: "i" } },
+        { code: { $regex: "LEGAL-SSSL-", $options: "i" } },
+      ] },
       { sort: "-created_date", limit: 50, fields: ["name", "code", "type", "category", "description", "price", "features", "status"] }
     )
       .then((res) => {
