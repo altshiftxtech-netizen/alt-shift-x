@@ -39,6 +39,9 @@ export default function ZeroCreditSearchEngine() {
   const [selectedType, setSelectedType] = useState("ALL");
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
 
   // Build the server-side query — category + type + status filters run
   // directly on the database. Zero LLM calls, zero credit burn.
@@ -52,14 +55,37 @@ export default function ZeroCreditSearchEngine() {
   useEffect(() => {
     setLoading(true);
     base44.entities.Component
-      .filter(query, { sort: "-created_date", limit: 500, fields: ["name", "code", "type", "category", "description", "price", "features", "status"] })
+      .filter(query, { sort: "-created_date", limit: 24, fields: ["name", "code", "type", "category", "description", "price", "features", "status"] })
       .then((res) => {
-        const items = res.items || res || [];
-        setComponents(items);
+        const page = res.items || res || [];
+        setComponents(page);
+        setCursor(res.next_cursor || null);
+        setHasMore(!!res.has_more);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [query]);
+
+  const loadMore = async () => {
+    if (!cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await base44.entities.Component.filter(query, {
+        sort: "-created_date",
+        limit: 24,
+        cursor,
+        fields: ["name", "code", "type", "category", "description", "price", "features", "status"],
+      });
+      const page = res.items || res || [];
+      setComponents((prev) => [...prev, ...page]);
+      setCursor(res.next_cursor || null);
+      setHasMore(!!res.has_more);
+    } catch {
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Ultra-fast in-memory instant filter for the search term.
   const filteredResults = useMemo(() => {
@@ -101,6 +127,7 @@ export default function ZeroCreditSearchEngine() {
           </span>
           <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
             {loading ? "…" : filteredResults.length} RESULTS
+            {hasMore && !searchTerm && " · MORE AVAILABLE"}
           </span>
         </div>
       </div>
@@ -217,6 +244,25 @@ export default function ZeroCreditSearchEngine() {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Load More pagination */}
+      {hasMore && !searchTerm && !loading && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold transition flex items-center gap-2 disabled:opacity-50"
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+              </>
+            ) : (
+              "Load More Components"
+            )}
+          </button>
         </div>
       )}
     </div>
