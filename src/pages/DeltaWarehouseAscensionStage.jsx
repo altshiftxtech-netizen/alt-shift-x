@@ -195,13 +195,11 @@ export default function DeltaWarehouseAscensionStage() {
       {/* Floating Delta Header */}
       <div className="relative z-10 flex items-center justify-between px-6 md:px-10 py-6 backdrop-blur-md border-b border-white/10">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-amber-400 via-violet-600 to-cyan-400 p-[2px]">
-            <div className="h-full w-full rounded-full bg-black flex items-center justify-center font-bold text-amber-400 text-lg">Δ</div>
-          </div>
-          <div>
-            <h1 className="text-lg md:text-xl font-bold tracking-wider">DELTA WAREHOUSE</h1>
-            <p className="text-[10px] md:text-xs text-zinc-400 tracking-widest">SOVEREIGN TURNKEY PRODUCTIONS • ALTSHIFTX.TECH</p>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/41c069ccb_DeltaWarehouseLogo.png"
+            alt="Delta Warehouse"
+            className="h-12 md:h-14 w-auto object-contain"
+          />
         </div>
         <div className="flex items-center gap-3 md:gap-4 text-xs font-mono">
           <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
