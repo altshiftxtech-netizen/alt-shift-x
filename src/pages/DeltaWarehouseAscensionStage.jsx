@@ -48,12 +48,14 @@ export default function DeltaWarehouseAscensionStage() {
       particles = [];
       const w = canvas.width;
       const h = canvas.height;
+      const maxR = Math.max(w, h) * 0.55;
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const strand = i % BRAID_STRANDS;
         const t = i / PARTICLE_COUNT;
+        const r = 30 + t * maxR;
         particles.push({
-          x: w * 0.5 + Math.cos(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * (50 + t * 200),
-          y: h * 0.5 + Math.sin(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * (50 + t * 200),
+          x: w * 0.5 + Math.cos(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r,
+          y: h * 0.5 + Math.sin(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r,
           vx: 0,
           vy: 0,
           baseX: w * 0.5,
@@ -102,7 +104,7 @@ export default function DeltaWarehouseAscensionStage() {
       const h = canvas.height;
 
       // Fade trail
-      ctx.fillStyle = "rgba(3, 3, 6, 0.06)";
+      ctx.fillStyle = "rgba(3, 3, 6, 0.12)";
       ctx.fillRect(0, 0, w, h);
 
       const mouseVX = mouseX - prevMouseX;
@@ -111,13 +113,15 @@ export default function DeltaWarehouseAscensionStage() {
 
       const cx = w / 2;
       const cy = h / 2;
+      const maxR = Math.max(w, h) * 0.5;
+      const now = Date.now() * 0.0004;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         const angle = p.strand * (Math.PI * 2 / BRAID_STRANDS) + p.t * Math.PI * 6;
-        const radius = 40 + p.t * Math.min(w, h) * 0.35;
-        const targetX = cx + Math.cos(angle + Date.now() * 0.0003) * radius;
-        const targetY = cy + Math.sin(angle + Date.now() * 0.0003) * radius * 0.6;
+        const radius = 30 + p.t * maxR;
+        const targetX = cx + Math.cos(angle + now) * radius;
+        const targetY = cy + Math.sin(angle + now) * radius * 0.7;
 
         // Mouse velocity influence
         const dx = mouseX - p.x;
@@ -136,11 +140,11 @@ export default function DeltaWarehouseAscensionStage() {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Color by strand
+        // Color by strand — amber/violet/cyan palette
         const hue = (p.strand / BRAID_STRANDS) * 360;
-        const alpha = 0.3 + p.t * 0.5;
-        ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${alpha})`;
-        ctx.fillRect(p.x, p.y, 1.5, 1.5);
+        const alpha = 0.2 + p.t * 0.6;
+        ctx.fillStyle = `hsla(${hue}, 85%, 65%, ${alpha})`;
+        ctx.fillRect(p.x, p.y, 2, 2);
       }
     }
 
@@ -180,7 +184,8 @@ export default function DeltaWarehouseAscensionStage() {
       />
 
       {/* Ambient Optical Caustics / Radial Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/10 via-violet-600/15 to-cyan-500/10 blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-amber-500/15 via-violet-600/20 to-cyan-500/15 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[400px] bg-gradient-to-bl from-cyan-400/10 via-violet-500/10 to-transparent blur-[100px] pointer-events-none" />
 
       {/* Sub-surface optical glass depth overlay */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#030306]/80" />
