@@ -37,8 +37,9 @@ export default function DeltaWarehouseAscensionStage() {
     if (!canvas) return;
 
     let particles = [];
-    const PARTICLE_COUNT = 45000;
-    const BRAID_STRANDS = 12;
+    const PARTICLE_COUNT = 30000;
+    const BRAID_STRANDS = 8;
+    const DUST_JITTER = 40;
     let mouseX = canvas.width / 2;
     let mouseY = canvas.height / 2;
     let prevMouseX = mouseX;
@@ -53,16 +54,21 @@ export default function DeltaWarehouseAscensionStage() {
         const strand = i % BRAID_STRANDS;
         const t = i / PARTICLE_COUNT;
         const r = 30 + t * maxR;
+        const jx = (Math.random() - 0.5) * DUST_JITTER;
+        const jy = (Math.random() - 0.5) * DUST_JITTER;
         particles.push({
-          x: w * 0.5 + Math.cos(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r,
-          y: h * 0.5 + Math.sin(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r,
+          x: w * 0.5 + Math.cos(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r + jx,
+          y: h * 0.5 + Math.sin(strand * (Math.PI * 2 / BRAID_STRANDS) + t * Math.PI * 4) * r + jy,
           vx: 0,
           vy: 0,
           baseX: w * 0.5,
           baseY: h * 0.5,
           strand,
           t,
+          jitterX: jx,
+          jitterY: jy,
           life: Math.random(),
+          size: Math.random() < 0.15 ? 2 : 1,
         });
       }
     }
@@ -141,11 +147,16 @@ export default function DeltaWarehouseAscensionStage() {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Color by strand — amber/violet/cyan palette
-        const hue = (p.strand / BRAID_STRANDS) * 360;
-        const alpha = 0.2 + p.t * 0.6;
-        ctx.fillStyle = `hsla(${hue}, 85%, 65%, ${alpha})`;
-        ctx.fillRect(p.x, p.y, 2, 2);
+        // Astro dust rendering — tiny scattered pixels, cosmic palette
+        const px = Math.round(p.x);
+        const py = Math.round(p.y);
+        const palette = [
+          [220, 80, 55], [260, 70, 60], [190, 85, 60], [0, 0, 100],
+        ];
+        const c = palette[p.strand % palette.length];
+        const alpha = 0.25 + p.t * 0.55;
+        ctx.fillStyle = `hsla(${c[0]}, ${c[1]}%, ${c[2]}%, ${alpha})`;
+        ctx.fillRect(px, py, p.size, p.size);
       }
     }
 
