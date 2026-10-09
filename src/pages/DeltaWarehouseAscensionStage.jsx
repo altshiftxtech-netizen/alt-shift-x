@@ -91,8 +91,13 @@ export default function DeltaWarehouseAscensionStage() {
     }
 
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       initParticles();
     }
 
@@ -109,10 +114,13 @@ export default function DeltaWarehouseAscensionStage() {
       const w = canvas.width;
       const h = canvas.height;
 
-      // Clear fully each frame for discrete pixelated particles
+      // Clear fully each frame for crisp, clean rendering
+      ctx.setTransform(window.devicePixelRatio > 2 ? 2 : window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio > 2 ? 2 : window.devicePixelRatio || 1, 0, 0);
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "rgba(3, 3, 6, 1)";
       ctx.fillRect(0, 0, w, h);
+      // Additive blending for a clean, luminous cosmic glow
+      ctx.globalCompositeOperation = "lighter";
 
       const mouseVX = mouseX - prevMouseX;
       const mouseVY = mouseY - prevMouseY;
@@ -147,14 +155,14 @@ export default function DeltaWarehouseAscensionStage() {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Astro dust rendering — tiny scattered pixels, cosmic palette
+        // Astro dust rendering — crisp HD pixels with cosmic palette
         const px = Math.round(p.x);
         const py = Math.round(p.y);
         const palette = [
-          [220, 80, 55], [260, 70, 60], [190, 85, 60], [0, 0, 100],
+          [210, 85, 65], [265, 80, 70], [185, 90, 65], [0, 0, 100],
         ];
         const c = palette[p.strand % palette.length];
-        const alpha = 0.25 + p.t * 0.55;
+        const alpha = 0.35 + p.t * 0.5;
         ctx.fillStyle = `hsla(${c[0]}, ${c[1]}%, ${c[2]}%, ${alpha})`;
         ctx.fillRect(px, py, p.size, p.size);
       }
@@ -195,7 +203,7 @@ export default function DeltaWarehouseAscensionStage() {
       {/* Hyper-Ascension Particle Canvas */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-60"
+        className="absolute inset-0 w-full h-full pointer-events-none opacity-70"
       />
 
       {/* Ambient Optical Caustics / Radial Glow */}
