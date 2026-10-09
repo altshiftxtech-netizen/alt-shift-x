@@ -161,7 +161,10 @@ export default function DeltaWarehouseAscensionStage() {
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouse);
-    initWebGPU().then(() => loop());
+    // Start the 2D animation loop immediately — don't wait for WebGPU
+    // init, which can hang inside sandboxed iframes and block rendering.
+    loop();
+    initWebGPU(); // fire and forget — upgrades to WebGPU if available
 
     return () => {
       window.removeEventListener("resize", resize);
