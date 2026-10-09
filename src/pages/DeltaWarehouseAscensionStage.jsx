@@ -196,7 +196,7 @@ export default function DeltaWarehouseAscensionStage() {
       <div className="relative z-10 flex items-center justify-between px-6 md:px-10 py-6 backdrop-blur-md border-b border-white/10">
         <div className="flex items-center gap-4">
           <img
-            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/41c069ccb_DeltaWarehouseLogo.png"
+            src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/02ef24436_generated_image.png"
             alt="Delta Warehouse"
             className="h-12 md:h-14 w-auto object-contain"
           />
