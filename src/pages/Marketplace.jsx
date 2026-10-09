@@ -249,7 +249,10 @@ export default function Marketplace() {
            </Link>
            <ChevronRight className="w-3.5 h-3.5 text-white/30" />
            <span className="text-sm text-white/60">Marketplace</span>
-         </div>
+           </div>
+           <div className="hidden md:flex items-center gap-4 text-sm text-white/70 ml-8">
+           <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
+           </div>
          <div className="flex items-center gap-2">
            <ConsultationButton />
            {isAuthenticated ? (

@@ -133,6 +133,7 @@ export default function Home() {
         <Logo className="h-8 w-auto" variant="purple" />
         <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
           <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
+          <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
           <Link to="/about" className="hover:text-white">About</Link>
           <Link to="/builder" className="hover:text-white">Build</Link>
           <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
@@ -190,6 +191,11 @@ export default function Home() {
           <Link to="/marketplace">
             <Button className="h-11 px-6 bg-slate-900 hover:bg-slate-700 text-sm gap-2">
               Browse Marketplace <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Link to="/warehouse">
+            <Button className="h-11 px-6 text-sm gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-sm">
+              <Zap className="w-4 h-4" /> Delta Warehouse
             </Button>
           </Link>
           {isAuthenticated ? (
