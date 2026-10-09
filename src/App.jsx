@@ -135,6 +135,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PwaHost from './pages/PwaHost';
 import PwaViewer from './pages/PwaViewer';
+import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
+import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -205,6 +207,8 @@ const AuthenticatedApp = () => {
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/pwa-host/:id" element={<PwaHost />} />
       <Route path="/pwa-viewer/:id" element={<PwaViewer />} />
+      <Route path="/warehouse" element={<DeltaWarehouseAscensionStage />} />
+      <Route path="/warehouse/:productionId" element={<DeltaProductionDossierModal />} />
       <Route path="/legal/sovereign-pwa" element={<SovereignPwaPolicy />} />
       <Route path="/agent" element={<PwaAgent />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
