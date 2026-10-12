@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSign } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSign, Users, KeyRound, Fingerprint } from "lucide-react";
 
 /**
  * DeltaProductionDossierModal
@@ -169,6 +169,73 @@ export default function DeltaProductionDossierModal() {
             <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{production.long_description}</p>
           </div>
         )}
+
+        {/* Pre-Wired User Accounts */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-4 h-4 text-violet-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Pre-Wired User Accounts</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <Fingerprint className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Administrator</p>
+                <p className="text-[11px] font-mono text-zinc-500">administration@magnalorem.management</p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 whitespace-nowrap">admin · Full suite master reign</span>
+            </div>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <KeyRound className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Staff</p>
+                <p className="text-[11px] font-mono text-zinc-500">staff@magnalorem.management</p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 whitespace-nowrap">staff / reviewer · QA & moderation</span>
+            </div>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Magna Dev</p>
+                <p className="text-[11px] font-mono text-zinc-500 truncate">magnadev@magnalorem.management · casey.brown.cc@gmail.com</p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 whitespace-nowrap">developer · Internal architecture & WebGPU runtime</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Community Feature Signatures */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-4 h-4 text-amber-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Community Feature Signatures</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <p className="text-sm font-bold text-white mb-1">DINX Gaming Community</p>
+              <p className="text-xs text-zinc-400 leading-relaxed">Triangular crest pulses with neon violet/cyan energy, firing an audio-reactive shockwave into the portal boundary.</p>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <p className="text-sm font-bold text-white mb-1">Turi MC / APPerdeen</p>
+              <p className="text-xs text-zinc-400 leading-relaxed">Turi Cube executes a smooth 6-DoF momentum spin and exploded silicon layer reveal upon sign-in.</p>
+            </div>
+            <div className="px-4 py-3 rounded-xl bg-black/30 border border-white/5">
+              <p className="text-sm font-bold text-white mb-1">MAGNA / Bitfolio</p>
+              <p className="text-xs text-zinc-400 leading-relaxed">Holographic obsidian foil card flips with embossed gold emblem lighting.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Universal Session Controls */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <KeyRound className="w-4 h-4 text-violet-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Universal Session Controls</h3>
+          </div>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            All sessions authenticate against the Magna Lorem registry. Role-based access determines dossier visibility, escrow authority, and WebGPU runtime permissions. Pre-wired accounts bypass the standard invitation flow.
+          </p>
+        </div>
       </div>
     </div>
   );
