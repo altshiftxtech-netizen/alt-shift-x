@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Lock } from "lucide-react";
 
 const SUITE_NODES = {
   turimc: {
@@ -56,21 +56,25 @@ const SUITE_NODES = {
 
 /**
  * SuiteNodeFrame
- * Vanity endpoint: visiting /turimc, /codevault, etc. immediately redirects
- * to the external site's home page. Each subpath acts as a clean vanity URL
- * into its respective Sovereign Enterprise Suite node.
+ * Vanity endpoint: visiting /turimc, /codevault, etc. redirects to the
+ * external site's home page. When top-level (published app), the redirect
+ * is automatic. When framed (builder preview), the target site refuses
+ * iframe embedding, so a launch button is shown instead.
  */
 export default function SuiteNodeFrame({ nodeId: propNodeId }) {
   const params = useParams();
   const nodeId = propNodeId || params.nodeId;
   const node = useMemo(() => SUITE_NODES[nodeId], [nodeId]);
+  const isFramed = typeof window !== "undefined" && window.self !== window.top;
+  const [redirecting, setRedirecting] = useState(!isFramed);
 
   useEffect(() => {
-    if (node) {
-      // Replace so the back button returns to Alt+Shift+X, not a redirect loop
-      window.location.replace(node.url);
-    }
-  }, [node]);
+    if (!node || isFramed) return;
+    // Top-level: navigate directly so the URL bar reflects the vanity redirect.
+    // Uses replace so the back button returns to Alt+Shift+X, not a loop.
+    setRedirecting(true);
+    window.location.replace(node.url);
+  }, [node, isFramed]);
 
   if (!node) {
     return (
@@ -89,7 +93,43 @@ export default function SuiteNodeFrame({ nodeId: propNodeId }) {
     );
   }
 
-  // Brief splash while the redirect resolves
+  // Framed (builder preview): the external site refuses iframe embedding, so
+  // show a launch button the user clicks to open the node in a new tab.
+  if (isFramed) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-[#030306] text-white gap-4 px-6">
+        <div
+          className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl"
+          style={{ background: `${node.color}22`, border: `1px solid ${node.color}55` }}
+        >
+          {node.icon}
+        </div>
+        <h2 className="text-2xl font-bold">{node.name}</h2>
+        <p className="text-sm text-white/50 text-center max-w-sm">{node.category}</p>
+        <div className="flex items-center gap-1.5 text-xs text-amber-400/80">
+          <Lock className="w-3.5 h-3.5" />
+          <span>This node opens in a new tab.</span>
+        </div>
+        <a
+          href={node.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition shadow-lg mt-2"
+          style={{ background: node.color, boxShadow: `0 4px 20px ${node.color}44` }}
+        >
+          <ExternalLink className="w-4 h-4" /> Launch {node.name}
+        </a>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition mt-2"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Alt+Shift+X
+        </Link>
+      </div>
+    );
+  }
+
+  // Top-level: brief splash while the redirect resolves
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-[#030306] text-white gap-4">
       <div
