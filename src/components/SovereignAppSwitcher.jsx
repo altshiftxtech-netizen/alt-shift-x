@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from "@/api/base44Client";
 
 const ENTERPRISE_SUITE = [
@@ -7,15 +8,26 @@ const ENTERPRISE_SUITE = [
     name: 'Alt+Shift+X',
     category: 'Master Intelligence & Component Foundry',
     url: 'https://altshiftx.tech',
+    path: '/',
     icon: '💠',
     color: '#F59E0B',
     isMaster: true,
+  },
+  {
+    id: 'turimc',
+    name: 'Turi MC x APPerdeen',
+    category: 'Extreme Compute & Hardware Proving Ground',
+    url: 'https://turi-mc.base44.app',
+    path: '/turimc',
+    icon: '⚙️',
+    color: '#10B981',
   },
   {
     id: 'codevault',
     name: 'Code Vault',
     category: 'Sovereign Git & WASM Repositories',
     url: 'https://code-vault-repository.base44.app',
+    path: '/codevault',
     icon: '📦',
     color: '#06B6D4',
   },
@@ -24,6 +36,7 @@ const ENTERPRISE_SUITE = [
     name: 'dbLive Database',
     category: 'Sovereign Immutable WORM Database',
     url: 'https://dblive-sovereign-database.base44.app',
+    path: '/dblive',
     icon: '🛡️',
     color: '#F59E0B',
   },
@@ -32,6 +45,7 @@ const ENTERPRISE_SUITE = [
     name: 'OmniBridge CRM',
     category: 'Executive Pipeline & CRM',
     url: 'https://smart-agent-flow-chubby.base44.app',
+    path: '/omnibridge',
     icon: '💼',
     color: '#F43F5E',
   },
@@ -40,6 +54,7 @@ const ENTERPRISE_SUITE = [
     name: 'Bitfolio Hub',
     category: '3D Portfolio & Digital Cards',
     url: 'https://bitfolio.base44.app',
+    path: '/bitfolio',
     icon: '💳',
     color: '#6366F1',
   },
@@ -48,22 +63,16 @@ const ENTERPRISE_SUITE = [
     name: 'SourceBridge',
     category: 'Universal API Substrate & Network',
     url: 'https://sourcebridge-software-and-data-substrate-network.base44.app',
+    path: '/sourcebridge',
     icon: '🌐',
     color: '#14B8A6',
-  },
-  {
-    id: 'turimc',
-    name: 'Turi MC x APPerdeen',
-    category: 'Extreme Compute & Hardware Proving Ground',
-    url: 'https://turi-mc.base44.app',
-    icon: '⚙️',
-    color: '#10B981',
   },
   {
     id: 'magna',
     name: 'MAGNA Builder',
     category: 'Visual Canvas & Site Foundry',
     url: 'https://magna-webapp-and-coder.base44.app',
+    path: '/magna',
     icon: '🎨',
     color: '#EC4899',
   },
@@ -73,6 +82,7 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   // Auth + pricing gate: only show to authenticated users with an active
   // paid subscription (or admins). Guests and free-tier users don't see it.
@@ -156,19 +166,20 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
               const isCurrent =
                 app.id === activeAppId ||
                 (typeof window !== 'undefined' &&
-                  (window.location.origin.includes('altshiftx.tech') && app.id === 'altshiftx' ||
-                   window.location.origin.includes('unlock-agent-flow') && app.id === 'altshiftx' ||
-                   window.location.origin.includes(new URL(app.url).hostname)));
+                  window.location.pathname === app.path);
 
               return (
                 <a
                   key={app.id}
-                  href={isCurrent ? '#' : app.url}
+                  href={isCurrent ? '#' : app.path}
                   onClick={(e) => {
+                    e.preventDefault();
                     if (isCurrent) {
-                      e.preventDefault();
                       setIsOpen(false);
+                      return;
                     }
+                    setIsOpen(false);
+                    navigate(app.path);
                   }}
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition-all text-left group ${
                     app.isMaster

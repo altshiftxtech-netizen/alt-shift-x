@@ -137,6 +137,7 @@ import PwaHost from './pages/PwaHost';
 import PwaViewer from './pages/PwaViewer';
 import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
+import SuiteNodeFrame from './components/SuiteNodeFrame';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -209,6 +210,14 @@ const AuthenticatedApp = () => {
       <Route path="/pwa-viewer/:id" element={<PwaViewer />} />
       <Route path="/warehouse" element={<DeltaWarehouseAscensionStage />} />
       <Route path="/warehouse/:productionId" element={<DeltaProductionDossierModal />} />
+      {/* ── Sovereign Enterprise Suite — subpath iframe shells ── */}
+      <Route path="/turimc" element={<SuiteNodeFrame nodeId="turimc" />} />
+      <Route path="/codevault" element={<SuiteNodeFrame nodeId="codevault" />} />
+      <Route path="/dblive" element={<SuiteNodeFrame nodeId="dblive" />} />
+      <Route path="/omnibridge" element={<SuiteNodeFrame nodeId="omnibridge" />} />
+      <Route path="/bitfolio" element={<SuiteNodeFrame nodeId="bitfolio" />} />
+      <Route path="/sourcebridge" element={<SuiteNodeFrame nodeId="sourcebridge" />} />
+      <Route path="/magna" element={<SuiteNodeFrame nodeId="magna" />} />
       <Route path="/legal/sovereign-pwa" element={<SovereignPwaPolicy />} />
       <Route path="/agent" element={<PwaAgent />} />
       <Route path="/builder/agreement" element={<BuilderAgreement />} />
