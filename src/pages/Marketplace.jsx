@@ -19,6 +19,7 @@ import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
 import { isFreeGated } from "@/components/free-gate/freeGateData";
 import { Share2 } from "lucide-react";
 import ConsultationButton from "@/components/consultation/ConsultationButton";
+import SovereignAppSwitcher from "@/components/SovereignAppSwitcher";
 
 const ALL_COMPONENTS = [];
 const PAGE_SIZE = 50;
@@ -254,6 +255,7 @@ export default function Marketplace() {
            <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
            </div>
          <div className="flex items-center gap-2">
+           <SovereignAppSwitcher activeAppId="altshiftx" />
            <ConsultationButton />
            {isAuthenticated ? (
              <>

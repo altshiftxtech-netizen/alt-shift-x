@@ -15,6 +15,7 @@ import AboutUsSection from "@/components/home/AboutUsSection";
 import HomeMissionModal from "@/components/home/HomeMissionModal";
 import { base44 } from "@/api/base44Client";
 import ConsultationButton from "@/components/consultation/ConsultationButton";
+import SovereignAppSwitcher from "@/components/SovereignAppSwitcher";
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
 
@@ -140,6 +141,7 @@ export default function Home() {
           <Link to="/contact" className="hover:text-white">Contact</Link>
         </div>
         <div className="flex items-center gap-2">
+          <SovereignAppSwitcher activeAppId="altshiftx" />
           <ConsultationButton />
           {/* ExpertMind™ — neon-green entry point, shown in both auth states */}
           <Link to="/expertmind">
