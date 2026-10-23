@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { base44 } from "@/api/base44Client";
 
 const ENTERPRISE_SUITE = [
   {
@@ -70,7 +71,28 @@ const ENTERPRISE_SUITE = [
 
 export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const menuRef = useRef(null);
+
+  // Auth + pricing gate: only show to authenticated users with an active
+  // paid subscription (or admins). Guests and free-tier users don't see it.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me || cancelled) return;
+        if (me.role === "admin") { if (!cancelled) setAuthorized(true); return; }
+        const subs = await base44.entities.Subscription.filter({ user_id: me.id });
+        const sub = subs[0];
+        const active = sub && ["active", "trialing", "past_due"].includes(sub.status);
+        if (!cancelled) setAuthorized(!!(active && sub.plan !== "free"));
+      } catch {
+        /* guest — not authorized */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -94,6 +116,8 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  if (!authorized) return null;
 
   return (
     <div className="relative inline-block text-left" ref={menuRef}>
