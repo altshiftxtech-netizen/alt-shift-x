@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from "@/api/base44Client";
 
 const ENTERPRISE_SUITE = [
@@ -82,7 +81,6 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const menuRef = useRef(null);
-  const navigate = useNavigate();
 
   // Auth + pricing gate: only show to authenticated users with an active
   // paid subscription (or admins). Guests and free-tier users don't see it.
@@ -173,13 +171,10 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
                   key={app.id}
                   href={isCurrent ? '#' : app.path}
                   onClick={(e) => {
-                    e.preventDefault();
                     if (isCurrent) {
+                      e.preventDefault();
                       setIsOpen(false);
-                      return;
                     }
-                    setIsOpen(false);
-                    navigate(app.path);
                   }}
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition-all text-left group ${
                     app.isMaster
