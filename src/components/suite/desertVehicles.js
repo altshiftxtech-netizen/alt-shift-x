@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { heightAt } from '@/components/suite/desertTerrain';
 
 export default function desertVehicles(scene, routes, compact) {
-  const armor = new THREE.MeshStandardMaterial({ color: '#343744', metalness: .82, roughness: .33 });
-  const carbon = new THREE.MeshStandardMaterial({ color: '#0b1018', metalness: .5, roughness: .65 });
-  const cyan = new THREE.MeshStandardMaterial({ color: '#3E6976', emissive: '#3E6976', emissiveIntensity: 4 });
-  const emerald = new THREE.MeshStandardMaterial({ color: '#426C60', emissive: '#426C60', emissiveIntensity: 3 });
-  const rotorMaterial = new THREE.MeshBasicMaterial({ color: '#6D818A', transparent: true, opacity: .14, side: THREE.DoubleSide, depthWrite: false });
+  const armor = new THREE.MeshStandardMaterial({ color: '#8C9FAD', emissive: '#324958', emissiveIntensity: .45, metalness: .82, roughness: .33 });
+  const carbon = new THREE.MeshStandardMaterial({ color: '#293B49', emissive: '#172B38', emissiveIntensity: .35, metalness: .5, roughness: .65 });
+  const cyan = new THREE.MeshStandardMaterial({ color: '#39DCEB', emissive: '#39DCEB', emissiveIntensity: 4 });
+  const emerald = new THREE.MeshStandardMaterial({ color: '#51E6AD', emissive: '#51E6AD', emissiveIntensity: 3 });
+  const rotorMaterial = new THREE.MeshBasicMaterial({ color: '#A3D7E2', transparent: true, opacity: .24, side: THREE.DoubleSide, depthWrite: false });
   const targets = [], drones = [], rovers = [], sleds = [];
   const box = (group, size, position, material = armor) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material); mesh.position.set(...position); mesh.castShadow = true; group.add(mesh); return mesh;
