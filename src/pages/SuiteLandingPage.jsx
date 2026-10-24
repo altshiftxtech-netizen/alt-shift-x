@@ -604,7 +604,7 @@ export default function SuiteLandingPage() {
                     : 'border-white/10 bg-black/60 hover:border-white/30'
                 }`}
               >
-                {/* Holographic emblem — watermark pushed out of frame, blended holographically */}
+                {/* Holographic emblem — watermark cropped out of frame, blended holographically */}
                 {node.logo && (
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <img
@@ -612,11 +612,12 @@ export default function SuiteLandingPage() {
                       alt={node.name}
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{
-                        objectPosition: 'left center',
-                        transform: 'scale(1.35)',
+                        objectPosition: 'left top',
+                        transform: 'scale(1.8)',
                         mixBlendMode: node.blendMode || 'screen',
                         opacity: 0.55 + depth * 0.3,
                         filter: `drop-shadow(0 0 6px ${node.color}80) brightness(0.85)`,
+                        clipPath: 'inset(0 0 0 0)',
                       }}
                     />
                     {/* Holographic scanline shimmer overlay */}
@@ -630,8 +631,6 @@ export default function SuiteLandingPage() {
                     />
                     {/* Bottom fade for text legibility */}
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-                    {/* AI watermark mask — top-right corner */}
-                    <div className="absolute top-0 right-0 w-20 h-14 bg-black rounded-bl-2xl z-10" />
                   </div>
                 )}
                 <div className="relative z-10 text-center">
