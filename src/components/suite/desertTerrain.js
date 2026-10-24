@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import desertGroundTexture from '@/components/suite/desertGroundTexture';
+import desertGroundDetail from '@/components/suite/desertGroundDetail';
 
 export function heightAt(x, z) {
   const canyon = Math.exp(-Math.pow((x - 13 * Math.sin(z * .024)) / 22, 2));
@@ -8,12 +9,12 @@ export function heightAt(x, z) {
   return (dunes + ridges) * (1 - canyon * .85) - canyon * 5;
 }
 
-export default function desertTerrain(scene, compact) {
-  const geometry = new THREE.PlaneGeometry(620, 620, compact ? 180 : 300, compact ? 180 : 300);
+export default function desertTerrain(scene, compact, anisotropy) {
+  const geometry = new THREE.PlaneGeometry(620, 620, compact ? 256 : 384, compact ? 256 : 384);
   geometry.rotateX(-Math.PI / 2);
   const pos = geometry.attributes.position;
   const colors = [];
-  const obsidian = new THREE.Color('#03060A'), clay = new THREE.Color('#0B1219'), crest = new THREE.Color('#202A35');
+  const obsidian = new THREE.Color('#060B11'), clay = new THREE.Color('#141E29'), crest = new THREE.Color('#303E4D');
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i), y = heightAt(x, z);
     pos.setY(i, y);
@@ -23,10 +24,11 @@ export default function desertTerrain(scene, compact) {
   }
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const sand = desertGroundTexture();
-  const grain = desertGroundTexture(true);
-  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setScalar(1.15), vertexColors: true, map: grain, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .42 });
+  const sand = desertGroundTexture(false, anisotropy, compact);
+  const grain = desertGroundTexture(true, anisotropy, compact);
+  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setScalar(1.15), vertexColors: true, map: grain, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .65 });
   const land = new THREE.Mesh(geometry, material); land.receiveShadow = true; scene.add(land);
+  desertGroundDetail(scene, heightAt, compact);
   const routes = [];
   for (let lane = 0; lane < 7; lane++) {
     const points = [];

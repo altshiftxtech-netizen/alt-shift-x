@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-export default function desertGroundTexture(surface = false) {
-  const size = 512;
+export default function desertGroundTexture(surface = false, anisotropy = 8, compact = false) {
+  const size = compact ? 1024 : 2048;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const context = canvas.getContext('2d');
@@ -9,9 +9,11 @@ export default function desertGroundTexture(surface = false) {
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const u = x / size * Math.PI * 2, v = y / size * Math.PI * 2;
-      const ripples = Math.sin(u * 12 + Math.sin(v * 3) * 1.6 + v * 4);
-      const grit = Math.sin(u * 37 - v * 19) * 8 + (Math.random() - .5) * 22;
-      const value = surface ? 215 + ripples * 30 + grit * .9 : 128 + ripples * 40 + grit * 1.3;
+      const ripples = Math.sin(u * 24 + Math.sin(v * 3) * 2.6 + v * 8);
+      const strata = Math.sin(u * 7 - v * 11 + Math.sin(v * 5)) * 12;
+      const grit = Math.sin(u * 137 - v * 89) * 6 + (Math.random() - .5) * 18;
+      const seams = Math.pow(1 - Math.abs(Math.sin(u * 5 + Math.sin(v * 4) * 2)), 22) * 24;
+      const value = surface ? 215 + ripples * 14 + strata * .6 + grit - seams : 128 + ripples * 34 + strata + grit * 1.4 - seams;
       const index = (y * size + x) * 4;
       image.data[index] = image.data[index + 1] = image.data[index + 2] = value;
       image.data[index + 3] = 255;
@@ -20,7 +22,10 @@ export default function desertGroundTexture(surface = false) {
   context.putImageData(image, 0, 0);
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(32, 32);
-  texture.anisotropy = 4;
+  texture.repeat.set(24, 24);
+  texture.anisotropy = anisotropy;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  if (surface) texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }

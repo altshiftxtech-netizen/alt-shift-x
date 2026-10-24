@@ -11,7 +11,7 @@ import desertAtmosphere from '@/components/suite/desertAtmosphere';
 export default function createDesertScene(host, onStatus) {
   const compact = window.innerWidth < 700;
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
@@ -20,11 +20,12 @@ export default function createDesertScene(host, onStatus) {
   const camera = new THREE.PerspectiveCamera(52, 1, .2, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
   scene.add(new THREE.HemisphereLight('#8294A8', '#080D12', .65));
-  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
+  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
   const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
-  const routes = desertTerrain(scene, compact), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
-  const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .65, .7, 1.05); composer.addPass(bloom); composer.addPass(new OutputPass());
+  const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
+  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); target.samples = 4;
+  const composer = new EffectComposer(renderer, target); composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .45, .45, 1.1); composer.addPass(bloom); composer.addPass(new OutputPass());
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const resize = () => { const { width, height } = host.getBoundingClientRect(); renderer.setSize(width, height); composer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); };
@@ -54,8 +55,8 @@ export default function createDesertScene(host, onStatus) {
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {
       const fps = sampleFrames / sampleTime;
-      if (fps < 28 && renderer.getPixelRatio() > .6) {
-        const ratio = Math.max(.6, renderer.getPixelRatio() * .75);
+      if (fps < 28 && renderer.getPixelRatio() > 1) {
+        const ratio = Math.max(1, renderer.getPixelRatio() * .9);
         renderer.setPixelRatio(ratio); composer.setPixelRatio(ratio); resize();
       }
       if (performance.now() - lastStatus > 4000) onStatus(`WEBGL / ${Math.round(fps)} FPS / LOCAL EXECUTION / $0 CLOUD TOKENS`);
