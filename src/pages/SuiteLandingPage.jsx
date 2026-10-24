@@ -1,5 +1,7 @@
 // src/pages/SuiteLandingPage.jsx
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import CinematicDesert from '@/components/suite/CinematicDesert';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
@@ -127,7 +129,11 @@ export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, pause, togglePaused } = useSuiteOrbit();
   const { inspectionIndex, inspect, keepOpen, dismiss, leave } = useSuiteInspection(pause);
+  const { search } = useLocation();
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
+  useEffect(() => {
+    setActiveModal(new URLSearchParams(search).get('modal') === 'sovereignpass' ? 'sovereignpass' : null);
+  }, [search]);
   const [consuelaQuery, setConsuelaQuery] = useState('');
   const [consuelaAnswer, setConsuelaAnswer] = useState(null);
   const [consuelaLoading, setConsuelaLoading] = useState(false);
@@ -349,36 +355,8 @@ export default function SuiteLandingPage() {
         </div>
       )}
 
-      {/* /aboutaltshiftxsuite Modal */}
-      {activeModal === 'about' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-2xl bg-zinc-950 border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
-            <button
-              onClick={() => setActiveModal(null)}
-              className="absolute top-5 right-5 text-zinc-400 hover:text-white text-lg font-bold"
-            >
-              ✕
-            </button>
-            <h3 className="text-xl sm:text-2xl font-black text-white mb-2">About The Alt+Shift+X Suite</h3>
-            <p className="text-xs sm:text-sm text-yellow-400/90 font-medium mb-4">
-              Autonomous, Client-Side, Zero-Bleed Sovereign Substrates.
-            </p>
-            <div className="space-y-3 text-xs sm:text-sm text-zinc-300 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
-              <p>
-                The Alt+Shift+X Enterprise Suite represents an evolutionary leap in sovereign software architecture. Built from the ground up to eliminate recurring SaaS token taxes, each node executes high-tier computational workloads directly in the client browser using WebGPU, WebAssembly (WASM), and Cloudflare Edge Workers.
-              </p>
-              <p>
-                From the WORM append-only Merkle ledger of <strong className="text-amber-400">dbLive</strong>, to the hardware-in-the-loop physics solvers of <strong className="text-emerald-400">Turi MC</strong>, to the client-side Git packfile compiler of <strong className="text-cyan-400">Code Vault</strong>, the suite guarantees data privacy, statutory evidentiary compliance (MRE 901/902), and uncompromised speed.
-              </p>
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 font-mono text-xs">
-                <div>• APEX ROUTE: altshiftx.tech</div>
-                <div>• PROTOCOLS: X1 Reading, X2 Prophecy, X3 Speed, X4 Councils, X5 Autonomous</div>
-                <div>• CHAIN OF TITLE: Magna Lorem</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Shared interactive showcase, also available as a standalone page. */}
+      {activeModal === 'about' && <AboutSuiteModal onClose={() => setActiveModal(null)} onPasses={() => setActiveModal('sovereignpass')} />}
 
       {/* /helpmechoose Consuela Advisor Slide-Down Modal */}
       {activeModal === 'consuela' && (

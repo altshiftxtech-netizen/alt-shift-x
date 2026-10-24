@@ -13,6 +13,7 @@ import CookieConsentBanner from './components/cookies/CookieConsentBanner';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
+import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
 import Home from './pages/Home';
 import SuiteLandingPage from './pages/SuiteLandingPage';
 import AboutUs from './pages/AboutUs';
@@ -165,6 +166,7 @@ const AuthenticatedApp = () => {
       {/* ── Public routes — no login required ── */}
       <Route path="/" element={<Home />} />
       <Route path="/suite" element={<SuiteLandingPage />} />
+      <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
       <Route path="/marketplace" element={<Marketplace />} />
       {/* Affiliate Speakeasy Shop */}
       <Route path="/shop" element={<ShopHome />} />
