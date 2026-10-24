@@ -3,6 +3,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import desertTerrain from '@/components/suite/desertTerrain';
 import desertVehicles from '@/components/suite/desertVehicles';
@@ -10,7 +12,7 @@ import desertAtmosphere from '@/components/suite/desertAtmosphere';
 
 export default function createDesertScene(host, onStatus) {
   const compact = window.innerWidth < 700;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -23,12 +25,13 @@ export default function createDesertScene(host, onStatus) {
   const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = true; sun.shadow.normalBias = .45; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.0002; scene.add(sun);
   const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
   const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
-  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); target.samples = 4;
-  const composer = new EffectComposer(renderer, target); composer.addPass(new RenderPass(scene, camera));
+  // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.
+  const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .45, .45, 1.1); composer.addPass(bloom); composer.addPass(new OutputPass());
+  const antialias = new ShaderPass(FXAAShader); composer.addPass(antialias);
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const resize = () => { const { width, height } = host.getBoundingClientRect(); renderer.setSize(width, height); composer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); };
+  const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); composer.setSize(width, height); antialias.uniforms.resolution.value.set(1 / (width * renderer.getPixelRatio()), 1 / (height * renderer.getPixelRatio())); camera.aspect = width / height; camera.updateProjectionMatrix(); };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const pick = event => {
     if (event.target !== renderer.domElement) return null;
@@ -50,6 +53,7 @@ export default function createDesertScene(host, onStatus) {
     const time = reduced ? elapsed * .12 : elapsed;
     camera.position.set(Math.sin(time * .035) * 5, 45 + Math.sin(time * .12) * 1.2, 80 + Math.cos(time * .07) * 1.2); camera.lookAt(Math.sin(time * .04) * 3, 0, -42);
     vehicles.update(time, reduced ? dt * .12 : dt); updateAtmosphere(time);
+    renderer.setScissorTest(false);
     composer.render();
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {
