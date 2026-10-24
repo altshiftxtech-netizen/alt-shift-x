@@ -4,6 +4,7 @@ import CinematicDesert from '@/components/suite/CinematicDesert';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
+import useSuiteInspection from '@/components/suite/useSuiteInspection';
 import '@/components/suite/suiteScene.css';
 
 // The 8 Calibrated Sovereign Enterprise Nodes
@@ -125,7 +126,7 @@ const SUITE_NODES = [
 export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, pause, togglePaused } = useSuiteOrbit();
-  const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const { inspectionIndex, inspect, keepOpen, dismiss, leave } = useSuiteInspection(pause);
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [consuelaQuery, setConsuelaQuery] = useState('');
   const [consuelaAnswer, setConsuelaAnswer] = useState(null);
@@ -256,14 +257,15 @@ export default function SuiteLandingPage() {
       <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
         <SuiteEmblemOrbit
           nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex}
-          handlers={orbitHandlers} motion={motion} paused={paused} onTogglePaused={() => { setDetailsExpanded(false); togglePaused(); }}
-          onSelect={(index) => { setDetailsExpanded(false); setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
+          handlers={orbitHandlers} motion={motion} onInspect={inspect} onInspectLeave={leave}
+          onSelect={(index) => { inspect(index); setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
           onLaunch={handleLaunchNode}
         />
 
-        <SuiteNodeDossier node={activeNode} expanded={detailsExpanded}
-          onToggle={() => { pause(); setDetailsExpanded(value => !value); }} onInteract={pause}
-          onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />
+        {inspectionIndex !== null && <SuiteNodeDossier node={SUITE_NODES[inspectionIndex]}
+          onInteract={pause} onKeepOpen={keepOpen} onDismiss={leave}
+          onResume={() => { dismiss(); if (motion.current.paused) togglePaused(); }}
+          onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
 
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
