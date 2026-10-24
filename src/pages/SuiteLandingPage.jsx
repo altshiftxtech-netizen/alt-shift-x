@@ -269,7 +269,7 @@ export default function SuiteLandingPage() {
         <div className="flex items-center space-x-2 truncate">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="truncate">
-            SOLE TITLE: The Trust of Casey Maheni Brown // Magna Lorem LLC // Trust AR
+            SOLE TITLE: Magna Lorem
           </span>
         </div>
         <div className="flex items-center space-x-4">
@@ -373,7 +373,7 @@ export default function SuiteLandingPage() {
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 font-mono text-xs">
                 <div>• APEX ROUTE: altshiftx.tech</div>
                 <div>• PROTOCOLS: X1 Reading, X2 Prophecy, X3 Speed, X4 Councils, X5 Autonomous</div>
-                <div>• CHAIN OF TITLE: The Trust of Casey Maheni Brown</div>
+                <div>• CHAIN OF TITLE: Magna Lorem</div>
               </div>
             </div>
           </div>
