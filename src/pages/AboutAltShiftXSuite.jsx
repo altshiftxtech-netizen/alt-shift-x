@@ -13,6 +13,6 @@ export default function AboutAltShiftXSuite({ embedded = false, onPasses, onRetu
       <AboutSuiteLogo />
     </header>}
     <AboutSuiteContent onPasses={onPasses} onReturn={onReturn} />
-    {!embedded && <footer className="about-suite-footer bg-background/80 border-t border-primary/20 px-4 sm:px-6 flex items-center justify-between text-xs text-muted-foreground font-mono"><div>SOLE TITLE: Magna Lorem // Magna Lorem LLC // Trust AR</div><div className="flex items-center gap-4"><Link to="/legal/terms" className="hover:text-primary">Terms</Link><Link to="/legal/privacy" className="hover:text-primary">Privacy</Link></div></footer>}
+    {!embedded && <footer className="about-suite-footer bg-background/80 border-t border-primary/20 px-4 sm:px-6 flex items-center justify-between text-xs text-muted-foreground font-mono"><div>SOLE TITLE: Magna Lorem // Magna Lorem LLC // Trust AR LLC</div><div className="flex items-center gap-4"><Link to="/legal/terms" className="hover:text-primary">Terms</Link><Link to="/legal/privacy" className="hover:text-primary">Privacy</Link></div></footer>}
   </div>;
 }
