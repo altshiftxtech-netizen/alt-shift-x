@@ -12,7 +12,7 @@ export default function desertTerrain(scene, compact) {
   geometry.rotateX(-Math.PI / 2);
   const pos = geometry.attributes.position;
   const colors = [];
-  const obsidian = new THREE.Color('#0B0813'), clay = new THREE.Color('#1E1218'), crest = new THREE.Color('#463038');
+  const obsidian = new THREE.Color('#03060A'), clay = new THREE.Color('#0B1219'), crest = new THREE.Color('#202A35');
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i), y = heightAt(x, z);
     pos.setY(i, y);
@@ -41,8 +41,8 @@ export default function desertTerrain(scene, compact) {
       points.push(new THREE.Vector3(x, heightAt(x, z) + .22, z));
     }
     const curve = new THREE.CatmullRomCurve3(points); routes.push(curve);
-    const color = lane % 2 ? '#00F5FF' : '#EAB308';
-    const vein = new THREE.Mesh(new THREE.TubeGeometry(curve, 360, lane === 3 ? .14 : .065, 5, false), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 3.5, roughness: .3 }));
+    const color = lane % 2 ? '#284653' : '#4C493D';
+    const vein = new THREE.Mesh(new THREE.TubeGeometry(curve, 360, lane === 3 ? .14 : .065, 5, false), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: .8, roughness: .3 }));
     scene.add(vein);
     const halo = new THREE.Mesh(new THREE.TubeGeometry(curve, 250, .48, 5, false), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .055, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(halo);

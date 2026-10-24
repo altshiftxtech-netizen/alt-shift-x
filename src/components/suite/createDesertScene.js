@@ -16,12 +16,12 @@ export default function createDesertScene(host, onStatus) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
   host.appendChild(renderer.domElement);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color('#171322'); scene.fog = new THREE.FogExp2('#27202c', .0038);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color('#05080C'); scene.fog = new THREE.FogExp2('#101820', .0038);
   const camera = new THREE.PerspectiveCamera(52, 1, .2, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
-  scene.add(new THREE.HemisphereLight('#9fb4e0', '#271524', .9));
-  const sun = new THREE.DirectionalLight('#ffbd81', 3.2); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
-  const rim = new THREE.DirectionalLight('#3876a3', 1.4); rim.position.set(80, 25, 35); scene.add(rim);
+  scene.add(new THREE.HemisphereLight('#8294A8', '#080D12', .65));
+  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
+  const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
   const routes = desertTerrain(scene, compact), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
   const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .65, .7, 1.05); composer.addPass(bloom); composer.addPass(new OutputPass());
