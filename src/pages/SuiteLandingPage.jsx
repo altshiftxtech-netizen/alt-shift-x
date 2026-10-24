@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
+import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import CinematicDesert from '@/components/suite/CinematicDesert';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
@@ -293,67 +294,8 @@ export default function SuiteLandingPage() {
       {/* 7. MODALS: Sovereign Pass | About | Consuela AI Dropdown */}
       {/* ------------------------------------------------------------- */}
 
-      {/* /sovereignpass Modal */}
-      {activeModal === 'sovereignpass' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-2xl bg-zinc-950 border border-yellow-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(234,179,8,0.25)]">
-            <button
-              onClick={() => setActiveModal(null)}
-              className="absolute top-5 right-5 text-zinc-400 hover:text-white text-lg font-bold"
-            >
-              ✕
-            </button>
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-yellow-400 font-mono text-xs">TIER ARCHITECTURE</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white mb-2">Sovereign Pass Options</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 mb-6">
-              Unlock dedicated platform capabilities across our sovereign edge network with zero token markups.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {/* Single Node Pass */}
-              <div className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-yellow-500/40 transition-colors">
-                <div className="text-yellow-400 font-bold text-sm mb-1">SINGLE NODE PASS</div>
-                <div className="text-2xl font-black text-white font-mono mb-2">$99 - $299<span className="text-xs text-zinc-400 font-normal"> / mo</span></div>
-                <p className="text-xs text-zinc-400 mb-4">Dedicated access to any single sovereign node of your choice with unlimited local client execution.</p>
-                <ul className="text-xs text-zinc-300 space-y-1.5 font-mono mb-4">
-                  <li>✓ 1 Chosen Suite Node</li>
-                  <li>✓ High-Speed Edge Relay</li>
-                  <li>✓ Zero Cloud Token Surcharges</li>
-                </ul>
-                <button
-                  onClick={() => alert('Single Node Pass selected. Choose your node in checkout.')}
-                  className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs"
-                >
-                  Configure Node
-                </button>
-              </div>
-
-              {/* Suite-Wide All-Access Pass */}
-              <div className="p-5 rounded-2xl bg-gradient-to-b from-yellow-500/10 to-transparent border border-yellow-500/50 relative overflow-hidden">
-                <div className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-widest bg-yellow-400 text-black px-2 py-0.5 rounded-full">
-                  BEST VALUE
-                </div>
-                <div className="text-yellow-400 font-bold text-sm mb-1">ALL-ACCESS SUITE PASS</div>
-                <div className="text-2xl font-black text-white font-mono mb-2">$499<span className="text-xs text-zinc-400 font-normal"> / mo</span></div>
-                <p className="text-xs text-zinc-400 mb-4">Unrestricted access to all 8 enterprise nodes with unified SSO session bridging and cross-db relays.</p>
-                <ul className="text-xs text-zinc-300 space-y-1.5 font-mono mb-4">
-                  <li>✓ All 8 Sovereign Nodes Active</li>
-                  <li>✓ Universal dbLive Merkle Sync</li>
-                  <li>✓ Priority Agent Synergies</li>
-                </ul>
-                <button
-                  onClick={() => alert('All-Access Suite Pass checkout initialized.')}
-                  className="w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs shadow-[0_0_15px_rgba(234,179,8,0.4)]"
-                >
-                  Claim All-Access Pass
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Shared Pass Foundry, also available at /sovereignpass. */}
+      {activeModal === 'sovereignpass' && <SovereignPassModal onClose={() => setActiveModal(null)} />}
 
       {/* Shared interactive showcase, also available as a standalone page. */}
       {activeModal === 'about' && <AboutSuiteModal onClose={() => setActiveModal(null)} onPasses={() => setActiveModal('sovereignpass')} />}

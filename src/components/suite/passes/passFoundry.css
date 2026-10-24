@@ -1,0 +1,12 @@
+.sovereign-pass{user-select:text;overflow-wrap:break-word}
+.sovereign-pass .pass-success{color:hsl(var(--suite-green))}
+.sovereign-pass .pass-tier-badge{color:hsl(var(--primary))}
+.sovereign-pass .pass-tier-badge[data-tier=sprint]{color:hsl(var(--suite-cyan))}
+.sovereign-pass .pass-tier-badge[data-tier=duo]{color:hsl(var(--suite-green))}
+.sovereign-pass .pass-tier-badge[data-tier=apex]{color:hsl(var(--suite-violet))}
+.sovereign-pass .pass-tier-card{min-width:0}
+.sovereign-pass .about-suite-header-logo{margin-left:0}
+.sovereign-pass-modal .pass-foundry-content{padding-bottom:1px}
+.suite-cinematic .sovereign-pass-modal footer{position:static}
+@media(max-width:639px){.pass-foundry-header{flex-wrap:wrap;gap:14px}.pass-foundry-header>.about-suite-header-logo{position:absolute;top:10px;right:16px}.pass-foundry-nav{order:2;width:100%;margin:0;justify-content:space-between;gap:8px;font-size:10px}.pass-foundry-footer>div:first-child{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.sovereign-pass *{transition:none!important}}

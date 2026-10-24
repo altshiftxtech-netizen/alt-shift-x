@@ -1,6 +1,7 @@
 import Stripe from "npm:stripe@14.21.0";
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.54";
 import { finalizeConsultation } from "../../shared/consultationFinalizer.ts";
+import { handleSovereignPassEvent } from '../../shared/sovereignPassPayments.ts';
 
 // Safely turn a Stripe unix timestamp into a YYYY-MM-DD string (null if missing/invalid).
 function toDateStr(unixSeconds) {
@@ -26,10 +27,11 @@ const PRICE_TO_PLAN = {
   "price_1TdpP5JpBWpVB4VLMKPm0vPI": "sovereign_commander",  // $599/mo
 };
 
-Deno.serve(async (req) => {
+export default async function(req) {
   const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
+  const base44 = createClientFromRequest(req);
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
@@ -46,9 +48,8 @@ Deno.serve(async (req) => {
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  const base44 = createClientFromRequest(req);
-
   try {
+    if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type) && event.data.object.metadata?.base44_test_checkout === 'true') return Response.json({ received: true, self_test: true });
     console.log(`[stripeWebhook] Processing event: ${event.type}, id=${event.id}`);
 
     // ── Event-level idempotency: skip if this exact Stripe event was already handled ──
@@ -59,7 +60,8 @@ Deno.serve(async (req) => {
       return Response.json({ received: true, duplicate: true, event_type: event.type });
     }
 
-    switch (event.type) {
+    const handledPass = await handleSovereignPassEvent(base44, stripe, event);
+    if (!handledPass) switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
         const customerId = session.customer;
@@ -447,4 +449,4 @@ Deno.serve(async (req) => {
     console.error("Webhook handler error:", err.message, err.stack);
     return Response.json({ error: err.message }, { status: 500 });
   }
-});
+}

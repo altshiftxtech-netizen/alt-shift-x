@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, ShieldCheck, Sparkles, Heart } from "lucide-react";
 import Logo from "@/components/Logo";
 import GoogleIcon from "@/components/GoogleIcon";
+import { safeReturnTo } from '@/lib/authReturnTo';
 
 export default function Login() {
   const { isAuthenticated, authChecked } = useAuth();
@@ -18,7 +19,7 @@ export default function Login() {
 
   useEffect(() => {
     if (authChecked && isAuthenticated) {
-      window.location.href = "/dashboard";
+      window.location.href = new URLSearchParams(window.location.search).has('returnTo') ? safeReturnTo() : '/dashboard';
     }
   }, [authChecked, isAuthenticated]);
 
@@ -28,7 +29,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -37,7 +38,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    base44.auth.loginWithProvider("google", safeReturnTo());
   };
 
   return (

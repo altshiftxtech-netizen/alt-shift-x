@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowRight, Home, CreditCard } from "lucide-react";
 import SharedNav from "@/components/SharedNav";
 import { setSEOMeta } from "@/lib/seoHelpers";
+import PassCheckoutResult from '@/components/suite/passes/PassCheckoutResult';
 
 const PLAN_DETAILS = {
   free_builder: {
@@ -45,6 +46,8 @@ export default function SubscriptionSuccess() {
       description: `Welcome to the ${details.name} plan. Your subscription is active and ready to use.`
     });
   }, [plan, details.name]);
+
+  if (searchParams.get('purchase') === 'sovereign_pass') return <PassCheckoutResult />;
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">

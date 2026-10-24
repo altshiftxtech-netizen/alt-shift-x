@@ -14,6 +14,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
 import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
+import SovereignPassPage from '@/pages/SovereignPassPage';
 import Home from './pages/Home';
 import SuiteLandingPage from './pages/SuiteLandingPage';
 import AboutUs from './pages/AboutUs';
@@ -167,6 +168,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Home />} />
       <Route path="/suite" element={<SuiteLandingPage />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
+      <Route path="/sovereignpass" element={<SovereignPassPage />} />
       <Route path="/marketplace" element={<Marketplace />} />
       {/* Affiliate Speakeasy Shop */}
       <Route path="/shop" element={<ShopHome />} />
