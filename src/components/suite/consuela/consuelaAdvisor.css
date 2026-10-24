@@ -1,0 +1,5 @@
+.consuela-advisor{width:min(42rem,calc(100vw - 2rem));max-height:90svh;margin:auto;padding:0;border:1px solid hsl(var(--primary)/.4);border-radius:1.5rem;overflow:hidden;user-select:text;box-shadow:0 0 50px hsl(var(--primary)/.2)}
+.consuela-advisor::backdrop{background:rgba(0,0,0,.85);backdrop-filter:blur(12px)}
+.consuela-advisor-top{position:relative;padding:1.5rem 1.5rem 0;background:hsl(var(--card))}
+.consuela-advisor-content{padding:1rem 1.5rem 1.5rem;max-height:calc(90svh - 160px);overflow-y:auto;overscroll-behavior:contain;background:hsl(var(--card))}
+@media(max-width:639px){.consuela-advisor-top{padding:1.25rem 1rem 0}.consuela-advisor-content{padding:1rem;max-height:calc(90svh - 210px)}}
