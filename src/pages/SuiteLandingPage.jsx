@@ -1,5 +1,9 @@
 // src/pages/SuiteLandingPage.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import CinematicDesert from '@/components/suite/CinematicDesert';
+import HolographicCarousel from '@/components/suite/HolographicCarousel';
+import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
+import '@/components/suite/suiteScene.css';
 
 // The 8 Calibrated Sovereign Enterprise Nodes
 const SUITE_NODES = [
@@ -119,290 +123,13 @@ const SUITE_NODES = [
 
 export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [rotationAngle, setRotationAngle] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartX, setDragStartX] = useState(0);
-  const [currentAngleAtDragStart, setCurrentAngleAtDragStart] = useState(0);
+  const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion } = useSuiteOrbit();
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [consuelaQuery, setConsuelaQuery] = useState('');
   const [consuelaAnswer, setConsuelaAnswer] = useState(null);
   const [consuelaLoading, setConsuelaLoading] = useState(false);
 
-  const canvasRef = useRef(null);
-  const entitiesRef = useRef({
-    rovers: [],
-    drones: [],
-    convoys: [],
-    dust: [],
-  });
-  const cameraRef = useRef({ x: 0, y: 0, hoverT: 0 });
-
   const activeNode = SUITE_NODES[selectedIndex];
-
-  // -------------------------------------------------------------
-  // 1. SPACE-DESERT ANIMATED CANVAS (Drone View + Reactive Entities)
-  // -------------------------------------------------------------
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    // Initialize 6 Rovers, 8 Drones, 3 Convoys, 100 Dust particles
-    const rovers = Array.from({ length: 6 }, (_, i) => ({
-      id: `rover-${i}`,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      heading: Math.random() * Math.PI * 2,
-      scanning: false,
-      scanRadius: 0,
-      size: 14,
-    }));
-
-    const drones = Array.from({ length: 8 }, (_, i) => ({
-      id: `drone-${i}`,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.8,
-      vy: (Math.random() - 0.5) * 0.8,
-      evading: 0,
-      coneAngle: Math.random() * Math.PI * 2,
-      altitude: 20 + Math.random() * 25,
-    }));
-
-    const convoys = [
-      { x: 50, y: canvas.height * 0.75, vx: 0.35, len: 4, shield: false },
-      { x: canvas.width * 0.7, y: canvas.height * 0.25, vx: -0.3, len: 3, shield: false },
-    ];
-
-    const dust = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: 0.15 + Math.random() * 0.25,
-      vy: (Math.random() - 0.5) * 0.1,
-      size: Math.random() * 2 + 0.5,
-      alpha: Math.random() * 0.35 + 0.1,
-    }));
-
-    entitiesRef.current = { rovers, drones, convoys, dust };
-
-    // Click on canvas to interact with entities
-    const handleCanvasClick = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      // Check Drones
-      entitiesRef.current.drones.forEach((d) => {
-        const dist = Math.hypot(d.x - clickX, d.y - clickY);
-        if (dist < 40) {
-          d.evading = 60; // 60 frames of evasive spiral
-          d.vx = (Math.random() - 0.5) * 3;
-          d.vy = (Math.random() - 0.5) * 3;
-        }
-      });
-
-      // Check Rovers
-      entitiesRef.current.rovers.forEach((r) => {
-        const dist = Math.hypot(r.x - clickX, r.y - clickY);
-        if (dist < 35) {
-          r.scanning = true;
-          r.scanRadius = 5;
-        }
-      });
-    };
-
-    canvas.addEventListener('click', handleCanvasClick);
-
-    // Main Render Loop (Epilepsy safe, smooth sinusoidal transitions)
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Camera gentle hover breathing
-      cameraRef.current.hoverT += 0.008;
-      const camSwayX = Math.sin(cameraRef.current.hoverT) * 12;
-      const camSwayY = Math.cos(cameraRef.current.hoverT * 0.8) * 8;
-
-      ctx.save();
-      ctx.translate(camSwayX, camSwayY);
-
-      // Deep Space-Desert Gradient Background
-      const bgGrad = ctx.createRadialGradient(
-        canvas.width * 0.5,
-        canvas.height * 0.5,
-        100,
-        canvas.width * 0.5,
-        canvas.height * 0.5,
-        canvas.width * 0.8
-      );
-      bgGrad.addColorStop(0, '#120f18'); // Core deep obsidian violet
-      bgGrad.addColorStop(0.5, '#181216'); // Terracotta dusk
-      bgGrad.addColorStop(1, '#09070c'); // Edge black
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(-50, -50, canvas.width + 100, canvas.height + 100);
-
-      // Neon Mineral Veins (Subtle terrain contour lines)
-      ctx.strokeStyle = 'rgba(234, 179, 8, 0.05)';
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < 5; i++) {
-        ctx.beginPath();
-        const yBase = canvas.height * (0.2 + i * 0.18);
-        ctx.moveTo(0, yBase);
-        for (let x = 0; x < canvas.width; x += 120) {
-          const yOff = Math.sin(x * 0.005 + i + cameraRef.current.hoverT * 0.2) * 28;
-          ctx.lineTo(x, yBase + yOff);
-        }
-        ctx.stroke();
-      }
-
-      // Convoys
-      entitiesRef.current.convoys.forEach((convoy) => {
-        convoy.x += convoy.vx;
-        if (convoy.x > canvas.width + 100) convoy.x = -80;
-        if (convoy.x < -100) convoy.x = canvas.width + 80;
-
-        for (let c = 0; c < convoy.len; c++) {
-          const cx = convoy.x - c * 22 * (convoy.vx > 0 ? 1 : -1);
-          ctx.fillStyle = 'rgba(217, 70, 239, 0.45)';
-          ctx.fillRect(cx - 7, convoy.y - 4, 14, 8);
-          ctx.fillStyle = '#00F5FF';
-          ctx.fillRect(cx - 2, convoy.y - 1, 4, 2);
-        }
-      });
-
-      // Rovers
-      entitiesRef.current.rovers.forEach((r) => {
-        if (!r.scanning) {
-          r.x += r.vx;
-          r.y += r.vy;
-          if (r.x < 50 || r.x > canvas.width - 50) r.vx *= -1;
-          if (r.y < 50 || r.y > canvas.height - 50) r.vy *= -1;
-        }
-
-        // Rover Chassis (Hex/Crawler)
-        ctx.save();
-        ctx.translate(r.x, r.y);
-        ctx.rotate(Math.atan2(r.vy, r.vx));
-
-        // Dust Trail
-        ctx.fillStyle = 'rgba(202, 138, 4, 0.12)';
-        ctx.beginPath();
-        ctx.arc(-14, 0, 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Hull
-        ctx.fillStyle = '#374151';
-        ctx.strokeStyle = '#EAB308';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.rect(-8, -5, 16, 10);
-        ctx.fill();
-        ctx.stroke();
-
-        // Cockpit sensor
-        ctx.fillStyle = '#06B6D4';
-        ctx.fillRect(3, -2, 4, 4);
-        ctx.restore();
-
-        // Active Scan Pulse
-        if (r.scanning) {
-          r.scanRadius += 0.8;
-          ctx.strokeStyle = `rgba(6, 182, 212, ${Math.max(0, 1 - r.scanRadius / 45)})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(r.x, r.y, r.scanRadius, 0, Math.PI * 2);
-          ctx.stroke();
-          if (r.scanRadius > 45) {
-            r.scanning = false;
-            r.scanRadius = 0;
-          }
-        }
-      });
-
-      // Drones
-      entitiesRef.current.drones.forEach((d) => {
-        d.x += d.vx;
-        d.y += d.vy;
-        if (d.x < 30 || d.x > canvas.width - 30) d.vx *= -1;
-        if (d.y < 30 || d.y > canvas.height - 30) d.vy *= -1;
-
-        if (d.evading > 0) {
-          d.evading--;
-          d.coneAngle += 0.15;
-        } else {
-          d.coneAngle += 0.01;
-        }
-
-        // Volumetric Spotlight on Desert Floor
-        const spotX = d.x + Math.cos(d.coneAngle) * 35;
-        const spotY = d.y + Math.sin(d.coneAngle) * 20;
-        const spotGrad = ctx.createRadialGradient(spotX, spotY, 2, spotX, spotY, 26);
-        spotGrad.addColorStop(0, 'rgba(0, 245, 255, 0.16)');
-        spotGrad.addColorStop(1, 'rgba(0, 245, 255, 0)');
-        ctx.fillStyle = spotGrad;
-        ctx.beginPath();
-        ctx.arc(spotX, spotY, 26, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Drone Body
-        ctx.fillStyle = '#10B981';
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Rotor trails
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, 8, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-
-      // Ambient Drifting Atmospheric Dust
-      entitiesRef.current.dust.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y > canvas.height) p.y = 0;
-        if (p.y < 0) p.y = canvas.height;
-
-        ctx.fillStyle = `rgba(234, 179, 8, ${p.alpha})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      ctx.restore();
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('click', handleCanvasClick);
-    };
-  }, []);
-
-  // -------------------------------------------------------------
-  // 2. IDLE AUTO-ROTATION (Gently spins carousel until dragged)
-  // -------------------------------------------------------------
-  useEffect(() => {
-    if (isDragging) return;
-    const interval = setInterval(() => {
-      setRotationAngle((prev) => (prev + 0.15) % 360);
-    }, 50);
-    return () => clearInterval(interval);
-  }, [isDragging]);
 
   // Sync selected index with rotation angle
   useEffect(() => {
@@ -414,20 +141,7 @@ export default function SuiteLandingPage() {
     setSelectedIndex(closestIndex);
   }, [rotationAngle]);
 
-  // Drag handlers for 3D Carousel
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setDragStartX(e.clientX);
-    setCurrentAngleAtDragStart(rotationAngle);
-  };
 
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStartX;
-    setRotationAngle(currentAngleAtDragStart + deltaX * 0.3);
-  };
-
-  const handleMouseUp = () => setIsDragging(false);
 
   // Navigate directly through Cloudflare pure subpath
   const handleLaunchNode = (subpath) => {
@@ -484,33 +198,19 @@ export default function SuiteLandingPage() {
 
   return (
     <div
-      className="relative w-screen h-screen overflow-hidden select-none bg-black text-white font-sans"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onTouchStart={(e) => {
-        setIsDragging(true);
-        setDragStartX(e.touches[0].clientX);
-        setCurrentAngleAtDragStart(rotationAngle);
-      }}
-      onTouchMove={(e) => {
-        if (!isDragging) return;
-        const deltaX = e.touches[0].clientX - dragStartX;
-        setRotationAngle(currentAngleAtDragStart + deltaX * 0.4);
-      }}
-      onTouchEnd={() => setIsDragging(false)}
+      className="suite-cinematic relative w-full overflow-hidden select-none font-sans"
     >
       {/* 1. Fullscreen Background Simulation Canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-auto z-0" />
+      <CinematicDesert />
 
       {/* 2. Exotic HUD Ambient Grid & Reticle Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.85)_100%)]">
+      <div className="suite-scene-shade absolute inset-0 pointer-events-none z-10">
         {/* Subtle Crosshairs in Corners */}
-        <div className="absolute top-16 left-6 text-xs text-yellow-500/30 font-mono">
+        <div className="suite-hud absolute top-20 left-6 font-mono">
           PROVING GROUND ELEV: 12,480 FT // LAT: 47.6062° N // LONG: 122.3321° W
         </div>
-        <div className="absolute top-16 right-6 text-xs text-yellow-500/30 font-mono">
-          DRONE TELEMETRY: CAM-01 [120 FPS] // CLOUDFLARE EDGE: &lt;12ms
+        <div className="suite-hud suite-hud-right absolute top-20 right-6 font-mono">
+          RECONNAISSANCE // AUTONOMOUS SYSTEMS // CLIENT-SIDE WEBGL
         </div>
       </div>
 
@@ -552,16 +252,9 @@ export default function SuiteLandingPage() {
       {/* 4. Center Stage: JARVIS 3D Holographic Circular Carousel */}
       <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
         {/* Holographic Ring Container */}
-        <div className="relative w-[380px] h-[380px] sm:w-[640px] sm:h-[640px] flex items-center justify-center">
-          {/* Animated SVG HUD Circles */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-full h-full rounded-full border border-yellow-500/15 animate-[spin_80s_linear_infinite]" />
-            <div className="w-[85%] h-[85%] rounded-full border border-dashed border-cyan-400/20 animate-[spin_50s_linear_infinite_reverse]" />
-            <div className="w-[60%] h-[60%] rounded-full border border-yellow-500/10" />
-            <div className="w-16 h-16 rounded-full bg-yellow-400/5 blur-xl" />
-          </div>
-
-          {/* Carousel Nodes orbiting in a 3D circle */}
+        <div className="suite-orbit relative flex items-center justify-center" {...orbitHandlers}>
+          <HolographicCarousel nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex} />
+          {/* Accessible labels over depth-tested 3D glass slabs. */}
           {SUITE_NODES.map((node, i) => {
             const total = SUITE_NODES.length;
             const slice = 360 / total;
@@ -570,8 +263,9 @@ export default function SuiteLandingPage() {
 
             // Perspective ellipse projection — wider spread
             const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-            const radiusX = isMobile ? 155 : 280;
-            const radiusY = isMobile ? 70 : 130;
+            const orbitWidth = Math.min(isMobile ? window.innerWidth * .96 : 760, window.innerWidth * .96);
+            const radiusX = isMobile ? orbitWidth * .34 : Math.min(280, orbitWidth * .37);
+            const radiusY = isMobile ? 86 : 115;
             const x = Math.cos(rad) * radiusX;
             const y = Math.sin(rad) * radiusY;
 
@@ -586,19 +280,24 @@ export default function SuiteLandingPage() {
             return (
               <div
                 key={node.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${node.name}`}
+                aria-pressed={isSelected}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOrbit(90 - i * slice); } }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedIndex(i);
-                  const targetAngle = 90 - i * slice;
-                  setRotationAngle(targetAngle);
+                  if (motion.current.moved) { motion.current.moved = false; return; }
+                  selectOrbit(90 - i * slice);
                 }}
                 onDoubleClick={() => handleLaunchNode(node.subpath)}
                 style={{
-                  transform: `translate(${x}px, ${y}px) scale(${scale})`,
+                  transform: `translate(${x}px, ${y}px) perspective(900px) rotateY(${-Math.cos(rad) * 7}deg) scale(${scale})`,
+                  filter: `blur(${(1 - depth) * .65}px)`,
                   opacity,
                   zIndex,
                 }}
-                className={`absolute cursor-pointer pointer-events-auto transition-shadow duration-300 flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl backdrop-blur-xl border overflow-hidden ${
+                className={`suite-node absolute cursor-pointer pointer-events-auto transition-shadow duration-300 flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl backdrop-blur-xl border overflow-hidden ${
                   isSelected
                     ? 'border-yellow-400 bg-black/85 shadow-[0_0_25px_rgba(234,179,8,0.45)] ring-2 ring-yellow-400/50'
                     : 'border-white/10 bg-black/60 hover:border-white/30'
@@ -633,7 +332,7 @@ export default function SuiteLandingPage() {
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
                   </div>
                 )}
-                <div className="relative z-10 text-center">
+                <div className="suite-node-copy relative z-10 text-center">
                   <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                     {node.name}
                   </div>
@@ -647,7 +346,7 @@ export default function SuiteLandingPage() {
         </div>
 
         {/* 5. Dynamic Tactical Under-Carousel Dossier Card */}
-        <div className="w-[92%] max-w-lg mt-4 sm:mt-6 p-4 sm:p-5 rounded-2xl bg-zinc-950/80 backdrop-blur-2xl border border-yellow-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all duration-300">
+        <div className="suite-dossier w-[92%] max-w-lg mt-4 sm:mt-6 p-4 sm:p-5 rounded-2xl bg-zinc-950/80 backdrop-blur-2xl border border-yellow-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all duration-300">
           <div className="flex items-start justify-between border-b border-white/10 pb-3 mb-3">
             <div>
               <div className="flex items-center space-x-2">

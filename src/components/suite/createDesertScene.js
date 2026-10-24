@@ -1,0 +1,73 @@
+import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import desertTerrain from '@/components/suite/desertTerrain';
+import desertVehicles from '@/components/suite/desertVehicles';
+import desertAtmosphere from '@/components/suite/desertAtmosphere';
+
+export default function createDesertScene(host, onStatus) {
+  const compact = window.innerWidth < 700;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
+  host.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color('#171322'); scene.fog = new THREE.FogExp2('#27202c', .0038);
+  const camera = new THREE.PerspectiveCamera(52, 1, .2, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
+  const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
+  scene.add(new THREE.HemisphereLight('#9fb4e0', '#271524', .9));
+  const sun = new THREE.DirectionalLight('#ffbd81', 3.2); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
+  const rim = new THREE.DirectionalLight('#3876a3', 1.4); rim.position.set(80, 25, 35); scene.add(rim);
+  const routes = desertTerrain(scene, compact), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
+  const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .65, .7, 1.05); composer.addPass(bloom); composer.addPass(new OutputPass());
+  const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const resize = () => { const { width, height } = host.getBoundingClientRect(); renderer.setSize(width, height); composer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); };
+  const observer = new ResizeObserver(resize); observer.observe(host); resize();
+  const pick = event => {
+    if (event.target !== renderer.domElement) return null;
+    const rect = renderer.domElement.getBoundingClientRect(); pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(vehicles.targets, true);
+    for (const hit of hits) { let object = hit.object; while (object && !object.userData.kind) object = object.parent; if (object) return object; }
+    return null;
+  };
+  const activate = (target, hover = false) => { if (!target || (hover && target.userData.kind !== 'drone')) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; onStatus(`${target.userData.kind === 'drone' ? 'DRONE / EVASIVE MANEUVER' : 'ROVER / HOLOGRAPHIC RADAR SCAN'}`); lastStatus = performance.now(); };
+  const move = event => { const target = pick(event); renderer.domElement.style.cursor = target ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
+  const click = event => activate(pick(event));
+  host.addEventListener('pointermove', move); host.addEventListener('click', click);
+  const animate = now => {
+    frame = requestAnimationFrame(animate);
+    if (document.hidden) { last = now; return; }
+    const realDt = last ? (now - last) / 1000 : .016;
+    const dt = Math.min(realDt, .05); last = now; elapsed += dt;
+    const time = reduced ? elapsed * .12 : elapsed;
+    camera.position.set(Math.sin(time * .035) * 5, 45 + Math.sin(time * .12) * 1.2, 80 + Math.cos(time * .07) * 1.2); camera.lookAt(Math.sin(time * .04) * 3, 0, -42);
+    vehicles.update(time, reduced ? dt * .12 : dt); updateAtmosphere(time);
+    sun.shadow.needsUpdate = sampleFrames % 4 === 0;
+    composer.render();
+    sampleFrames++; sampleTime += realDt;
+    if (sampleTime > 2) {
+      const fps = sampleFrames / sampleTime;
+      if (fps < 28 && renderer.getPixelRatio() > .6) {
+        const ratio = Math.max(.6, renderer.getPixelRatio() * .75);
+        renderer.setPixelRatio(ratio); composer.setPixelRatio(ratio); resize();
+      }
+      if (performance.now() - lastStatus > 4000) onStatus(`WEBGL / ${Math.round(fps)} FPS / LOCAL EXECUTION / $0 CLOUD TOKENS`);
+      sampleFrames = 0; sampleTime = 0;
+    }
+    renderer.domElement.dataset.rendered = 'true';
+  };
+  frame = requestAnimationFrame(animate);
+  return () => {
+    cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener('pointermove', move); host.removeEventListener('click', click);
+    const geometries = new Set(), materials = new Set(), textures = new Set();
+    scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });
+    geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); env.dispose(); composer.passes.forEach(p => p.dispose?.()); composer.dispose(); renderer.dispose(); renderer.domElement.remove();
+  };
+}
