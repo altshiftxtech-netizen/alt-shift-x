@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function useSuiteOrbit() {
   const [rotationAngle, setRotationAngle] = useState(90), [paused, setPaused] = useState(false);
   const motion = useRef({ angle: 90, velocity: 0, down: false, moved: false, lastX: 0, startX: 0, time: 0, target: null, paused: false });
-  const pause = () => { motion.current.paused = true; setPaused(true); };
+  const pause = () => { Object.assign(motion.current, { paused: true, velocity: 0, target: null }); setPaused(true); };
   useEffect(() => {
     let frame, previous = performance.now();
     const release = () => { motion.current.down = false; };
@@ -46,5 +46,5 @@ export default function useSuiteOrbit() {
     onPointerUp: () => { motion.current.down = false; },
     onPointerCancel: () => { motion.current.down = false; motion.current.velocity = 0; },
   };
-  return { rotationAngle, select, handlers, motion, paused, togglePaused };
+  return { rotationAngle, select, handlers, motion, paused, pause, togglePaused };
 }

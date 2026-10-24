@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CinematicDesert from '@/components/suite/CinematicDesert';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
+import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
 import '@/components/suite/suiteScene.css';
 
 // The 8 Calibrated Sovereign Enterprise Nodes
@@ -123,7 +124,8 @@ const SUITE_NODES = [
 
 export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, togglePaused } = useSuiteOrbit();
+  const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, pause, togglePaused } = useSuiteOrbit();
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [consuelaQuery, setConsuelaQuery] = useState('');
   const [consuelaAnswer, setConsuelaAnswer] = useState(null);
@@ -133,7 +135,7 @@ export default function SuiteLandingPage() {
 
   // Sync selected index with rotation angle
   useEffect(() => {
-    if (motion.current.target !== null) return;
+    if (motion.current.target !== null || motion.current.paused) return;
     const total = SUITE_NODES.length;
     const slice = 360 / total;
     // Keep the chosen dossier visible while its emblem settles at the front.
@@ -254,64 +256,14 @@ export default function SuiteLandingPage() {
       <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
         <SuiteEmblemOrbit
           nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex}
-          handlers={orbitHandlers} motion={motion} paused={paused} onTogglePaused={togglePaused}
-          onSelect={(index) => { setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
+          handlers={orbitHandlers} motion={motion} paused={paused} onTogglePaused={() => { setDetailsExpanded(false); togglePaused(); }}
+          onSelect={(index) => { setDetailsExpanded(false); setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
           onLaunch={handleLaunchNode}
         />
 
-        {/* 5. Dynamic Tactical Under-Carousel Dossier Card */}
-        <div className="suite-dossier w-[92%] max-w-lg mt-4 sm:mt-6 p-4 sm:p-5 rounded-2xl bg-zinc-950/80 backdrop-blur-2xl border border-yellow-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all duration-300">
-          <div className="flex items-start justify-between border-b border-white/10 pb-3 mb-3">
-            <div>
-              <div className="flex items-center space-x-2">
-                <img src={activeNode.logo} alt={`${activeNode.name} logo`} className="suite-dossier-logo h-8 w-8 shrink-0 object-contain" />
-                <h2 className="text-base sm:text-lg font-black tracking-wide text-white">{activeNode.name}</h2>
-                <span
-                  className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: `${activeNode.color}20`, color: activeNode.color }}
-                >
-                  {activeNode.category}
-                </span>
-              </div>
-              <p className="text-xs text-yellow-400/90 font-medium mt-0.5">{activeNode.tagline}</p>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-zinc-400 font-mono block">STARTING AT</span>
-              <span className="text-sm sm:text-base font-black text-white font-mono">{activeNode.price}</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-zinc-300 leading-relaxed mb-3">{activeNode.desc}</p>
-
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {activeNode.specs.map((spec, idx) => (
-              <span
-                key={idx}
-                className="text-[10px] font-mono text-zinc-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md"
-              >
-                {spec}
-              </span>
-            ))}
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md">
-              ✓ Sovereign Pass Included
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleLaunchNode(activeNode.subpath)}
-              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-yellow-500 to-amber-400 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] hover:brightness-110 active:scale-[0.98] transition-all"
-            >
-              Enter Sovereign Node →
-            </button>
-            <button
-              onClick={() => setActiveModal('sovereignpass')}
-              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white/5 hover:bg-white/10 border border-white/20 text-white transition-all"
-            >
-              View Sovereign Passes
-            </button>
-          </div>
-        </div>
+        <SuiteNodeDossier node={activeNode} expanded={detailsExpanded}
+          onToggle={() => { pause(); setDetailsExpanded(value => !value); }} onInteract={pause}
+          onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />
       </main>
 
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
