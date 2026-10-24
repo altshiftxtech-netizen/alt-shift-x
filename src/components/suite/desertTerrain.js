@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import desertGroundTexture from '@/components/suite/desertGroundTexture';
 
 export function heightAt(x, z) {
   const canyon = Math.exp(-Math.pow((x - 13 * Math.sin(z * .024)) / 22, 2));
@@ -22,15 +23,8 @@ export default function desertTerrain(scene, compact) {
   }
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
-  const ctx = canvas.getContext('2d'), image = ctx.createImageData(256, 256);
-  for (let i = 0; i < image.data.length; i += 4) {
-    const value = 105 + Math.random() * 95;
-    image.data[i] = image.data[i + 1] = image.data[i + 2] = value; image.data[i + 3] = 255;
-  }
-  ctx.putImageData(image, 0, 0);
-  const sand = new THREE.CanvasTexture(canvas); sand.wrapS = sand.wrapT = THREE.RepeatWrapping; sand.repeat.set(110, 110);
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .06 });
+  const sand = desertGroundTexture();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .22 });
   const land = new THREE.Mesh(geometry, material); land.receiveShadow = true; scene.add(land);
   const routes = [];
   for (let lane = 0; lane < 7; lane++) {
