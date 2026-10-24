@@ -8,96 +8,112 @@ const SUITE_NODES = [
     name: 'Alt+Shift+X',
     tagline: 'Sovereign Intelligence & Component Foundry',
     subpath: '/',
-    color: '#EAB308', // Gold
+    color: '#EAB308',
     icon: '⚡',
     category: 'Master Foundry',
     price: 'Sovereign Core',
     desc: 'The master intelligence exchange for AI agents, modular components, and certified architecture standards.',
     specs: ['Root Hub', 'X1–X5 Protocols', 'Zero-Bleed Edge Routing'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/a3882799c_altxlogo2.jpeg',
+    blendMode: 'multiply',
   },
   {
     id: 'turimc',
     name: 'Turi MC x APPerdeen',
     tagline: 'Extreme Compute & Hardware Proving Ground',
     subpath: '/turimc',
-    color: '#10B981', // Emerald
+    color: '#10B981',
     icon: '⚙️',
     category: 'Physics & Hardware',
     price: '$299 / mo',
     desc: 'Hardware-in-the-loop simulation, 10-domain FEA/thermal/stress testing, and RLVR spot GPU inference.',
     specs: ['120 FPS WASM', 'SPICE Netlists', 'Tri-Agent Synergy'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/d041f00a6_TuriFutureLogo.png',
+    blendMode: 'screen',
   },
   {
     id: 'codevault',
     name: 'Code Vault',
     tagline: 'Sovereign Git & WASM Repositories',
     subpath: '/codevault',
-    color: '#06B6D4', // Cyan
+    color: '#06B6D4',
     icon: '📦',
     category: 'Version Control & Repos',
     price: '$199 / mo',
     desc: 'Client-side Git packfile engine, multi-lane canvas topology visualizer, and ChaCha20 encrypted commit enclaves.',
     specs: ['Zero Cloud Tokens', '4-Lane Git Graph', 'Level 1-100 Ascension'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3b25cb263_CodeVaultlogo1.png',
+    blendMode: 'screen',
   },
   {
     id: 'dblive',
     name: 'dbLive',
     tagline: 'Sovereign WORM Append-Only Database',
     subpath: '/dblive',
-    color: '#F59E0B', // Amber
+    color: '#F59E0B',
     icon: '🗄️',
     category: 'Immutable Ledger',
     price: '$249 / mo',
     desc: 'WORM append-only Merkle ledger database, time-travel query engine, and zero-knowledge partition sync.',
     specs: ['MRE 901/902 Audit', 'Merkle Tree Spines', 'Zero-Bleed Storage'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/bbed1883d_dbLiveLogo.png',
+    blendMode: 'screen',
   },
   {
     id: 'omnibridge',
     name: 'OmniBridge CRM',
     tagline: 'Executive Pipeline & Telephony',
     subpath: '/omnibridge',
-    color: '#F43F5E', // Rose
+    color: '#F43F5E',
     icon: '📞',
     category: 'Executive CRM',
     price: '$249 / mo',
     desc: 'Autonomous lead velocity dispatch, executive client churn forecasting, and Consuela privy-core intelligence.',
     specs: ['Consuela C-Suite', 'Telephony Webhooks', '1-Click Dossiers'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/5c16d1ea1_OmniBridgeCRMLogo.png',
+    blendMode: 'screen',
   },
   {
     id: 'bitfolio',
     name: 'Bitfolio Hub',
     tagline: '3D Portfolio & Digital Cards',
     subpath: '/bitfolio',
-    color: '#6366F1', // Indigo
+    color: '#6366F1',
     icon: '💳',
     category: 'Identity & NFC',
     price: '$149 / mo',
     desc: 'Interactive 3D digital cards, Linq WebNFC tap-share conduit, and vCard 4.0 real-time asset synchronization.',
     specs: ['WebNFC NDEF', 'Cinematic Montage', 'Zero Token ASTs'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/0d58346d9_BitfolioLogo2.png',
+    blendMode: 'screen',
   },
   {
     id: 'sourcebridge',
     name: 'SourceBridge',
     tagline: 'Universal API Substrate & Network',
     subpath: '/sourcebridge',
-    color: '#14B8A6', // Teal
+    color: '#14B8A6',
     icon: '🌐',
     category: 'API Gateway & Event Broker',
     price: '$299 / mo',
     desc: 'Universal API gateway, Kafka/RabbitMQ throttle sentinel, Protobuf/Avro schemas, and pipeline drift correction.',
     specs: ['DLQ Remediation', 'Tri-Agent Council', 'Universal Connectors'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/7c36007e1_SourceBridgeLogo.png',
+    blendMode: 'multiply',
   },
   {
     id: 'magna',
     name: 'MAGNA Builder',
     tagline: 'Visual Canvas Site Foundry',
     subpath: '/magna',
-    color: '#D946EF', // Fuchsia
+    color: '#D946EF',
     icon: '🎨',
     category: 'Site Foundry & RSMK',
     price: '$199 / mo',
     desc: 'High-speed visual canvas editor, duplicated-site autonomous upkeeper, and cryptographic RSMK key management.',
     specs: ['RSMK Fleet Keys', 'Self-Healing ASTs', 'Turnkey Foundry'],
+    logo: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/9de3176f7_MAGNALogoBlack.png',
+    blendMode: 'screen',
   },
 ];
 
@@ -534,9 +550,9 @@ export default function SuiteLandingPage() {
       </header>
 
       {/* 4. Center Stage: JARVIS 3D Holographic Circular Carousel */}
-      <main className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none pb-12">
+      <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
         {/* Holographic Ring Container */}
-        <div className="relative w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] flex items-center justify-center">
+        <div className="relative w-[380px] h-[380px] sm:w-[640px] sm:h-[640px] flex items-center justify-center">
           {/* Animated SVG HUD Circles */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-full h-full rounded-full border border-yellow-500/15 animate-[spin_80s_linear_infinite]" />
@@ -552,16 +568,17 @@ export default function SuiteLandingPage() {
             const currentItemAngle = (i * slice + rotationAngle) % 360;
             const rad = (currentItemAngle * Math.PI) / 180;
 
-            // Perspective ellipse projection
-            const radiusX = window.innerWidth < 640 ? 140 : 210;
-            const radiusY = window.innerWidth < 640 ? 65 : 100;
+            // Perspective ellipse projection — wider spread
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+            const radiusX = isMobile ? 155 : 280;
+            const radiusY = isMobile ? 70 : 130;
             const x = Math.cos(rad) * radiusX;
             const y = Math.sin(rad) * radiusY;
 
             // Depth calculation: items at bottom (sin ~ 1) are closest/largest
             const depth = (Math.sin(rad) + 1) / 2; // 0 to 1
-            const scale = 0.75 + depth * 0.45;
-            const opacity = 0.4 + depth * 0.6;
+            const scale = 0.65 + depth * 0.5;
+            const opacity = 0.35 + depth * 0.65;
             const zIndex = Math.round(depth * 50);
 
             const isSelected = i === selectedIndex;
@@ -572,7 +589,6 @@ export default function SuiteLandingPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedIndex(i);
-                  // Snap carousel to bring clicked node to front
                   const targetAngle = 90 - i * slice;
                   setRotationAngle(targetAngle);
                 }}
@@ -582,19 +598,32 @@ export default function SuiteLandingPage() {
                   opacity,
                   zIndex,
                 }}
-                className={`absolute cursor-pointer pointer-events-auto transition-shadow duration-300 flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl backdrop-blur-xl border ${
+                className={`absolute cursor-pointer pointer-events-auto transition-shadow duration-300 flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl backdrop-blur-xl border overflow-hidden ${
                   isSelected
                     ? 'border-yellow-400 bg-black/85 shadow-[0_0_25px_rgba(234,179,8,0.45)] ring-2 ring-yellow-400/50'
                     : 'border-white/10 bg-black/60 hover:border-white/30'
                 }`}
               >
+                {/* Holographic logo blended into card background */}
+                {node.logo && (
+                  <img
+                    src={node.logo}
+                    alt={node.name}
+                    className="absolute inset-0 w-full h-full object-contain p-1"
+                    style={{
+                      mixBlendMode: node.blendMode || 'screen',
+                      opacity: 0.5 + depth * 0.3,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
                 <div
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner mb-1.5"
+                  className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner mb-1.5"
                   style={{ backgroundColor: `${node.color}25`, border: `1px solid ${node.color}60` }}
                 >
                   {node.icon}
                 </div>
-                <div className="text-center">
+                <div className="relative z-10 text-center">
                   <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap">
                     {node.name}
                   </div>
