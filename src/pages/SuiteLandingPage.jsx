@@ -172,9 +172,7 @@ export default function SuiteLandingPage() {
       <div className="suite-scene-shade absolute inset-0 pointer-events-none z-10">
         {/* Subtle Crosshairs in Corners */}
 
-        <div className="suite-hud suite-hud-right absolute top-20 right-6 font-mono">
-          RECONNAISSANCE // AUTONOMOUS SYSTEMS // CLIENT-SIDE WEBGL
-        </div>
+
       </div>
 
       {/* 3. Header Navigation Bar */}
@@ -230,7 +228,7 @@ export default function SuiteLandingPage() {
         <div className="flex items-center space-x-2 truncate">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="truncate">
-            SOLE TITLE: Magna Lorem
+            SOLE TITLE: Magna Lorem // Magna Lorem LLC // Trust AR
           </span>
         </div>
         <div className="flex items-center space-x-4">
