@@ -14,6 +14,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
 import Home from './pages/Home';
+import SuiteLandingPage from './pages/SuiteLandingPage';
 import AboutUs from './pages/AboutUs';
 import ExpertMind from './pages/ExpertMind';
 import Marketplace from './pages/Marketplace';
@@ -162,7 +163,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* ── Public routes — no login required ── */}
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<SuiteLandingPage />} />
       <Route path="/marketplace" element={<Marketplace />} />
       {/* Affiliate Speakeasy Shop */}
       <Route path="/shop" element={<ShopHome />} />
