@@ -163,7 +163,8 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* ── Public routes — no login required ── */}
-      <Route path="/" element={<SuiteLandingPage />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/suite" element={<SuiteLandingPage />} />
       <Route path="/marketplace" element={<Marketplace />} />
       {/* Affiliate Speakeasy Shop */}
       <Route path="/shop" element={<ShopHome />} />
