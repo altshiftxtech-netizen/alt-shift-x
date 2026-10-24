@@ -264,7 +264,7 @@ export default function SuiteLandingPage() {
           <div className="flex items-start justify-between border-b border-white/10 pb-3 mb-3">
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-lg">{activeNode.icon}</span>
+                <img src={activeNode.logo} alt={`${activeNode.name} logo`} className="suite-dossier-logo h-8 w-8 shrink-0 object-contain" />
                 <h2 className="text-base sm:text-lg font-black tracking-wide text-white">{activeNode.name}</h2>
                 <span
                   className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
