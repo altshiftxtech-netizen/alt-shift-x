@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { heightAt } from '@/components/suite/desertTerrain';
+import desertCharacters from '@/components/suite/desertCharacters';
 
 export default function desertVehicles(scene, routes, compact) {
   const armor = new THREE.MeshStandardMaterial({ color: '#8C9FAD', emissive: '#324958', emissiveIntensity: .45, metalness: .82, roughness: .33 });
@@ -8,6 +9,8 @@ export default function desertVehicles(scene, routes, compact) {
   const emerald = new THREE.MeshStandardMaterial({ color: '#51E6AD', emissive: '#51E6AD', emissiveIntensity: 3 });
   const rotorMaterial = new THREE.MeshBasicMaterial({ color: '#A3D7E2', transparent: true, opacity: .24, side: THREE.DoubleSide, depthWrite: false });
   const targets = [], drones = [], rovers = [], sleds = [];
+  const updateCharacters = desertCharacters(scene, heightAt, compact);
+  const droneStations = [[-70, -95], [42, -120], [-32, -15], [76, -45], [-91, 30], [14, 45]];
   const box = (group, size, position, material = armor) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material); mesh.position.set(...position); mesh.castShadow = true; group.add(mesh); return mesh;
   };
@@ -25,7 +28,7 @@ export default function desertVehicles(scene, routes, compact) {
     }
     const spotlight = new THREE.SpotLight('#526976', 180, 45, .3, .8, 1.4); spotlight.position.y = -.3;
     spotlight.target.position.set(0, -25, 0); group.add(spotlight, spotlight.target);
-    spotlight.castShadow = i === 0; spotlight.shadow.mapSize.set(512, 512); spotlight.shadow.bias = -.002;
+    spotlight.castShadow = false;
     const coneGeo = new THREE.ConeGeometry(6.5, 23, 28, 1, true); coneGeo.translate(0, -11.5, 0);
     const cone = new THREE.Mesh(coneGeo, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, uniforms: { tint: { value: new THREE.Color('#3E6976') } }, vertexShader: 'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}', fragmentShader: 'uniform vec3 tint; varying vec2 vUv; void main(){float a=pow(vUv.y,1.5)*.065;gl_FragColor=vec4(tint,a);}' })); group.add(cone);
     const thruster = new THREE.Mesh(new THREE.ConeGeometry(.28, 1.8, 12), cyan); thruster.rotation.x = Math.PI; thruster.position.set(0, -.9, .8); group.add(thruster);
@@ -53,15 +56,16 @@ export default function desertVehicles(scene, routes, compact) {
     scene.add(group, trail); sleds.push({ group, route, trail, offset: i / 9 });
   }
   const update = (time, dt) => {
+    updateCharacters(time);
     drones.forEach(({ group, rotors, thruster }, i) => {
       const age = time - group.userData.activation, evade = age >= 0 && age < 4 ? Math.sin(age / 4 * Math.PI) : 0;
-      const a = time * .05 + i * 1.6, x = Math.cos(a) * (30 + i * 8), z = Math.sin(a * .7) * 43 - 12;
+      const a = time * .05 + i * 1.6, x = droneStations[i][0] + Math.cos(a) * 12, z = droneStations[i][1] + Math.sin(a * .7) * 10;
       group.position.set(x + Math.sin(age * 3) * evade * 9, heightAt(x, z) + 17 + Math.sin(time * .5 + i) * 2, z + Math.cos(age * 3) * evade * 5);
       group.rotation.set(Math.sin(time + i) * .07 + evade * .3, -a, Math.sin(age * 2) * evade * .65);
       rotors.forEach(r => { r.rotation.y += dt * 42; }); thruster.scale.y = 1 + evade * 4;
     });
     rovers.forEach(({ group, wheels, pulse }, i) => {
-      const x = -65 + i * 35 + Math.sin(time * .025 + i) * 8, z = ((time * 1.2 + i * 32) % 140) - 70;
+      const x = [-62, 48, -12, 85][i] + Math.sin(time * .025 + i) * 8, z = [22, -28, -100, -155][i] + Math.sin(time * .018 + i) * 14;
       group.position.set(x, heightAt(x, z), z); group.rotation.x = Math.atan2(heightAt(x, z - 1) - heightAt(x, z + 1), 2);
       group.rotation.z = Math.atan2(heightAt(x + 1, z) - heightAt(x - 1, z), 2);
       wheels.forEach(w => { w.rotation.x += dt * 1.2; });

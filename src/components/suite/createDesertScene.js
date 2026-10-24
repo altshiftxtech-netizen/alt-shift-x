@@ -17,10 +17,10 @@ export default function createDesertScene(host, onStatus) {
   renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#05080C'); scene.fog = new THREE.FogExp2('#101820', .0038);
-  const camera = new THREE.PerspectiveCamera(52, 1, .2, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
+  const camera = new THREE.PerspectiveCamera(52, 1, 1, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
   scene.add(new THREE.HemisphereLight('#8294A8', '#080D12', .65));
-  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.001; scene.add(sun);
+  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = true; sun.shadow.normalBias = .45; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.0002; scene.add(sun);
   const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
   const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); target.samples = 4;
@@ -50,15 +50,10 @@ export default function createDesertScene(host, onStatus) {
     const time = reduced ? elapsed * .12 : elapsed;
     camera.position.set(Math.sin(time * .035) * 5, 45 + Math.sin(time * .12) * 1.2, 80 + Math.cos(time * .07) * 1.2); camera.lookAt(Math.sin(time * .04) * 3, 0, -42);
     vehicles.update(time, reduced ? dt * .12 : dt); updateAtmosphere(time);
-    sun.shadow.needsUpdate = sampleFrames % 4 === 0;
     composer.render();
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {
       const fps = sampleFrames / sampleTime;
-      if (fps < 28 && renderer.getPixelRatio() > 1) {
-        const ratio = Math.max(1, renderer.getPixelRatio() * .9);
-        renderer.setPixelRatio(ratio); composer.setPixelRatio(ratio); resize();
-      }
       if (performance.now() - lastStatus > 4000) onStatus(`WEBGL / ${Math.round(fps)} FPS / LOCAL EXECUTION / $0 CLOUD TOKENS`);
       sampleFrames = 0; sampleTime = 0;
     }

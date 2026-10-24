@@ -35,7 +35,7 @@ export default function desertTerrain(scene, compact, anisotropy) {
     for (let j = 0; j <= 200; j++) {
       const z = -260 + j * 2.4;
       const x = (lane - 3) * 22 + Math.sin(z * .024 + lane * .55) * (lane === 3 ? 13 : 18);
-      points.push(new THREE.Vector3(x, heightAt(x, z) + .22, z));
+      points.push(new THREE.Vector3(x, heightAt(x, z) + .65, z));
     }
     const curve = new THREE.CatmullRomCurve3(points); routes.push(curve);
     const color = lane % 2 ? '#284653' : '#4C493D';
