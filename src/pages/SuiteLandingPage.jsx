@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
+import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import CinematicDesert from '@/components/suite/CinematicDesert';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
@@ -203,7 +204,7 @@ export default function SuiteLandingPage() {
             onClick={() => setActiveModal('consuela')}
             className="flex items-center space-x-1.5 bg-yellow-500/10 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/20 px-3 py-1.5 rounded-full transition-all shadow-[0_0_10px_rgba(234,179,8,0.2)]"
           >
-            <span>💬</span>
+            <ConsuelaLogo />
             <span>/helpmechoose</span>
           </button>
         </nav>
