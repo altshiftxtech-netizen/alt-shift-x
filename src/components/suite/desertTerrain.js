@@ -24,7 +24,8 @@ export default function desertTerrain(scene, compact) {
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
   const sand = desertGroundTexture();
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .22 });
+  const grain = desertGroundTexture(true);
+  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setScalar(1.15), vertexColors: true, map: grain, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .42 });
   const land = new THREE.Mesh(geometry, material); land.receiveShadow = true; scene.add(land);
   const routes = [];
   for (let lane = 0; lane < 7; lane++) {
