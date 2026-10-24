@@ -604,18 +604,35 @@ export default function SuiteLandingPage() {
                     : 'border-white/10 bg-black/60 hover:border-white/30'
                 }`}
               >
-                {/* Holographic logo blended into card background */}
+                {/* Holographic emblem — watermark pushed out of frame, blended holographically */}
                 {node.logo && (
-                  <img
-                    src={node.logo}
-                    alt={node.name}
-                    className="absolute inset-0 w-full h-full object-contain p-1"
-                    style={{
-                      mixBlendMode: node.blendMode || 'screen',
-                      opacity: 0.5 + depth * 0.3,
-                      pointerEvents: 'none',
-                    }}
-                  />
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img
+                      src={node.logo}
+                      alt={node.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{
+                        objectPosition: 'left center',
+                        transform: 'scale(1.35)',
+                        mixBlendMode: node.blendMode || 'screen',
+                        opacity: 0.55 + depth * 0.3,
+                        filter: `drop-shadow(0 0 6px ${node.color}80) brightness(0.85)`,
+                      }}
+                    />
+                    {/* Holographic scanline shimmer overlay */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: `linear-gradient(135deg, transparent 40%, ${node.color}15 50%, transparent 60%)`,
+                        mixBlendMode: 'screen',
+                        opacity: 0.6,
+                      }}
+                    />
+                    {/* Bottom fade for text legibility */}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+                    {/* AI watermark mask — top-right corner */}
+                    <div className="absolute top-0 right-0 w-20 h-14 bg-black rounded-bl-2xl z-10" />
+                  </div>
                 )}
                 <div
                   className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner mb-1.5"
@@ -624,7 +641,7 @@ export default function SuiteLandingPage() {
                   {node.icon}
                 </div>
                 <div className="relative z-10 text-center">
-                  <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap">
+                  <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                     {node.name}
                   </div>
                   <div className="text-[10px] text-zinc-400 hidden sm:block whitespace-nowrap">
