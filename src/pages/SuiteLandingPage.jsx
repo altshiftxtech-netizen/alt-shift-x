@@ -1,7 +1,7 @@
 // src/pages/SuiteLandingPage.jsx
 import React, { useState, useEffect } from 'react';
 import CinematicDesert from '@/components/suite/CinematicDesert';
-import HolographicCarousel from '@/components/suite/HolographicCarousel';
+import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import '@/components/suite/suiteScene.css';
 
@@ -123,7 +123,7 @@ const SUITE_NODES = [
 
 export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion } = useSuiteOrbit();
+  const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, togglePaused } = useSuiteOrbit();
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [consuelaQuery, setConsuelaQuery] = useState('');
   const [consuelaAnswer, setConsuelaAnswer] = useState(null);
@@ -133,9 +133,10 @@ export default function SuiteLandingPage() {
 
   // Sync selected index with rotation angle
   useEffect(() => {
+    if (motion.current.target !== null) return;
     const total = SUITE_NODES.length;
     const slice = 360 / total;
-    // Normalized angle where front card is at the bottom (90 deg)
+    // Keep the chosen dossier visible while its emblem settles at the front.
     const normalized = (360 - (rotationAngle % 360) + 90) % 360;
     const closestIndex = Math.round(normalized / slice) % total;
     setSelectedIndex(closestIndex);
@@ -251,99 +252,12 @@ export default function SuiteLandingPage() {
 
       {/* 4. Center Stage: JARVIS 3D Holographic Circular Carousel */}
       <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
-        {/* Holographic Ring Container */}
-        <div className="suite-orbit relative flex items-center justify-center" {...orbitHandlers}>
-          <HolographicCarousel nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex} />
-          {/* Accessible labels over depth-tested 3D glass slabs. */}
-          {SUITE_NODES.map((node, i) => {
-            const total = SUITE_NODES.length;
-            const slice = 360 / total;
-            const currentItemAngle = (i * slice + rotationAngle) % 360;
-            const rad = (currentItemAngle * Math.PI) / 180;
-
-            // Perspective ellipse projection — wider spread
-            const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-            const orbitWidth = Math.min(isMobile ? window.innerWidth * .96 : 760, window.innerWidth * .96);
-            const radiusX = isMobile ? orbitWidth * .34 : Math.min(280, orbitWidth * .37);
-            const radiusY = isMobile ? 86 : 115;
-            const x = Math.cos(rad) * radiusX;
-            const y = Math.sin(rad) * radiusY;
-
-            // Depth calculation: items at bottom (sin ~ 1) are closest/largest
-            const depth = (Math.sin(rad) + 1) / 2; // 0 to 1
-            const scale = 0.65 + depth * 0.5;
-            const opacity = 0.35 + depth * 0.65;
-            const zIndex = Math.round(depth * 50);
-
-            const isSelected = i === selectedIndex;
-
-            return (
-              <div
-                key={node.id}
-                role="button"
-                tabIndex={0}
-                aria-label={`Select ${node.name}`}
-                aria-pressed={isSelected}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOrbit(90 - i * slice); } }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (motion.current.moved) { motion.current.moved = false; return; }
-                  selectOrbit(90 - i * slice);
-                }}
-                onDoubleClick={() => handleLaunchNode(node.subpath)}
-                style={{
-                  transform: `translate(${x}px, ${y}px) perspective(900px) rotateY(${-Math.cos(rad) * 7}deg) scale(${scale})`,
-                  filter: `blur(${(1 - depth) * .65}px)`,
-                  opacity,
-                  zIndex,
-                }}
-                className={`suite-node absolute cursor-pointer pointer-events-auto transition-shadow duration-300 flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl backdrop-blur-xl border overflow-hidden ${
-                  isSelected
-                    ? 'border-yellow-400 bg-black/85 shadow-[0_0_25px_rgba(234,179,8,0.45)] ring-2 ring-yellow-400/50'
-                    : 'border-white/10 bg-black/60 hover:border-white/30'
-                }`}
-              >
-                {/* Holographic emblem — watermark cropped out of frame, blended holographically */}
-                {node.logo && (
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <img
-                      src={node.logo}
-                      alt={node.name}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{
-                        objectPosition: 'left top',
-                        transform: 'scale(1.8)',
-                        mixBlendMode: node.blendMode || 'screen',
-                        opacity: 0.55 + depth * 0.3,
-                        filter: `drop-shadow(0 0 6px ${node.color}80) brightness(0.85)`,
-                        clipPath: 'inset(0 0 0 0)',
-                      }}
-                    />
-                    {/* Holographic scanline shimmer overlay */}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: `linear-gradient(135deg, transparent 40%, ${node.color}15 50%, transparent 60%)`,
-                        mixBlendMode: 'screen',
-                        opacity: 0.6,
-                      }}
-                    />
-                    {/* Bottom fade for text legibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-                  </div>
-                )}
-                <div className="suite-node-copy relative z-10 text-center">
-                  <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-                    {node.name}
-                  </div>
-                  <div className="text-[10px] text-zinc-400 hidden sm:block whitespace-nowrap">
-                    {node.category}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <SuiteEmblemOrbit
+          nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex}
+          handlers={orbitHandlers} motion={motion} paused={paused} onTogglePaused={togglePaused}
+          onSelect={(index) => { setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
+          onLaunch={handleLaunchNode}
+        />
 
         {/* 5. Dynamic Tactical Under-Carousel Dossier Card */}
         <div className="suite-dossier w-[92%] max-w-lg mt-4 sm:mt-6 p-4 sm:p-5 rounded-2xl bg-zinc-950/80 backdrop-blur-2xl border border-yellow-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all duration-300">
