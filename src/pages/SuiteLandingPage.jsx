@@ -210,9 +210,7 @@ export default function SuiteLandingPage() {
       {/* 2. Exotic HUD Ambient Grid & Reticle Overlay */}
       <div className="suite-scene-shade absolute inset-0 pointer-events-none z-10">
         {/* Subtle Crosshairs in Corners */}
-        <div className="suite-hud absolute top-20 left-6 font-mono">
-          PROVING GROUND ELEV: 12,480 FT // LAT: 47.6062° N // LONG: 122.3321° W
-        </div>
+
         <div className="suite-hud suite-hud-right absolute top-20 right-6 font-mono">
           RECONNAISSANCE // AUTONOMOUS SYSTEMS // CLIENT-SIDE WEBGL
         </div>
@@ -221,9 +219,7 @@ export default function SuiteLandingPage() {
       {/* 3. Header Navigation Bar */}
       <header className="absolute top-0 left-0 right-0 h-16 bg-black/60 backdrop-blur-md border-b border-yellow-500/20 z-30 px-6 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => (window.location.href = '/')}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-500 to-amber-200 flex items-center justify-center text-black font-black text-sm shadow-[0_0_15px_rgba(234,179,8,0.5)]">
-            ASX
-          </div>
+          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44045c680_generated_image.png" alt="altshiftx.tech suite logo" className="suite-brand-mark" />
           <div>
             <span className="font-black tracking-widest text-base text-yellow-400">ALTSHIFTX</span>
             <span className="text-xs text-zinc-400 tracking-wider ml-2 hidden sm:inline">SOVEREIGN SUITE</span>
