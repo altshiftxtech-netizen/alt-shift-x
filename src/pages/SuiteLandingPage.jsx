@@ -228,7 +228,7 @@ export default function SuiteLandingPage() {
         <div className="flex items-center space-x-2 truncate">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="truncate">
-            SOLE TITLE: Magna Lorem // Magna Lorem LLC // Trust AR LLC
+            SOLE TITLE: Magna Lorem // MGMT: Magna Lorem LLC // Secured Asset Repository: Trust AR LLC
           </span>
         </div>
         <div className="flex items-center space-x-4">
