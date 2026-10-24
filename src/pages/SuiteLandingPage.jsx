@@ -14,7 +14,7 @@ import '@/components/suite/suiteScene.css';
 const SUITE_NODES = [
   {
     id: 'altshiftx',
-    name: 'Alt+Shift+X',
+    name: 'AI Builder and Marketplace',
     tagline: 'Sovereign Intelligence & Component Foundry',
     subpath: '/',
     color: '#EAB308',
@@ -28,7 +28,7 @@ const SUITE_NODES = [
   },
   {
     id: 'turimc',
-    name: 'Turi MC x APPerdeen',
+    name: 'turi mc computer',
     tagline: 'Extreme Compute & Hardware Proving Ground',
     subpath: '/turimc',
     color: '#10B981',
