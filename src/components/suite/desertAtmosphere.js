@@ -20,6 +20,7 @@ export default function desertAtmosphere(scene) {
       body.visible = position.visible;
     }
     ring.position.copy(moon.position); ring.visible = moon.visible;
+    return cycle;
   };
   update(0);
   return update;

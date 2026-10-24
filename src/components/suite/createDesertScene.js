@@ -9,6 +9,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import desertTerrain from '@/components/suite/desertTerrain';
 import desertVehicles from '@/components/suite/desertVehicles';
 import desertAtmosphere from '@/components/suite/desertAtmosphere';
+import desertDaylight from '@/components/suite/desertDaylight';
 
 export default function createDesertScene(host, onStatus) {
   const compact = window.innerWidth < 700;
@@ -21,10 +22,11 @@ export default function createDesertScene(host, onStatus) {
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#05080C'); scene.fog = new THREE.FogExp2('#101820', .0038);
   const camera = new THREE.PerspectiveCamera(52, 1, 1, 650); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
-  scene.add(new THREE.HemisphereLight('#8294A8', '#080D12', .65));
+  const hemisphere = new THREE.HemisphereLight('#8294A8', '#080D12', .65); scene.add(hemisphere);
   const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = true; sun.shadow.normalBias = .45; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.0002; scene.add(sun);
   const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
   const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
+  const updateDaylight = desertDaylight(scene, renderer, sun, hemisphere, rim);
   // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.
   const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .45, .45, 1.1); composer.addPass(bloom); composer.addPass(new OutputPass());
@@ -52,7 +54,7 @@ export default function createDesertScene(host, onStatus) {
     const dt = Math.min(realDt, .05); last = now; elapsed += dt;
     const time = reduced ? elapsed * .12 : elapsed;
     camera.position.set(Math.sin(time * .035) * 5, 45 + Math.sin(time * .12) * 1.2, 80 + Math.cos(time * .07) * 1.2); camera.lookAt(Math.sin(time * .04) * 3, 0, -42);
-    vehicles.update(time, reduced ? dt * .12 : dt); updateAtmosphere(time);
+    vehicles.update(time, reduced ? dt * .12 : dt); updateDaylight(updateAtmosphere(time));
     renderer.setScissorTest(false);
     composer.render();
     sampleFrames++; sampleTime += realDt;
