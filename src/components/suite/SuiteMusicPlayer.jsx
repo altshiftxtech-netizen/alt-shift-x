@@ -88,19 +88,7 @@ export default function SuiteMusicPlayer() {
     };
     tryAutoplay();
 
-    // If autoplay blocked, resume on first user interaction anywhere
-    const onFirst = () => {
-      if (playing) return;
-      tryAutoplay();
-      window.removeEventListener('pointerdown', onFirst);
-      window.removeEventListener('keydown', onFirst);
-    };
-    window.addEventListener('pointerdown', onFirst);
-    window.addEventListener('keydown', onFirst);
-
     return () => {
-      window.removeEventListener('pointerdown', onFirst);
-      window.removeEventListener('keydown', onFirst);
       audio.pause();
       ctxRef.current?.close?.();
     };
