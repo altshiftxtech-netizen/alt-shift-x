@@ -634,12 +634,6 @@ export default function SuiteLandingPage() {
                     <div className="absolute top-0 right-0 w-20 h-14 bg-black rounded-bl-2xl z-10" />
                   </div>
                 )}
-                <div
-                  className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner mb-1.5"
-                  style={{ backgroundColor: `${node.color}25`, border: `1px solid ${node.color}60` }}
-                >
-                  {node.icon}
-                </div>
                 <div className="relative z-10 text-center">
                   <div className="font-bold text-xs sm:text-sm tracking-tight text-white whitespace-nowrap drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                     {node.name}
