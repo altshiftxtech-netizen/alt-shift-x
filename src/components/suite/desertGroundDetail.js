@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { laneX } from '@/components/suite/desertTraffic';
 
 export default function desertGroundDetail(scene, heightAt, compact) {
   // One instanced draw keeps real foreground relief affordable across the full frame.
@@ -12,7 +13,8 @@ export default function desertGroundDetail(scene, heightAt, compact) {
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   for (let i = 0; i < count; i++) {
     const x = (random() - .5) * 420, z = -210 + random() * 320;
-    const size = .12 + Math.pow(random(), 4) * 1.15;
+    const inLane = Array.from({ length: 7 }, (_, lane) => Math.abs(x - laneX(z, lane))).some(distance => distance < 4);
+    const size = inLane ? .015 : .12 + Math.pow(random(), 4) * 1.15;
     transform.position.set(x, heightAt(x, z) + size * .12, z);
     transform.rotation.set(random() * .6, random() * Math.PI, random() * .4);
     transform.scale.set(size * (1 + random()), size * .4, size * (.7 + random()));

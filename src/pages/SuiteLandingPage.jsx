@@ -7,6 +7,7 @@ import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
 import SuiteMusicPlayer from '@/components/suite/SuiteMusicPlayer';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import CinematicDesert from '@/components/suite/CinematicDesert';
+import SuiteLaunchDock from '@/components/suite/SuiteLaunchDock';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
@@ -131,6 +132,7 @@ const SUITE_NODES = [
 
 export default function SuiteLandingPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [groundInspection, setGroundInspection] = useState(false);
   const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, pause, togglePaused } = useSuiteOrbit();
   const { inspectionIndex, inspect, keepOpen, dismiss, leave } = useSuiteInspection(pause);
   const { search } = useLocation();
@@ -164,10 +166,11 @@ export default function SuiteLandingPage() {
 
   return (
     <div
-      className="suite-cinematic relative w-full overflow-hidden select-none font-sans"
+      className={`suite-cinematic relative w-full overflow-hidden select-none font-sans ${groundInspection ? 'suite-inspecting' : ''}`}
     >
       {/* 1. Fullscreen Background Simulation Canvas */}
-      <CinematicDesert />
+      <CinematicDesert onInspectionChange={setGroundInspection} />
+      <SuiteLaunchDock />
 
       {/* 2. Exotic HUD Ambient Grid & Reticle Overlay */}
       <div className="suite-scene-shade absolute inset-0 pointer-events-none z-10">
@@ -186,7 +189,7 @@ export default function SuiteLandingPage() {
           </div>
         </div>
 
-        <nav className="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm font-medium">
+        <nav className="suite-navigation flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm font-medium">
           <button
             onClick={() => setActiveModal('sovereignpass')}
             className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
@@ -202,10 +205,11 @@ export default function SuiteLandingPage() {
           <SuiteMusicPlayer />
           <button
             onClick={() => setActiveModal('consuela')}
+            aria-label="Help me choose"
             className="flex items-center space-x-1.5 bg-yellow-500/10 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/20 px-3 py-1.5 rounded-full transition-all shadow-[0_0_10px_rgba(234,179,8,0.2)]"
           >
             <ConsuelaLogo />
-            <span>/helpmechoose</span>
+            <span className="suite-advisor-label">/helpmechoose</span>
           </button>
         </nav>
       </header>

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import desertGroundTexture from '@/components/suite/desertGroundTexture';
 import desertGroundDetail from '@/components/suite/desertGroundDetail';
+import { laneX } from '@/components/suite/desertTraffic';
 
 export function heightAt(x, z) {
   const canyon = Math.exp(-Math.pow((x - 13 * Math.sin(z * .024)) / 22, 2));
@@ -26,15 +27,15 @@ export default function desertTerrain(scene, compact, anisotropy) {
   geometry.computeVertexNormals();
   const sand = desertGroundTexture(false, anisotropy, compact);
   const grain = desertGroundTexture(true, anisotropy, compact);
-  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setScalar(1.15), vertexColors: true, map: grain, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .65 });
+  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setScalar(1.15), vertexColors: true, map: grain, roughness: .94, metalness: .12, envMapIntensity: .28, bumpMap: sand, bumpScale: .18 });
   const land = new THREE.Mesh(geometry, material); land.receiveShadow = true; scene.add(land);
   desertGroundDetail(scene, heightAt, compact);
   const routes = [];
   for (let lane = 0; lane < 7; lane++) {
     const points = [];
     for (let j = 0; j <= 200; j++) {
-      const z = -260 + j * 2.4;
-      const x = (lane - 3) * 22 + Math.sin(z * .024 + lane * .55) * (lane === 3 ? 13 : 18);
+      const z = -340 + j * 2.8;
+      const x = laneX(z, lane);
       points.push(new THREE.Vector3(x, heightAt(x, z) + .65, z));
     }
     const curve = new THREE.CatmullRomCurve3(points); routes.push(curve);
