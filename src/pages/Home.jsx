@@ -130,45 +130,46 @@ export default function Home() {
       <VideoBackground />
       {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
-      <nav className="relative z-10 border-b border-white/10 bg-black/30 backdrop-blur-md px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 w-full max-w-7xl mx-auto">
-        <Logo className="h-8 w-auto" variant="purple" />
-        <div className="hidden md:flex md:order-last xl:order-none items-center justify-center flex-wrap gap-x-6 gap-y-2 w-full xl:w-auto text-sm text-white/70">
-          <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
-          <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
-          <Link to="/about" className="hover:text-white">About</Link>
-          <Link to="/builder" className="hover:text-white">Build</Link>
-          <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
-          <Link to="/contact" className="hover:text-white">Contact</Link>
-        </div>
-        <div className="flex flex-1 xl:flex-none min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
-          <SovereignAppSwitcher activeAppId="altshiftx" />
-          <ConsultationButton />
-          {/* ExpertMind™ — neon-green entry point, shown in both auth states */}
-          <Link to="/expertmind">
-            <Button
-              className="text-sm h-8 gap-1.5 font-semibold text-[#062b27] border transition-all"
-              style={{
-                background: "#39E6B0",
-                borderColor: "#5CF2C4",
-                boxShadow: "0 0 12px rgba(57,230,176,0.65), 0 0 4px rgba(57,230,176,0.9) inset",
-              }}
-            >
-              <BrainCircuit className="w-3.5 h-3.5" /> ExpertMind
-            </Button>
-          </Link>
-          {isAuthenticated ? (
-            <>
-              <Link to="/dashboard"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><LogIn className="w-3.5 h-3.5" /> Dashboard</Button></Link>
-              <Button className="text-sm h-8 bg-white/20 hover:bg-white/30 border border-white/30 text-white gap-1.5 backdrop-blur-sm" onClick={() => logout()}>
-                <LogOut className="w-3.5 h-3.5" /> Sign out
+      <nav className="relative z-10 w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
+        <div className="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 w-full max-w-7xl mx-auto">
+          <Logo className="h-8 w-auto" variant="purple" />
+          <div className="hidden md:flex md:order-last xl:order-none items-center justify-center flex-wrap gap-x-6 gap-y-2 w-full xl:w-auto text-sm text-white/70">
+            <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
+            <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
+            <Link to="/about" className="hover:text-white">About</Link>
+            <Link to="/builder" className="hover:text-white">Build</Link>
+            <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
+            <Link to="/contact" className="hover:text-white">Contact</Link>
+          </div>
+          <div className="flex flex-1 xl:flex-none min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+            <SovereignAppSwitcher activeAppId="altshiftx" />
+            <ConsultationButton />
+            <Link to="/expertmind">
+              <Button
+                className="text-sm h-8 gap-1.5 font-semibold text-[#062b27] border transition-all"
+                style={{
+                  background: "#39E6B0",
+                  borderColor: "#5CF2C4",
+                  boxShadow: "0 0 12px rgba(57,230,176,0.65), 0 0 4px rgba(57,230,176,0.9) inset",
+                }}
+              >
+                <BrainCircuit className="w-3.5 h-3.5" /> ExpertMind
               </Button>
-            </>
-          ) : (
-            <>
-              <Link to="/login"><Button className="text-sm h-8 bg-white/15 hover:bg-white/25 border border-white/25 text-white gap-1.5 backdrop-blur-sm"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
-              <Link to="/register"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
-            </>
-          )}
+            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><LogIn className="w-3.5 h-3.5" /> Dashboard</Button></Link>
+                <Button className="text-sm h-8 bg-white/20 hover:bg-white/30 border border-white/30 text-white gap-1.5 backdrop-blur-sm" onClick={() => logout()}>
+                  <LogOut className="w-3.5 h-3.5" /> Sign out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login"><Button className="text-sm h-8 bg-white/15 hover:bg-white/25 border border-white/25 text-white gap-1.5 backdrop-blur-sm"><LogIn className="w-3.5 h-3.5" /> Sign in</Button></Link>
+                <Link to="/register"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><UserPlus className="w-3.5 h-3.5" /> Sign up</Button></Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
