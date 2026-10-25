@@ -8,7 +8,7 @@ export default function desertInspectionCamera(camera, targets, inspection, acti
     const matches = inspection.focus ? targets.filter(target => target.userData.kind === inspection.focus) : [];
     const target = matches[inspection.index % Math.max(1, matches.length)];
     if (target) {
-      const aircraft = ['satellite', 'aircraft'].includes(target.userData.kind), distance = (aircraft ? 24 : 15) / inspection.zoom * Math.max(1, .9 / camera.aspect);
+      const aircraft = ['satellite', 'aircraft'].includes(target.userData.kind), distance = (aircraft || target.userData.kind === 'rocket' ? 24 : 15) / inspection.zoom * Math.max(1, .9 / camera.aspect);
       aim.copy(target.position); aim.y += aircraft ? 0 : 1.5;
       eye.copy(aim).add(new THREE.Vector3(distance, distance * .65, distance * 1.2));
       if (!aircraft) eye.y = Math.max(eye.y, heightAt(eye.x, eye.z) + 3);

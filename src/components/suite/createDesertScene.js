@@ -12,6 +12,7 @@ import desertAtmosphere from '@/components/suite/desertAtmosphere';
 import desertDaylight from '@/components/suite/desertDaylight';
 import desertAerospace from '@/components/suite/desertAerospace';
 import desertInspectionCamera from '@/components/suite/desertInspectionCamera';
+import desertRocket from '@/components/suite/desertRocket';
 import { palette } from '@/components/suite/sleekParts';
 
 export default function createDesertScene(host, onStatus, inspection) {
@@ -31,28 +32,33 @@ export default function createDesertScene(host, onStatus, inspection) {
   const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
   const updateDaylight = desertDaylight(scene, renderer, sun, hemisphere, rim);
   const aerospace = desertAerospace(scene, palette(), compact);
-  const targets = [...vehicles.targets, ...aerospace.targets];
+  const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; });
+  const targets = [...vehicles.targets, ...aerospace.targets, rocket.target];
   // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.
   const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .12, .3, 1.4); composer.addPass(bloom); composer.addPass(new OutputPass());
   const antialias = new ShaderPass(FXAAShader); composer.addPass(antialias);
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); composer.setSize(width, height); antialias.uniforms.resolution.value.set(1 / (width * renderer.getPixelRatio()), 1 / (height * renderer.getPixelRatio())); camera.aspect = width / height; camera.updateProjectionMatrix(); };
+  const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); composer.setSize(width, height); antialias.uniforms.resolution.value.set(1 / (width * renderer.getPixelRatio()), 1 / (height * renderer.getPixelRatio())); camera.aspect = width / height; camera.updateProjectionMatrix(); rocket.resize(camera.aspect); };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
+  const interactionSurface = host.closest('.suite-cinematic');
+  let pointerDown = null;
+  const down = event => { pointerDown = [event.clientX, event.clientY]; };
   const pick = event => {
-    if (event.target !== renderer.domElement) return null;
+    if (event.target.closest?.('button,a,select,input')) return null;
+    if (event.target !== renderer.domElement && !event.target.closest?.('.suite-orbit')) return null;
     const rect = renderer.domElement.getBoundingClientRect(); pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObjects(targets, true);
     for (const hit of hits) { let object = hit.object; while (object && !object.userData.kind) object = object.parent; if (object) return object; }
     return null;
   };
-  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
+  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') target.userData.launch(); onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
   const updateCamera = desertInspectionCamera(camera, targets, inspection, activate);
   const move = event => { const target = pick(event); renderer.domElement.style.cursor = target ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
-  const click = event => activate(pick(event));
-  host.addEventListener('pointermove', move); host.addEventListener('click', click);
+  const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; activate(pick(event)); };
+  interactionSurface.addEventListener('pointerdown', down); interactionSurface.addEventListener('pointermove', move); interactionSurface.addEventListener('click', click);
   const animate = now => {
     frame = requestAnimationFrame(animate);
     if (document.hidden) { last = now; return; }
@@ -61,6 +67,7 @@ export default function createDesertScene(host, onStatus, inspection) {
     const time = reduced ? elapsed * .12 : elapsed;
     vehicles.update(time, reduced ? dt * .12 : dt);
     const cycle = updateAtmosphere(time); updateDaylight(cycle); aerospace.update(time, cycle.daylight);
+    rocket.update(now);
     updateCamera(time, dt);
     renderer.setScissorTest(false);
     composer.render();
@@ -74,7 +81,7 @@ export default function createDesertScene(host, onStatus, inspection) {
   };
   frame = requestAnimationFrame(animate);
   return () => {
-    cancelAnimationFrame(frame); observer.disconnect(); host.removeEventListener('pointermove', move); host.removeEventListener('click', click);
+    cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click);
     const geometries = new Set(), materials = new Set(), textures = new Set();
     scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });
     geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); env.dispose(); composer.passes.forEach(p => p.dispose?.()); composer.dispose(); renderer.dispose(); renderer.domElement.remove();
