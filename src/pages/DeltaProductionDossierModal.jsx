@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseButton";
 import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSign, Users, KeyRound, Fingerprint } from "lucide-react";
 
 /**
@@ -123,6 +124,8 @@ export default function DeltaProductionDossierModal() {
             </div>
           </div>
         </div>
+
+        {isPublished && <div className="mb-8"><WarehousePurchaseButton componentId={production.id} /></div>}
 
         {/* Executive Summary */}
         {production.description && (

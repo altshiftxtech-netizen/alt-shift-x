@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, ShieldCheck, Download, ArrowLeft, CheckCircle2, ChevronRight, Users, FlaskConical, Loader2 } from "lucide-react";
 import InstallButton from "@/components/InstallButton";
+import { useAuth } from "@/lib/AuthContext";
+import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { base44 } from "@/api/base44Client";
 import ReactMarkdown from "react-markdown";
@@ -21,6 +23,7 @@ const tierConfig = { certified: "bg-emerald-100 text-emerald-700", official: "bg
 
 export default function ComponentDetail() {
   const { id } = useParams();
+  const { isAuthenticated, user } = useAuth();
   const [component, setComponent] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -184,7 +187,7 @@ export default function ComponentDetail() {
                 <div className="text-2xl font-black text-slate-900 mb-1">${component.price}<span className="text-sm font-normal text-slate-400">/install</span></div>
                 <p className="text-xs text-slate-400 mb-4">Per active installation per month</p>
                 <div className="mb-3 w-full">
-                  <InstallButton component={component} size="lg" />
+                  {isAuthenticated ? <InstallButton component={component} userId={user?.id} size="lg" /> : <WarehousePurchaseButton componentId={component.id} />}
                 </div>
                 {/* Live sanctions/compliance badge near purchase (managed by The UpKeeper) */}
                 <SiteContentBlock contentKey="sanctions_marketplace_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />

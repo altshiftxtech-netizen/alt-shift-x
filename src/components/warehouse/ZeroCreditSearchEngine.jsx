@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Search, X, Zap, Package } from "lucide-react";
+import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseButton";
 
 const CATEGORIES = [
   "All Categories",
@@ -111,26 +112,7 @@ export default function ZeroCreditSearchEngine() {
 
   return (
     <div className="w-full">
-      {/* Search header & stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" /> Sovereign Database Search Engine
-          </h2>
-          <p className="text-[11px] text-zinc-400">
-            Real-time database query • Zero LLM token spend • $0.00 compute
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-            ● 0 CREDITS BURNED
-          </span>
-          <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
-            {loading ? "…" : filteredResults.length} RESULTS
-            {hasMore && !searchTerm && " · MORE AVAILABLE"}
-          </span>
-        </div>
-      </div>
+      <h2 className="text-xl font-bold tracking-tight mb-6">Explore Components</h2>
 
       {/* Search input bar */}
       <div className="relative mb-5">
@@ -201,12 +183,11 @@ export default function ZeroCreditSearchEngine() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredResults.map((item) => (
-            <Link
-              to={`/warehouse/${item.id}`}
+            <div
               key={item.id}
               className="group rounded-xl bg-white/[0.03] border border-white/10 hover:border-amber-400/40 p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:shadow-black/50 hover:scale-[1.02] backdrop-blur-xl"
             >
-              <div>
+              <Link to={`/warehouse/${item.id}`} className="block">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono bg-white/5 border border-white/10 text-amber-400 px-2 py-0.5 rounded">
@@ -231,18 +212,12 @@ export default function ZeroCreditSearchEngine() {
                     {item.category}
                   </span>
                 </div>
+              </Link>
+              <div className="pt-3 border-t border-white/10 flex flex-wrap gap-3 items-center justify-between">
+                <Link to={`/warehouse/${item.id}`} className="text-[11px] text-muted-foreground hover:text-foreground">View Dossier →</Link>
+                <WarehousePurchaseButton componentId={item.id} />
               </div>
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                <span className="text-[11px] text-zinc-400 group-hover:text-amber-400 transition">
-                  View Dossier →
-                </span>
-                {item.features?.length > 0 && (
-                  <span className="text-[10px] text-zinc-600">
-                    {item.features.length} feature{item.features.length !== 1 ? "s" : ""}
-                  </span>
-                )}
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
