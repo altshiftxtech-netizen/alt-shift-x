@@ -4,7 +4,14 @@ import { laneX } from '@/components/suite/desertTraffic';
 export default function desertGroundDetail(scene, heightAt, compact) {
   // One instanced draw keeps real foreground relief affordable across the full frame.
   const count = compact ? 900 : 2400;
-  const geometry = new THREE.IcosahedronGeometry(1, 0);
+  const geometry = new THREE.IcosahedronGeometry(1, 1);
+  const vertices = geometry.attributes.position;
+  for (let i = 0; i < vertices.count; i++) {
+    const x = vertices.getX(i), y = vertices.getY(i), z = vertices.getZ(i);
+    const relief = 1 + Math.sin(x * 7 + z * 4) * Math.cos(y * 9 - z * 3) * .12;
+    vertices.setXYZ(i, x * relief, y * relief, z * relief);
+  }
+  geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({ color: '#445361', roughness: .96, metalness: .08 });
   const stones = new THREE.InstancedMesh(geometry, material, count);
   const transform = new THREE.Object3D();
@@ -22,7 +29,7 @@ export default function desertGroundDetail(scene, heightAt, compact) {
     color.setHSL(.59, .12 + random() * .12, .35 + random() * .22);
     stones.setColorAt(i, color);
   }
-  stones.receiveShadow = true;
+  stones.receiveShadow = true; stones.castShadow = true;
   stones.computeBoundingSphere();
   scene.add(stones);
 }

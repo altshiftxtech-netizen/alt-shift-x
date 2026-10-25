@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
@@ -14,12 +15,15 @@ import desertAerospace from '@/components/suite/desertAerospace';
 import desertInspectionCamera from '@/components/suite/desertInspectionCamera';
 import desertRocket from '@/components/suite/desertRocket';
 import desertFilmPass from '@/components/suite/desertFilmPass';
+import desertCinemaSky from '@/components/suite/desertCinemaSky';
 import { palette } from '@/components/suite/sleekParts';
 
 export default function createDesertScene(host, onStatus, inspection) {
   const compact = window.innerWidth < 700;
   const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? 1.5 : 2));
+  // Supersample the scene, with an Ultra HD ceiling rather than unbounded device scaling.
+  const qualityRatio = () => Math.min(compact ? 1.5 : 2, Math.max(window.devicePixelRatio || 1, compact ? 1.25 : 2), 3840 / Math.max(host.clientWidth, 1), 2160 / Math.max(host.clientHeight, 1));
+  renderer.setPixelRatio(qualityRatio());
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
@@ -28,20 +32,27 @@ export default function createDesertScene(host, onStatus, inspection) {
   const camera = new THREE.PerspectiveCamera(52, 1, .3, 850); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
   const hemisphere = new THREE.HemisphereLight('#8294A8', '#080D12', .65); scene.add(hemisphere);
-  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 2048, compact ? 1024 : 2048); sun.shadow.autoUpdate = true; sun.shadow.normalBias = .16; sun.shadow.radius = 2; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.0002; scene.add(sun);
+  const sun = new THREE.DirectionalLight('#A7B7C7', 1.5); sun.position.set(-100, 55, -75); sun.castShadow = true; sun.shadow.mapSize.set(compact ? 1024 : 4096, compact ? 1024 : 4096); sun.shadow.autoUpdate = true; sun.shadow.normalBias = .16; sun.shadow.radius = 2; Object.assign(sun.shadow.camera, { left: -110, right: 110, top: 110, bottom: -110, far: 280 }); sun.shadow.bias = -.0002; scene.add(sun);
   const rim = new THREE.DirectionalLight('#45596B', .65); rim.position.set(80, 25, 35); scene.add(rim);
   const routes = desertTerrain(scene, compact, renderer.capabilities.getMaxAnisotropy()), vehicles = desertVehicles(scene, routes, compact), updateAtmosphere = desertAtmosphere(scene);
   const updateDaylight = desertDaylight(scene, renderer, sun, hemisphere, rim);
+  const updateSky = desertCinemaSky(scene);
   const aerospace = desertAerospace(scene, palette(), compact);
   const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; });
   const targets = [...vehicles.targets, ...aerospace.targets, rocket.target];
   // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.
-  const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera));
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  if (!compact) {
+    const contactShadows = new SSAOPass(scene, camera, 800, 600, 8);
+    contactShadows.kernelRadius = 4; contactShadows.minDistance = .002; contactShadows.maxDistance = .07;
+    composer.addPass(contactShadows);
+  }
   const bloom = new UnrealBloomPass(new THREE.Vector2(800, 600), .22, .45, 1.05); composer.addPass(bloom); composer.addPass(desertFilmPass()); composer.addPass(new OutputPass());
   const antialias = new ShaderPass(FXAAShader); composer.addPass(antialias);
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); composer.setSize(width, height); antialias.uniforms.resolution.value.set(1 / (width * renderer.getPixelRatio()), 1 / (height * renderer.getPixelRatio())); camera.aspect = width / height; camera.updateProjectionMatrix(); rocket.resize(camera.aspect); };
+  const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; renderer.setPixelRatio(qualityRatio()); renderer.setSize(width, height); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(width, height); antialias.uniforms.resolution.value.set(1 / (width * renderer.getPixelRatio()), 1 / (height * renderer.getPixelRatio())); camera.aspect = width / height; camera.updateProjectionMatrix(); rocket.resize(camera.aspect); };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const interactionSurface = host.closest('.suite-cinematic');
   let pointerDown = null;
@@ -67,7 +78,7 @@ export default function createDesertScene(host, onStatus, inspection) {
     const dt = Math.min(realDt, .05); last = now; elapsed += dt;
     const time = reduced ? elapsed * .12 : elapsed;
     vehicles.update(time, reduced ? dt * .12 : dt);
-    const cycle = updateAtmosphere(time); updateDaylight(cycle); aerospace.update(time, cycle.daylight);
+    const cycle = updateAtmosphere(time); updateDaylight(cycle); updateSky(cycle); aerospace.update(time, cycle.daylight);
     rocket.update(now);
     updateCamera(time, dt);
     renderer.setScissorTest(false);
