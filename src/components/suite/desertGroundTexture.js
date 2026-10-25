@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export default function desertGroundTexture(surface = false, anisotropy = 8, compact = false) {
-  const size = compact ? 1024 : 2048;
+  const size = compact || window.innerWidth < 1100 ? 1024 : 1536;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const context = canvas.getContext('2d');

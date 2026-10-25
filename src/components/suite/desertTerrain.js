@@ -11,7 +11,7 @@ export function heightAt(x, z) {
 }
 
 export default function desertTerrain(scene, compact, anisotropy) {
-  const geometry = new THREE.PlaneGeometry(620, 620, compact ? 256 : 384, compact ? 256 : 384);
+  const geometry = new THREE.PlaneGeometry(620, 620, compact ? 160 : 256, compact ? 160 : 256);
   geometry.rotateX(-Math.PI / 2);
   const pos = geometry.attributes.position;
   const colors = [];
