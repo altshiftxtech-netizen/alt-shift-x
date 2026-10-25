@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import AffiliateCapture from './components/AffiliateCapture';
 import CookieConsentBanner from './components/cookies/CookieConsentBanner';
+import LowProfileCookieBadge from './components/LowProfileCookieBadge';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
@@ -331,6 +332,7 @@ function App() {
             <AffiliateCapture />
             <AuthenticatedApp />
             <CookieConsentBanner />
+            <LowProfileCookieBadge />
           </Router>
           <Toaster />
         </QueryClientProvider>
