@@ -15,15 +15,18 @@ float noise(vec2 p) {
 float clouds(vec2 p) { return noise(p)*.57+noise(p*2.03)*.28+noise(p*4.01)*.15; }
 vec3 stars(vec2 uv, float scale) {
  vec2 p=uv*scale, cell=floor(p), f=fract(p)-.5;
- float seed=hash(cell), star=pow(max(0.0,1.0-length(f)*18.0),5.0);
- return mix(vec3(.27,.55,.9),vec3(.85,.72,1.),seed)*star*step(.975,seed)*(1.0+.18*sin(time*.4+seed*80.));
+ float seed=hash(cell), distanceToStar=length(f);
+ float star=exp(-distanceToStar*distanceToStar*1600.);
+ float halo=exp(-distanceToStar*distanceToStar*150.)*.09;
+ float twinkle=pow(.5+.5*sin(time*(3.8+seed*4.5)+seed*180.),3.0);
+ return mix(vec3(.35,.65,1.),vec3(.92,.79,1.),seed)*(star+halo)*step(.94,seed)*(.10+twinkle*2.1);
 }
 void main() {
  vec2 uv=(gl_FragCoord.xy-.5*resolution)/resolution.y;
  vec2 center=vec2(pointer.x*.035, -.035+pointer.y*.025);
  vec2 p=uv-center;
  float tilt=-.16+pointer.x*.045;
- p=mat2(cos(tilt),-sin(tilt),sin(tilt),cos(tilt))*p;
+ p=mat2(cos(tilt),-sin(tilt),sin(tilt),cos(tilt))*p / 1.4;
  float r=length(p), horizon=.155;
  vec2 lens=uv+p*.026/max(r*r,.025);
  float neb=pow(clouds(lens*3.+vec2(time*.008,0.)),3.0);
