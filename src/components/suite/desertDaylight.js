@@ -8,10 +8,10 @@ export default function desertDaylight(scene, renderer, sunlight, hemisphere, ri
     const amount = cycle.daylight;
     scene.background.copy(nightSky).lerp(daySky, amount);
     scene.fog.color.copy(nightFog).lerp(dayFog, amount);
-    renderer.toneMappingExposure = 1.12 + amount * .48;
-    hemisphere.intensity = .65 + amount * 1.1;
-    rim.intensity = .65 + amount * .25;
-    sunlight.intensity = 1.5 + amount * 2.6;
+    renderer.toneMappingExposure = 1.14 + amount * .38;
+    hemisphere.intensity = .48 + amount * .9;
+    rim.intensity = 1.05 + amount * .3;
+    sunlight.intensity = 1.9 + amount * 2.8;
     sunlight.color.copy(nightLight).lerp(dayLight, amount);
     const source = cycle.sun.visible ? cycle.sun : cycle.moon;
     sunlight.position.set(source.x * .4, Math.max(30, source.y), source.z * .3);

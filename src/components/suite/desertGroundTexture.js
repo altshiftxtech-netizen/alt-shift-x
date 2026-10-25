@@ -13,7 +13,8 @@ export default function desertGroundTexture(surface = false, anisotropy = 8, com
       const strata = Math.sin(u * 7 - v * 11 + Math.sin(v * 5)) * 12;
       const grit = Math.sin(u * 137 - v * 89) * 6 + (Math.random() - .5) * 18;
       const seams = Math.pow(1 - Math.abs(Math.sin(u * 5 + Math.sin(v * 4) * 2)), 22) * 24;
-      const value = surface ? 215 + ripples * 14 + strata * .6 + grit - seams : 128 + ripples * 34 + strata + grit * 1.4 - seams;
+      const weathering = Math.sin(u * 13 + Math.cos(v * 9) * 2) * Math.cos(v * 17 - u * 4);
+      const value = surface ? 215 + ripples * 4 + strata * .35 + grit * .65 + weathering * 9 - seams * .65 : 128 + ripples * 14 + strata * .6 + grit + weathering * 12 - seams;
       const index = (y * size + x) * 4;
       image.data[index] = image.data[index + 1] = image.data[index + 2] = value;
       image.data[index + 3] = 255;
