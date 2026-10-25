@@ -1,0 +1,12 @@
+.delta-ip-theme, .dark.delta-ip-theme {
+  --background: 240 6% 4%; --foreground: 0 0% 100%;
+  --card: 240 6% 4%; --card-foreground: 0 0% 100%;
+  --popover: 240 6% 4%; --popover-foreground: 0 0% 100%;
+  --primary: 48 96% 53%; --primary-foreground: 0 0% 0%;
+  --secondary: 240 5% 16%; --secondary-foreground: 240 5% 85%;
+  --muted: 0 0% 0%; --muted-foreground: 240 5% 65%;
+  --border: 240 5% 20%; --input: 240 5% 20%; --ring: 48 96% 53%;
+  --delta-success: 158 64% 52%;
+}
+.delta-ip-theme .delta-success { color: hsl(var(--delta-success)); }
+.delta-ip-theme { color: hsl(var(--foreground)); }

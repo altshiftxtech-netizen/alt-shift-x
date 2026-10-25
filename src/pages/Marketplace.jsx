@@ -20,6 +20,9 @@ import { isFreeGated } from "@/components/free-gate/freeGateData";
 import { Share2 } from "lucide-react";
 import ConsultationButton from "@/components/consultation/ConsultationButton";
 import SovereignAppSwitcher from "@/components/SovereignAppSwitcher";
+import DeltaWarehouseCard from '@/components/DeltaWarehouseCard';
+import DeltaPurchaseGate from '@/components/warehouse/DeltaPurchaseGate';
+import { startDeltaCheckout } from '@/components/warehouse/startDeltaCheckout';
 
 const ALL_COMPONENTS = [];
 const PAGE_SIZE = 50;
@@ -82,8 +85,9 @@ function ScoreBadge({ score }) {
 }
 
 export default function Marketplace() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user: authUser } = useAuth();
   const [components, setComponents] = useState([]);
+  const [purchase, setPurchase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -91,7 +95,7 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("installs");
   const [showFilters, setShowFilters] = useState(false);
   const [sharingId, setSharingId] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(authUser);
   // map of component_id -> InstalledComponent record
   const [installedMap, setInstalledMap] = useState({});
   const [bundleInstalling, setBundleInstalling] = useState(false);
@@ -157,21 +161,12 @@ export default function Marketplace() {
       window.location.href = "/login";
       return;
     }
-    if (window.self !== window.top) {
-      alert("Checkout is only available from the published app. Please open the live URL.");
-      return;
-    }
     // Find first component not yet installed and start checkout
     const first = bundleComponents.find(c => !installedMap[c.id]);
     if (!first) return; // all installed
     setBundleInstalling(true);
     try {
-      const res = await base44.functions.invoke("createCheckoutSession", { componentId: first.id });
-      if (res.data?.url) {
-        window.location.href = res.data.url;
-        return;
-      }
-      alert(res.data?.error || "Could not start checkout. Please try again.");
+      await startDeltaCheckout('createCheckoutSession', { componentId: first.id });
     } catch (e) {
       const msg = e?.response?.data?.error || e?.message || "";
       alert(/rate limit|429|too many/i.test(msg)
@@ -243,7 +238,7 @@ export default function Marketplace() {
     <div className="min-h-screen relative">
       <VideoBackground />
       {/* Nav */}
-       <nav className="relative z-10 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between">
+       <nav className="relative z-10 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-wrap gap-3 items-center justify-between">
          <div className="flex items-center gap-2">
            <Link to="/" className="flex items-center gap-2">
              <Logo className="h-8 w-auto" variant="purple" />
@@ -254,7 +249,7 @@ export default function Marketplace() {
            <div className="hidden md:flex items-center gap-4 text-sm text-white/70 ml-8">
            <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
            </div>
-         <div className="flex items-center gap-2">
+         <div className="flex flex-wrap items-center gap-2">
            <SovereignAppSwitcher activeAppId="altshiftx" />
            <ConsultationButton />
            {isAuthenticated ? (
@@ -283,6 +278,7 @@ export default function Marketplace() {
           <AiSearchConsultant />
         </div>
         <AiDisclosureNotice variant="light" className="mb-8" />
+        <DeltaPurchaseGate component={purchase} currentUser={currentUser} installedRecord={installedMap[purchase?.id]} onClose={() => setPurchase(null)} onUninstalled={cid => setInstalledMap(m => { const n = {...m}; delete n[cid]; return n; })} />
 
         {/* Search + Sort */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -372,7 +368,7 @@ export default function Marketplace() {
 
         <div className="flex gap-6">
           {/* Results grid */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
             ) : (
@@ -499,54 +495,7 @@ export default function Marketplace() {
                   )}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {pageItems.map(c => (
-                    <Link key={c.id} to={`/marketplace/${c.id}`}>
-                      <div className={`bg-slate-900/70 border rounded-xl p-4 hover:bg-slate-900/80 hover:shadow-xl transition-colors h-full flex flex-col ${PINNED_CODES.includes(c.code) ? "border-violet-400/40 ring-1 ring-violet-400/20" : "border-white/15"}`}>
-                        <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${typeColors[c.type]}`}>{c.type}</span>
-                          <ScoreBadge score={c.trust_score || 0} />
-                          {c.certified && <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-900/50 px-1.5 py-0.5 rounded-full">Certified</span>}
-                          {PINNED_CODES.includes(c.code) && <span className="text-[10px] font-bold text-violet-300 bg-violet-900/50 px-1.5 py-0.5 rounded-full">⭐ Featured</span>}
-                          {isFreeGated(c) && (
-                            <>
-                              <span className="text-[10px] font-bold text-emerald-300 bg-emerald-900/50 px-1.5 py-0.5 rounded-full">🆓 FREE</span>
-                              <span className="text-[10px] font-semibold text-sky-300 bg-sky-900/50 px-1.5 py-0.5 rounded-full">📬 Get by email</span>
-                            </>
-                          )}
-                        </div>
-                        <h3 className="text-sm font-bold text-white mb-0.5">{c.name}</h3>
-                        {c.builder_id && (
-                          <button
-                            onClick={(e) => { e.preventDefault(); window.location.href = `/builders/${c.builder_id}`; }}
-                            className="text-[11px] text-violet-300 hover:text-violet-100 hover:underline mb-0.5 block text-left"
-                          >
-                            by {c.builder_name || "View developer"}
-                          </button>
-                        )}
-                        <p className="text-[10px] font-mono text-white/40 mb-2">{c.code}</p>
-                        <p className="text-xs text-white/60 flex-1 line-clamp-2 mb-3">
-                          {c.description && c.description.length > 85 ? c.description.substring(0, 85) + "..." : c.description}
-                        </p>
-                        <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                           <RatingDisplay rating={c.rating || 0} reviewsCount={c.reviews_count || 0} className="!text-white/70 !bg-transparent !px-0" />
-                          <div className="flex items-center gap-2" onClick={e => e.preventDefault()}>
-                            <div className="relative">
-                              <button
-                                onClick={e => { e.preventDefault(); setSharingId(sharingId === c.id ? null : c.id); }}
-                                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
-                              >
-                                <Share2 className="w-3.5 h-3.5" />
-                              </button>
-                              {sharingId === c.id && (
-                                <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />
-                              )}
-                            </div>
-                            {isAuthenticated && <InstallButton component={c} size="sm" userId={currentUser?.id} installedRecord={installedMap[c.id] || null} onUninstalled={cid => setInstalledMap(m => { const n = {...m}; delete n[cid]; return n; })} />}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                  {pageItems.map(c => <DeltaWarehouseCard key={c.id} component={c} currentUser={currentUser} onTriggerPurchase={setPurchase} footer={<div className="relative"><button aria-label={`Share ${c.name}`} onClick={() => setSharingId(sharingId === c.id ? null : c.id)} className="text-xs text-muted-foreground hover:text-foreground inline-flex gap-1 items-center"><Share2 className="h-3.5 w-3.5" /> Share</button>{sharingId === c.id && <ComponentSharePanel component={c} onClose={() => setSharingId(null)} />}</div>} />)}
                 </div>
 
                 <MarketplacePagination page={page} pageCount={pageCount} onPage={setPage} />

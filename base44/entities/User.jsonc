@@ -7,11 +7,12 @@
       "enum": [
         "admin",
         "user",
+        "developer",
         "builder",
         "staff"
       ],
-      "default": "user",
-      "description": "User role \u2014 admin (full access), user (standard), builder (marketplace builder), staff (technical staff with testing access)"
+      "default": "developer",
+      "description": "New verified free accounts are developers; admin, user, builder and staff retain their assigned roles."
     },
     "speakeasy_alias": {
       "type": "string",

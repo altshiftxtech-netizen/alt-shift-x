@@ -1,5 +1,6 @@
 import Stripe from "npm:stripe@14.21.0";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { canAccessDeltaWarehouse } from '../../shared/deltaWarehouseAccess.ts';
 
 // Builder subscription plan → Stripe price ID
 // free_builder has no Stripe price — it's a no-charge tier handled client-side.
@@ -56,14 +57,23 @@ function trustedIp(req) {
   return (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
 }
 
-Deno.serve(async (req) => {
+export default async function(req) { return checkout(req); }
+const checkout = (async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const body = await req.json();
+    const { planKey, componentId } = body;
+    if (!planKey && !componentId) return Response.json({ error: 'Provide either componentId or planKey' }, { status: 400 });
+    if (componentId && !canAccessDeltaWarehouse(user)) return Response.json({ error: 'A verified Free Developer Account is required.', standard: 'SYS-DELTA-WAREHOUSE-IP-GATING-SECURITY-STANDARD-1.0' }, { status: 403 });
+    const appUrl = req.headers.get('X-Base44-App-Url');
+    if (!appUrl) return Response.json({ error: 'Missing trusted app URL' }, { status: 400 });
+    const origin = new URL(appUrl).origin;
 
     // ── Admin-controlled TEST mode ───────────────────────────────────────────
     // When an admin has flipped PaymentMode.test_mode ON, use Stripe TEST keys
@@ -87,9 +97,7 @@ Deno.serve(async (req) => {
     recent.push(now);
     checkoutAttempts.set(ip, recent);
 
-    const body = await req.json();
-    const { planKey, componentId, successUrl, cancelUrl } = body;
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://app.altshiftx.com";
+    // Return URLs are derived exclusively from the trusted server header.
 
     // ── Reuse existing Stripe customer if available ──────────────────────────
     let customerId;
@@ -100,8 +108,9 @@ Deno.serve(async (req) => {
 
     const baseParams = {
       mode: "subscription",
-      success_url: successUrl || `${origin}/success/subscription?subscribed=true${planKey ? `&plan=${planKey}` : ""}`,
-      cancel_url: cancelUrl || `${origin}/pricing`,
+      success_url: `${origin}/success/subscription?subscribed=true${planKey ? `&plan=${planKey}` : ""}`,
+      cancel_url: `${origin}${componentId ? `/marketplace/${encodeURIComponent(componentId)}` : '/pricing'}`,
+      subscription_data: { metadata: { base44_app_id: Deno.env.get('BASE44_APP_ID'), user_id: user.id } },
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         user_id: user.id,
@@ -116,7 +125,7 @@ Deno.serve(async (req) => {
 
     // ── Route A: Per-component checkout (developer attaching a component) ────
     if (componentId) {
-      const components = await base44.asServiceRole.entities.Component.filter({ id: componentId });
+      const components = await base44.entities.Component.filter({ id: componentId, status: 'published' });
       if (!components.length) {
         return Response.json({ error: "Component not found" }, { status: 404 });
       }
@@ -145,7 +154,7 @@ Deno.serve(async (req) => {
         });
         const price = await stripe.prices.create({
           product: product.id,
-          unit_amount: Math.round((component.price || 49) * 100), // price in cents
+          unit_amount: Math.round((component.price ?? 49) * 100), // price in cents
           currency: "usd",
           recurring: { interval: "month" },
           metadata: { component_id: component.id },
@@ -169,7 +178,7 @@ Deno.serve(async (req) => {
 
       const session = await stripe.checkout.sessions.create({
         ...baseParams,
-        success_url: successUrl || `${origin}/success/install?component=${encodeURIComponent(component.name)}&id=${component.id}`,
+        success_url: `${origin}/success/install?component=${encodeURIComponent(component.name)}&id=${component.id}`,
         line_items: [{ price: stripePriceId, quantity: 1 }],
         ...(inActiveKit ? {} : { allow_promotion_codes: true }),
         metadata: {
@@ -218,7 +227,7 @@ Deno.serve(async (req) => {
         ...baseParams,
         line_items: [{ price: planPriceId, quantity: 1 }],
         ...(trialDays
-          ? { subscription_data: { trial_period_days: trialDays } }
+          ? { subscription_data: { ...baseParams.subscription_data, trial_period_days: trialDays } }
           : {}),
         ...(vestedEligible && vestedCouponId
           ? { discounts: [{ coupon: vestedCouponId }] }

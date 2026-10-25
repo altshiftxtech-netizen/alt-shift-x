@@ -50,12 +50,54 @@
       "type": "string"
     },
     "long_description": {
-      "type": "string"
+      "type": "string",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "developer"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "builder"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "features": {
       "type": "array",
       "items": {
         "type": "string"
+      },
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "developer"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "builder"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
       }
     },
     "schema": {
@@ -63,7 +105,28 @@
       "items": {
         "type": "string"
       },
-      "description": "Output schema field names"
+      "description": "Output schema field names",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "developer"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "builder"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "price": {
       "type": "number",
@@ -151,7 +214,28 @@
     },
     "endpoint_url": {
       "type": "string",
-      "description": "URL where the extraction API is deployed"
+      "description": "URL where the extraction API is deployed",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "developer"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "builder"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "stale_flagged_at": {
       "type": "string",

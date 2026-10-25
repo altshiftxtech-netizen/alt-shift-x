@@ -12,9 +12,11 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/auth/PasswordStrength";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
+import { safeReturnTo } from '@/lib/authReturnTo';
 
 export default function Register() {
   const { isAuthenticated, authChecked } = useAuth();
+  const returnTo = new URLSearchParams(window.location.search).has('returnTo') ? safeReturnTo() : '/onboarding';
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +35,7 @@ export default function Register() {
   useEffect(() => {
     // If already logged in, don't show the signup form (unless mid-OTP verification)
     if (authChecked && isAuthenticated && !showOtp) {
-      window.location.href = "/dashboard";
+      window.location.href = new URLSearchParams(window.location.search).has('returnTo') ? returnTo : '/dashboard';
     }
   }, [authChecked, isAuthenticated, showOtp]);
 
@@ -67,7 +69,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/onboarding";
+      window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -91,7 +93,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/onboarding");
+    base44.auth.loginWithProvider("google", returnTo);
   };
 
   if (showOtp) {
@@ -160,7 +162,7 @@ export default function Register() {
       footer={
         <>
           Already have an account?{" "}
-          <Link to="/login" className="text-primary font-medium hover:underline">
+          <Link to={`/login?returnTo=${encodeURIComponent(returnTo)}`} className="text-primary font-medium hover:underline">
             Log in
           </Link>
         </>

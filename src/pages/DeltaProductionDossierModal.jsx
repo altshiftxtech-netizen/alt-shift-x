@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseButton";
+import { useAuth } from '@/lib/AuthContext';
+import { canInspectDelta } from '@/components/warehouse/deltaAccess';
+import DeltaIpSection from '@/components/warehouse/DeltaIpSection';
 import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSign, Users, KeyRound, Fingerprint } from "lucide-react";
 
 /**
@@ -11,6 +14,7 @@ import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSig
  */
 export default function DeltaProductionDossierModal() {
   const { productionId } = useParams();
+  const { user } = useAuth();
   const [production, setProduction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,7 +129,7 @@ export default function DeltaProductionDossierModal() {
           </div>
         </div>
 
-        {isPublished && <div className="mb-8"><WarehousePurchaseButton componentId={production.id} /></div>}
+        {isPublished && <div className="mb-8"><WarehousePurchaseButton component={production} componentId={production.id} /></div>}
 
         {/* Executive Summary */}
         {production.description && (
@@ -135,8 +139,9 @@ export default function DeltaProductionDossierModal() {
           </div>
         )}
 
+        {!canInspectDelta(user) && <DeltaIpSection component={production} currentUser={user} />}
         {/* Verified Features */}
-        {production.features?.length > 0 && (
+        {canInspectDelta(user) && production.features?.length > 0 && (
           <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">Verified Features</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -151,7 +156,7 @@ export default function DeltaProductionDossierModal() {
         )}
 
         {/* Schema Fields */}
-        {production.schema?.length > 0 && (
+        {canInspectDelta(user) && production.schema?.length > 0 && (
           <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">Production Schema</h3>
             <div className="space-y-2">
@@ -166,7 +171,7 @@ export default function DeltaProductionDossierModal() {
         )}
 
         {/* Long description */}
-        {production.long_description && (
+        {canInspectDelta(user) && production.long_description && (
           <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-8">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Full Dossier</h3>
             <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{production.long_description}</p>

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { canAccessDeltaWarehouse } from '../../shared/deltaWarehouseAccess.ts';
 
 // ── PayPal LIVE integration ───────────────────────────────────────────────────
 // Creates a PayPal subscription (recurring) for either a builder plan or a
@@ -99,19 +100,24 @@ function rlCheck(req) {
   return true;
 }
 
-Deno.serve(async (req) => {
+export default async function(req) { return checkout(req); }
+const checkout = (async (req) => {
   try {
     if (!rlCheck(req)) {
       return Response.json({ error: "Too many checkout attempts. Please wait a moment." }, { status: 429 });
     }
 
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
     const { planKey, componentId } = body;
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://app.altshiftx.com";
+    if (!planKey && !componentId) return Response.json({ error: 'Provide either componentId or planKey' }, { status: 400 });
+    if (componentId && !canAccessDeltaWarehouse(user)) return Response.json({ error: 'A verified Free Developer Account is required.', standard: 'SYS-DELTA-WAREHOUSE-IP-GATING-SECURITY-STANDARD-1.0' }, { status: 403 });
+    const appUrl = req.headers.get('X-Base44-App-Url');
+    if (!appUrl) return Response.json({ error: 'Missing trusted app URL' }, { status: 400 });
+    const origin = new URL(appUrl).origin;
 
     // ── Admin-controlled TEST mode → PayPal Sandbox ──────────────────────────
     const modeRows = await base44.asServiceRole.entities.PaymentMode.list("-updated_date", 1);
@@ -125,7 +131,7 @@ Deno.serve(async (req) => {
 
     // ── Route A: Marketplace component ──────────────────────────────────────────
     if (componentId) {
-      const components = await base44.entities.Component.filter({ id: componentId });
+      const components = await base44.entities.Component.filter({ id: componentId, status: 'published' });
       if (!components.length) return Response.json({ error: "Component not found" }, { status: 404 });
       const component = components[0];
 

@@ -7,6 +7,10 @@ import SafeguardLegalGate from "@/components/install/SafeguardLegalGate";
 import CheckoutLegalBlock from "@/components/install/CheckoutLegalBlock";
 import FreeToolGateModal from "@/components/free-gate/FreeToolGateModal";
 import { isFreeGated } from "@/components/free-gate/freeGateData";
+import { useAuth } from '@/lib/AuthContext';
+import { canInspectDelta } from '@/components/warehouse/deltaAccess';
+import DeltaAccountModal from '@/components/warehouse/DeltaAccountModal';
+import { startDeltaCheckout } from '@/components/warehouse/startDeltaCheckout';
 
 // Accounts that are only provisioned with Magna Dev components.
 const RESTRICTED_ROLES = ["staff", "builder"];
@@ -24,6 +28,9 @@ const isMagnaDev = (component) =>
  *   size           — button size
  */
 export default function InstallButton({ component, userId, installedRecord, onUninstalled, size = "default" }) {
+  const { user } = useAuth();
+  const [showAccount, setShowAccount] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const [loading, setLoading] = useState(false);
   const [localRecord, setLocalRecord] = useState(installedRecord);
   const [showReminder, setShowReminder] = useState(false);
@@ -60,21 +67,14 @@ export default function InstallButton({ component, userId, installedRecord, onUn
   const needsReminder = isRestricted && !isMagnaDev(component);
   const needsLegalGate = !!component?.requires_legal_acceptance && !legalAccepted;
 
-  const proceedToCardCheckout = async () => {
-    setShowReminder(false);
-    if (window.self !== window.top) {
-      alert("Checkout is only available from the published app. Please open the live URL.");
-      return;
-    }
-    setLoading(true);
-    const res = await base44.functions.invoke("createCheckoutSession", { componentId: component.id });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else {
-      alert("Could not start checkout. Please try again.");
-      setLoading(false);
-    }
+  const checkout = async (fn = 'createCheckoutSession') => {
+    if (!canInspectDelta(user)) { setShowAccount(true); return; }
+    setLoading(true); setCheckoutError('');
+    try { await startDeltaCheckout(fn, { componentId: component.id }); }
+    catch (error) { setCheckoutError(error?.response?.data?.error || error.message || 'Could not start checkout.'); }
+    finally { setLoading(false); }
   };
+  const proceedToCardCheckout = async () => { setShowReminder(false); await checkout(); };
 
   const handleInstall = async () => {
     // Legal compliance: the sanctions acknowledgment must be checked first.
@@ -90,18 +90,7 @@ export default function InstallButton({ component, userId, installedRecord, onUn
       setShowReminder(true);
       return;
     }
-    if (window.self !== window.top) {
-      alert("Checkout is only available from the published app. Please open the live URL.");
-      return;
-    }
-    setLoading(true);
-    const res = await base44.functions.invoke("createCheckoutSession", { componentId: component.id });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else {
-      alert("Could not start checkout. Please try again.");
-      setLoading(false);
-    }
+    await checkout();
   };
 
   const handlePaypalInstall = async () => {
@@ -115,18 +104,7 @@ export default function InstallButton({ component, userId, installedRecord, onUn
       setShowReminder(true);
       return;
     }
-    if (window.self !== window.top) {
-      alert("Checkout is only available from the published app. Please open the live URL.");
-      return;
-    }
-    setLoading(true);
-    const res = await base44.functions.invoke("createPaypalCheckout", { componentId: component.id });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else {
-      alert("Could not start PayPal checkout. Please try again.");
-      setLoading(false);
-    }
+    await checkout('createPaypalCheckout');
   };
 
   const handleUninstall = async () => {
@@ -143,20 +121,10 @@ export default function InstallButton({ component, userId, installedRecord, onUn
     setLegalAccepted(true);
     const provider = pendingProvider;
     setPendingProvider(null);
-    if (window.self !== window.top) {
-      alert("Checkout is only available from the published app. Please open the live URL.");
-      return;
-    }
-    setLoading(true);
-    const fn = provider === "paypal" ? "createPaypalCheckout" : "createCheckoutSession";
-    const res = await base44.functions.invoke(fn, { componentId: component.id });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else {
-      alert("Could not start checkout. Please try again.");
-      setLoading(false);
-    }
+    await checkout(provider === 'paypal' ? 'createPaypalCheckout' : 'createCheckoutSession');
   };
+
+  if (!canInspectDelta(user)) return <><Button size={size} variant="secondary" onClick={() => setShowAccount(true)}>{user ? 'Developer Access Required' : 'Sign In to Buy'}</Button><DeltaAccountModal component={component} currentUser={user} open={showAccount} onOpenChange={setShowAccount} /></>;
 
   // FREE-* tools: a single CTA that opens the email-gate modal. The listing
   // content stays fully public — this gate is opt-in delivery, not a paywall.
@@ -191,6 +159,7 @@ export default function InstallButton({ component, userId, installedRecord, onUn
 
   return (
     <div className="flex flex-col gap-2">
+      {checkoutError && <p role="alert" className="text-sm text-destructive">{checkoutError}</p>}
       {/* Summary of key terms + refund notice, shown above the payment buttons */}
       <CheckoutLegalBlock
         sanctionsAck={sanctionsAck}

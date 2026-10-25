@@ -2,7 +2,10 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Search, X, Zap, Package } from "lucide-react";
-import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseButton";
+import DeltaWarehouseCard from '@/components/DeltaWarehouseCard';
+import DeltaPurchaseGate from '@/components/warehouse/DeltaPurchaseGate';
+import { useAuth } from '@/lib/AuthContext';
+import { canInspectDelta } from '@/components/warehouse/deltaAccess';
 
 const CATEGORIES = [
   "All Categories",
@@ -35,7 +38,9 @@ const TYPE_LABELS = {
  * across name, code, description, and features.
  */
 export default function ZeroCreditSearchEngine() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuth();
+  const [purchase, setPurchase] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedType, setSelectedType] = useState("ALL");
   const [components, setComponents] = useState([]);
@@ -49,22 +54,28 @@ export default function ZeroCreditSearchEngine() {
   const query = useMemo(() => {
     const q = { status: "published" };
     if (selectedCategory !== "All Categories") q.category = selectedCategory;
-    if (selectedType !== "ALL") q.type = selectedType;
+    if (selectedType !== 'ALL') q.type = selectedType;
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      q.$or = ['name', 'code', 'description', ...(canInspectDelta(user) ? ['features'] : [])].map(field => ({ [field]: { $regex: term, $options: 'i' } }));
+    }
     return q;
-  }, [selectedCategory, selectedType]);
+  }, [selectedCategory, selectedType, searchTerm, user]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     base44.entities.Component
-      .filter(query, { sort: "-created_date", limit: 24, fields: ["name", "code", "type", "category", "description", "price", "features", "status"] })
-      .then((res) => {
-        const page = res.items || res || [];
-        setComponents(page);
+      .filter(query, { sort: '-created_date', limit: 24, fields: ['name', 'code', 'type', 'category', 'description', 'price', 'features', 'schema', 'rating', 'trust_score', 'requires_legal_acceptance', 'builder_name', 'status'] })
+      .then(res => {
+        if (cancelled) return;
+        setComponents(res.items || res || []);
         setCursor(res.next_cursor || null);
         setHasMore(!!res.has_more);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [query]);
 
   const loadMore = async () => {
@@ -75,7 +86,7 @@ export default function ZeroCreditSearchEngine() {
         sort: "-created_date",
         limit: 24,
         cursor,
-        fields: ["name", "code", "type", "category", "description", "price", "features", "status"],
+        fields: ['name', 'code', 'type', 'category', 'description', 'price', 'features', 'schema', 'rating', 'trust_score', 'requires_legal_acceptance', 'builder_name', 'status'],
       });
       const page = res.items || res || [];
       setComponents((prev) => [...prev, ...page]);
@@ -88,18 +99,7 @@ export default function ZeroCreditSearchEngine() {
     }
   };
 
-  // Ultra-fast in-memory instant filter for the search term.
-  const filteredResults = useMemo(() => {
-    if (!searchTerm.trim()) return components;
-    const term = searchTerm.toLowerCase();
-    return components.filter(
-      (c) =>
-        c.name?.toLowerCase().includes(term) ||
-        c.code?.toLowerCase().includes(term) ||
-        c.description?.toLowerCase().includes(term) ||
-        c.features?.some((f) => f.toLowerCase().includes(term))
-    );
-  }, [components, searchTerm]);
+  const filteredResults = components;
 
   const formatPrice = (price) => {
     if (!price) return "—";
@@ -182,48 +182,13 @@ export default function ZeroCreditSearchEngine() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredResults.map((item) => (
-            <div
-              key={item.id}
-              className="group rounded-xl bg-white/[0.03] border border-white/10 hover:border-amber-400/40 p-5 flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:shadow-black/50 hover:scale-[1.02] backdrop-blur-xl"
-            >
-              <Link to={`/warehouse/${item.id}`} className="block">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono bg-white/5 border border-white/10 text-amber-400 px-2 py-0.5 rounded">
-                      {item.type || "X5"}
-                    </span>
-                    <span className="text-[10px] font-mono text-zinc-400 truncate max-w-[140px]">
-                      {item.code}
-                    </span>
-                  </div>
-                  <span className="text-base font-bold font-mono text-amber-400">
-                    {formatPrice(item.price)}
-                  </span>
-                </div>
-                <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition line-clamp-1 mb-2">
-                  {item.name}
-                </h3>
-                <p className="text-xs text-zinc-400 line-clamp-3 mb-4 leading-relaxed">
-                  {item.description}
-                </p>
-                <div className="mb-4">
-                  <span className="text-[10px] text-zinc-500 bg-white/[0.03] px-2 py-1 rounded border border-white/5">
-                    {item.category}
-                  </span>
-                </div>
-              </Link>
-              <div className="pt-3 border-t border-white/10 flex flex-wrap gap-3 items-center justify-between">
-                <Link to={`/warehouse/${item.id}`} className="text-[11px] text-muted-foreground hover:text-foreground">View Dossier →</Link>
-                <WarehousePurchaseButton componentId={item.id} />
-              </div>
-            </div>
-          ))}
+          {filteredResults.map(item => <DeltaWarehouseCard key={item.id} component={item} currentUser={user} onTriggerPurchase={setPurchase} detailPath={`/warehouse/${item.id}`} />)}
         </div>
       )}
 
+      <DeltaPurchaseGate component={purchase} currentUser={user} onClose={() => setPurchase(null)} />
       {/* Load More pagination */}
-      {hasMore && !searchTerm && !loading && (
+      {hasMore && !loading && (
         <div className="flex justify-center mt-8">
           <button
             onClick={loadMore}

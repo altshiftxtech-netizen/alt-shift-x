@@ -11,6 +11,8 @@ import ReactMarkdown from "react-markdown";
 import SiteContentBlock from "@/components/site-content/SiteContentBlock";
 import RatingDisplay from "@/components/RatingDisplay";
 import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
+import { canInspectDelta } from '@/components/warehouse/deltaAccess';
+import DeltaIpSection from '@/components/warehouse/DeltaIpSection';
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -107,12 +109,13 @@ export default function ComponentDetail() {
                   hr: () => <hr className="my-6 border-slate-200" />,
                 }}
               >
-                {component.longDesc}
+                {canInspectDelta(user) ? component.longDesc : component.description}
               </ReactMarkdown>
             </div>
 
+            {!canInspectDelta(user) && <DeltaIpSection component={component} currentUser={user} />}
             {/* Features */}
-            <Card>
+            {canInspectDelta(user) && <><Card>
               <CardContent className="pt-5">
                 <h3 className="text-sm font-bold text-slate-900 mb-3">What it extracts</h3>
                 <ul className="space-y-2">
@@ -137,6 +140,7 @@ export default function ComponentDetail() {
               </CardContent>
             </Card>
 
+            </>}
             {/* Trust breakdown */}
             <Card>
               <CardContent className="pt-5">
@@ -187,7 +191,7 @@ export default function ComponentDetail() {
                 <div className="text-2xl font-black text-slate-900 mb-1">${component.price}<span className="text-sm font-normal text-slate-400">/install</span></div>
                 <p className="text-xs text-slate-400 mb-4">Per active installation per month</p>
                 <div className="mb-3 w-full">
-                  {isAuthenticated ? <InstallButton component={component} userId={user?.id} size="lg" /> : <WarehousePurchaseButton componentId={component.id} />}
+                  <WarehousePurchaseButton component={component} componentId={component.id} />
                 </div>
                 {/* Live sanctions/compliance badge near purchase (managed by The UpKeeper) */}
                 <SiteContentBlock contentKey="sanctions_marketplace_badge" short className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3" />
