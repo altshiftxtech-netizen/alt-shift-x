@@ -22,8 +22,9 @@ export default function desertRovers(scene, routes, materials, compact) {
     }
     if (hover) group.scale.setScalar(.72);
     const route = routes[lane], length = route.getLength();
-    const phase = (i < 4 ? .68 + i * .04 : .48 + (i % 3) * .07 + (i > 6 ? .35 : 0)) % 1;
+    const phase = hover ? (.48 + (i % 3) * .07 + (i > 6 ? .35 : 0)) % 1 : .52 + i * .025;
     fleet.push({ group, route, length, distance: phase * length, cruise: hover ? 5 : 2.4, clearance: .12, wheels });
+    group.traverse(mesh => { if (mesh.isMesh) mesh.onAfterRender = () => { group.userData.rendered = true; }; });
     scene.add(group); targets.push(group);
   });
   return { targets, update(time, dt) { fleet.forEach(item => moveOnRoute(item, time, dt)); } };

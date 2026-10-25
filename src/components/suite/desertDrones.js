@@ -17,14 +17,19 @@ export default function desertDrones(scene, materials, compact) {
       rounded(rotor, [1.55, .04, .12], [0, 0, 0], materials.dark); rotors.push(rotor);
       sphere(group, .08, [x * 1.9, -.1, z * 1.35], materials.light);
     }
+    Object.assign(group.userData, { stationX: sx, stationZ: sz });
     scene.add(group); targets.push(group); fleet.push({ group, rotors, sx, sz, phase: i * 1.6 });
   });
   return { targets, update(time, dt) { fleet.forEach(({ group, rotors, sx, sz, phase }) => {
     const angle = time * .07 + phase, age = time - group.userData.activation;
     const response = age >= 0 && age < 4 ? Math.sin(age / 4 * Math.PI) ** 2 : 0;
     const x = sx + Math.cos(angle) * 9, z = sz + Math.sin(angle) * 7;
-    group.position.set(x, heightAt(x, z) + 15 + response * 4 + Math.sin(time * .5 + phase) * .3, z);
-    group.rotation.set(.04 + response * .16, -angle, -.07 + response * .2);
+    const goal = group.userData.flightGoal;
+    const destination = goal || new THREE.Vector3(x, heightAt(x, z) + 15 + response * 4 + Math.sin(time * .5 + phase) * .3, z);
+    const dx = destination.x - group.position.x, dz = destination.z - group.position.z;
+    if (!group.userData.positioned) { group.position.copy(destination); group.userData.positioned = true; }
+    else group.position.lerp(destination, 1 - Math.exp(-dt * 2.5));
+    group.rotation.set(goal ? THREE.MathUtils.clamp(dz * .025, -.3, .3) : .04 + response * .16, -angle, goal ? THREE.MathUtils.clamp(-dx * .025, -.35, .35) : -.07 + response * .2);
     rotors.forEach(rotor => { rotor.rotation.y += dt * 32; });
   }); } };
 }

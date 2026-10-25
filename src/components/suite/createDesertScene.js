@@ -18,6 +18,8 @@ import desertFilmPass from '@/components/suite/desertFilmPass';
 import desertCinemaSky from '@/components/suite/desertCinemaSky';
 import desertRenderQuality from '@/components/suite/desertRenderQuality';
 import { palette } from '@/components/suite/sleekParts';
+import vehicleSignals from '@/components/suite/vehicleSignals';
+import droneCursorFlight from '@/components/suite/droneCursorFlight';
 
 export default function createDesertScene(host, onStatus, inspection) {
   const compact = window.innerWidth < 700;
@@ -26,7 +28,7 @@ export default function createDesertScene(host, onStatus, inspection) {
   renderer.setPixelRatio(1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, hover drones to bank, click rovers to scan');
+  renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, move cursor to fly an inspected drone, click drones for lasers and rovers for transmissions');
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#05080C'); scene.fog = new THREE.FogExp2('#101820', .003);
   const camera = new THREE.PerspectiveCamera(52, 1, .3, 850); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
@@ -40,6 +42,8 @@ export default function createDesertScene(host, onStatus, inspection) {
   const aerospace = desertAerospace(scene, palette(), compact);
   const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; });
   const targets = [...vehicles.targets, ...aerospace.targets, rocket.target];
+  const updateSignals = vehicleSignals(scene, vehicles.targets);
+  const flight = droneCursorFlight(camera, renderer.domElement, inspection);
   // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -64,15 +68,15 @@ export default function createDesertScene(host, onStatus, inspection) {
     if (event.target !== renderer.domElement && !event.target.closest?.('.suite-orbit')) return null;
     const rect = renderer.domElement.getBoundingClientRect(); pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(targets, true);
+    const hits = raycaster.intersectObjects(targets.filter(target => target.visible), true);
     for (const hit of hits) { let object = hit.object; while (object && !object.userData.kind) object = object.parent; if (object) return object; }
     return null;
   };
   const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') target.userData.launch(); onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
   const updateCamera = desertInspectionCamera(camera, targets, inspection, activate);
-  const move = event => { const target = pick(event); renderer.domElement.style.cursor = target ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
+  const move = event => { const target = pick(event); flight.move(event, target); renderer.domElement.style.cursor = target || inspection.focus === 'drone' ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
   const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; activate(pick(event)); };
-  interactionSurface.addEventListener('pointerdown', down); interactionSurface.addEventListener('pointermove', move); interactionSurface.addEventListener('click', click);
+  interactionSurface.addEventListener('pointerdown', down); interactionSurface.addEventListener('pointermove', move); interactionSurface.addEventListener('click', click); interactionSurface.addEventListener('pointerleave', flight.release);
   const animate = now => {
     frame = requestAnimationFrame(animate);
     if (document.hidden) { last = now; return; }
@@ -83,6 +87,13 @@ export default function createDesertScene(host, onStatus, inspection) {
     const cycle = updateAtmosphere(time); updateDaylight(cycle); updateSky(cycle); aerospace.update(time, cycle.daylight);
     rocket.update(now);
     updateCamera(time, dt);
+    flight.update();
+    renderer.domElement.dataset.vehicleSignal = updateSignals(time);
+    renderer.domElement.dataset.inspectionPosition = inspection.target?.position.toArray().map(value => value.toFixed(2)).join(',') || '';
+    renderer.domElement.dataset.inspectionKind = inspection.target?.userData.kind || 'wide';
+    renderer.domElement.dataset.inspectionId = inspection.target?.uuid || '';
+    renderer.domElement.dataset.inspectionGrounded = String(inspection.target?.userData.kind === 'rover' && inspection.target.visible && inspection.target.userData.rendered);
+
     renderer.setScissorTest(false);
     composer.render();
     quality.sample(realDt);
@@ -96,7 +107,7 @@ export default function createDesertScene(host, onStatus, inspection) {
   };
   frame = requestAnimationFrame(animate);
   return () => {
-    cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click);
+    cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
     const geometries = new Set(), materials = new Set(), textures = new Set();
     scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });
     geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); env.dispose(); composer.passes.forEach(p => p.dispose?.()); composer.dispose(); renderer.dispose(); renderer.domElement.remove();

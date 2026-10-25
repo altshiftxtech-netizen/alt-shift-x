@@ -5,8 +5,14 @@ export default function desertInspectionCamera(camera, targets, inspection, acti
   const look = new THREE.Vector3(0, 0, -42), eye = new THREE.Vector3(), aim = new THREE.Vector3();
   let previousView = '';
   return (time, dt) => {
-    const matches = inspection.focus ? targets.filter(target => target.userData.kind === inspection.focus) : [];
+    const matches = inspection.focus ? targets.filter(target => {
+      if (target.userData.kind !== inspection.focus || !target.visible) return false;
+      if (inspection.focus !== 'rover') return true;
+      const { x, y, z } = target.position;
+      return target.userData.rendered && Math.abs(x) < 275 && z > -250 && z < 110 && Math.abs(y - heightAt(x, z)) < 1;
+    }) : [];
     const target = matches[inspection.index % Math.max(1, matches.length)];
+    inspection.target = target || null;
     if (target) {
       const aircraft = ['satellite', 'aircraft'].includes(target.userData.kind), distance = (aircraft || target.userData.kind === 'rocket' ? 24 : 15) / inspection.zoom * Math.max(1, .9 / camera.aspect);
       aim.copy(target.position); aim.y += aircraft ? 0 : 1.5;
