@@ -110,7 +110,7 @@ export default function Home() {
     { label: "First to Market Components", value: componentCount > 0 ? componentCount.toLocaleString() : "5000+", icon: Package },
     { label: "Avg Trust Score", value: avgTrust != null ? String(avgTrust) : "—", icon: ShieldCheck },
     { label: "Do-No-Harm Audited", value: "Every component", icon: Users },
-    { label: "Stage", value: "Beta", icon: Zap },
+    { label: "Hardening", value: "110%", icon: ShieldCheck },
   ];
 
   useEffect(() => {
