@@ -234,7 +234,6 @@ export default function SuiteLandingPage() {
           </span>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="hidden md:inline text-zinc-500">EDGE GATEWAY: 200 OK</span>
           <a href="/legal/terms" className="hover:text-yellow-400 transition-colors">
             Terms
           </a>
