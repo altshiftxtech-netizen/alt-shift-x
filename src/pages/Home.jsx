@@ -130,9 +130,9 @@ export default function Home() {
       <VideoBackground />
       {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
-      <nav className="relative z-10 border-b border-white/10 bg-black/30 backdrop-blur-md px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+      <nav className="relative z-10 border-b border-white/10 bg-black/30 backdrop-blur-md px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 w-full max-w-7xl mx-auto">
         <Logo className="h-8 w-auto" variant="purple" />
-        <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
+        <div className="hidden md:flex md:order-last xl:order-none items-center justify-center flex-wrap gap-x-6 gap-y-2 w-full xl:w-auto text-sm text-white/70">
           <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
           <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
           <Link to="/about" className="hover:text-white">About</Link>
@@ -140,7 +140,7 @@ export default function Home() {
           <Link to="/dashboard" className="hover:text-white">Dashboard</Link>
           <Link to="/contact" className="hover:text-white">Contact</Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-1 xl:flex-none min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
           <SovereignAppSwitcher activeAppId="altshiftx" />
           <ConsultationButton />
           {/* ExpertMind™ — neon-green entry point, shown in both auth states */}
