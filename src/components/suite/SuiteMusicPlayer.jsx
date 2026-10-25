@@ -86,9 +86,16 @@ export default function SuiteMusicPlayer() {
       audio.volume = 1;
       try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
     };
-    tryAutoplay();
+    let autoplayTimer;
+    const scheduleAutoplay = () => {
+      autoplayTimer = window.setTimeout(tryAutoplay, 3000);
+    };
+    if (document.readyState === 'complete') scheduleAutoplay();
+    else window.addEventListener('load', scheduleAutoplay, { once: true });
 
     return () => {
+      window.removeEventListener('load', scheduleAutoplay);
+      window.clearTimeout(autoplayTimer);
       audio.pause();
       ctxRef.current?.close?.();
     };
