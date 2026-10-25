@@ -20,6 +20,7 @@
 .suite-cinematic header button,.suite-cinematic footer a{white-space:nowrap}
 .suite-cinematic footer>div:last-child{flex-shrink:0}
 
+@media(min-width:640px){.suite-cinematic .suite-orbit{width:min(1000px,calc(100vw - 180px));margin-left:140px}}
 @media(max-width:1000px){.suite-cinematic .suite-hud-right{display:none}}
 .suite-cinematic [class*='fixed inset-0 z-50']>div{max-height:90svh;overflow-y:auto}
 
