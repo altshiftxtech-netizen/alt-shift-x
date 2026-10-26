@@ -13,7 +13,7 @@
 .suite-cinematic .suite-node[aria-pressed=true] .suite-node-copy{color:var(--emblem-color);text-shadow:0 1px 3px var(--scene-void),0 0 12px var(--scene-void);font-weight:800}
 .suite-cinematic .suite-node:focus-visible{outline:1px solid var(--emblem-color);outline-offset:6px;border-radius:50%}
 .suite-cinematic main{inset:96px 0 64px;justify-content:flex-start;padding:0;gap:12px}
-.suite-brand-mark{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.suite-brand-mark{width:48px;height:48px;object-fit:contain;flex-shrink:0;border-radius:9999px}
 .suite-cinematic header{background:linear-gradient(180deg,rgba(11,8,19,.88),rgba(11,8,19,.5));border-color:rgba(142,183,201,.18)}
 .suite-cinematic footer{background:rgba(11,8,19,.7)}
 .suite-world-status{position:absolute;top:100px;left:24px;z-index:12;font:9px monospace;letter-spacing:.18em;color:var(--scene-ink);opacity:.7;pointer-events:none}

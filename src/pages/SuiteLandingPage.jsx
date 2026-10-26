@@ -181,7 +181,7 @@ export default function SuiteLandingPage() {
       {/* 3. Header Navigation Bar */}
       <header className="absolute top-0 left-0 right-0 h-16 bg-black/60 backdrop-blur-md border-b border-yellow-500/20 z-30 px-6 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => (window.location.href = '/')}>
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44045c680_generated_image.png" alt="altshiftx.tech suite logo" className="suite-brand-mark" />
+          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44045c680_generated_image.png" alt="altshiftx.tech suite logo" className="suite-brand-mark rounded-full mix-blend-screen contrast-150" />
           <div>
             <span className="font-black tracking-widest text-base text-yellow-400">ALTSHIFTX.TECH</span>
             <span className="text-xs text-zinc-400 tracking-wider ml-2 hidden sm:inline">SOVEREIGN SUITE</span>
