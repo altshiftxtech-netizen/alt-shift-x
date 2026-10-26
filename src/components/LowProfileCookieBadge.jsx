@@ -60,23 +60,10 @@ export default function LowProfileCookieBadge() {
 
   if (!isVisible) return null;
 
-  // -------------------------------------------------------------
-  // STATE A: AMBIENT MINIMIZED CORNER SHIELD (Tucked away)
-  // -------------------------------------------------------------
-  if (isMinimized && !showPreferences) {
-    return (
-      <div className="fixed top-3 right-3 z-50 animate-fadeIn">
-        <button
-          onClick={() => setIsMinimized(false)}
-          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/10 hover:border-yellow-500/40 text-[10px] font-mono text-zinc-400 hover:text-white transition-all shadow-lg"
-          title="Cookie & Privacy Preferences"
-        >
-          <span className="text-yellow-400">🛡️</span>
-          <span className="hidden sm:inline">Privacy</span>
-        </button>
-      </div>
-    );
-  }
+  // The ambient minimized corner shield was removed — it overlapped footer
+  // links and header buttons across view sizes. The first-visit consent
+  // banner (below) still collects consent, and the footer "Cookie Settings"
+  // link re-opens preferences at any time.
 
   // -------------------------------------------------------------
   // STATE B: ULTRA-LOW PROFILE TRANSLUCENT GLASS PILL (~38px)
