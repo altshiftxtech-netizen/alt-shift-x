@@ -65,7 +65,7 @@ export default function LowProfileCookieBadge() {
   // -------------------------------------------------------------
   if (isMinimized && !showPreferences) {
     return (
-      <div className="fixed bottom-3 right-3 z-50 animate-fadeIn">
+      <div className="fixed top-3 right-3 z-50 animate-fadeIn">
         <button
           onClick={() => setIsMinimized(false)}
           className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/10 hover:border-yellow-500/40 text-[10px] font-mono text-zinc-400 hover:text-white transition-all shadow-lg"
