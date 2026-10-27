@@ -66,7 +66,8 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   const demoEffects = rocketDemoEffects(scene, rocket.target, reduced);
   const quality = desertRenderQuality(host, renderer, composer, antialias, contactShadows);
   const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; camera.aspect = width / height; camera.updateProjectionMatrix(); quality.resize(); rocket.resize(camera.aspect); };
-  const observer = new ResizeObserver(resize); observer.observe(host); resize();
+  let resizePending = false;
+  const observer = new ResizeObserver(() => { resizePending = true; }); observer.observe(host); resize();
   const interactionSurface = host.closest('.suite-cinematic');
   let pointerDown = null;
   const down = event => { pointerDown = [event.clientX, event.clientY]; if (!event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) expansion.down(event); };
@@ -112,11 +113,13 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
 
     const shake = demoEffects.update(now, rocketState);
     camera.position.add(shake);
+    // Resizing clears the drawing buffer: always redraw it in this same frame.
+    if (resizePending) { resize(); resizePending = false; }
+    quality.sample(realDt);
     renderer.setScissorTest(false);
     composer.render();
     camera.position.sub(shake);
     rocketTap.update();
-    quality.sample(realDt);
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {
       const fps = sampleFrames / sampleTime;
