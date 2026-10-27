@@ -12,7 +12,7 @@ export function heightAt(x, z) {
   const original = (dunes + ridges) * (1 - canyon * .85) - canyon * 5;
   // Grade only the new remote concrete aprons, never the original device lanes.
   const south = (1 - THREE.MathUtils.smoothstep(Math.abs(x), 145, 200)) * (1 - THREE.MathUtils.smoothstep(Math.abs(z - 475), 110, 140));
-  const northwest = (1 - THREE.MathUtils.smoothstep(Math.abs(x + 429), 48, 70)) * (1 - THREE.MathUtils.smoothstep(Math.abs(z + 470), 165, 190));
+  const northwest = (1 - THREE.MathUtils.smoothstep(Math.abs(x + 429), 48, 70)) * (1 - THREE.MathUtils.smoothstep(Math.abs(z + 490), 205, 225));
   return original * (1 - Math.max(south, northwest));
 }
 
