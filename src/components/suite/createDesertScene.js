@@ -20,8 +20,9 @@ import desertRenderQuality from '@/components/suite/desertRenderQuality';
 import { palette } from '@/components/suite/sleekParts';
 import vehicleSignals from '@/components/suite/vehicleSignals';
 import droneCursorFlight from '@/components/suite/droneCursorFlight';
+import rocketDemoEffects from '@/components/suite/game/rocketDemoEffects';
 
-export default function createDesertScene(host, onStatus, inspection) {
+export default function createDesertScene(host, onStatus, inspection, game) {
   const compact = window.innerWidth < 700;
   const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
   // Start at display resolution instead of allocating a supersampled frame before first paint.
@@ -40,7 +41,7 @@ export default function createDesertScene(host, onStatus, inspection) {
   const updateDaylight = desertDaylight(scene, renderer, sun, hemisphere, rim);
   const updateSky = desertCinemaSky(scene);
   const aerospace = desertAerospace(scene, palette(), compact);
-  const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; });
+  const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; game?.current.onPhase?.(state); });
   const targets = [...vehicles.targets, ...aerospace.targets, rocket.target];
   const updateSignals = vehicleSignals(scene, vehicles.targets);
   const flight = droneCursorFlight(camera, renderer.domElement, inspection);
@@ -57,6 +58,7 @@ export default function createDesertScene(host, onStatus, inspection) {
   const antialias = new ShaderPass(FXAAShader); composer.addPass(antialias);
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, elapsed = 0, frame = 0, last = 0, lastStatus = 0, sampleFrames = 0, sampleTime = 0;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const demoEffects = rocketDemoEffects(scene, rocket.target, reduced);
   const quality = desertRenderQuality(host, renderer, composer, antialias, contactShadows);
   const resize = () => { const { width, height } = host.getBoundingClientRect(); if (!width || !height) return; camera.aspect = width / height; camera.updateProjectionMatrix(); quality.resize(); rocket.resize(camera.aspect); };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
@@ -72,7 +74,7 @@ export default function createDesertScene(host, onStatus, inspection) {
     for (const hit of hits) { let object = hit.object; while (object && !object.userData.kind) object = object.parent; if (object) return object; }
     return null;
   };
-  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') target.userData.launch(); onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
+  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') { if (game) game.current.fuel(); else target.userData.launch(); } onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
   const updateCamera = desertInspectionCamera(camera, targets, inspection, activate);
   const move = event => { const target = pick(event); flight.move(event, target); renderer.domElement.style.cursor = target || inspection.focus === 'drone' ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
   const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; activate(pick(event)); };
@@ -85,7 +87,8 @@ export default function createDesertScene(host, onStatus, inspection) {
     const time = reduced ? elapsed * .12 : elapsed;
     vehicles.update(time, reduced ? dt * .12 : dt);
     const cycle = updateAtmosphere(time); updateDaylight(cycle); updateSky(cycle); aerospace.update(time, cycle.daylight);
-    rocket.update(now);
+    if (game?.current.launchRequested) { game.current.launchRequested = false; rocket.launchDemo(); demoEffects.start(now); }
+    const rocketState = rocket.update(now);
     updateCamera(time, dt);
     flight.update();
     renderer.domElement.dataset.vehicleSignal = updateSignals(time);
@@ -94,8 +97,11 @@ export default function createDesertScene(host, onStatus, inspection) {
     renderer.domElement.dataset.inspectionId = inspection.target?.uuid || '';
     renderer.domElement.dataset.inspectionGrounded = String(inspection.target?.userData.kind === 'rover' && inspection.target.visible && inspection.target.userData.rendered);
 
+    const shake = demoEffects.update(now, rocketState);
+    camera.position.add(shake);
     renderer.setScissorTest(false);
     composer.render();
+    camera.position.sub(shake);
     quality.sample(realDt);
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {

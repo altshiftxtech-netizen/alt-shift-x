@@ -4,7 +4,7 @@ import launchClock from '@/components/suite/launchClock';
 export default function launchSequence(vehicle, pad, notify) {
   let started = null, previous = '', scheduledDay = '', lastClock = 0;
   const smooth = x => { const p = THREE.MathUtils.clamp(x, 0, 1); return p * p * (3 - 2 * p); };
-  const launch = () => { if (started !== null) return false; started = performance.now(); notify('Ignition'); return true; };
+  const launch = (restart = false) => { if (started !== null && !restart) return false; started = performance.now(); notify('Ignition'); return true; };
   const update = now => {
     if (now - lastClock > 500) {
       const clock = launchClock(); lastClock = now;
