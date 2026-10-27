@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export default function rocketInteraction(host, vehicle, camera, inspection, onClick) {
   const button = document.createElement('button'); button.type = 'button'; button.className = 'suite-rocket-hit';
-  button.setAttribute('aria-label', 'Fuel rocket'); button.title = 'Fuel rocket'; button.hidden = true; host.appendChild(button);
+  button.setAttribute('aria-label', 'Launch rocket'); button.title = 'Launch rocket · add fuel toward the 100-pressure reward'; button.hidden = true; host.appendChild(button);
   const click = event => { event.stopPropagation(); onClick(); }; button.addEventListener('click', click);
   const corners = [];
   for (const x of [-1, 1]) for (const y of [-1.8, 8.1]) for (const z of [-1, 1]) corners.push(new THREE.Vector3(x, y, z));

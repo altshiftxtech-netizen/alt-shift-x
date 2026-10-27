@@ -96,7 +96,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
     vehicles.update(time, reduced ? dt * .12 : dt);
     const cycle = updateAtmosphere(time); updateDaylight(cycle); updateSky(cycle); aerospace.update(time, cycle.daylight);
     scene.fog.density = ['forestry', 'repository', 'kinetic'].includes(inspection.focus) ? .0012 : .003;
-    if (game?.current.launchRequested) { game.current.launchRequested = false; rocket.launchDemo(); demoEffects.start(now); }
+    if (game?.current.launchRequested) { game.current.launchRequested = false; if (rocket.launchDemo()) demoEffects.start(now); }
     const rocketState = rocket.update(now);
     expansion.update(time, reduced ? dt * .12 : dt, Date.now());
     updateCamera(time, dt);

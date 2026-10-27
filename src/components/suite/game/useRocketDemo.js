@@ -15,7 +15,9 @@ export default function useRocketDemo() {
     const next = fuelRocketDemo(current.current, signedIn);
     const milestone = next.launches > current.current.launches;
     commit(next);
-    if (milestone) { bridge.current.launchRequested = true; setOpen(true); if (sound) audio.current?.launch(); }
+    bridge.current.launchRequested = true;
+    if (milestone) setOpen(true);
+    if (sound && ['Ready', 'Robotic servicing', 'Touchdown'].includes(phase)) audio.current?.launch();
   };
   const claim = tier => commit(claimRocketDemo(current.current, tier));
   const toggleSound = async () => {
