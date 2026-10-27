@@ -5,6 +5,8 @@ import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
 import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
 import SuiteMusicPlayer from '@/components/suite/SuiteMusicPlayer';
+import useProvingGroundUsage from '@/components/suite/useProvingGroundUsage';
+import ProvingGroundAdminMenu from '@/components/suite/ProvingGroundAdminMenu';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import CinematicDesert from '@/components/suite/CinematicDesert';
 
@@ -131,6 +133,7 @@ const SUITE_NODES = [
 ];
 
 export default function SuiteLandingPage() {
+  const onMusicChange = useProvingGroundUsage();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [groundInspection, setGroundInspection] = useState(false);
   const { rotationAngle, select: selectOrbit, handlers: orbitHandlers, motion, paused, pause, togglePaused } = useSuiteOrbit();
@@ -201,7 +204,8 @@ export default function SuiteLandingPage() {
           >
             /aboutaltshiftxsuite
           </button>
-          <SuiteMusicPlayer />
+          <SuiteMusicPlayer onPlaybackChange={onMusicChange} />
+          <ProvingGroundAdminMenu />
           <button
             onClick={() => setActiveModal('consuela')}
             aria-label="Help me choose"

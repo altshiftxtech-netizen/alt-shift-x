@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
+import observeSuiteMusic from '@/components/suite/observeSuiteMusic';
 
 const AUDIO_URL = 'https://media.base44.com/files/public/6a19363c90f06323c4cfff73/60fceeda2_train-great-fitness-sports-theme-2.mp3';
 
-export default function SuiteMusicPlayer() {
+export default function SuiteMusicPlayer({ onPlaybackChange }) {
   const audioRef = useRef(null);
+  const observerRef = useRef(null);
   const ctxRef = useRef(null);
   const sourceRef = useRef(null);
   const filtersRef = useRef(null);
@@ -15,7 +17,7 @@ export default function SuiteMusicPlayer() {
   // Build the EQ chain once (bass, mid, treble + gain for warmth on any system)
   const buildChain = (audio) => {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
+    if (!AudioCtx) { observerRef.current = observeSuiteMusic(audio, null, onPlaybackChange); return; }
     const ctx = new AudioCtx();
     const source = ctx.createMediaElementSource(audio);
     // Bass
@@ -46,6 +48,7 @@ export default function SuiteMusicPlayer() {
     sourceRef.current = source;
     filtersRef.current = { bass, mid, treble };
     gainRef.current = gain;
+    observerRef.current = observeSuiteMusic(audio, ctx, onPlaybackChange);
   };
 
   const start = async () => {
@@ -96,6 +99,7 @@ export default function SuiteMusicPlayer() {
     return () => {
       window.removeEventListener('load', scheduleAutoplay);
       window.clearTimeout(autoplayTimer);
+      observerRef.current?.();
       audio.pause();
       ctxRef.current?.close?.();
     };

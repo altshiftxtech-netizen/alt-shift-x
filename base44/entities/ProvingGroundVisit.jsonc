@@ -1,0 +1,59 @@
+{
+  "name": "ProvingGroundVisit",
+  "type": "object",
+  "properties": {
+    "write_key_hash": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "open_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "visible_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "active_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "music_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    }
+  },
+  "required": [
+    "write_key_hash",
+    "started_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
