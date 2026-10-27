@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import AffiliateCapture from './components/AffiliateCapture';
 import LowProfileCookieBadge from './components/LowProfileCookieBadge';
+import SuiteTelemetrySentinel from '@/components/suite/SuiteTelemetrySentinel';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
 // Add page imports here
@@ -330,6 +331,7 @@ function App() {
             <AnalyticsTracker />
             <AffiliateCapture />
             <AuthenticatedApp />
+            <SuiteTelemetrySentinel />
             <LowProfileCookieBadge />
           </Router>
           <Toaster />

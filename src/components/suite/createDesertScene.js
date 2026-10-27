@@ -46,6 +46,16 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   const aerospace = desertAerospace(scene, palette(), compact);
   const rocket = desertRocket(scene, state => { renderer.domElement.dataset.rocketPhase = state; game?.current.onPhase?.(state); });
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // ── Sentinel: listen for auto-throttle and WebGL context loss ──
+  const onThrottleGfx = (event) => {
+    const { targetDPR, shadowMap } = event.detail || {};
+    if (typeof targetDPR === 'number') renderer.setPixelRatio(Math.min(targetDPR, 1));
+    if (shadowMap === false) { renderer.shadowMap.enabled = false; sun.castShadow = false; }
+  };
+  const onContextLost = (event) => { if (event && event.preventDefault) event.preventDefault(); };
+  renderer.domElement.addEventListener('webglcontextlost', onContextLost);
+  window.addEventListener('ASX_THROTTLE_GFX_LEVEL', onThrottleGfx);
+  window.addEventListener('ASX_WEBGL_CONTEXT_LOST', onContextLost);
   const expansion = provingGroundExpansion(scene, camera, renderer.domElement, compact, reduced, inspection);
   const targets = [...vehicles.targets, ...aerospace.targets, rocket.target, ...expansion.targets];
   fleetDetailing(scene, targets);
@@ -133,6 +143,9 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
     window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('blur', up); window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp);
     rocketTap.dispose();
     cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
+    renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
+    window.removeEventListener('ASX_THROTTLE_GFX_LEVEL', onThrottleGfx);
+    window.removeEventListener('ASX_WEBGL_CONTEXT_LOST', onContextLost);
     const geometries = new Set(), materials = new Set(), textures = new Set();
     scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });
     geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); env.dispose(); composer.passes.forEach(p => p.dispose?.()); composer.dispose(); renderer.dispose(); renderer.domElement.remove();
