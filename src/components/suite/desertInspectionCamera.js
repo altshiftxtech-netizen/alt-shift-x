@@ -14,9 +14,10 @@ export default function desertInspectionCamera(camera, targets, inspection, acti
     const target = matches[inspection.index % Math.max(1, matches.length)];
     inspection.target = target || null;
     if (target) {
-      const aircraft = ['satellite', 'aircraft'].includes(target.userData.kind), distance = (aircraft || target.userData.kind === 'rocket' ? 24 : 15) / inspection.zoom * Math.max(1, .9 / camera.aspect);
-      aim.copy(target.position); aim.y += aircraft ? 0 : 1.5;
-      eye.copy(aim).add(new THREE.Vector3(distance, distance * .65, distance * 1.2));
+      const aircraft = ['satellite', 'aircraft'].includes(target.userData.kind), distance = (target.userData.inspectionDistance ?? (aircraft || target.userData.kind === 'rocket' ? 24 : 15)) / inspection.zoom * Math.max(1, .9 / camera.aspect);
+      aim.copy(target.position); aim.y += target.userData.inspectionAimHeight ?? (aircraft ? 0 : 1.5);
+      const direction = target.userData.inspectionDirection || [1, .65, 1.2];
+      eye.copy(aim).add(new THREE.Vector3(...direction).multiplyScalar(distance));
       if (!aircraft) eye.y = Math.max(eye.y, heightAt(eye.x, eye.z) + 3);
       if (inspection.react) { activate(target); inspection.react = false; }
     } else {

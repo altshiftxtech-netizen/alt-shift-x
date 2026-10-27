@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export default function desertCinemaSky(scene) {
+export default function desertCinemaSky(scene, camera) {
   const material = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: { daylight: { value: 0 }, source: { value: new THREE.Vector3(-.4, .2, -1).normalize() } },
@@ -26,9 +26,10 @@ export default function desertCinemaSky(scene) {
         gl_FragColor = vec4(sky, 1.0);
       }`,
   });
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(780, 32, 16), material);
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(19000, 32, 16), material);
   sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
   return cycle => {
+    sky.position.copy(camera.position);
     material.uniforms.daylight.value = cycle.daylight;
     const body = cycle.sun.visible ? cycle.sun : cycle.moon;
     material.uniforms.source.value.set(body.x, body.y, body.z).normalize();
