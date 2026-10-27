@@ -238,7 +238,7 @@ export default function Marketplace() {
     <div className="min-h-screen relative">
       <VideoBackground />
       {/* Nav */}
-       <nav className="relative z-10 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-wrap gap-3 items-center justify-between">
+       <nav className="relative z-20 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-wrap gap-3 items-center justify-between">
          <div className="flex items-center gap-2">
            <Link to="/" className="flex items-center gap-2">
              <Logo className="h-8 w-auto" variant="purple" />

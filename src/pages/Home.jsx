@@ -130,7 +130,7 @@ export default function Home() {
       <VideoBackground />
       {showInstallModal && <InstallCTAModal onClose={() => setShowInstallModal(false)} />}
       {/* Nav */}
-      <nav className="relative z-10 w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
+      <nav className="relative z-20 w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
         <div className="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 w-full max-w-7xl mx-auto">
           <Logo className="h-8 w-auto" variant="purple" />
           <div className="hidden md:flex md:order-last xl:order-none items-center justify-center flex-wrap gap-x-6 gap-y-2 w-full xl:w-auto text-sm text-white/70">

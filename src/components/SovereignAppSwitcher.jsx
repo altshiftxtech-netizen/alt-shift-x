@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from "@/api/base44Client";
+import useSuiteHandoff from '@/hooks/useSuiteHandoff';
 
 const ENTERPRISE_SUITE = [
   {
@@ -81,6 +82,7 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const menuRef = useRef(null);
+  const handoff = useSuiteHandoff();
 
   // Auth + pricing gate: only show to authenticated users with an active
   // paid subscription (or admins). Guests and free-tier users don't see it.
@@ -148,7 +150,7 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
 
       {/* Glassmorphic Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-950/95 border border-slate-800 shadow-2xl backdrop-blur-2xl p-4 z-50">
+        <div className="fixed inset-x-4 top-20 w-auto sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-3 sm:w-96 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl backdrop-blur-2xl p-4 z-50">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/80">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -170,12 +172,10 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
                 <a
                   key={app.id}
                   href={isCurrent ? '#' : app.path}
-                  onClick={(e) => {
-                    if (isCurrent) {
-                      e.preventDefault();
-                      setIsOpen(false);
-                    }
-                  }}
+                  aria-disabled={Boolean(handoff.pending)}
+                  aria-busy={handoff.pending === app.id}
+                  referrerPolicy="no-referrer"
+                  onClick={(event) => handoff.navigate(event, app, isCurrent, () => setIsOpen(false))}
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition-all text-left group ${
                     app.isMaster
                       ? isCurrent
@@ -218,6 +218,8 @@ export default function SovereignAppSwitcher({ activeAppId = 'altshiftx' }) {
             })}
           </div>
 
+          {handoff.pending && <p role="status" className="mt-3 text-xs text-muted-foreground">Preparing secure handoff…</p>}
+          {handoff.error && <p role="alert" className="mt-3 text-xs text-destructive">{handoff.error}</p>}
           <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 font-mono">
             <span>Press <kbd className="px-1 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">ESC</kbd> to close</span>
             <span className="text-amber-400 font-medium">Root 0 Master Foundry</span>
