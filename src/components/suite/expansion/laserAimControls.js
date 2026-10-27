@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export default function laserAimControls(camera, canvas, root, inspection, selected) {
+export default function laserAimControls(camera, canvas, root, inspection, selected, targets) {
   const aim = new THREE.Vector3(0, 85, -145), pointer = new THREE.Vector2(), ray = new THREE.Raycaster();
   const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -(root.position.z - 145)), world = new THREE.Vector3();
   let cursor = null, scoped = false, yaw = 0, pitch = .3, held = false, previousTurret = null;
@@ -13,6 +13,13 @@ export default function laserAimControls(camera, canvas, root, inspection, selec
     } else {
       pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
       ray.setFromCamera(pointer, camera); if (ray.ray.intersectPlane(plane, world)) aim.copy(world).sub(root.position);
+      let nearest = Infinity;
+      for (const target of targets) {
+        if (!target.active) continue;
+        const center = target.position.clone().add(root.position);
+        const hit = ray.ray.intersectSphere(new THREE.Sphere(center, target.radius), new THREE.Vector3());
+        if (hit && ray.ray.origin.distanceToSquared(hit) < nearest) { nearest = ray.ray.origin.distanceToSquared(hit); aim.copy(target.position); }
+      }
     }
   };
   return { aim, move, down(event) { move(event); held = true; }, up() { held = false; }, get held() { return held; },

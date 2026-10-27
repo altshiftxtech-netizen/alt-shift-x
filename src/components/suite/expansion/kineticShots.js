@@ -22,7 +22,7 @@ export default function kineticShots(root, onHit, onMiss, reduced) {
         if (intersection && origin.distanceTo(intersection) < nearest) { nearest = origin.distanceTo(intersection); hit = target; end.copy(intersection); }
       }
       const slot = index++ % beams.length, beam = beams[slot]; beam.age = 0; beam.mesh.visible = true; connect(beam.mesh, origin, end); beam.mesh.scale.x = beam.mesh.scale.z = scoped ? .18 : 1;
-      if (hit) { hit.hit = true; hit.active = false; hit.respawnAt = performance.now() + 1600; const impact = impacts[slot]; impact.age = 0; impact.mesh.position.copy(hit.position); onHit(); }
+      if (hit) { const impact = impacts[slot]; impact.age = 0; impact.mesh.position.copy(hit.position); onHit(hit); }
       else onMiss();
     },
     update(dt) {
