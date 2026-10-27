@@ -14,7 +14,7 @@
 .suite-ground-control-row{display:flex;align-items:center;gap:8px;margin:3px 0}.suite-ground-control-row input{min-height:44px;min-width:0;flex:1;accent-color:var(--scene-cyan)}
 .suite-ground-control-row select{min-width:0;flex:1;font-size:11px}.suite-ground-control-row button{flex-shrink:0}.suite-ground-control-row>button:first-child:last-child{flex:1}
 .suite-inspecting main{visibility:hidden;pointer-events:none}.suite-inspecting main *{pointer-events:none!important}
-.suite-rocket-hit{position:absolute;z-index:15;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;cursor:pointer;touch-action:manipulation;border-radius:12px}.suite-rocket-hit[hidden]{display:none}.suite-rocket-hit:focus-visible{outline:2px solid var(--scene-amber);outline-offset:3px}
+.suite-rocket-hit{position:absolute;z-index:15;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;cursor:crosshair;touch-action:manipulation;border-radius:12px}.suite-rocket-hit[hidden]{display:none}.suite-rocket-hit:focus-visible{outline:2px solid var(--scene-amber);outline-offset:3px}
 .suite-launch-dock button:focus-visible,.suite-ground-controls :focus-visible{outline:2px solid var(--scene-cyan);outline-offset:3px}
 .suite-ground-controls.is-laser{bottom:80px;max-width:min(440px,calc(100vw - 32px))}
 .suite-laser-help{max-width:380px;margin:8px 0;line-height:1.5;color:var(--scene-ink)}
