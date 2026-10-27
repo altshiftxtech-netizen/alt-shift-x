@@ -26,6 +26,7 @@ export default function repositoryTunnel(parent, floor) {
   box(tunnel, [52, 44, 2], [0, 22, -269], new THREE.MeshStandardMaterial({ color: '#101820', roughness: .95 }));
   const doors = [];
   for (const side of [-1, 1]) {
+    rounded(tunnel, [30, 49, 36], [side * 41, 24.5, -34], lining);
     const leaf = new THREE.Group(); leaf.position.set(side * 13, 22, -24); tunnel.add(leaf);
     rounded(leaf, [25.8, 43.5, 2.4], [0, 0, 0], dark);
     for (const y of [-15, -5, 5, 15]) rounded(leaf, [22, .3, .5], [0, y, 1.3], lining);
