@@ -5,3 +5,27 @@
 .proving-reward{max-width:min(480px,calc(100vw - 24px));max-height:calc(100svh - 32px);overflow-y:auto;background:hsl(var(--background)/.96);backdrop-filter:blur(20px);border-radius:20px}.proving-reward .demo-badge{font:11px monospace;letter-spacing:.1em;color:hsl(var(--muted-foreground))}.proving-reward select{width:100%;min-height:44px;border:1px solid hsl(var(--border));background:hsl(var(--background));border-radius:8px;padding:8px}.proving-reward code{display:block;overflow-wrap:anywhere;border:1px dashed hsl(var(--border));padding:12px;border-radius:8px}.proving-reward .demo-ack{display:flex;align-items:flex-start;gap:8px;font-size:13px}.proving-reward .demo-ack input{margin-top:3px}
 @media(max-width:639px){.rocket-demo-panel{right:10px;bottom:112px;width:220px;padding:10px;font-size:10px}.suite-inspecting .rocket-demo-panel{bottom:250px}.rocket-demo-panel h2{font-size:11px}}
 @media(max-height:620px){.rocket-demo-panel{max-height:calc(100svh - 180px);overflow-y:auto}}
+
+/* Sovereign Gift Pass Modal */
+.sovereign-gift-pass{border:2px solid var(--scene-amber);box-shadow:0 0 32px rgba(234,179,8,.25),0 0 64px rgba(234,179,8,.1)}
+.sovereign-gift-pass .gift-badge{display:inline-block;font:10px monospace;letter-spacing:.14em;color:var(--scene-amber);background:color-mix(in srgb,var(--scene-amber) 12%,transparent);border:1px solid color-mix(in srgb,var(--scene-amber) 30%,transparent);border-radius:6px;padding:4px 10px;margin-bottom:8px}
+.sovereign-gift-pass .gift-code-ticket{position:relative;display:flex;align-items:center;justify-content:center;margin:16px 0;border:1px dashed color-mix(in srgb,var(--scene-amber) 40%,transparent);border-radius:12px;background:color-mix(in srgb,var(--scene-void) 60%,transparent)}
+.sovereign-gift-pass .gift-code-notch{position:absolute;top:50%;width:16px;height:16px;background:hsl(var(--background));border-radius:50%;transform:translateY(-50%)}
+.sovereign-gift-pass .gift-code-notch-left{left:-8px;border-right:1px dashed color-mix(in srgb,var(--scene-amber) 40%,transparent)}
+.sovereign-gift-pass .gift-code-notch-right{right:-8px;border-left:1px dashed color-mix(in srgb,var(--scene-amber) 40%,transparent)}
+.sovereign-gift-pass .gift-code-body{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 24px;text-align:center}
+.sovereign-gift-pass .gift-code-label{font:9px monospace;letter-spacing:.18em;color:hsl(var(--muted-foreground))}
+.sovereign-gift-pass .gift-code-value{font:700 18px monospace;letter-spacing:.08em;color:var(--scene-amber);background:none;border:0;padding:0;overflow-wrap:anywhere;word-break:break-all}
+.sovereign-gift-pass .gift-code-meta{display:flex;align-items:center;gap:4px;font:10px monospace;color:hsl(var(--muted-foreground))}
+.sovereign-gift-pass .gift-copy-btn{width:100%;margin-bottom:12px;font-weight:700}
+.sovereign-gift-pass .gift-claim-link{display:flex;flex-direction:column;gap:4px;margin-bottom:16px;font-size:12px}
+.sovereign-gift-pass .gift-claim-label{font:9px monospace;letter-spacing:.14em;color:hsl(var(--muted-foreground))}
+.sovereign-gift-pass .gift-claim-link a{color:var(--scene-cyan);text-decoration:underline;overflow-wrap:anywhere}
+.sovereign-gift-pass .gift-share-section{margin-bottom:12px}
+.sovereign-gift-pass .gift-share-title{display:flex;align-items:center;gap:6px;font:9px monospace;letter-spacing:.16em;color:hsl(var(--muted-foreground));margin-bottom:8px}
+.sovereign-gift-pass .gift-share-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sovereign-gift-pass .gift-share-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--share-color,var(--scene-ink)) 30%,transparent);border-radius:8px;background:color-mix(in srgb,var(--share-color,var(--scene-ink)) 8%,transparent);color:var(--share-color,var(--scene-ink));font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;transition:background .15s}
+.sovereign-gift-pass .gift-share-btn:hover{background:color-mix(in srgb,var(--share-color,var(--scene-ink)) 18%,transparent)}
+.sovereign-gift-pass .gift-fineprint{font-size:10px;line-height:1.5;color:hsl(var(--muted-foreground));border-top:1px solid hsl(var(--border));padding-top:10px;margin-top:8px}
+.sovereign-gift-pass .gift-double-dip-notice{font-size:11px;color:var(--scene-amber);background:color-mix(in srgb,var(--scene-amber) 8%,transparent);border:1px solid color-mix(in srgb,var(--scene-amber) 20%,transparent);border-radius:6px;padding:6px 10px;margin-bottom:8px}
+@media(max-width:639px){.sovereign-gift-pass .gift-share-buttons{grid-template-columns:1fr}}

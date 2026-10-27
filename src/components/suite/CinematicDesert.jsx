@@ -5,12 +5,15 @@ import useRocketDemo from '@/components/suite/game/useRocketDemo';
 import useRobotWaveReward from '@/components/suite/game/useRobotWaveReward';
 import RobotWaveReward from '@/components/suite/game/RobotWaveReward';
 import RocketDemoReward from '@/components/suite/game/RocketDemoReward';
+import SovereignGiftPassModal from '@/components/suite/game/SovereignGiftPassModal';
+import useGiftPassEngine from '@/components/suite/game/useGiftPassEngine';
 import '@/components/suite/provingGround.css';
 
 export default function CinematicDesert({ onInspectionChange }) {
   const host = useRef(null), inspection = useRef({ focus: null, zoom: 1, index: 0, react: false });
   const game = useRocketDemo();
   const robotReward = useRobotWaveReward();
+  const giftEngine = useGiftPassEngine();
   const [focus, setFocus] = useState(null), [zoom, setZoom] = useState(1), [scope, setScope] = useState(false);
   const [range, setRange] = useState({ hits: 0, fired: 0, streak: 0, pairs: 0, goal: 50, complete: false, message: 'Shoot two different drones of the same color.' });
   const changeScope = value => { inspection.current.scope = value; setScope(value); };
@@ -23,5 +26,21 @@ export default function CinematicDesert({ onInspectionChange }) {
     catch (error) { console.error('Desert renderer:', error); setStatus('3D REQUIRES WEBGL / SUITE NAVIGATION REMAINS AVAILABLE'); }
     return () => dispose?.();
   }, []);
-  return <><div ref={host} className="suite-world" /><GroundInspectionControls focus={focus} scope={scope} onScope={changeScope} range={range} zoom={zoom} onFocus={changeFocus} onZoom={value => { inspection.current.zoom = value; setZoom(value); }} onNext={() => { inspection.current.index += focus === 'kinetic' && inspection.current.index % (inspection.current.laserTurretCount + 1) === 0 ? 2 : 1; }} onReact={() => { inspection.current.react = true; }} onRestartRange={() => inspection.current.restartRange?.()} /><RocketDemoReward game={game} /><RobotWaveReward reward={robotReward} /></>;
+
+  // Gift engine: pivot to gift modal on repeat milestones, mark redemption on claim
+  useEffect(() => {
+    if (!game.state.reward || game.state.reward.claimed) return;
+    const tier = 'ROCKET_FREE_MONTH';
+    if (giftEngine.checkRedemption(tier)) {
+      game.setOpen(false);
+      giftEngine.triggerGift(tier);
+    }
+  }, [game.state.launches, game.state.reward]);
+
+  useEffect(() => {
+    if (game.state.reward?.claimed && game.state.reward.tier) {
+      giftEngine.markRedeemed('ROCKET_FREE_MONTH');
+    }
+  }, [game.state.reward?.claimed, game.state.reward?.tier]);
+  return <><div ref={host} className="suite-world" /><GroundInspectionControls focus={focus} scope={scope} onScope={changeScope} range={range} zoom={zoom} onFocus={changeFocus} onZoom={value => { inspection.current.zoom = value; setZoom(value); }} onNext={() => { inspection.current.index += focus === 'kinetic' && inspection.current.index % (inspection.current.laserTurretCount + 1) === 0 ? 2 : 1; }} onReact={() => { inspection.current.react = true; }} onRestartRange={() => inspection.current.restartRange?.()} /><RocketDemoReward game={game} /><RobotWaveReward reward={robotReward} /><SovereignGiftPassModal reward={giftEngine.giftReward} open={giftEngine.open} onOpenChange={giftEngine.setOpen} /></>;
 }
