@@ -24,7 +24,7 @@ export default function desertInspectionCamera(camera, targets, inspection, acti
       eye.set(Math.sin(time * .035) * 5, 45 + Math.sin(time * .12) * 1.2, 80 + Math.cos(time * .07) * 1.2);
       aim.set(Math.sin(time * .04) * 3, 0, -42);
     }
-    const view = `${target?.uuid ?? 'wide'}:${inspection.zoom}:${camera.aspect}`;
+    const view = `${target?.uuid ?? 'wide'}:${inspection.zoom}:${camera.aspect}:${Boolean(inspection.scope)}`;
     if (view !== previousView) { camera.position.copy(eye); look.copy(aim); previousView = view; }
     else { const blend = 1 - Math.exp(-dt * 6); camera.position.lerp(eye, blend); look.lerp(aim, blend); }
     camera.lookAt(look);

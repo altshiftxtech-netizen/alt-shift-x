@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { heightAt } from '@/components/suite/desertTerrain';
-import { box, part, instances, matrix, steel, teal, label, random } from '@/components/suite/expansion/sectorPrimitives';
+import { box, part, instances, matrix, steel, teal, random } from '@/components/suite/expansion/sectorPrimitives';
 import repositoryConvoys from '@/components/suite/expansion/repositoryConvoys';
 
 export default function mountainRepository(scene, reduced) {
@@ -17,9 +17,8 @@ export default function mountainRepository(scene, reduced) {
   const doors = []; let openUntil = 0;
   for (const side of [-1, 1]) { const door = box(portal, [12, 44, 4], [side * 23, -2, 2], dark); door.rotation.y = side * .15; doors.push({ door, side }); box(portal, [.25, 35, .3], [side * 17, -1, 4.1], amber); }
   for (const x of [-444, -432, -426, -414]) box(root, [.3, .25, 340], [x, floor + .2, -480], light);
-  const sign = label(root, 88, 18); sign.sprite.position.set(-429, floor + 73, -380); sign.set('DEEP GEOLOGICAL REPOSITORY\nAUTONOMOUS TRANSIT · 4.0 M/S\nOBSIDIAN BASALT · NORTHWEST RIDGELINE');
   const target = new THREE.Group(); target.position.set(-429, floor, -380); target.userData = { kind: 'repository', inspectionDistance: 110, inspectionAimHeight: 26 }; scene.add(target);
   target.userData.onActivate = () => { openUntil = Date.now() + 6000; };
   const convoys = repositoryConvoys(scene, floor, reduced);
-  return { targets: [target, convoys.target], update(timestamp, inspected) { sign.sprite.visible = inspected; doors.forEach(({ door, side }) => { const goal = side * (timestamp < openUntil ? 32 : 23); door.position.x += (goal - door.position.x) * .04; }); return { crimson: convoys.update(timestamp), doorsOpen: timestamp < openUntil }; } };
+  return { targets: [target, convoys.target], update(timestamp) { doors.forEach(({ door, side }) => { const goal = side * (timestamp < openUntil ? 32 : 23); door.position.x += (goal - door.position.x) * .04; }); return { crimson: convoys.update(timestamp), doorsOpen: timestamp < openUntil }; } };
 }

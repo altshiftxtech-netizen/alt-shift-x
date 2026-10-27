@@ -3,11 +3,15 @@ import mountainRepository from '@/components/suite/expansion/mountainRepository'
 import kineticRange from '@/components/suite/expansion/kineticRange';
 
 export default function provingGroundExpansion(scene, camera, canvas, compact, reduced, inspection) {
-  const forestry = forestrySector(scene, compact, reduced), repository = mountainRepository(scene, reduced), kinetic = kineticRange(scene, camera, canvas, reduced);
+  const forestry = forestrySector(scene, compact, reduced), repository = mountainRepository(scene, reduced), kinetic = kineticRange(scene, camera, canvas, reduced, inspection);
   forestry.targets.forEach(target => { target.userData.onActivate = () => { inspection.index++; }; });
   return {
-    targets: [...forestry.targets, ...repository.targets, kinetic.target],
+    targets: [...forestry.targets, ...repository.targets, ...kinetic.targets],
     move(event) { if (inspection.focus === 'kinetic') kinetic.move(event); },
+    down(event) { if (inspection.focus === 'kinetic' && event.button === 0) kinetic.down(event); },
+    up() { kinetic.up(); inspection.keyHeld = false; },
+    key(event, down) { if (inspection.focus === 'kinetic') kinetic.key(event, down); },
+    camera() { kinetic.camera(); },
     click(event) { if (inspection.focus !== 'kinetic') return false; kinetic.fire(event); return true; },
     update(time, dt, timestamp) {
       const phase = forestry.update(time, timestamp, inspection.focus === 'forestry');

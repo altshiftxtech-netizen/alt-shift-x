@@ -66,7 +66,8 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const interactionSurface = host.closest('.suite-cinematic');
   let pointerDown = null;
-  const down = event => { pointerDown = [event.clientX, event.clientY]; };
+  const down = event => { pointerDown = [event.clientX, event.clientY]; if (!event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) expansion.down(event); };
+  const up = () => expansion.up(), keyDown = event => expansion.key(event, true), keyUp = event => expansion.key(event, false);
   const pick = event => {
     if (event.target.closest?.('button,a,select,input')) return null;
     if (event.target !== renderer.domElement && !event.target.closest?.('.suite-orbit')) return null;
@@ -81,6 +82,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   const move = event => { if (!event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) expansion.move(event); const target = pick(event); flight.move(event, target); renderer.domElement.style.cursor = target || inspection.focus === 'drone' ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
   const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; if (event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) return; if (event.target === renderer.domElement && expansion.click(event)) return; activate(pick(event)); };
   interactionSurface.addEventListener('pointerdown', down); interactionSurface.addEventListener('pointermove', move); interactionSurface.addEventListener('click', click); interactionSurface.addEventListener('pointerleave', flight.release);
+  window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); window.addEventListener('blur', up); window.addEventListener('keydown', keyDown); window.addEventListener('keyup', keyUp);
   const animate = now => {
     frame = requestAnimationFrame(animate);
     if (document.hidden) { last = now; return; }
@@ -94,6 +96,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
     const rocketState = rocket.update(now);
     expansion.update(time, reduced ? dt * .12 : dt, Date.now());
     updateCamera(time, dt);
+    expansion.camera();
     routes.updateHorizon(camera);
     renderer.domElement.dataset.celestialsVisible = String(camera.userData.celestialsVisible);
     flight.update();
@@ -119,6 +122,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   };
   frame = requestAnimationFrame(animate);
   return () => {
+    window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('blur', up); window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp);
     cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
     const geometries = new Set(), materials = new Set(), textures = new Set();
     scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });

@@ -15,6 +15,14 @@
 .suite-ground-control-row select{min-width:0;flex:1;font-size:11px}.suite-ground-control-row button{flex-shrink:0}.suite-ground-control-row>button:first-child:last-child{flex:1}
 .suite-inspecting main{visibility:hidden;pointer-events:none}.suite-inspecting main *{pointer-events:none!important}
 .suite-launch-dock button:focus-visible,.suite-ground-controls :focus-visible{outline:2px solid var(--scene-cyan);outline-offset:3px}
+.suite-ground-controls.is-laser{bottom:80px;max-width:min(440px,calc(100vw - 32px))}
+.suite-laser-help{max-width:380px;margin:8px 0;line-height:1.5;color:var(--scene-ink)}
+.suite-laser-actions{flex-wrap:wrap}.suite-laser-actions button{flex:1}
+.suite-laser-score{display:block;margin-top:8px;color:var(--scene-cyan);font-variant-numeric:tabular-nums}
+.suite-laser-crosshair{position:fixed;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border:1px solid var(--scene-cyan);border-radius:50%;pointer-events:none;filter:drop-shadow(0 1px 3px var(--scene-void))}
+.suite-laser-crosshair:before,.suite-laser-crosshair:after{content:'';position:absolute;left:50%;top:50%;background:var(--scene-ink);transform:translate(-50%,-50%)}
+.suite-laser-crosshair:before{width:36px;height:1px}.suite-laser-crosshair:after{width:1px;height:36px}
+@media(max-width:639px){.suite-ground-controls.is-laser{bottom:164px;max-width:calc(100vw - 20px)}.suite-laser-help{max-width:320px}}
 .suite-cinematic:not(.suite-inspecting) main{top:88px}
 @media(min-width:640px) and (max-width:1000px){.suite-cinematic header{height:100px;flex-wrap:wrap;gap:4px;padding-top:8px;padding-bottom:8px}.suite-cinematic header nav.suite-navigation{width:100%;justify-content:space-between;gap:4px}.suite-cinematic:not(.suite-inspecting) main{top:116px}.suite-cinematic header>div{white-space:nowrap}}
 @media(max-width:639px){.suite-cinematic:not(.suite-inspecting) main{top:116px}.suite-cinematic header nav.suite-navigation{font-size:9px}.suite-navigation .suite-advisor-label{display:none}.suite-cinematic header nav.suite-navigation>button[aria-label='Help me choose']{min-width:44px;justify-content:center}.suite-cinematic header nav button{padding-left:2px;padding-right:2px}.suite-cinematic header nav button[aria-label$='suite music']{min-width:30px;flex-shrink:0;justify-content:center}.suite-cinematic header nav button[aria-label$='suite music'] svg{flex-shrink:0}.suite-ground-controls{left:10px;bottom:60px;font-size:10px}.suite-ground-controls.is-open{max-width:calc(100vw - 20px)}}

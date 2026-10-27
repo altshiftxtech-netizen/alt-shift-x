@@ -1,30 +1,33 @@
 import * as THREE from 'three';
-import { instances, matrix } from '@/components/suite/expansion/sectorPrimitives';
-import kineticCollision from '@/components/suite/expansion/kineticCollision';
+import { part, connect } from '@/components/suite/expansion/sectorPrimitives';
 
 export default function kineticShots(root, onHit, onMiss, reduced) {
-  const bullets = instances(root, new THREE.SphereGeometry(.18, 6, 4), new THREE.MeshBasicMaterial({ color: '#b4faff' }), 12);
-  const rings = instances(root, new THREE.RingGeometry(.9, 1, 32), new THREE.MeshBasicMaterial({ color: '#5ed9ed', transparent: true, opacity: .3, side: THREE.DoubleSide, depthWrite: false }), 12);
-  const shots = Array.from({ length: 12 }, () => ({ active: false, age: 0, position: new THREE.Vector3(), velocity: new THREE.Vector3() }));
-  const puffs = Array.from({ length: 12 }, () => ({ age: 9, position: new THREE.Vector3() })); let puffIndex = 0;
-  shots.forEach((_, i) => { matrix(bullets, i, [0, 0, 0], [0, 0, 0]); matrix(rings, i, [0, 0, 0], [0, 0, 0]); });
+  const beams = Array.from({ length: 12 }, () => {
+    const material = new THREE.MeshBasicMaterial({ color: '#72f7ff', transparent: true, opacity: 0, toneMapped: false, depthWrite: false, fog: false });
+    const mesh = part(root, new THREE.CylinderGeometry(.23, .23, 1, 8), material); mesh.visible = false;
+    const halo = part(mesh, new THREE.CylinderGeometry(.85, .85, 1, 8), new THREE.MeshBasicMaterial({ color: '#33dfff', transparent: true, opacity: .16, depthWrite: false, toneMapped: false, fog: false }));
+    return { mesh, halo, age: 10 };
+  });
+  const impacts = Array.from({ length: 12 }, () => {
+    const mesh = part(root, new THREE.TorusGeometry(1, .08, 6, 36), new THREE.MeshBasicMaterial({ color: '#8efaff', transparent: true, opacity: 0, toneMapped: false, depthWrite: false })); mesh.visible = false; return { mesh, age: 10 };
+  });
+  let index = 0;
   return {
-    fire(point) {
-      const shot = shots.find(s => !s.active); if (!shot) return false;
-      shot.position.set(0, 6, -18); shot.velocity.copy(point).sub(shot.position).normalize().multiplyScalar(230); shot.age = 0; shot.active = true; return true;
+    fire(origin, point, targets, scoped = false) {
+      const direction = point.clone().sub(origin).normalize(), ray = new THREE.Ray(origin, direction);
+      let hit = null, nearest = Infinity, end = origin.clone().addScaledVector(direction, 450);
+      for (const target of targets) {
+        if (!target.active) continue;
+        const intersection = ray.intersectSphere(new THREE.Sphere(target.position, target.radius), new THREE.Vector3());
+        if (intersection && origin.distanceTo(intersection) < nearest) { nearest = origin.distanceTo(intersection); hit = target; end.copy(intersection); }
+      }
+      const slot = index++ % beams.length, beam = beams[slot]; beam.age = 0; beam.mesh.visible = true; connect(beam.mesh, origin, end); beam.mesh.scale.x = beam.mesh.scale.z = scoped ? .18 : 1;
+      if (hit) { hit.hit = true; hit.active = false; hit.respawnAt = performance.now() + 1600; const impact = impacts[slot]; impact.age = 0; impact.mesh.position.copy(hit.position); onHit(); }
+      else onMiss();
     },
-    update(dt, targets) {
-      shots.forEach((shot, i) => {
-        if (shot.active) {
-          const previous = shot.position.clone(); shot.position.addScaledVector(shot.velocity, dt); shot.age += dt;
-          const hit = targets.find(t => t.active && kineticCollision(previous, shot.position, t.previous, t.position, .2));
-          if (hit) { hit.hit = true; hit.active = false; shot.active = false; const puff = puffs[puffIndex++ % puffs.length]; puff.position.copy(hit.position); puff.age = 0; onHit(); }
-          else if (shot.age > 2 || shot.position.y < 0) { shot.active = false; onMiss(); }
-        }
-        matrix(bullets, i, shot.position.toArray(), shot.active ? [1, 1, 1] : [0, 0, 0]);
-      });
-      puffs.forEach((puff, i) => { puff.age += dt; const active = puff.age < 1.4, size = reduced ? 3 : 1 + puff.age * 7; matrix(rings, i, puff.position.toArray(), active ? [size, size, size] : [0, 0, 0]); });
-      bullets.instanceMatrix.needsUpdate = rings.instanceMatrix.needsUpdate = true;
+    update(dt) {
+      beams.forEach(beam => { beam.age += dt; beam.mesh.visible = beam.age < .3; beam.mesh.material.opacity = Math.max(0, 1 - beam.age / .3) * .9; });
+      impacts.forEach(impact => { impact.age += dt; impact.mesh.visible = impact.age < .8; impact.mesh.scale.setScalar(reduced ? 7 : 4 + impact.age * 15); impact.mesh.material.opacity = Math.max(0, 1 - impact.age / .8); });
     },
   };
 }

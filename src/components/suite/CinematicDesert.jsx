@@ -11,8 +11,11 @@ export default function CinematicDesert({ onInspectionChange }) {
   const host = useRef(null), inspection = useRef({ focus: null, zoom: 1, index: 0, react: false });
   const game = useRocketDemo();
   const robotReward = useRobotWaveReward();
-  const [focus, setFocus] = useState(null), [zoom, setZoom] = useState(1);
-  const changeFocus = value => { inspection.current.focus = value; inspection.current.index = 0; setFocus(value); onInspectionChange?.(Boolean(value)); };
+  const [focus, setFocus] = useState(null), [zoom, setZoom] = useState(1), [scope, setScope] = useState(false);
+  const [range, setRange] = useState({ hits: 0, fired: 0, streak: 0 });
+  const changeScope = value => { inspection.current.scope = value; setScope(value); };
+  inspection.current.onRangeUpdate = setRange; inspection.current.onScopeChange = changeScope;
+  const changeFocus = value => { inspection.current.focus = value; inspection.current.index = 0; inspection.current.keyHeld = false; changeScope(false); setFocus(value); onInspectionChange?.(Boolean(value)); };
   const [, setStatus] = useState('INITIALIZING RECONNAISSANCE');
   useEffect(() => {
     let dispose;
@@ -20,5 +23,5 @@ export default function CinematicDesert({ onInspectionChange }) {
     catch (error) { console.error('Desert renderer:', error); setStatus('3D REQUIRES WEBGL / SUITE NAVIGATION REMAINS AVAILABLE'); }
     return () => dispose?.();
   }, []);
-  return <><div ref={host} className="suite-world" /><GroundInspectionControls focus={focus} zoom={zoom} onFocus={changeFocus} onZoom={value => { inspection.current.zoom = value; setZoom(value); }} onNext={() => { inspection.current.index++; }} onReact={() => { inspection.current.react = true; }} /><RocketDemoReward game={game} /><RobotWaveReward reward={robotReward} /></>;
+  return <><div ref={host} className="suite-world" /><GroundInspectionControls focus={focus} scope={scope} onScope={changeScope} range={range} zoom={zoom} onFocus={changeFocus} onZoom={value => { inspection.current.zoom = value; setZoom(value); }} onNext={() => { inspection.current.index += focus === 'kinetic' && inspection.current.index % (inspection.current.laserTurretCount + 1) === 0 ? 2 : 1; }} onReact={() => { inspection.current.react = true; }} /><RocketDemoReward game={game} /><RobotWaveReward reward={robotReward} /></>;
 }
