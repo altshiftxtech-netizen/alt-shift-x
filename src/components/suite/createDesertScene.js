@@ -23,6 +23,7 @@ import droneCursorFlight from '@/components/suite/droneCursorFlight';
 import rocketDemoEffects from '@/components/suite/game/rocketDemoEffects';
 import provingGroundExpansion from '@/components/suite/expansion/provingGroundExpansion';
 import fleetDetailing from '@/components/suite/fleetDetailing';
+import rocketInteraction from '@/components/suite/rocketInteraction';
 
 export default function createDesertScene(host, onStatus, inspection, game, robotWave) {
   const compact = window.innerWidth < 700;
@@ -80,6 +81,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
     return null;
   };
   const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') { if (game) game.current.fuel(); else target.userData.launch(); } if (!hover) target.userData.onActivate?.(); if (!hover && target.userData.isRobot) robotWave?.current?.(target.userData.robotId); onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
+  const rocketTap = rocketInteraction(host, rocket.vehicle, camera, inspection, () => activate(rocket.target));
   const updateCamera = desertInspectionCamera(camera, targets, inspection, activate);
   const move = event => { if (!event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) expansion.move(event); const target = pick(event); flight.move(event, target); renderer.domElement.style.cursor = target || inspection.focus === 'drone' ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
   const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; if (event.target.closest?.('button,a,select,input,.suite-ground-controls,header,footer')) return; if (event.target === renderer.domElement && expansion.click(event)) return; activate(pick(event)); };
@@ -113,6 +115,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
     renderer.setScissorTest(false);
     composer.render();
     camera.position.sub(shake);
+    rocketTap.update();
     quality.sample(realDt);
     sampleFrames++; sampleTime += realDt;
     if (sampleTime > 2) {
@@ -125,6 +128,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   frame = requestAnimationFrame(animate);
   return () => {
     window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('blur', up); window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp);
+    rocketTap.dispose();
     cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
     const geometries = new Set(), materials = new Set(), textures = new Set();
     scene.traverse(object => { if (object.geometry) geometries.add(object.geometry); if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach(m => { materials.add(m); Object.values(m).forEach(value => { if (value?.isTexture) textures.add(value); }); }); });

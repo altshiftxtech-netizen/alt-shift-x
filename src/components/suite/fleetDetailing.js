@@ -7,6 +7,7 @@ export default function fleetDetailing(scene, targets) {
   scene.traverse(object => { if (object.userData.hardwareProfile) tagged.push(object); });
   for (const target of new Set([...targets, ...tagged])) {
     const kind = target.userData.kind;
+    if (kind === 'surveyor' && target.userData.isRobot) continue;
     const key = target.userData.hardwareProfile || (kind === 'crimson' || (kind === 'repository' && target.name.includes('truck')) ? 'truck' : kind);
     const profile = hardwareProfiles[key]; if (!profile) continue;
     const { size: [w, h, l], center: [x, y, z], code } = profile;

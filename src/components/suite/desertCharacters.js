@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { laneX } from '@/components/suite/desertTraffic';
+import builderBotAds from '@/components/suite/builderBotAds';
 
 export default function desertCharacters(scene, heightAt, compact) {
   const suit = new THREE.MeshStandardMaterial({ color: '#8495A4', metalness: .55, roughness: .42 });
   const joints = new THREE.MeshStandardMaterial({ color: '#263B49', metalness: .65, roughness: .5 });
   const visor = new THREE.MeshStandardMaterial({ color: '#53DBED', emissive: '#2199AB', emissiveIntensity: .45, metalness: .5, roughness: .25 });
   const robotArmor = new THREE.MeshStandardMaterial({ color: '#BAA882', metalness: .75, roughness: .36 });
-  const people = [];
+  const people = [], attachAds = builderBotAds();
   const stations = [[-24, 35], [30, 12], [-54, -28], [64, -58], [12, -78], [-83, -100], [85, -8], [-10, -145]];
   for (let i = 0; i < (compact ? 6 : 8); i++) {
     const robot = i % 2 === 1, group = new THREE.Group(), limbs = [];
@@ -31,6 +32,7 @@ export default function desertCharacters(scene, heightAt, compact) {
       add(new RoundedBoxGeometry(.34, .22, .55), joints, 0, -1.18, .12, leg);
       limbs.push({ arm, leg, side });
     }
+    if (robot) attachAds(group);
     group.scale.setScalar(robot ? 1.8 : 1.5); scene.add(group);
     people.push({ group, limbs, station: stations[i], phase: i * 1.7 });
   }

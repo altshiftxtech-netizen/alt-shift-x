@@ -17,9 +17,9 @@ export default function desertRocket(scene, notify) {
   root.userData.launch = sequence.launch;
   scene.add(root);
   const resize = aspect => {
-    const x = -aspect * (aspect < .65 ? 57 : 66), z = -65;
+    const x = -aspect * (aspect < .65 ? 43 : 50), z = -65;
     const ground = Math.max(...[-5, 0, 5].flatMap(dx => [-5, 0, 5].map(dz => heightAt(x + dx, z + dz))));
     root.position.set(x, ground + .6, z);
   };
-  return { target: root, resize, update: sequence.update, launchDemo: () => { vehicleMount.rotation.x = 0; return sequence.launch(true); } };
+  return { target: root, vehicle: vehicle.rocket, resize, update: sequence.update, launchDemo: () => { vehicleMount.rotation.x = 0; return sequence.launch(true); } };
 }

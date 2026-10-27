@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { DEMO_PASSES } from '@/components/suite/game/rocketDemoSession';
+import '@/components/suite/game/rocketDemo.css';
 export default function RocketDemoReward({ game }) {
   const reward = game.state.reward;
   const [tier, setTier] = useState(DEMO_PASSES[0]), [acknowledged, setAcknowledged] = useState(false), [now, setNow] = useState(Date.now);
