@@ -18,6 +18,7 @@ export default function provingGroundExpansion(scene, camera, canvas, compact, r
       const repositoryState = repository.update(timestamp, inspection.focus === 'repository');
       const range = kinetic.update(time, dt, inspection.focus === 'kinetic');
       canvas.dataset.forestryPhase = String(phase.phase); canvas.dataset.forestryHumans = String(phase.humans);
+      canvas.dataset.repositoryRoadLength = String(Math.round(repositoryState.roadLength)); canvas.dataset.repositoryOutboundLoaded = String(repositoryState.outboundLoaded);
       canvas.dataset.crimsonVisible = String(repositoryState.crimson); canvas.dataset.repositoryDoorsOpen = String(repositoryState.doorsOpen); canvas.dataset.interceptStreak = String(range.streak); canvas.dataset.inertShots = String(range.fired);
     },
   };

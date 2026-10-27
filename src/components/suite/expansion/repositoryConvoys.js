@@ -4,11 +4,11 @@ import { palette } from '@/components/suite/sleekParts';
 import repositoryTruck from '@/components/suite/expansion/repositoryTruck';
 import provingGroundEvents from '@/components/suite/expansion/provingGroundEvents';
 
-export default function repositoryConvoys(scene, floor, reduced) {
-  const count = 6, materials = palette(), fleet = Array.from({ length: count }, () => repositoryTruck(materials));
+export default function repositoryConvoys(scene, floor, reduced, road) {
+  const count = 6, materials = palette(), fleet = Array.from({ length: count }, (_, i) => repositoryTruck(materials, i % 2 === 1));
   fleet.forEach(({ truck }) => scene.add(truck));
   const red = new THREE.MeshStandardMaterial({ color: '#ff0033', emissive: '#ff0033', emissiveIntensity: 2.8, roughness: .3 });
-  const sentinelVehicle = repositoryTruck({ ...materials, shell: red, light: red }), sentinel = sentinelVehicle.truck;
+  const sentinelVehicle = repositoryTruck({ ...materials, shell: red, light: red }, false), sentinel = sentinelVehicle.truck;
   sentinel.name = 'mesh_crimson_sentinel'; sentinel.visible = false; sentinel.userData = { kind: 'crimson', activation: -100 }; scene.add(sentinel);
   let emergence = '', claimed = '', lastTimestamp = 0, nearDoor = false;
   sentinel.userData.onActivate = () => { if (!sentinel.visible || claimed === emergence) return; claimed = emergence; provingGroundEvents('PROVING_GROUND_CRIMSON_TRIGGER', {}); };
@@ -19,16 +19,18 @@ export default function repositoryConvoys(scene, floor, reduced) {
     return value % 1000000 === 0;
   };
   return { target: sentinel, targets: fleet.map(({ truck }) => truck), get nearDoor() { return nearDoor; }, update(timestamp) {
-    const travel = timestamp / 1000 * 4, length = 340, distance = lastTimestamp ? (timestamp - lastTimestamp) / 1000 * 4 : 0;
+    const travel = timestamp / 1000 * 4, length = road.length, distance = lastTimestamp ? (timestamp - lastTimestamp) / 1000 * 4 : 0;
     lastTimestamp = timestamp; sentinel.visible = false; nearDoor = false;
     for (let i = 0; i < count; i++) {
-      const offset = travel + i * length / count, cycle = Math.floor(offset / length), z = -650 + offset % length;
-      const inbound = i % 2 === 1, actualZ = inbound ? -960 - z : z, x = inbound ? -438 : -420;
-      const rare = !inbound && actualZ >= -380 && rarity(cycle, i);
-      const vehicle = fleet[i]; vehicle.truck.position.set(x, floor, actualZ); vehicle.truck.rotation.y = inbound ? Math.PI : 0;
+      const offset = travel + i * length / count, cycle = Math.floor(offset / length), progress = (offset % length) / length;
+      const inbound = i % 2 === 1, t = inbound ? 1 - progress : progress;
+      const position = road.sample(t, inbound ? -9 : 9), tangent = road.tangent(t);
+      const heading = Math.atan2(tangent.x, tangent.z) + (inbound ? Math.PI : 0);
+      const rare = !inbound && position.z >= -380 && rarity(cycle, i);
+      const vehicle = fleet[i]; vehicle.truck.position.copy(position); vehicle.truck.rotation.y = heading;
       vehicle.truck.visible = !rare; vehicle.update(inbound ? -distance : distance);
-      nearDoor ||= Math.abs(actualZ + 404) < 48;
-      if (rare) { sentinel.visible = true; sentinel.position.set(x, floor, actualZ); sentinelVehicle.update(distance); emergence = `${cycle}:${i}`; }
+      nearDoor ||= Math.abs(position.z + 404) < 48 && Math.abs(position.x + 429) < 30;
+      if (rare) { sentinel.visible = true; sentinel.position.copy(position); sentinel.rotation.y = heading; sentinelVehicle.update(distance); emergence = `${cycle}:${i}`; }
     }
     // A low-contrast 4Hz heartbeat, never an on/off strobe.
     red.emissiveIntensity = reduced ? 2.8 : 2.8 + .08 * Math.sin(timestamp / 1000 * Math.PI * 8);

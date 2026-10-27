@@ -11,11 +11,11 @@ export default function useRocketDemo() {
   const current = useRef(state), bridge = useRef({ launchRequested: false }), audio = useRef(null);
   const commit = next => { current.current = next; saveRocketDemo(next); setState(next); };
   const fuel = () => {
+    bridge.current.launchRequested = true;
     if (!ready || open) return;
     const next = fuelRocketDemo(current.current, signedIn);
     const milestone = next.launches > current.current.launches;
     commit(next);
-    bridge.current.launchRequested = true;
     if (milestone) setOpen(true);
     if (sound && ['Ready', 'Robotic servicing', 'Touchdown'].includes(phase)) audio.current?.launch();
   };

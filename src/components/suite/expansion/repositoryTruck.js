@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { palette, rounded, sphere } from '@/components/suite/sleekParts';
 import { part, instances, matrix } from '@/components/suite/expansion/sectorPrimitives';
 
-export default function repositoryTruck(materials = palette()) {
-  const truck = new THREE.Group(), sensors = new THREE.Group();
+export default function repositoryTruck(materials = palette(), loaded = true) {
+  const truck = new THREE.Group(), sensors = new THREE.Group(), cargo = new THREE.Group();
+  cargo.name = 'Repository cargo'; cargo.visible = loaded; truck.add(cargo);
   truck.name = 'Autonomous six-wheel barrel truck';
   truck.userData = { kind: 'repository', inspectionDistance: 22, inspectionAimHeight: 5, inspectionDirection: [.35, .42, 1.2] };
   rounded(truck, [8.4, 1.2, 19], [0, 2.8, 0], materials.shell);
@@ -19,9 +20,9 @@ export default function repositoryTruck(materials = palette()) {
   for (const x of [-4.5, 4.5]) for (const z of [-6.5, -.5, 6.4]) { matrix(tires, wheelIndex, [x, 1.45, z], [1, 1, 1], [0, 0, Math.PI / 2]); matrix(hubs, wheelIndex++, [x, 1.45, z], [1, 1, 1], [0, 0, Math.PI / 2]); }
   tires.instanceMatrix.needsUpdate = hubs.instanceMatrix.needsUpdate = true;
   const drum = new THREE.MeshStandardMaterial({ color: '#a67c43', metalness: .6, roughness: .38 });
-  const barrels = instances(truck, new THREE.CylinderGeometry(1.3, 1.3, 4.8, 20), drum, 6);
-  const hoops = instances(truck, new THREE.TorusGeometry(1.32, .09, 5, 20), materials.shell, 12);
-  const lids = instances(truck, new THREE.CylinderGeometry(1.22, 1.22, .12, 20), materials.dark, 6);
+  const barrels = instances(cargo, new THREE.CylinderGeometry(1.3, 1.3, 4.8, 20), drum, 6);
+  const hoops = instances(cargo, new THREE.TorusGeometry(1.32, .09, 5, 20), materials.shell, 12);
+  const lids = instances(cargo, new THREE.CylinderGeometry(1.22, 1.22, .12, 20), materials.dark, 6);
   barrels.name = 'Secured cargo barrels'; let barrelIndex = 0;
   for (const x of [-1.9, 1.9]) for (const z of [-6.6, -3.3, 0]) {
     matrix(barrels, barrelIndex, [x, 6.3, z]); matrix(lids, barrelIndex, [x, 8.73, z]);

@@ -21,5 +21,5 @@ export default function desertRocket(scene, notify) {
     const ground = Math.max(...[-5, 0, 5].flatMap(dx => [-5, 0, 5].map(dz => heightAt(x + dx, z + dz))));
     root.position.set(x, ground + .6, z);
   };
-  return { target: root, vehicle: vehicle.rocket, resize, update: sequence.update, launchDemo: () => { const launched = sequence.launch(); if (launched) vehicleMount.rotation.x = 0; return launched; } };
+  return { target: root, vehicle: vehicle.rocket, resize, update: sequence.update, launchDemo: () => { const launched = sequence.launch(true); if (launched) vehicleMount.rotation.x = 0; return launched; } };
 }
