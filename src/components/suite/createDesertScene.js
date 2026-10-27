@@ -22,7 +22,7 @@ import vehicleSignals from '@/components/suite/vehicleSignals';
 import droneCursorFlight from '@/components/suite/droneCursorFlight';
 import rocketDemoEffects from '@/components/suite/game/rocketDemoEffects';
 
-export default function createDesertScene(host, onStatus, inspection, game) {
+export default function createDesertScene(host, onStatus, inspection, game, robotWave) {
   const compact = window.innerWidth < 700;
   const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
   // Start at display resolution instead of allocating a supersampled frame before first paint.
@@ -74,7 +74,7 @@ export default function createDesertScene(host, onStatus, inspection, game) {
     for (const hit of hits) { let object = hit.object; while (object && !object.userData.kind) object = object.parent; if (object) return object; }
     return null;
   };
-  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') { if (game) game.current.fuel(); else target.userData.launch(); } onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
+  const activate = (target, hover = false) => { if (!target || (hover && !['drone', 'aircraft'].includes(target.userData.kind))) return; target.userData.activation = reduced ? elapsed * .12 : elapsed; if (target.userData.kind === 'rocket') { if (game) game.current.fuel(); else target.userData.launch(); } if (!hover && target.userData.isRobot) robotWave?.current?.(target.userData.robotId); onStatus(`${target.userData.kind} responding`); lastStatus = performance.now(); };
   const updateCamera = desertInspectionCamera(camera, targets, inspection, activate);
   const move = event => { const target = pick(event); flight.move(event, target); renderer.domElement.style.cursor = target || inspection.focus === 'drone' ? 'crosshair' : 'default'; if (target !== hovered) { hovered = target; activate(target, true); } };
   const click = event => { if (pointerDown && Math.hypot(event.clientX - pointerDown[0], event.clientY - pointerDown[1]) > 6) return; activate(pick(event)); };

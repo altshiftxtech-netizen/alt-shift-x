@@ -9,13 +9,21 @@ export async function syncPassCheckout(base44, stripe, session) {
   const tier = sovereignPassTiers[session.metadata.tier];
   const nodeIds = JSON.parse(session.metadata.node_ids || '[]');
   if (!tier || !session.metadata.user_id || session.currency !== 'usd' || session.amount_subtotal !== tier.amount || session.mode !== (tier.recurring ? 'subscription' : 'payment') || nodeIds.length !== tier.nodes || new Set(nodeIds).size !== nodeIds.length || nodeIds.some(id => !passNodeIds.includes(id))) throw new Error('Pass payment details do not match the server catalog');
+  let pending = null;
+  if (session.metadata.checkout_version === 'robot-waves-v1') {
+    const checkout = await base44.asServiceRole.entities.SovereignPassCheckout.filter({ stripe_session_id: session.id }, { limit: 1 });
+    pending = checkout.items[0];
+    if (!pending || pending.user_id !== session.metadata.user_id || pending.tier !== session.metadata.tier || session.currency !== pending.currency || session.amount_total !== pending.expected_amount) throw new Error('Pass payment does not match its recorded checkout');
+  }
   const { items } = await base44.asServiceRole.entities.SovereignPass.filter({ stripe_session_id: session.id }, { limit: 1 });
   const existing = items[0];
   const sub = session.subscription ? await stripe.subscriptions.retrieve(typeof session.subscription === 'string' ? session.subscription : session.subscription.id) : null;
   const paidAt = existing?.paid_at || new Date().toISOString();
   const expiresAt = sub ? periodEnd(sub) : existing?.expires_at || new Date(new Date(paidAt).getTime() + 7 * 86400000).toISOString();
   const data = { user_id: session.metadata.user_id, tier: session.metadata.tier, node_ids: nodeIds, seat_limit: tier.seats, stripe_session_id: session.id, stripe_subscription_id: sub?.id || '', stripe_customer_id: typeof session.customer === 'string' ? session.customer : session.customer?.id || '', status: sub?.status || 'active', paid_at: paidAt, expires_at: expiresAt, cancel_at_period_end: sub?.cancel_at_period_end || false, test_mode: !session.livemode };
-  return existing ? await base44.asServiceRole.entities.SovereignPass.update(existing.id, data) : await base44.asServiceRole.entities.SovereignPass.create(data);
+  const pass = existing ? await base44.asServiceRole.entities.SovereignPass.update(existing.id, data) : await base44.asServiceRole.entities.SovereignPass.create(data);
+  if (pending) await base44.asServiceRole.entities.SovereignPassCheckout.update(pending.id, { status: 'paid' });
+  return pass;
 }
 
 export async function handleSovereignPassEvent(base44, stripe, event) {

@@ -1,0 +1,39 @@
+{
+  "name": "RobotWaveShard",
+  "type": "object",
+  "properties": {
+    "campaign": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "campaign",
+    "room_id",
+    "total"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

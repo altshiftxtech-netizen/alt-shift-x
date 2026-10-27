@@ -12,7 +12,7 @@ export default function desertCharacters(scene, heightAt, compact) {
   for (let i = 0; i < (compact ? 6 : 8); i++) {
     const robot = i % 2 === 1, group = new THREE.Group(), limbs = [];
     group.name = robot ? 'Survey robot' : 'Suited humanoid';
-    group.userData = { kind: 'surveyor', activation: -100 };
+    group.userData = { kind: 'surveyor', activation: -100, isRobot: robot, robotId: `survey-${i}` };
     const add = (geometry, material, x, y, z, parent = group) => {
       const mesh = new THREE.Mesh(geometry, material); mesh.position.set(x, y, z); mesh.castShadow = true; parent.add(mesh); return mesh;
     };
