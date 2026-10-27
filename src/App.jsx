@@ -18,7 +18,6 @@ import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
 import SovereignPassPage from '@/pages/SovereignPassPage';
 import Home from './pages/Home';
 import SuiteLandingPage from './pages/SuiteLandingPage';
-import ProvingGroundReport from '@/pages/ProvingGroundReport';
 import AboutUs from './pages/AboutUs';
 import ExpertMind from './pages/ExpertMind';
 import Marketplace from './pages/Marketplace';
@@ -307,7 +306,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/intelligence" element={<PlatformIntelligence />} />
         <Route path="/admin/security" element={<SecurityCenter />} />
         <Route path="/admin/health" element={<SystemHealth />} />
-        <Route path="/admin/proving-ground" element={<ProvingGroundReport />} />
+        <Route path="/admin/proving-ground" element={<Navigate to="/admin?section=proving-ground" replace />} />
         <Route path="/admin/gamification" element={<GamificationAdmin />} />
         <Route path="/admin/bob-init" element={<BobInit />} />
         <Route path="/vendor-portal" element={<VendorPortalPage />} />

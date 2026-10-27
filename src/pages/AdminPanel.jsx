@@ -29,8 +29,9 @@ import AquillaDownloadTab from "@/components/admin/AquillaDownloadTab";
 import Pm1aDeploymentTab from "@/components/admin/Pm1aDeploymentTab";
 import PwaExportsSection from "@/components/admin/PwaExportsSection";
 import PwaTestLab from "@/components/admin/PwaTestLab";
+import ProvingGroundReport from '@/pages/ProvingGroundReport';
 
-const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence", "Aquilla Binary", "PWA Management"];
+const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence", "Aquilla Binary", "PWA Management", "Proving Ground Report"];
 
 const PLAN_LABELS = { starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
 const PLAN_COLORS = { starter: "bg-slate-100 text-slate-600", pro: "bg-violet-100 text-violet-700", enterprise: "bg-blue-100 text-blue-700" };
@@ -85,7 +86,7 @@ function SubscriptionsTab() {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("User Management");
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('section') === 'proving-ground' ? 'Proving Ground Report' : 'User Management');
   const [stats, setStats] = useState({ pending: 0, published: 0, flagged: 0, builders: 0 });
 
   // Load accurate catalog counts. A single .filter()/.list() call is capped at
@@ -149,6 +150,7 @@ export default function AdminPanel() {
     "Component Upload": <ComponentUploadTab />,
     "Site Documents": <SiteDocumentsTab />,
     "Aquilla Binary": <AquillaDownloadTab />,
+    "Proving Ground Report": <ProvingGroundReport embedded />,
     "PWA Management": (
       <div className="space-y-6">
         <PwaExportsSection />

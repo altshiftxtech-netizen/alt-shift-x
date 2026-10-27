@@ -6,7 +6,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import DevNavChrome from "@/components/nav/DevNavChrome";
 import UserMenu from "@/components/nav/UserMenu";
-import ProvingGroundAdminMenu from '@/components/suite/ProvingGroundAdminMenu';
 import { base44 } from "@/api/base44Client";
 
 const USER_NAV = [
@@ -125,7 +124,6 @@ export default function SharedNav({ mode = "user", theme }) {
 
         {/* Right side */}
         <div className="flex items-center gap-1 shrink-0">
-          <ProvingGroundAdminMenu />
           {/* Theme toggle */}
           <ThemeToggle />
 

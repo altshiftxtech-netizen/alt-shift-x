@@ -5,14 +5,14 @@ import { useAuth } from '@/lib/AuthContext';
 import SharedNav from '@/components/SharedNav';
 import ProvingGroundTotals from '@/components/suite/ProvingGroundTotals';
 
-export default function ProvingGroundReport() {
+export default function ProvingGroundReport({ embedded = false }) {
   const { user, isLoadingAuth } = useAuth();
   const report = useQuery({ queryKey: ['proving-ground-report'], enabled: user?.role === 'admin', queryFn: async () => (await base44.functions.invoke('provingGroundUsageReport', {})).data });
   if (isLoadingAuth) return <main className="p-8" role="status">Checking access…</main>;
   if (user?.role !== 'admin') return <main className="p-8"><h1>Admin access required</h1><p>This report is private.</p></main>;
   const totals = report.data?.totals || {};
-  return <div className="min-h-screen bg-background text-foreground">
-    <SharedNav />
+  return <div className={embedded ? 'rounded-lg bg-background text-foreground' : 'min-h-screen bg-background text-foreground'}>
+    {!embedded && <SharedNav mode="builder" />}
     <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-sm text-muted-foreground">Private · Admin only</p><h1 className="text-3xl font-semibold">Proving Ground report</h1></div>
         <button className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50" disabled={report.isFetching} onClick={() => report.refetch()}>Refresh totals</button></div>
