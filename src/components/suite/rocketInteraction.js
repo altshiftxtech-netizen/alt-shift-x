@@ -9,7 +9,6 @@ export default function rocketInteraction(host, vehicle, camera, inspection, onC
   const projected = new THREE.Vector3();
   return {
     update() {
-      if (inspection.focus) { button.hidden = true; return; }
       const width = host.clientWidth, height = host.clientHeight;
       let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity, inFront = false;
       for (const corner of corners) {
