@@ -1,0 +1,117 @@
+{
+  "name": "DbLiveLedgerBlock",
+  "type": "object",
+  "properties": {
+    "block_number": {
+      "type": "number",
+      "description": "Sequential append-only block number"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "SUPERCOMPUTE_EXECUTION",
+        "MERKLE_ROOT_REFRESH",
+        "AST_CACHE_INVALIDATION",
+        "RLVR_STRESS_TEST",
+        "ENCLAVE_KEY_ROTATION",
+        "COMMIT",
+        "QUERY_METRIC"
+      ],
+      "description": "Type of ledger block entry"
+    },
+    "merkle_root": {
+      "type": "string",
+      "description": "Merkle DAG root hash after this block"
+    },
+    "previous_hash": {
+      "type": "string",
+      "description": "Hash of the previous block for chain integrity"
+    },
+    "payload_hash": {
+      "type": "string",
+      "description": "SHA-256 of the block payload"
+    },
+    "execution_receipt": {
+      "type": "object",
+      "properties": {
+        "stages_completed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credits_consumed": {
+          "type": "number",
+          "default": 0
+        },
+        "duration_ms": {
+          "type": "number"
+        },
+        "merkle_dag_indexed": {
+          "type": "boolean"
+        },
+        "ast_precompiled": {
+          "type": "boolean"
+        },
+        "rlvr_stress_tested": {
+          "type": "boolean"
+        },
+        "enclave_keys_rotated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "trigger_reason": {
+      "type": "string",
+      "description": "Which trigger criteria caused this execution (A/B/C/D)"
+    },
+    "metrics_snapshot": {
+      "type": "object",
+      "properties": {
+        "unindexed_blocks": {
+          "type": "number"
+        },
+        "cache_dirty_delta_pct": {
+          "type": "number"
+        },
+        "avg_query_response_ms": {
+          "type": "number"
+        }
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "worm_sealed": {
+      "type": "boolean",
+      "default": true,
+      "description": "Write-Once-Read-Many seal \u2014 once written, this block is immutable"
+    }
+  },
+  "required": [
+    "block_number",
+    "type",
+    "merkle_root",
+    "previous_hash",
+    "timestamp"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

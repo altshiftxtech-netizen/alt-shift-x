@@ -7,6 +7,7 @@ import RobotWaveReward from '@/components/suite/game/RobotWaveReward';
 import RocketDemoReward from '@/components/suite/game/RocketDemoReward';
 import SovereignGiftPassModal from '@/components/suite/game/SovereignGiftPassModal';
 import useGiftPassEngine from '@/components/suite/game/useGiftPassEngine';
+import useSupercomputeWatcher from '@/components/suite/useSupercomputeWatcher';
 import '@/components/suite/provingGround.css';
 
 export default function CinematicDesert({ onInspectionChange }) {
@@ -14,6 +15,7 @@ export default function CinematicDesert({ onInspectionChange }) {
   const game = useRocketDemo();
   const robotReward = useRobotWaveReward();
   const giftEngine = useGiftPassEngine();
+  useSupercomputeWatcher();
   const [focus, setFocus] = useState(null), [zoom, setZoom] = useState(1), [scope, setScope] = useState(false);
   const [range, setRange] = useState({ hits: 0, fired: 0, streak: 0, pairs: 0, goal: 50, complete: false, message: 'Shoot two different drones of the same color.' });
   const changeScope = value => { inspection.current.scope = value; setScope(value); };
