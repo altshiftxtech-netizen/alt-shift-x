@@ -8,7 +8,7 @@ export default function laserTurret(root, position, materials) {
   const swivel = new THREE.Group(); base.add(swivel);
   rounded(swivel, [12, 7, 12], [0, 5, 0], materials.shell);
   for (const side of [-1, 1]) rounded(swivel, [2, 10, 7], [side * 6, 9, 0], materials.dark);
-  const head = new THREE.Group(); head.position.y = 12; swivel.add(head);
+  const head = new THREE.Group(); head.position.y = 12; head.userData.hardwareProfile = 'turret'; swivel.add(head);
   rounded(head, [10, 8, 12], [0, 0, 0], materials.shell);
   rounded(head, [7, 5, 13], [0, 0, -8], materials.shell);
   const lens = new THREE.MeshBasicMaterial({ color: '#73f5ff', toneMapped: false });

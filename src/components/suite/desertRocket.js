@@ -7,7 +7,7 @@ import launchSequence from '@/components/suite/launchSequence';
 
 export default function desertRocket(scene, notify) {
   const root = new THREE.Group();
-  root.userData.kind = 'rocket';
+  root.userData = { kind: 'rocket', inspectionAimHeight: 4.3, inspectionDistance: 18 };
   const vehicleMount = new THREE.Group();
   // Keep the rocket's silhouette vertical in the wide, downward-looking camera.
   vehicleMount.rotation.x = -Math.atan2(45, 122);

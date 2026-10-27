@@ -22,6 +22,7 @@ import vehicleSignals from '@/components/suite/vehicleSignals';
 import droneCursorFlight from '@/components/suite/droneCursorFlight';
 import rocketDemoEffects from '@/components/suite/game/rocketDemoEffects';
 import provingGroundExpansion from '@/components/suite/expansion/provingGroundExpansion';
+import fleetDetailing from '@/components/suite/fleetDetailing';
 
 export default function createDesertScene(host, onStatus, inspection, game, robotWave) {
   const compact = window.innerWidth < 700;
@@ -46,6 +47,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const expansion = provingGroundExpansion(scene, camera, renderer.domElement, compact, reduced, inspection);
   const targets = [...vehicles.targets, ...aerospace.targets, rocket.target, ...expansion.targets];
+  fleetDetailing(scene, targets);
   const updateSignals = vehicleSignals(scene, vehicles.targets);
   const flight = droneCursorFlight(camera, renderer.domElement, inspection);
   // Avoid multisampled HDR resolves: use full-frame postprocess edge smoothing instead.

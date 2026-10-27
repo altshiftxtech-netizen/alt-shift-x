@@ -21,7 +21,7 @@ export default function desertAerospace(scene, materials, compact) {
     const hull = sphere(group, 1, [0, 0, 0], materials.shell); hull.scale.set(1.4, .7, 4.6);
     const cockpit = sphere(group, 1, [0, .5, 1.8], materials.glass); cockpit.scale.set(.85, .45, 1.6);
     for (const side of [-1, 1]) {
-      const wing = rounded(group, [5.7, .16, 1.8], [side * 3.3, 0, -.8], materials.shell); wing.rotation.y = side * .34;
+      const wing = rounded(group, [5.7, .16, 1.8], [side * 3.3, 0, -.8], materials.shell); wing.rotation.y = side * .34; wing.userData.hardwareProfile = 'wing';
       rounded(group, [.6, .4, 1.8], [side * 1.3, -.3, -3.5], materials.dark);
       rounded(group, [.4, .18, .12], [side * 1.3, -.3, -4.42], materials.light);
     }

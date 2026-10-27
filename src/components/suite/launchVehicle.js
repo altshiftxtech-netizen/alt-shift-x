@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { rounded } from '@/components/suite/sleekParts';
+import rocketHullDetail from '@/components/suite/rocketHullDetail';
 
 export default function launchVehicle(scene, materials) {
   const rocket = new THREE.Group(), legs = [];
@@ -21,5 +22,6 @@ export default function launchVehicle(scene, materials) {
   const flame = new THREE.Mesh(new THREE.ConeGeometry(.45, 3.8, 32), new THREE.MeshBasicMaterial({ color: '#8cdfff', transparent: true, opacity: .85 }));
   flame.rotation.z = Math.PI; flame.position.y = -2.2; rocket.add(flame); flame.visible = false;
   const core = new THREE.Mesh(new THREE.ConeGeometry(.22, 2.6, 24), new THREE.MeshBasicMaterial({ color: '#fff3d6' })); core.rotation.z = Math.PI; core.position.y = -1.6; rocket.add(core); core.visible = false;
+  rocketHullDetail(rocket);
   rocket.position.y = 1.2; scene.add(rocket); return { rocket, legs, flame, core };
 }

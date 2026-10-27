@@ -24,7 +24,7 @@ export default function forestryMachines(parent, compact) {
   }
   const seeds = instances(parent, new THREE.IcosahedronGeometry(.13, 0), new THREE.MeshBasicMaterial({ color: '#7edfcc' }), 64);
   const targets = [...planters.map(update => update.target), ...drones.map(d => d.g), ...tracked.map(d => d.g), ...dogs.map(d => d.g)];
-  targets.forEach(target => { target.userData = { kind: 'forestry', inspectionDistance: 22, inspectionAimHeight: 2 }; });
+  targets.forEach((target, index) => { target.userData = { kind: 'forestry', inspectionDistance: 22, inspectionAimHeight: 2, hardwareProfile: index < planters.length ? 'planter' : index < planters.length + 2 ? 'seedDrone' : index < planters.length + 4 ? 'forestryCarrier' : 'forestryDog' }; });
   const update = (time, state) => {
     planters.forEach(update => update(time, state.phase === 1)); seeds.visible = state.phase !== 3; seeds.material.color.set(state.phase === 1 ? '#7edfcc' : '#dfa85c');
     drones.forEach(({ g, rotors }, i) => { const x = 310 + i * 120 + Math.sin(time * .06) * 25, z = -340 + Math.cos(time * .04 + i) * 110; g.visible = state.phase === 1; g.position.set(x, heightAt(x, z) + 20 + Math.sin(time) * 2, z); rotors.forEach(r => r.rotation.y = time * 22); for (let j = 0; j < 32; j++) { const f = (time * .25 + j / 32) % 1; matrix(seeds, i * 32 + j, [x + Math.sin(j) * 2, g.position.y * (1 - f) + heightAt(x, z) * f, z + Math.cos(j) * 2]); } }); seeds.instanceMatrix.needsUpdate = true;
