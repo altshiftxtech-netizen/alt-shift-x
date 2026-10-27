@@ -29,6 +29,6 @@ export default function mountainRepository(scene, reduced) {
   convoys.targets.forEach(truck => { truck.userData.onActivate = target.userData.onActivate; });
   return { targets: [target, ...convoys.targets, convoys.target], update(timestamp) {
     const crimson = convoys.update(timestamp), doorsOpen = timestamp < openUntil || convoys.nearDoor;
-    tunnel.update(doorsOpen, timestamp); return { crimson, doorsOpen, roadLength: road.length, outboundLoaded: convoys.targets.filter((truck, i) => i % 2 === 0 && truck.getObjectByName('Repository cargo').visible).length };
+    tunnel.update(doorsOpen, timestamp); return { crimson, doorsOpen, doorGap: tunnel.gap, roadLength: road.length, outboundZ: convoys.targets[0].position.z, outboundLoaded: convoys.targets.filter((truck, i) => i % 2 === 0 && truck.getObjectByName('Repository cargo').visible).length };
   } };
 }

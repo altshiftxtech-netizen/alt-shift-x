@@ -34,5 +34,5 @@ export default function repositoryTunnel(parent, floor) {
   }
   box(tunnel, [3, 2, 1], [-31, 9, 1], amber); box(tunnel, [3, 2, 1], [31, 9, 1], amber);
   let last = 0;
-  return { update(open, timestamp) { const blend = 1 - Math.exp(-Math.min(last ? (timestamp - last) / 1000 : .016, .1) * 4); last = timestamp; doors.forEach(({ leaf, side }) => { leaf.position.x += (side * (open ? 41 : 13) - leaf.position.x) * blend; }); } };
+  return { get gap() { return Math.abs(doors[0].leaf.position.x) - 13; }, update(open, timestamp) { const blend = 1 - Math.exp(-Math.min(last ? (timestamp - last) / 1000 : .016, .1) * 4); last = timestamp; doors.forEach(({ leaf, side }) => { leaf.position.x += (side * (open ? 41 : 13) - leaf.position.x) * blend; }); } };
 }
