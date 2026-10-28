@@ -181,14 +181,14 @@ export default function Home() {
       {/* Hero */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-6 backdrop-blur-sm border border-white/20">
-          <ShieldCheck className="w-3.5 h-3.5" /> Trust-scored AI components for construction
+          🛡️ Trust-Scored Autonomous AI Agents &amp; Sovereign Systems
         </div>
         <h1 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight drop-shadow-lg">
           The marketplace for<br />
           <span className="text-violet-300">verified AI components</span>
         </h1>
         <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">
-          Discover, install, and deploy battle-tested extraction models for construction documents — each one benchmarked, scored, and certified.
+          Discover, license, and deploy battle-tested intelligence models, cognitive architectures, and sovereign ecosystem standards — each one benchmarked, scored, and certified.
         </p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link to="/marketplace">
