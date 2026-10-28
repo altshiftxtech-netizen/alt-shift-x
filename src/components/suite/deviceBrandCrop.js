@@ -27,7 +27,11 @@ export default function deviceBrandCrop() {
         if (x > 0) visit(index - 1); if (x < 811) visit(index + 1);
         if (y > 0) visit(index - 812); if (y < 519) visit(index + 812);
       }
-      ctx.putImageData(frame, 0, 0); resolve(canvas);
+      ctx.putImageData(frame, 0, 0);
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.beginPath(); ctx.roundRect(0, 0, 812, 520, 64); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      resolve(canvas);
     };
     image.onerror = () => reject(new Error('Device logo could not be loaded'));
     image.src = DEVICE_LOGO_URL;
