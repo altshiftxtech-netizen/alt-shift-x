@@ -7,7 +7,10 @@ export default function hardwareKit() {
   const frame = new THREE.MeshStandardMaterial({ color: '#a8b8bf', metalness: .85, roughness: .28 });
   const dark = new THREE.MeshStandardMaterial({ color: '#0d1922', metalness: .65, roughness: .4 });
   const material = label => {
-    if (!maps.has(label)) maps.set(label, new THREE.MeshStandardMaterial({ map: hardwareAtlas(label), metalness: .48, roughness: .42 }));
+    if (!maps.has(label)) {
+      const map = hardwareAtlas(label);
+      maps.set(label, new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: '#ffffff', emissiveIntensity: .32, metalness: .12, roughness: .62 }));
+    }
     return maps.get(label);
   };
   const block = (parent, size, position, mat = frame) => {

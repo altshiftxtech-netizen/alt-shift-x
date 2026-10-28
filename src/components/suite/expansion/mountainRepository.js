@@ -22,8 +22,8 @@ export default function mountainRepository(scene, reduced) {
   const crown = part(root, mass, rock, [-429, floor + 105, -535]); crown.scale.set(105, 55, 150); crown.castShadow = true;
   const road = repositoryRoad(root, floor, light);
   const tunnel = repositoryTunnel(root, floor);
-  const target = new THREE.Group(); target.position.set(-429, floor, -380);
-  target.userData = { kind: 'repository', inspectionDistance: 100, inspectionAimHeight: 22, inspectionDirection: [.32, .26, 1.35] }; scene.add(target);
+  const target = new THREE.Group(); target.position.set(-455, floor, -300);
+  target.userData = { kind: 'repository', inspectionDistance: 225, inspectionAimHeight: 12, inspectionDirection: [.65, .7, 1.15] }; scene.add(target);
   let openUntil = 0; target.userData.onActivate = () => { openUntil = Date.now() + 6000; };
   const convoys = repositoryConvoys(scene, floor, reduced, road);
   convoys.targets.forEach(truck => { truck.userData.onActivate = target.userData.onActivate; });
