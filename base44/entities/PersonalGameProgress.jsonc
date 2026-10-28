@@ -1,0 +1,72 @@
+{
+  "name": "PersonalGameProgress",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "successes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50,
+      "default": 0
+    },
+    "planted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "challenge": {
+      "type": "string",
+      "default": ""
+    },
+    "challenge_kind": {
+      "type": "string"
+    },
+    "challenge_target": {
+      "type": "string"
+    },
+    "challenge_started": {
+      "type": "number"
+    },
+    "last_rover": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "required": [
+    "user_id",
+    "successes"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

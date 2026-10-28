@@ -14,7 +14,8 @@ export default function forestryPlanter(parent, dark, light, index) {
   const a = new THREE.Vector3(), foot = new THREE.Vector3(), knee = new THREE.Vector3();
   const update = (time, active) => {
     group.visible = active; if (!active) return;
-    const x = 282 + index * 62, z = -228 - (time * .9 + index * 33) % 240;
+    const commanded = group.userData.plantingPosition;
+    const x = commanded?.x ?? 282 + index * 62, z = commanded?.z ?? -228 - (time * .9 + index * 33) % 240;
     group.position.set(x, heightAt(x, z), z);
     legs.forEach(({ angle, top, bottom }, i) => {
       const phase = (time * .65 + (i % 2) * .5) % 1;

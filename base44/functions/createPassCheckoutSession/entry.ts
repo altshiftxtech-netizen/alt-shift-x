@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { secrets } from 'base44:runtime';
 import { sovereignPassTiers, passNodeIds } from '../../shared/sovereignPassCatalog.ts';
 import { robotWaveUnlocked, robotWaveCoupon } from '../../shared/robotWaveReward.ts';
+import { personalGameUnlocked } from '../../shared/personalGameReward.ts';
 
 export default async function(req) {
   try {
@@ -16,15 +17,18 @@ export default async function(req) {
     if (!Array.isArray(nodeIds) || nodeIds.length !== tier.nodes || new Set(nodeIds).size !== nodeIds.length || nodeIds.some(id => !passNodeIds.includes(id))) {
       return Response.json({ error: `Choose ${tier.nodes} distinct node${tier.nodes > 1 ? 's' : ''} for this pass.` }, { status: 400 });
     }
+    const personalDiscount = tier.recurring && await personalGameUnlocked(base44, user.id);
+    const discounted = tier.recurring && (personalDiscount || await robotWaveUnlocked(base44));
+    const expectedAmount = discounted ? Math.round(tier.amount * .8) : tier.amount;
+    if (body.quoteOnly === true) return Response.json({ expectedAmount, discountPercent: discounted ? 20 : 0, personalDiscount, currency: 'usd' });
     const appUrl = req.headers.get('X-Base44-App-Url');
     if (!appUrl) return Response.json({ error: 'Checkout return address is unavailable. Please retry.' }, { status: 400 });
     const origin = new URL(appUrl).origin;
     const modes = await base44.asServiceRole.entities.PaymentMode.list('-updated_date', 1);
     const testMode = modes[0]?.test_mode === true;
     const stripe = new Stripe(testMode ? secrets.get('STRIPE_TEST_SECRET_KEY') : secrets.get('STRIPE_SECRET_KEY'));
-    const discounted = tier.recurring && await robotWaveUnlocked(base44);
-    const expectedAmount = discounted ? Math.round(tier.amount * .8) : tier.amount;
-    const metadata = { base44_app_id: secrets.get('BASE44_APP_ID'), purchase_type: 'sovereign_pass', user_id: user.id, tier: body.tierId, node_ids: JSON.stringify(nodeIds), standard: 'SYS-SOVEREIGN-PASS-VERSATILITY-ENGINE-1.0', checkout_version: 'robot-waves-v1', robot_wave_discount: discounted ? '20' : '0' };
+
+    const metadata = { base44_app_id: secrets.get('BASE44_APP_ID'), purchase_type: 'sovereign_pass', user_id: user.id, tier: body.tierId, node_ids: JSON.stringify(nodeIds), standard: 'SYS-SOVEREIGN-PASS-VERSATILITY-ENGINE-1.0', checkout_version: 'robot-waves-v1', robot_wave_discount: discounted && !personalDiscount ? '20' : '0', personal_game_discount: personalDiscount ? '20' : '0' };
     const lineItem = testMode ? { price_data: { currency: 'usd', unit_amount: tier.amount, product_data: { name: tier.name + ' (TEST)' }, ...(tier.recurring ? { recurring: { interval: 'month' } } : {}) }, quantity: 1 } : { price: tier.priceId, quantity: 1 };
     const session = await stripe.checkout.sessions.create({
       mode: tier.recurring ? 'subscription' : 'payment', payment_method_types: ['card'],

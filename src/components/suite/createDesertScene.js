@@ -24,8 +24,9 @@ import rocketDemoEffects from '@/components/suite/game/rocketDemoEffects';
 import provingGroundExpansion from '@/components/suite/expansion/provingGroundExpansion';
 import fleetDetailing from '@/components/suite/fleetDetailing';
 import rocketInteraction from '@/components/suite/rocketInteraction';
+import personalGroundGames from '@/components/suite/game/personalGroundGames';
 
-export default function createDesertScene(host, onStatus, inspection, game, robotWave) {
+export default function createDesertScene(host, onStatus, inspection, game, robotWave, personalBridge) {
   const compact = window.innerWidth < 700;
   const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
   // Start at display resolution instead of allocating a supersampled frame before first paint.
@@ -57,7 +58,8 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   window.addEventListener('ASX_THROTTLE_GFX_LEVEL', onThrottleGfx);
   window.addEventListener('ASX_WEBGL_CONTEXT_LOST', onContextLost);
   const expansion = provingGroundExpansion(scene, camera, renderer.domElement, compact, reduced, inspection);
-  const targets = [...vehicles.targets, ...aerospace.targets, rocket.target, ...expansion.targets];
+  const personalGames = personalGroundGames(scene, host, camera, inspection, personalBridge, vehicles.targets);
+  const targets = [...vehicles.targets, ...aerospace.targets, rocket.target, ...expansion.targets, ...personalGames.targets];
   fleetDetailing(scene, targets);
   const updateSignals = vehicleSignals(scene, vehicles.targets);
   const flight = droneCursorFlight(camera, renderer.domElement, inspection);
@@ -100,18 +102,19 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); window.addEventListener('blur', up); window.addEventListener('keydown', keyDown); window.addEventListener('keyup', keyUp);
   const animate = now => {
     frame = requestAnimationFrame(animate);
-    if (document.hidden) { last = now; return; }
+    if (document.hidden) { inspection.personalCancel?.(); last = now; return; }
     const realDt = last ? (now - last) / 1000 : .016;
     const dt = Math.min(realDt, .05); last = now; elapsed += dt;
     const time = reduced ? elapsed * .12 : elapsed;
     vehicles.update(time, reduced ? dt * .12 : dt);
     const cycle = updateAtmosphere(time); updateDaylight(cycle); updateSky(cycle); aerospace.update(time, cycle.daylight);
-    scene.fog.density = ['forestry', 'repository', 'kinetic'].includes(inspection.focus) ? .0012 : .003;
+    scene.fog.density = ['forestry', 'repository', 'kinetic', 'planting'].includes(inspection.focus) ? .0012 : .003;
     if (game?.current.launchRequested) { game.current.launchRequested = false; if (rocket.launchDemo()) demoEffects.start(now); }
     const rocketState = rocket.update(now);
     expansion.update(time, reduced ? dt * .12 : dt, Date.now());
     updateCamera(time, dt);
     expansion.camera();
+    personalGames.update(time, realDt);
     routes.updateHorizon(camera);
     renderer.domElement.dataset.celestialsVisible = String(camera.userData.celestialsVisible);
     flight.update();
@@ -141,7 +144,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   frame = requestAnimationFrame(animate);
   return () => {
     window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('blur', up); window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp);
-    rocketTap.dispose();
+    rocketTap.dispose(); personalGames.dispose();
     cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
     renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
     window.removeEventListener('ASX_THROTTLE_GFX_LEVEL', onThrottleGfx);
