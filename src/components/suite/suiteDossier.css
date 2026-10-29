@@ -1,7 +1,7 @@
 .suite-cinematic .suite-dossier{position:relative;z-index:60;flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px;width:min(92%,760px);max-height:none;padding:10px 16px;margin:0;border:1px solid color-mix(in srgb,var(--scene-ink) 20%,transparent);border-radius:20px;background:linear-gradient(125deg,rgba(9,18,28,.76),rgba(11,8,19,.83));box-shadow:0 20px 70px rgba(0,0,0,.35);backdrop-filter:blur(24px);pointer-events:auto;overflow:hidden}
 .suite-dossier-summary{display:grid;grid-template-columns:34px minmax(0,1fr) auto;grid-column:1;grid-row:1;align-items:center;gap:10px;width:100%;padding:0 0 6px;text-align:left;flex-shrink:0;color:var(--scene-ink)}
 .suite-dossier-summary:focus-visible{outline:1px solid var(--scene-amber);outline-offset:-4px;border-radius:20px}
-.suite-dossier-logo{width:34px;height:34px;object-fit:contain;clip-path:inset(8% 0 0 0);flex-shrink:0}
+.suite-dossier-logo{width:34px;height:34px;object-fit:contain;border-radius:8px;clip-path:inset(8% 0 0 0 round 8px);flex-shrink:0}
 .suite-dossier-identity{display:flex;flex-direction:column;gap:3px;min-width:0}
 .suite-dossier-title{font-size:16px;line-height:1.25;font-weight:800;letter-spacing:.02em}
 .suite-dossier-tagline{font-size:10px;line-height:1.35;color:var(--scene-amber)}
