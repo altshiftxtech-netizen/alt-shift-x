@@ -13,13 +13,14 @@ import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
 import useSuiteInspection from '@/components/suite/useSuiteInspection';
+import suiteBrandNames from '@/components/suite/suiteBrandNames';
 import '@/components/suite/suiteScene.css';
 
 // The 8 Calibrated Sovereign Enterprise Nodes
 const SUITE_NODES = [
   {
     id: 'altshiftx',
-    name: 'Marketplace and AI Builder',
+    name: suiteBrandNames.altshiftx,
     tagline: 'Sovereign Intelligence & Component Foundry',
     subpath: '/',
     color: '#EAB308',
@@ -33,7 +34,7 @@ const SUITE_NODES = [
   },
   {
     id: 'turimc',
-    name: 'Turi MC Computer',
+    name: suiteBrandNames.turimc,
     tagline: 'Extreme Compute & Hardware Proving Ground',
     subpath: '/turimc',
     color: '#10B981',
@@ -47,7 +48,7 @@ const SUITE_NODES = [
   },
   {
     id: 'codevault',
-    name: 'Code Vault',
+    name: suiteBrandNames.codevault,
     tagline: 'Sovereign Git & WASM Repositories',
     subpath: '/codevault',
     color: '#06B6D4',
@@ -61,7 +62,7 @@ const SUITE_NODES = [
   },
   {
     id: 'dblive',
-    name: 'dbLive',
+    name: suiteBrandNames.dblive,
     tagline: 'Sovereign WORM Append-Only Database',
     subpath: '/dblive',
     color: '#F59E0B',
@@ -75,7 +76,7 @@ const SUITE_NODES = [
   },
   {
     id: 'omnibridge',
-    name: 'OmniBridge CRM',
+    name: suiteBrandNames.omnibridge,
     tagline: 'Executive Pipeline & Telephony',
     subpath: '/omnibridge',
     color: '#F43F5E',
@@ -89,7 +90,7 @@ const SUITE_NODES = [
   },
   {
     id: 'bitfolio',
-    name: 'Bitfolio Hub',
+    name: suiteBrandNames.bitfolio,
     tagline: '3D Portfolio & Digital Cards',
     subpath: '/bitfolio',
     color: '#6366F1',
@@ -103,7 +104,7 @@ const SUITE_NODES = [
   },
   {
     id: 'sourcebridge',
-    name: 'SourceBridge',
+    name: suiteBrandNames.sourcebridge,
     tagline: 'Universal API Substrate & Network',
     subpath: '/sourcebridge',
     color: '#14B8A6',
@@ -117,7 +118,7 @@ const SUITE_NODES = [
   },
   {
     id: 'magna',
-    name: 'MAGNA Builder',
+    name: suiteBrandNames.magna,
     tagline: 'Visual Canvas Site Foundry',
     subpath: '/magna',
     color: '#D946EF',

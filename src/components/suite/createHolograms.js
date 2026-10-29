@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import holographicEmblems from '@/components/suite/holographicEmblems';
 import suiteOrbitLayout from '@/components/suite/suiteOrbitLayout';
 import hologramPalettes from '@/components/suite/hologramPalettes';
+import magnaHologramTexture from '@/components/suite/magnaHologramTexture';
 
 export default function createHolograms(host, state) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -22,7 +23,9 @@ export default function createHolograms(host, state) {
     const group = new THREE.Group(), image = new THREE.Mesh(geometry, material); group.add(image); group.visible = false; scene.add(group);
     const texture = loader.load(holographicEmblems[node.id], loaded => {
       if (disposed) { loaded.dispose(); return; }
-      material.uniforms.image.value = loaded; group.visible = true; renderer.domElement.dataset.emblemsReady = String(++ready);
+      const emblem = node.id === 'magna' ? magnaHologramTexture(loaded.image) : loaded;
+      if (emblem !== loaded) textures.push(emblem);
+      material.uniforms.image.value = emblem; group.visible = true; renderer.domElement.dataset.emblemsReady = String(++ready);
     }); textures.push(texture);
     return { group, material };
   });

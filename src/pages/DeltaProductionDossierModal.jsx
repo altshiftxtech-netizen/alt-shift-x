@@ -5,6 +5,7 @@ import WarehousePurchaseButton from "@/components/warehouse/WarehousePurchaseBut
 import { useAuth } from '@/lib/AuthContext';
 import { canInspectDelta } from '@/components/warehouse/deltaAccess';
 import DeltaIpSection from '@/components/warehouse/DeltaIpSection';
+import suiteBrandNames from '@/components/suite/suiteBrandNames';
 import { Loader2, ArrowLeft, Shield, Zap, CheckCircle, Clock, Package, DollarSign, Users, KeyRound, Fingerprint } from "lucide-react";
 
 /**
@@ -224,11 +225,11 @@ export default function DeltaProductionDossierModal() {
               <p className="text-xs text-zinc-400 leading-relaxed">Triangular crest pulses with neon violet/cyan energy, firing an audio-reactive shockwave into the portal boundary.</p>
             </div>
             <div className="px-4 py-3 rounded-xl bg-black/30 border border-white/5">
-              <p className="text-sm font-bold text-white mb-1">Turi MC / APPerdeen</p>
+              <p className="text-sm font-bold text-white mb-1">{suiteBrandNames.turimc} / APPerdeen</p>
               <p className="text-xs text-zinc-400 leading-relaxed">Turi Cube executes a smooth 6-DoF momentum spin and exploded silicon layer reveal upon sign-in.</p>
             </div>
             <div className="px-4 py-3 rounded-xl bg-black/30 border border-white/5">
-              <p className="text-sm font-bold text-white mb-1">MAGNA / Bitfolio</p>
+              <p className="text-sm font-bold text-white mb-1">{suiteBrandNames.magna} / {suiteBrandNames.bitfolio}</p>
               <p className="text-xs text-zinc-400 leading-relaxed">Holographic obsidian foil card flips with embossed gold emblem lighting.</p>
             </div>
           </div>

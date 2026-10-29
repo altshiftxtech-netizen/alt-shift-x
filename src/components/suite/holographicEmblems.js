@@ -6,6 +6,6 @@ const holographicEmblems = {
   omnibridge: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/a5133bf84_generated_image.png',
   bitfolio: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/e82d035ea_generated_image.png',
   sourcebridge: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/f049ebb82_generated_image.png',
-  magna: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/a36b98444_generated_image.png',
+  magna: 'https://media.base44.com/images/public/6a19363c90f06323c4cfff73/9de3176f7_MAGNALogoBlack.png',
 };
 export default holographicEmblems;

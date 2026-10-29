@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from "@/api/base44Client";
 import useSuiteHandoff from '@/hooks/useSuiteHandoff';
+import suiteBrandNames from '@/components/suite/suiteBrandNames';
 
 const ENTERPRISE_SUITE = [
   {
     id: 'altshiftx',
-    name: 'Alt+Shift+X',
+    name: suiteBrandNames.altshiftx,
     category: 'Master Intelligence & Component Foundry',
     url: 'https://altshiftx.tech',
     path: '/',
@@ -15,7 +16,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'turimc',
-    name: 'Turi MC x APPerdeen',
+    name: suiteBrandNames.turimc,
     category: 'Extreme Compute & Hardware Proving Ground',
     url: 'https://turi-mc.base44.app',
     path: '/turimc',
@@ -24,7 +25,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'codevault',
-    name: 'Code Vault',
+    name: suiteBrandNames.codevault,
     category: 'Sovereign Git & WASM Repositories',
     url: 'https://code-vault-repository.base44.app',
     path: '/codevault',
@@ -33,7 +34,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'dblive',
-    name: 'dbLive Database',
+    name: suiteBrandNames.dblive,
     category: 'Sovereign Immutable WORM Database',
     url: 'https://dblive-sovereign-database.base44.app',
     path: '/dblive',
@@ -42,7 +43,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'omnibridge',
-    name: 'OmniBridge CRM',
+    name: suiteBrandNames.omnibridge,
     category: 'Executive Pipeline & CRM',
     url: 'https://smart-agent-flow-chubby.base44.app',
     path: '/omnibridge',
@@ -51,7 +52,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'bitfolio',
-    name: 'Bitfolio Hub',
+    name: suiteBrandNames.bitfolio,
     category: '3D Portfolio & Digital Cards',
     url: 'https://bitfolio.base44.app',
     path: '/bitfolio',
@@ -60,7 +61,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'sourcebridge',
-    name: 'SourceBridge',
+    name: suiteBrandNames.sourcebridge,
     category: 'Universal API Substrate & Network',
     url: 'https://sourcebridge-software-and-data-substrate-network.base44.app',
     path: '/sourcebridge',
@@ -69,7 +70,7 @@ const ENTERPRISE_SUITE = [
   },
   {
     id: 'magna',
-    name: 'MAGNA Builder',
+    name: suiteBrandNames.magna,
     category: 'Visual Canvas & Site Foundry',
     url: 'https://magna-webapp-and-coder.base44.app',
     path: '/magna',

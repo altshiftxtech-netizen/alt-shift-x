@@ -1,12 +1,14 @@
+import suiteBrandNames from '@/components/suite/suiteBrandNames';
+
 export const PASS_NODES = [
-  { id: 'altshiftx', name: 'Alt+Shift+X', icon: '⚡', category: 'Foundry', route: '/' },
-  { id: 'turimc', name: 'Turi MC x APPerdeen', icon: '⚙️', category: 'Hardware/Compute', route: '/turimc' },
-  { id: 'codevault', name: 'Code Vault', icon: '📦', category: 'Git & Repos', route: '/codevault' },
-  { id: 'dblive', name: 'dbLive', icon: '🗄️', category: 'WORM Database', route: '/dblive' },
-  { id: 'omnibridge', name: 'OmniBridge CRM', icon: '📞', category: 'CRM & Pipeline', route: '/omnibridge' },
-  { id: 'bitfolio', name: 'Bitfolio Hub', icon: '💳', category: '3D NFC Cards', route: '/bitfolio' },
-  { id: 'sourcebridge', name: 'SourceBridge', icon: '🌐', category: 'API Substrate', route: '/sourcebridge' },
-  { id: 'magna', name: 'MAGNA Builder', icon: '🎨', category: 'Visual Foundry', route: '/magna' },
+  { id: 'altshiftx', name: suiteBrandNames.altshiftx, icon: '⚡', category: 'Foundry', route: '/' },
+  { id: 'turimc', name: suiteBrandNames.turimc, icon: '⚙️', category: 'Hardware/Compute', route: '/turimc' },
+  { id: 'codevault', name: suiteBrandNames.codevault, icon: '📦', category: 'Git & Repos', route: '/codevault' },
+  { id: 'dblive', name: suiteBrandNames.dblive, icon: '🗄️', category: 'WORM Database', route: '/dblive' },
+  { id: 'omnibridge', name: suiteBrandNames.omnibridge, icon: '📞', category: 'CRM & Pipeline', route: '/omnibridge' },
+  { id: 'bitfolio', name: suiteBrandNames.bitfolio, icon: '💳', category: '3D NFC Cards', route: '/bitfolio' },
+  { id: 'sourcebridge', name: suiteBrandNames.sourcebridge, icon: '🌐', category: 'API Substrate', route: '/sourcebridge' },
+  { id: 'magna', name: suiteBrandNames.magna, icon: '🎨', category: 'Visual Foundry', route: '/magna' },
 ];
 export const PASS_TIERS = [
   { id: 'sprint', name: 'Sprint Burst Pass', badge: 'RAPID SPRINT / AUDIT', price: '$49', period: '7-Day Access · one payment', headline: 'High-intensity, low-commitment access for acute engineering sprints.', swaps: '1 Node of your choice for 7 days', seats: '1 Builder Seat', features: ['Full, unrestricted node capabilities', 'Cloudflare Edge authentication', '72-hour benchmark window', 'Ideal for audits, migrations, and stress-tests'], cta: 'Activate Sprint Pass' },
