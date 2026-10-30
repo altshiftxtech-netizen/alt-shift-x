@@ -230,7 +230,7 @@ export default function SuiteLandingPage() {
           onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
 
-      <div className="suite-consultation"><ConsultationButton /></div>
+      {!groundInspection && <div className="suite-consultation"><ConsultationButton /></div>}
 
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
       <footer className="absolute bottom-0 left-0 right-0 h-12 bg-black/75 backdrop-blur-md border-t border-yellow-500/20 z-30 px-6 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
