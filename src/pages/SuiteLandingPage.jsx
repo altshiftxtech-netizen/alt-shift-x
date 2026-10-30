@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ConsultationButton from '@/components/consultation/ConsultationButton';
 import HubBrand from '@/components/suite/HubBrand';
-import SuiteBentoSwitcher from '@/components/suite/SuiteBentoSwitcher';
+
 import { openCookiePreferences } from '@/components/cookies/cookiePrefStore';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
@@ -203,7 +203,7 @@ export default function SuiteLandingPage() {
             /aboutaltshiftxsuite
           </button>
           <SuiteMusicPlayer onPlaybackChange={onMusicChange} />
-          <SuiteBentoSwitcher />
+
           <button
             onClick={() => setActiveModal('consuela')}
             aria-label="Help me choose"
