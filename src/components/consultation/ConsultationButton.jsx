@@ -30,7 +30,7 @@ export default function ConsultationButton({ className = "", skipBilling = false
     })();
   }, []);
 
-  if (!visible) return null;
+  if (!visible || location.pathname !== '/') return null;
 
   const target = skipBilling
     ? `/consultation?no_billing=true&return_to=${returnTo}`
