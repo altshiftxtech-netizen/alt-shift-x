@@ -82,23 +82,8 @@ export default function SuiteMusicPlayer({ onPlaybackChange }) {
     audioRef.current = audio;
     setReady(true);
 
-    // Attempt autoplay (browsers may block until first interaction)
-    const tryAutoplay = async () => {
-      if (!ctxRef.current) buildChain(audio);
-      if (ctxRef.current?.state === 'suspended') await ctxRef.current.resume();
-      audio.volume = 1;
-      try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
-    };
-    let autoplayTimer;
-    const scheduleAutoplay = () => {
-      autoplayTimer = window.setTimeout(tryAutoplay, 3000);
-    };
-    if (document.readyState === 'complete') scheduleAutoplay();
-    else window.addEventListener('load', scheduleAutoplay, { once: true });
-
+    // Music starts only when the visitor presses Play.
     return () => {
-      window.removeEventListener('load', scheduleAutoplay);
-      window.clearTimeout(autoplayTimer);
       observerRef.current?.();
       audio.pause();
       ctxRef.current?.close?.();
