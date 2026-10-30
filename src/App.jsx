@@ -17,11 +17,11 @@ import SuiteComponentProvider from '@/components/suite/bridges/SuiteComponentPro
 // Add page imports here
 import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
 import SovereignPassPage from '@/pages/SovereignPassPage';
-import Homepage from '@/pages/Home';
-import BobInitStudio from '@/pages/AiBuilder';
+import Home from './pages/Home';
+import AiBuilder from '@/pages/AiBuilder';
 import SuiteHomeRedirect from '@/components/suite/SuiteHomeRedirect';
 import AboutUs from './pages/AboutUs';
-import ExpertMinds from '@/pages/ExpertMind';
+import ExpertMind from './pages/ExpertMind';
 import Marketplace from './pages/Marketplace';
 import ShopHome from './pages/ShopHome';
 import ShopCollections from './pages/ShopCollections';
@@ -141,7 +141,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PwaHost from './pages/PwaHost';
 import PwaViewer from './pages/PwaViewer';
-import DeltaWarehouse from '@/pages/DeltaWarehouseAscensionStage';
+import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
 
 const AuthenticatedApp = () => {
@@ -169,10 +169,9 @@ const AuthenticatedApp = () => {
     <SuiteComponentProvider key={user?.id || 'guest'}>
     <Routes>
       {/* ── Public routes — no login required ── */}
-      {/* Keep the showcase at both home URLs; the studio is explicitly opt-in. */}
-      <Route path="/" element={<Homepage />} />
-      <Route path="/homepage" element={<Homepage />} />
-      <Route path="/aibuilder" element={<BobInitStudio />} />
+      <Route path="/" element={<SuiteHomeRedirect />} />
+      <Route path="/homepage" element={<Home />} />
+      <Route path="/aibuilder" element={<AiBuilder />} />
       <Route path="/suite" element={<SuiteHomeRedirect />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
       <Route path="/sovereignpass" element={<SovereignPassPage />} />
@@ -183,8 +182,7 @@ const AuthenticatedApp = () => {
       <Route path="/shop/collections/:slug" element={<ShopCollectionDetail />} />
       <Route path="/shop/fund" element={<ShopFund />} />
       <Route path="/about" element={<AboutUs />} />
-      <Route path="/expertminds" element={<ExpertMinds />} />
-      <Route path="/expertmind" element={<ExpertMinds />} />
+      <Route path="/expertmind" element={<ExpertMind />} />
       <Route path="/marketplace/:id" element={<ComponentDetail />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/pipelines" element={<Pipelines />} />
@@ -221,8 +219,7 @@ const AuthenticatedApp = () => {
       <Route path="/mobile" element={<MobileApp />} />
       <Route path="/pwa-host/:id" element={<PwaHost />} />
       <Route path="/pwa-viewer/:id" element={<PwaViewer />} />
-      <Route path="/deltawarehouse" element={<DeltaWarehouse />} />
-      <Route path="/warehouse" element={<DeltaWarehouse />} />
+      <Route path="/warehouse" element={<DeltaWarehouseAscensionStage />} />
       <Route path="/warehouse/:productionId" element={<DeltaProductionDossierModal />} />
       {/* Sovereign Enterprise Suite subpaths (/turimc, /codevault, etc.) are
           now reverse-proxied at the DNS/edge level by a Cloudflare Worker —
