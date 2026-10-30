@@ -46,13 +46,37 @@ function writeCookie(name, value) {
 }
 
 export function getConsent() {
-  try {
-    const raw = readCookie(COOKIE_NAME);
+  const valid = raw => {
     if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+    const record = JSON.parse(raw);
+    const age = Date.now() - Date.parse(record.decided_at);
+    return record.categories && Number.isFinite(age) && age >= 0 && age < MAX_AGE_SECONDS * 1000 ? record : null;
+  };
+  try {
+    const cookie = valid(readCookie(COOKIE_NAME));
+    if (cookie) return cookie;
+  } catch { /* Try the local fallback independently. */ }
+  try {
+    const stored = valid(localStorage.getItem(COOKIE_NAME));
+    if (stored) return stored;
+    const legacy = JSON.parse(localStorage.getItem('asx_cookie_consent_v1') || 'null');
+    if (legacy && Date.now() - legacy.timestamp < 180 * 86400000) {
+      return { categories: { essential: true, functional: false, analytics: !!legacy.analytics, marketing: false }, decided_at: new Date(legacy.timestamp).toISOString() };
+    }
+  } catch { /* Storage is unavailable or the saved choice is invalid. */ }
+  return null;
+}
+
+export function applyConsent(record) {
+  const categories = record?.categories || {};
+  window.dataLayer = window.dataLayer || [];
+  const gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  gtag('consent', 'update', {
+    analytics_storage: categories.analytics ? 'granted' : 'denied',
+    ad_storage: categories.marketing ? 'granted' : 'denied',
+    ad_user_data: categories.marketing ? 'granted' : 'denied',
+    ad_personalization: categories.marketing ? 'granted' : 'denied',
+  });
 }
 
 export function hasDecided() {
@@ -76,6 +100,10 @@ export function saveConsent(categories) {
   } catch {
     // ignore storage failures
   }
+  try {
+    localStorage.setItem(COOKIE_NAME, JSON.stringify(record));
+  } catch { /* Cookie storage remains the primary persistence tier. */ }
+  applyConsent(record);
   listeners.forEach((fn) => fn(record));
   return record;
 }

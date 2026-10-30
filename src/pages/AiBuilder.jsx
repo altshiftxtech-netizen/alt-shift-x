@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, Zap, Users, Star, Package, X, LogOut, LogIn, UserPlus, Lock, BrainCircuit } from "lucide-react";
-import Logo from "@/components/Logo";
+import HubBrand from '@/components/suite/HubBrand';
 import { setSEOMeta, setBreadcrumbSchema } from "@/lib/seoHelpers";
 import { useAuth } from "@/lib/AuthContext";
 import VideoBackground from "@/components/VideoBackground";
@@ -14,7 +14,7 @@ import LegalFooterLinks from "@/components/legal/LegalFooterLinks";
 import AboutUsSection from "@/components/home/AboutUsSection";
 import HomeMissionModal from "@/components/home/HomeMissionModal";
 import { base44 } from "@/api/base44Client";
-import SovereignAppSwitcher from "@/components/SovereignAppSwitcher";
+import SuiteBentoSwitcher from '@/components/suite/SuiteBentoSwitcher';
 
 const typeColors = { X1: "bg-violet-100 text-violet-700", X2: "bg-blue-100 text-blue-700", X3: "bg-cyan-100 text-cyan-700", X4: "bg-amber-100 text-amber-700", X5: "bg-emerald-100 text-emerald-700" };
 
@@ -131,7 +131,7 @@ export default function AiBuilder() {
       {/* Nav */}
       <nav className="relative z-20 w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
         <div className="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 w-full max-w-7xl mx-auto">
-          <Logo className="h-8 w-auto" variant="purple" />
+          <HubBrand />
           <div className="hidden md:flex md:order-last xl:order-none items-center justify-center flex-wrap gap-x-6 gap-y-2 w-full xl:w-auto text-sm text-white/70">
             <Link to="/marketplace" className="hover:text-white">Marketplace</Link>
             <Link to="/warehouse" className="hover:text-white">Warehouse</Link>
@@ -141,7 +141,7 @@ export default function AiBuilder() {
             <Link to="/contact" className="hover:text-white">Contact</Link>
           </div>
           <div className="flex flex-1 xl:flex-none min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
-            <SovereignAppSwitcher activeAppId="altshiftx" />
+            <SuiteBentoSwitcher />
             <Link to="/expertmind">
               <Button
                 className="text-sm h-8 gap-1.5 font-semibold text-[#062b27] border transition-all"

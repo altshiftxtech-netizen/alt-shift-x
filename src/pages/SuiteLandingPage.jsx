@@ -1,7 +1,10 @@
 // src/pages/SuiteLandingPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ConsultationButton from '@/components/consultation/ConsultationButton';
+import HubBrand from '@/components/suite/HubBrand';
+import SuiteBentoSwitcher from '@/components/suite/SuiteBentoSwitcher';
+import { openCookiePreferences } from '@/components/cookies/cookiePrefStore';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
 import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
@@ -184,13 +187,7 @@ export default function SuiteLandingPage() {
 
       {/* 3. Header Navigation Bar */}
       <header className="absolute top-0 left-0 right-0 h-16 bg-black/60 backdrop-blur-md border-b border-yellow-500/20 z-30 px-6 flex items-center justify-between">
-        <Link to="/aibuilder" aria-label="Open AI Builder" className="flex items-center space-x-3 cursor-pointer">
-          <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44045c680_generated_image.png" alt="altshiftx.tech suite logo" className="suite-brand-mark rounded-full mix-blend-screen contrast-150" />
-          <div>
-            <span className="font-black tracking-widest text-base text-yellow-400">ALTSHIFTX.TECH</span>
-            <span className="text-xs text-zinc-400 tracking-wider ml-2 hidden sm:inline">SOVEREIGN SUITE</span>
-          </div>
-        </Link>
+        <HubBrand />
 
         <nav className="suite-navigation flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm font-medium">
           <button
@@ -206,6 +203,7 @@ export default function SuiteLandingPage() {
             /aboutaltshiftxsuite
           </button>
           <SuiteMusicPlayer onPlaybackChange={onMusicChange} />
+          <SuiteBentoSwitcher />
           <button
             onClick={() => setActiveModal('consuela')}
             aria-label="Help me choose"
@@ -249,6 +247,7 @@ export default function SuiteLandingPage() {
           <a href="/legal/privacy" className="hover:text-yellow-400 transition-colors">
             Privacy
           </a>
+          <button type="button" onClick={openCookiePreferences} className="hover:text-yellow-400 transition-colors">Cookie Settings</button>
         </div>
       </footer>
 
