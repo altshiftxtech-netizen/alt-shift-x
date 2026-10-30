@@ -1,7 +1,7 @@
 import suiteBrandNames from '@/components/suite/suiteBrandNames';
 
 export const PASS_NODES = [
-  { id: 'altshiftx', name: suiteBrandNames.altshiftx, icon: '⚡', category: 'Foundry', route: '/' },
+  { id: 'altshiftx', name: suiteBrandNames.altshiftx, icon: '⚡', category: 'Foundry', route: '/aibuilder' },
   { id: 'turimc', name: suiteBrandNames.turimc, icon: '⚙️', category: 'Hardware/Compute', route: '/turimc' },
   { id: 'codevault', name: suiteBrandNames.codevault, icon: '📦', category: 'Git & Repos', route: '/codevault' },
   { id: 'dblive', name: suiteBrandNames.dblive, icon: '🗄️', category: 'WORM Database', route: '/dblive' },

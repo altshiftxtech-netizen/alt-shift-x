@@ -8,7 +8,7 @@ export const SUITE_TABS = [
   { id: 'security', label: '🛡️ Sovereign Trust & IP', badge: 'Air-Gapped & WORM' },
 ];
 export const SOVEREIGN_NODES = [
-  { id: 'altshiftx', name: suiteBrandNames.altshiftx, route: '/', tagline: 'Sovereign Intelligence & Component Foundry', summary: 'The central intelligence exchange. Deploy, audit, and orchestrate certified modular AI workflows, execution protocols (X1–X5), and enterprise pipelines.', heroMetric: '5,000+ Verified Standards' },
+  { id: 'altshiftx', name: suiteBrandNames.altshiftx, route: '/aibuilder', tagline: 'Sovereign Intelligence & Component Foundry', summary: 'The central intelligence exchange. Deploy, audit, and orchestrate certified modular AI workflows, execution protocols (X1–X5), and enterprise pipelines.', heroMetric: '5,000+ Verified Standards' },
   { id: 'turimc', name: suiteBrandNames.turimc, route: '/turimc', tagline: 'Extreme Compute & Hardware Proving Ground', summary: 'Hardware-in-the-loop physics, 10-domain FEA/thermal/stress simulation, Octa-Bus avionic decoders, and spot-arbitrage extreme compute dispatch.', heroMetric: '<1ms Local WASM Solvers' },
   { id: 'codevault', name: suiteBrandNames.codevault, route: '/codevault', tagline: 'Sovereign Git & WASM Repositories', summary: 'True client-side Git packfile decompression, multi-lane 3D canvas commit topologies, and ChaCha20-protected private repositories.', heroMetric: '100% In-Browser Git Engine' },
   { id: 'dblive', name: suiteBrandNames.dblive, route: '/dblive', tagline: 'Sovereign WORM Append-Only Database', summary: 'Statutory evidentiary database. WORM (Write-Once-Read-Many) Merkle ledger ensuring courtroom-grade audit trails (MRE 901/902 compliant).', heroMetric: 'Zero Tamper Merkle Spines' },

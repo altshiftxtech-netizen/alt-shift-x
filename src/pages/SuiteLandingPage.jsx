@@ -1,6 +1,7 @@
 // src/pages/SuiteLandingPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import ConsultationButton from '@/components/consultation/ConsultationButton';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
 import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
@@ -22,7 +23,7 @@ const SUITE_NODES = [
     id: 'altshiftx',
     name: suiteBrandNames.altshiftx,
     tagline: 'Sovereign Intelligence & Component Foundry',
-    subpath: '/',
+    subpath: '/aibuilder',
     color: '#EAB308',
     icon: '⚡',
     category: 'Master Foundry',
@@ -183,13 +184,13 @@ export default function SuiteLandingPage() {
 
       {/* 3. Header Navigation Bar */}
       <header className="absolute top-0 left-0 right-0 h-16 bg-black/60 backdrop-blur-md border-b border-yellow-500/20 z-30 px-6 flex items-center justify-between">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => (window.location.href = '/')}>
+        <Link to="/aibuilder" aria-label="Open AI Builder" className="flex items-center space-x-3 cursor-pointer">
           <img src="https://media.base44.com/images/public/6a19363c90f06323c4cfff73/44045c680_generated_image.png" alt="altshiftx.tech suite logo" className="suite-brand-mark rounded-full mix-blend-screen contrast-150" />
           <div>
             <span className="font-black tracking-widest text-base text-yellow-400">ALTSHIFTX.TECH</span>
             <span className="text-xs text-zinc-400 tracking-wider ml-2 hidden sm:inline">SOVEREIGN SUITE</span>
           </div>
-        </div>
+        </Link>
 
         <nav className="suite-navigation flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm font-medium">
           <button
@@ -230,6 +231,8 @@ export default function SuiteLandingPage() {
           onResume={() => { dismiss(); if (motion.current.paused) togglePaused(); }}
           onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
+
+      <div className="suite-consultation"><ConsultationButton /></div>
 
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
       <footer className="absolute bottom-0 left-0 right-0 h-12 bg-black/75 backdrop-blur-md border-t border-yellow-500/20 z-30 px-6 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
