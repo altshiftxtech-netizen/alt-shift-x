@@ -337,6 +337,29 @@ export default function AiBuilder() {
         </section>
       )}
 
+      {/* Expert Council — ExpertMind directory */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+        <div className="relative rounded-2xl border border-violet-400/40 bg-gradient-to-br from-violet-900/40 via-white/5 to-black/40 backdrop-blur-sm p-8 md:p-10 overflow-hidden">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <BrainCircuit className="w-5 h-5 text-violet-300" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-violet-300">Expert Council</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">ExpertMind™ Advisor Directory</h2>
+              <p className="text-sm text-white/60 max-w-xl">
+                Connect with the ExpertMind extraction console and the full advisory council — a sovereign intelligence network for executive decision-making, forensic analysis, and strategic extraction.
+              </p>
+            </div>
+            <Link to="/expertmind">
+              <Button className="h-11 px-6 text-sm gap-2 bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-900/40 ring-2 ring-violet-300/40 whitespace-nowrap">
+                <BrainCircuit className="w-4 h-4" /> Explore ExpertMind
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative z-10 bg-black/40 backdrop-blur-sm py-16 text-center">
         <h2 className="text-3xl font-black text-white mb-4">Ready to build smarter?</h2>
