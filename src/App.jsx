@@ -17,7 +17,7 @@ import NoIndexRoute from '@/components/NoIndexRoute';
 import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
 import SovereignPassPage from '@/pages/SovereignPassPage';
 import Home from './pages/Home';
-import SuiteLandingPage from './pages/SuiteLandingPage';
+import AiBuilder from '@/pages/AiBuilder';
 import SuiteHomeRedirect from '@/components/suite/SuiteHomeRedirect';
 import AboutUs from './pages/AboutUs';
 import ExpertMind from './pages/ExpertMind';
@@ -167,8 +167,8 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* ── Public routes — no login required ── */}
-      <Route path="/" element={<SuiteLandingPage />} />
-      <Route path="/aibuilder" element={<Home />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/aibuilder" element={<AiBuilder />} />
       <Route path="/suite" element={<SuiteHomeRedirect />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
       <Route path="/sovereignpass" element={<SovereignPassPage />} />
