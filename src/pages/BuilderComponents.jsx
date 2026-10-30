@@ -263,6 +263,7 @@ function ComponentCard({ component: c, onViewHistory, onReleaseVersion, onRemove
         </div>
         <h3 className="text-base font-bold text-slate-900 mb-0.5">{c.displayName}</h3>
         <p className="text-[10px] text-slate-400 font-mono mb-1">{c.name}</p>
+        <Link to={`/aibuilder?component=${encodeURIComponent(c.id)}`} className="text-xs text-violet-700 hover:underline">Open in Builder Studio</Link>
         {c.publishedDate && (
           <p className="text-[10px] text-slate-400 flex items-center gap-1 mb-2">
             <Calendar className="w-2.5 h-2.5" /> Published {new Date(c.publishedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}

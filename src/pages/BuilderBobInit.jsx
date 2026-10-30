@@ -10,12 +10,13 @@ import BobInit from "@/pages/BobInit";
  * Sovereign-tier subscribers and admins get full terminal access.
  * Everyone else sees a paywall with upgrade CTA.
  */
-export default function BuilderBobInit() {
+export default function BuilderBobInit({ workspaceActions = null }) {
   const { status, isAdmin } = useSovereignAccess();
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0d1117] p-6 space-y-6">
+        {workspaceActions}
         <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
       </div>
     );
@@ -23,13 +24,15 @@ export default function BuilderBobInit() {
 
   // Sovereign tier or admin → full access
   if (status === "sovereign" || isAdmin) {
-    return <BobInit navMode="builder" />;
+    return <BobInit navMode="builder" workspaceActions={workspaceActions} />;
   }
 
   // Denied / non-sovereign → paywall
   return (
     <div className="min-h-screen bg-[#0d1117] flex items-center justify-center px-6">
-      <div className="max-w-md w-full text-center rounded-2xl border border-[#30363d] bg-[#0d1117] p-8">
+      <div className="max-w-5xl w-full space-y-6 py-6">
+        {workspaceActions}
+      <div className="max-w-md mx-auto text-center rounded-2xl border border-[#30363d] bg-[#0d1117] p-8">
         <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-4 bg-cyan-600/10 border border-cyan-500/30">
           <Terminal className="w-6 h-6 text-cyan-400" />
         </div>
@@ -47,6 +50,7 @@ export default function BuilderBobInit() {
           <Link to="/enterprise"><Crown className="w-4 h-4" /> Upgrade to Sovereign <ArrowRight className="w-4 h-4" /></Link>
         </Button>
         <Link to="/pricing" className="block mt-3 text-xs text-[#484f58] hover:text-[#8b949e]">← View all plans</Link>
+      </div>
       </div>
     </div>
   );

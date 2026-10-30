@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileJson, BadgePercent, CheckCircle2, AlertTriangle, Code2, GraduationCap } from "lucide-react";
@@ -19,11 +19,17 @@ const STARTER = `{
   "compliance": { "wv_retention_vault": "linked", "fragmentation_level": "K-of-N" }
 }`;
 
-export default function BobInitCodeMode({ brand, setBrand, docs, setDocs, onSubmit }) {
+export default function BobInitCodeMode({ brand, setBrand, docs, setDocs, onSubmit, onDraftChange }) {
   const [raw, setRaw] = useState(STARTER);
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
   const [check, setCheck] = useState(null);
+  useEffect(() => {
+    try {
+      const value = JSON.parse(raw);
+      onDraftChange?.(raw !== STARTER && value && !Array.isArray(value) && value.name ? value : null);
+    } catch { onDraftChange?.(null); }
+  }, [raw, onDraftChange]);
 
   const validate = () => {
     try {

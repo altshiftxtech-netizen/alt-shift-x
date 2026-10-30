@@ -9,6 +9,7 @@ import StepBenchmark from "@/components/builder-publish/StepBenchmark";
 import StepCompliance from "@/components/builder-publish/StepCompliance";
 import StepConfirm from "@/components/builder-publish/StepConfirm";
 import BuilderAgreementModal from "@/components/builder-publish/BuilderAgreementModal";
+import useBridgeDraft from '@/components/suite/bridges/useBridgeDraft';
 
 export const STEPS = [
   { id: 0, label: "Upload Document" },
@@ -52,6 +53,7 @@ export default function BuilderPublish() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
   const [showAgreement, setShowAgreement] = useState(false);
+  useBridgeDraft('publishing', !submitted && (form.displayName || form.name || form.code) ? { ...form, name: form.displayName || form.name, long_description: form.longDescription } : null, true);
 
   const updateForm = (updates) => setForm(prev => ({ ...prev, ...updates }));
   const updateChecks = (key, val) => setForm(prev => ({ ...prev, checks: { ...prev.checks, [key]: val } }));

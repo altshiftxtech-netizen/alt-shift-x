@@ -13,6 +13,7 @@ import RatingDisplay from "@/components/RatingDisplay";
 import AiDisclosureNotice from "@/components/legal/AiDisclosureNotice";
 import { canInspectDelta } from '@/components/warehouse/deltaAccess';
 import DeltaIpSection from '@/components/warehouse/DeltaIpSection';
+import useBridgeDraft from '@/components/suite/bridges/useBridgeDraft';
 
 const typeColors = {
   X1: "bg-violet-100 text-violet-700",
@@ -28,6 +29,7 @@ export default function ComponentDetail() {
   const { isAuthenticated, user } = useAuth();
   const [component, setComponent] = useState(null);
   const [loading, setLoading] = useState(true);
+  useBridgeDraft('selected', component, true);
 
   useEffect(() => {
     base44.entities.Component.filter({ id })
@@ -79,6 +81,7 @@ export default function ComponentDetail() {
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
         <span className="text-sm text-slate-700 font-medium">{component.name}</span>
+        <Link to={`/aibuilder?component=${encodeURIComponent(component.id)}`} className="ml-auto text-sm text-violet-700 hover:underline">Open in Builder Studio</Link>
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">

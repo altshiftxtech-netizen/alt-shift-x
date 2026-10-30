@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, History, Rocket, FileJson, FileText, Check, Trash2, GraduationCap, BadgePercent, Play } from "lucide-react";
+import { Terminal as TerminalIcon, RotateCcw, Cpu, Shield, Package, ChevronRight, MessageSquareText, Rocket, FileJson, FileText, Check, Trash2, GraduationCap, BadgePercent, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import SharedNav from "@/components/SharedNav";
 import BobInitLogo from "@/components/bob-init/BobInitLogo";
@@ -18,6 +18,7 @@ import BobInitHistory, { loadHistory, saveBuildEntry } from "@/components/bob-in
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { speak } from "@/lib/bobSounds";
+import useBridgeDraft from '@/components/suite/bridges/useBridgeDraft';
 
 // B.O.B.Init — the "Machine that Builds Machines."
 // Three authoring modes, all teaching you to code while they build:
@@ -49,7 +50,7 @@ const MODES = [
 
 const inputCls = "w-full bg-[#010409] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#c9d1d9] focus:outline-none focus:border-[#3fb950]/60 font-mono";
 
-export default function BobInit({ navMode = "user" }) {
+export default function BobInit({ navMode = "user", workspaceActions = null }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [budget, setBudget] = useState(9500);
@@ -72,6 +73,9 @@ export default function BobInit({ navMode = "user" }) {
   const [reverted, setReverted] = useState(false);
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
+  const [formDraft, setFormDraft] = useState(null);
+  const commandDraft = stackConfig || projectName.trim() ? { ...stackConfig, name: projectName || stackConfig?.name, version, database, hardening, branding: brand } : null;
+  useBridgeDraft('builder', mode === 'command' ? commandDraft : formDraft);
 
   useEffect(() => {
     if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
@@ -237,6 +241,7 @@ export default function BobInit({ navMode = "user" }) {
     const stack = String(projectJson.stack?.frontend || "nextjs").toLowerCase().replace(/[^a-z]/g, "");
     const cfg = { stack, shim: "auto", budget, database: database || "none", projectJson, mode: submitMode, halfPrice: isHalf };
     setStackConfig(cfg);
+    setFormDraft(projectJson);
     persistConfig(cfg);
     setBuildDone(false);
     setReverted(false);
@@ -365,6 +370,8 @@ export default function BobInit({ navMode = "user" }) {
           <BobInitHandbook />
         </div>
 
+        {workspaceActions}
+
         {/* Learn-to-code banner */}
         <div className="flex items-start gap-2.5 rounded-xl border border-cyan-500/25 bg-cyan-500/5 p-3">
           <GraduationCap className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
@@ -376,7 +383,7 @@ export default function BobInit({ navMode = "user" }) {
         {/* Mode switcher (dropdown) */}
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-[10px] tracking-[0.2em] text-[#3fb950]/70 font-mono">AUTHORING MODE</span>
-          <select value={mode} onChange={(e) => setMode(e.target.value)} disabled={reverted} className={`${inputCls} max-w-sm ${reverted ? "opacity-60 cursor-not-allowed" : ""}`}>
+          <select value={mode} onChange={(e) => { setFormDraft(null); setMode(e.target.value); }} disabled={reverted} className={`${inputCls} max-w-sm ${reverted ? "opacity-60 cursor-not-allowed" : ""}`}>
             {MODES.map((m) => <option key={m.value} value={m.value} className="bg-[#0d1117]">{m.label}</option>)}
           </select>
           {reverted && (
@@ -395,9 +402,9 @@ export default function BobInit({ navMode = "user" }) {
           {/* Main column — active mode */}
           <div className="lg:col-span-2 space-y-4">
             {mode === "projectjson" ? (
-              <BobInitCodeMode brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} onSubmit={handleProjectJson} />
+              <BobInitCodeMode brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} onSubmit={handleProjectJson} onDraftChange={setFormDraft} />
             ) : mode === "texttocode" ? (
-              <BobInitProjectJson brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} onSubmit={handleProjectJson} />
+              <BobInitProjectJson brand={brand} setBrand={setBrand} docs={docs} setDocs={setDocs} onSubmit={handleProjectJson} onDraftChange={setFormDraft} />
             ) : (
               <>
                 {/* PowerShell-style terminal */}

@@ -13,6 +13,7 @@ import LowProfileCookieBadge from './components/LowProfileCookieBadge';
 import SuiteTelemetrySentinel from '@/components/suite/SuiteTelemetrySentinel';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NoIndexRoute from '@/components/NoIndexRoute';
+import SuiteComponentProvider from '@/components/suite/bridges/SuiteComponentProvider';
 // Add page imports here
 import AboutAltShiftXSuite from '@/pages/AboutAltShiftXSuite';
 import SovereignPassPage from '@/pages/SovereignPassPage';
@@ -144,7 +145,7 @@ import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -165,9 +166,11 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <SuiteComponentProvider key={user?.id || 'guest'}>
     <Routes>
       {/* ── Public routes — no login required ── */}
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<SuiteHomeRedirect />} />
+      <Route path="/homepage" element={<Home />} />
       <Route path="/aibuilder" element={<AiBuilder />} />
       <Route path="/suite" element={<SuiteHomeRedirect />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
@@ -320,6 +323,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </SuiteComponentProvider>
   );
 };
 

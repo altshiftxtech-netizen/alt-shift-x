@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ const pillCls = (active) =>
     active ? "bg-[#3fb950]/15 border-[#3fb950]/60 text-[#3fb950]" : "border-[#30363d] text-[#8b949e] hover:border-[#3fb950]/40"
   }`;
 
-export default function BobInitProjectJson({ brand, setBrand, docs, setDocs, onSubmit }) {
+export default function BobInitProjectJson({ brand, setBrand, docs, setDocs, onSubmit, onDraftChange }) {
   const [name, setName] = useState("");
   const [version, setVersion] = useState("1.0.0");
   const [fe, setFe] = useState(STACK_FRONTEND[0]);
@@ -58,6 +58,9 @@ export default function BobInitProjectJson({ brand, setBrand, docs, setDocs, onS
     branding: { colorway: brand?.colorway || "Generic_Office_Slate", logo_url: brand?.logoUrl || "[PENDING_UPLOAD]", terminal_aesthetic: terminalAesthetic },
     compliance: { wv_retention_vault: vault, fragmentation_level: fragmentation },
   });
+
+  const bridgeDraft = name.trim() ? JSON.stringify(assemble()) : null;
+  useEffect(() => { onDraftChange?.(bridgeDraft ? JSON.parse(bridgeDraft) : null); }, [bridgeDraft, onDraftChange]);
 
   const runTextToCode = async () => {
     if (!paragraph.trim()) return;
