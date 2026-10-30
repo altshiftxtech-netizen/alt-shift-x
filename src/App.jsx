@@ -221,6 +221,7 @@ const AuthenticatedApp = () => {
       <Route path="/pwa-host/:id" element={<PwaHost />} />
       <Route path="/pwa-viewer/:id" element={<PwaViewer />} />
       <Route path="/warehouse" element={<DeltaWarehouseAscensionStage />} />
+      <Route path="/deltawarehouse" element={<Navigate to="/warehouse" replace />} />
       <Route path="/warehouse/:productionId" element={<DeltaProductionDossierModal />} />
       {/* Sovereign Enterprise Suite subpaths (/turimc, /codevault, etc.) are
           now reverse-proxied at the DNS/edge level by a Cloudflare Worker —
