@@ -3,10 +3,12 @@ import holographicEmblems from '@/components/suite/holographicEmblems';
 import suiteOrbitLayout from '@/components/suite/suiteOrbitLayout';
 import hologramPalettes from '@/components/suite/hologramPalettes';
 import magnaHologramTexture from '@/components/suite/magnaHologramTexture';
+import observeSceneVisibility from '@/components/suite/observeSceneVisibility';
 
 export default function createHolograms(host, state) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance', precision: 'mediump' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); renderer.setClearColor(0, 0); host.appendChild(renderer.domElement);
+  const visibility = observeSceneVisibility(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-500, 500, 160, -160, .1, 2000); camera.position.z = 1000;
   const rings = new THREE.Group(); scene.add(rings);
   for (let i = 0; i < 3; i++) {
@@ -35,6 +37,8 @@ export default function createHolograms(host, state) {
   };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const animate = () => {
+    frame = requestAnimationFrame(animate);
+    if (!visibility.visible || host.closest('.suite-inspecting')) return;
     const { angle, selected, nodes } = state.current, layout = suiteOrbitLayout(width);
     emblems.forEach(({ group, material }, index) => {
       const { x, y, depth, scale, size } = suiteOrbitLayout(width, index, angle, nodes.length);
@@ -43,10 +47,10 @@ export default function createHolograms(host, state) {
       material.uniforms.opacity.value = .5 + depth * .5; material.uniforms.strength.value = selected === index ? 1.5 : 1.15;
     });
     rings.scale.set(layout.radiusX / 280, layout.radiusY / 53, 1);
-    renderer.render(scene, camera); renderer.domElement.dataset.rendered = 'true'; frame = requestAnimationFrame(animate);
+    renderer.render(scene, camera); renderer.domElement.dataset.rendered = 'true';
   }; animate();
   return () => {
-    disposed = true; cancelAnimationFrame(frame); observer.disconnect(); geometry.dispose(); textures.forEach(t => t.dispose()); emblems.forEach(e => e.material.dispose());
+    disposed = true; cancelAnimationFrame(frame); observer.disconnect(); visibility.dispose(); geometry.dispose(); textures.forEach(t => t.dispose()); emblems.forEach(e => e.material.dispose());
     rings.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); }); renderer.dispose(); renderer.domElement.remove();
   };
 }

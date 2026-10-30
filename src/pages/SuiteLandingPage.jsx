@@ -11,7 +11,7 @@ import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
 import SuiteMusicPlayer from '@/components/suite/SuiteMusicPlayer';
 import useProvingGroundUsage from '@/components/suite/useProvingGroundUsage';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
-import CinematicDesert from '@/components/suite/CinematicDesert';
+import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
@@ -176,7 +176,7 @@ export default function SuiteLandingPage() {
       className={`suite-cinematic relative w-full overflow-hidden select-none font-sans ${groundInspection ? 'suite-inspecting' : ''}`}
     >
       {/* 1. Fullscreen Background Simulation Canvas */}
-      <CinematicDesert onInspectionChange={setGroundInspection} />
+      <DeferredProvingGround onInspectionChange={setGroundInspection} />
 
       {/* 2. Exotic HUD Ambient Grid & Reticle Overlay */}
       <div className="suite-scene-shade absolute inset-0 pointer-events-none z-10">

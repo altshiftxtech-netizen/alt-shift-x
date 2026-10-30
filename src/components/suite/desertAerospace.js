@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { rounded, sphere } from '@/components/suite/sleekParts';
+import stagedParticles from '@/components/suite/stagedParticles';
 
 export default function desertAerospace(scene, materials, compact) {
-  const positions = [], satellites = [], craft = [], targets = [];
+  const satellites = [], craft = [], targets = [];
   let seed = 9321; const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
-  for (let i = 0; i < 950; i++) positions.push((random() - .5) * 640, 35 + random() * 230, -250 - random() * 120);
-  const starsGeometry = new THREE.BufferGeometry(); starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  const stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: '#c9dce9', size: .65, sizeAttenuation: true, transparent: true, opacity: .8, fog: false, depthWrite: false })); scene.add(stars);
+  const starfield = stagedParticles(scene, 950, new THREE.PointsMaterial({ color: '#c9dce9', size: .65, sizeAttenuation: true, transparent: true, opacity: .8, fog: false, depthWrite: false }), () => [(random() - .5) * 640, 35 + random() * 230, -250 - random() * 120]);
+  const stars = starfield.points;
   for (let i = 0; i < (compact ? 2 : 3); i++) {
     const group = new THREE.Group(); group.userData = { kind: 'satellite', activation: -100 };
     rounded(group, [1.5, 1.8, 1.5], [0, 0, 0], materials.shell);
@@ -28,6 +28,7 @@ export default function desertAerospace(scene, materials, compact) {
     scene.add(group); craft.push(group); targets.push(group);
   }
   return { targets, update(time, daylight) {
+    starfield.update(time);
     stars.material.opacity = .85 * (1 - daylight * .94);
     satellites.forEach((group, i) => { const a = time * .018 + i * 2.1; group.position.set(Math.sin(a) * 155, 55 + Math.cos(a) * 8, -210 + i * 25); group.rotation.set(.3, a + Math.max(0, 1 - (time - group.userData.activation) / 3) * .5, .2); });
     craft.forEach((group, i) => { const a = time * .045 + i * Math.PI, response = Math.max(0, 1 - (time - group.userData.activation) / 4); group.position.set(Math.cos(a) * 100, 32 + i * 12 + response * 5, -100 + Math.sin(a) * 36); group.rotation.set(0, Math.atan2(-100 * Math.sin(a), 36 * Math.cos(a)), -.16 - response * .25); });

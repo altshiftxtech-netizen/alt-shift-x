@@ -1,5 +1,5 @@
 export default function desertRenderQuality(host, renderer, composer, antialias, contactShadows) {
-  const maximum = host.clientWidth < 1100 ? 1 : 1.25;
+  const maximum = Math.min(window.devicePixelRatio || 1, 1.5, host.clientWidth < 1100 ? 1 : 1.25);
   let scale = maximum, width = 0, height = 0, seconds = 0, frames = 0;
   const resize = () => {
     const rect = host.getBoundingClientRect();

@@ -25,16 +25,18 @@ import provingGroundExpansion from '@/components/suite/expansion/provingGroundEx
 import fleetDetailing from '@/components/suite/fleetDetailing';
 import rocketInteraction from '@/components/suite/rocketInteraction';
 import personalGroundGames from '@/components/suite/game/personalGroundGames';
+import observeSceneVisibility from '@/components/suite/observeSceneVisibility';
 
 export default function createDesertScene(host, onStatus, inspection, game, robotWave, personalBridge) {
   const compact = window.innerWidth < 700;
-  const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false, powerPreference: 'high-performance' });
-  // Start at display resolution instead of allocating a supersampled frame before first paint.
-  renderer.setPixelRatio(1);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: 'high-performance', precision: 'mediump' });
+  // Keep the existing low-resolution startup, including on high-DPR displays.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute('aria-label', 'Interactive 3D desert reconnaissance, move cursor to fly an inspected drone, click drones for lasers and rovers for transmissions');
   host.appendChild(renderer.domElement);
+  const visibility = observeSceneVisibility(renderer.domElement);
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#05080C'); scene.fog = new THREE.FogExp2('#101820', .003);
   const camera = new THREE.PerspectiveCamera(52, 1, .3, 22000); camera.position.set(0, 45, 80); camera.lookAt(0, 0, -42);
   const environment = new RoomEnvironment(); const pmrem = new THREE.PMREMGenerator(renderer); const env = pmrem.fromScene(environment, .06); scene.environment = env.texture; environment.dispose(); pmrem.dispose();
@@ -102,7 +104,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up); window.addEventListener('blur', up); window.addEventListener('keydown', keyDown); window.addEventListener('keyup', keyUp);
   const animate = now => {
     frame = requestAnimationFrame(animate);
-    if (document.hidden) { inspection.personalCancel?.(); last = now; return; }
+    if (!visibility.visible) { inspection.personalCancel?.(); last = now; return; }
     const realDt = last ? (now - last) / 1000 : .016;
     const dt = Math.min(realDt, .05); last = now; elapsed += dt;
     const time = reduced ? elapsed * .12 : elapsed;
@@ -145,7 +147,7 @@ export default function createDesertScene(host, onStatus, inspection, game, robo
   return () => {
     window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); window.removeEventListener('blur', up); window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp);
     rocketTap.dispose(); personalGames.dispose();
-    cancelAnimationFrame(frame); observer.disconnect(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
+    cancelAnimationFrame(frame); observer.disconnect(); visibility.dispose(); interactionSurface.removeEventListener('pointerdown', down); interactionSurface.removeEventListener('pointermove', move); interactionSurface.removeEventListener('click', click); interactionSurface.removeEventListener('pointerleave', flight.release); flight.release();
     renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
     window.removeEventListener('ASX_THROTTLE_GFX_LEVEL', onThrottleGfx);
     window.removeEventListener('ASX_WEBGL_CONTEXT_LOST', onContextLost);

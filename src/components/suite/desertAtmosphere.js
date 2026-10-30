@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import desertCelestialCycle from '@/components/suite/desertCelestialCycle';
 import desertMoonTexture from '@/components/suite/desertMoonTexture';
+import stagedParticles from '@/components/suite/stagedParticles';
 
 export default function desertAtmosphere(scene, camera, inspection) {
   // Clear air at device height: no additive dust veil over moving machinery.
@@ -10,16 +11,13 @@ export default function desertAtmosphere(scene, camera, inspection) {
   const sun = new THREE.Mesh(new THREE.SphereGeometry(9, 32, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color('#81909E').multiplyScalar(1.1) })); sun.position.set(-150, 18, -260); scene.add(sun);
   moon.name = 'local-time-moon'; sun.name = 'local-time-sun';
   for (const body of [moon, ring, sun]) { body.scale.setScalar(24); body.material.fog = false; }
-  const positions = [];
-  for (let i = 0; i < 600; i++) {
+  const starfield = stagedParticles(scene, 600, new THREE.PointsMaterial({ color: '#A7B7C7', size: 1.15, sizeAttenuation: false, transparent: true, opacity: .55, fog: false, depthWrite: false }), i => {
     const azimuth = i * 2.39996323, elevation = .08 + (i + .5) / 600 * 1.42;
-    positions.push(Math.cos(azimuth) * Math.cos(elevation) * 650, Math.sin(elevation) * 650, Math.sin(azimuth) * Math.cos(elevation) * 650);
-  }
-  const starGeometry = new THREE.BufferGeometry();
-  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: '#A7B7C7', size: 1.15, sizeAttenuation: false, transparent: true, opacity: .55, fog: false, depthWrite: false }));
-  scene.add(stars);
+    return [Math.cos(azimuth) * Math.cos(elevation) * 650, Math.sin(elevation) * 650, Math.sin(azimuth) * Math.cos(elevation) * 650];
+  });
+  const stars = starfield.points;
   const update = time => {
+    starfield.update(time);
     const cycle = desertCelestialCycle();
     for (const [body, position] of [[sun, cycle.sun], [moon, cycle.moon]]) {
       body.position.set(position.x * 24, 80 + position.y * .5, (position.z - 80) * 24).add(camera.position);
