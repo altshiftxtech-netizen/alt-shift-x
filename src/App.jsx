@@ -144,6 +144,7 @@ import PwaViewer from './pages/PwaViewer';
 import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
 import AdminSitesObservatory from '@/components/admin/AdminSitesObservatory';
+import AiBuilderGate from '@/components/AiBuilderGate';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
@@ -172,7 +173,7 @@ const AuthenticatedApp = () => {
       {/* ── Public routes — no login required ── */}
       <Route path="/" element={<Home />} />
       <Route path="/homepage" element={<Navigate to="/" replace />} />
-      <Route path="/aibuilder" element={<Navigate to="/" replace />} />
+      <Route path="/aibuilder" element={<AiBuilderGate />} />
       <Route path="/suite" element={<SuiteHomeRedirect />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
       <Route path="/sovereignpass" element={<SovereignPassPage />} />

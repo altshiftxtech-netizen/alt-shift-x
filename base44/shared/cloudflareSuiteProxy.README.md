@@ -8,7 +8,7 @@ Deploy `cloudflareSuiteProxy.js` as the standalone Cloudflare Worker `altshiftx-
 - `/dblive/settings` -> `https://dblive-sovereign-database.base44.app/settings`
 - `/dblive/assets/main.js` -> `https://dblive-sovereign-database.base44.app/assets/main.js`
 - `/dblivex` -> the master hub, not dbLive.
-- All eight node prefixes use the same exact-boundary matching and stripping.
+- All seven node prefixes use the same exact-boundary matching and stripping.
 - Unmatched paths use `https://unlock-agent-flow.base44.app`.
 
 Compared with the supplied Worker, this version also rewrites 303 redirects, resolves relative redirect locations against the actual upstream request, preserves redirect fragments, handles GET/HEAD without a body, preserves explicit HTML links to other suite nodes, leaves protocol-relative URLs alone, and prevents `//` paths from changing the selected upstream origin. Token-bearing responses use no-store and no-referrer.
