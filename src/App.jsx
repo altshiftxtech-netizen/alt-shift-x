@@ -143,7 +143,7 @@ import PwaHost from './pages/PwaHost';
 import PwaViewer from './pages/PwaViewer';
 import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
-import AdminSitesObservatory from './pages/AdminSitesObservatory';
+import AdminSitesObservatory from '@/components/admin/AdminSitesObservatory';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();

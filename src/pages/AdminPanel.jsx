@@ -29,9 +29,10 @@ import AquillaDownloadTab from "@/components/admin/AquillaDownloadTab";
 import Pm1aDeploymentTab from "@/components/admin/Pm1aDeploymentTab";
 import PwaExportsSection from "@/components/admin/PwaExportsSection";
 import PwaTestLab from "@/components/admin/PwaTestLab";
+import AdminSitesObservatory from "@/components/admin/AdminSitesObservatory";
 import ProvingGroundReport from '@/pages/ProvingGroundReport';
 
-const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Platform Intelligence", "Aquilla Binary", "PWA Management", "Proving Ground Report"];
+const TABS = ["Finance Analytics", "ExpertMinds Enterprise", "User Management", "Dev Community", "Tax Filing", "Invoices", "Pending Review", "Published", "Flagged", "Builders", "Subscriptions", "Payment Mode", "Beta Program", "Affiliate Links", "Legal Docs", "AI Change Log", "Reconciliation", "Audit Trail", "Financial Metrics", "Component Upload", "Site Documents", "Sites Fleet", "Platform Intelligence", "Aquilla Binary", "PWA Management", "Proving Ground Report"];
 
 const PLAN_LABELS = { starter: "Starter", pro: "Pro", enterprise: "Enterprise" };
 const PLAN_COLORS = { starter: "bg-slate-100 text-slate-600", pro: "bg-violet-100 text-violet-700", enterprise: "bg-blue-100 text-blue-700" };
@@ -149,6 +150,18 @@ export default function AdminPanel() {
     "Financial Metrics": <FinancialMetricsTab />,
     "Component Upload": <ComponentUploadTab />,
     "Site Documents": <SiteDocumentsTab />,
+    "Sites Fleet": (
+      <div className="space-y-4">
+        <div className="bg-cyan-50 border border-cyan-100 rounded-xl p-5">
+          <p className="text-sm font-bold text-cyan-900 mb-1">Sites Fleet Observatory & 1-Take Jay Site Compiler</p>
+          <p className="text-xs text-cyan-700 mb-4">Live fleet monitoring, edge telemetry, and clean static web distribution zip compiler for all 9 sovereign nodes. Separate from the native PWA compiler.</p>
+          <Link to="/admin/sites">
+            <Button className="bg-cyan-600 hover:bg-cyan-700 text-sm gap-2">Open Sites Fleet Observatory →</Button>
+          </Link>
+        </div>
+        <AdminSitesObservatory />
+      </div>
+    ),
     "Aquilla Binary": <AquillaDownloadTab />,
     "Proving Ground Report": <ProvingGroundReport embedded />,
     "PWA Management": (
