@@ -7,6 +7,7 @@ const SUITE_ROUTING_MAP = {
   '/bitfolio': 'https://bitfolio.base44.app',
   '/turimc': 'https://turi-mc.base44.app',
   '/magna': 'https://magna-webapp-and-coder.base44.app',
+  '/tgf': 'https://tgf-ai-carousel.base44.app',
 };
 const MASTER_HUB_ORIGIN = 'https://unlock-agent-flow.base44.app';
 
