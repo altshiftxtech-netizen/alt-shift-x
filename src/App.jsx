@@ -143,6 +143,7 @@ import PwaHost from './pages/PwaHost';
 import PwaViewer from './pages/PwaViewer';
 import DeltaWarehouseAscensionStage from './pages/DeltaWarehouseAscensionStage';
 import DeltaProductionDossierModal from './pages/DeltaProductionDossierModal';
+import AdminSitesObservatory from './pages/AdminSitesObservatory';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
@@ -315,6 +316,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/health" element={<SystemHealth />} />
         <Route path="/admin/proving-ground" element={<Navigate to="/admin?section=proving-ground" replace />} />
         <Route path="/admin/gamification" element={<GamificationAdmin />} />
+        <Route path="/admin/sites" element={<AdminSitesObservatory />} />
         <Route path="/admin/bob-init" element={<BobInit />} />
         <Route path="/vendor-portal" element={<VendorPortalPage />} />
         <Route path="/finance" element={<FinancePortal />} />
