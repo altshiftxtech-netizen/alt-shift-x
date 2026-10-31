@@ -170,9 +170,9 @@ const AuthenticatedApp = () => {
     <SuiteComponentProvider key={user?.id || 'guest'}>
     <Routes>
       {/* ── Public routes — no login required ── */}
-      <Route path="/" element={<SuiteHomeRedirect />} />
-      <Route path="/homepage" element={<Home />} />
-      <Route path="/aibuilder" element={<AiBuilder />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/homepage" element={<Navigate to="/" replace />} />
+      <Route path="/aibuilder" element={<Navigate to="/" replace />} />
       <Route path="/suite" element={<SuiteHomeRedirect />} />
       <Route path="/aboutaltshiftxsuite" element={<AboutAltShiftXSuite />} />
       <Route path="/sovereignpass" element={<SovereignPassPage />} />
