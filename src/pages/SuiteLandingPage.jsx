@@ -13,6 +13,7 @@ import useProvingGroundUsage from '@/components/suite/useProvingGroundUsage';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
+import PublicSuiteNodeGrid from '@/components/suite/PublicSuiteNodeGrid';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
@@ -173,8 +174,9 @@ export default function SuiteLandingPage() {
 
   return (
     <div
-      className={`suite-cinematic relative w-full overflow-hidden select-none font-sans ${groundInspection ? 'suite-inspecting' : ''}`}
+      className={`suite-cinematic relative w-full select-none font-sans ${groundInspection ? 'suite-inspecting' : ''}`}
     >
+     <div className="relative w-full h-screen overflow-hidden">
       {/* 1. Fullscreen Background Simulation Canvas */}
       <DeferredProvingGround onInspectionChange={setGroundInspection} />
 
@@ -263,6 +265,10 @@ export default function SuiteLandingPage() {
 
       {/* /helpmechoose Consuela Advisor and live local quality crucible. */}
       {activeModal === 'consuela' && <ConsuelaAdvisorModal isOpen onClose={() => setActiveModal(null)} nodes={SUITE_NODES} />}
+     </div>
+
+      {/* 7. Public Suite Node Grid — scrollable below the fold */}
+      <PublicSuiteNodeGrid />
     </div>
   );
 }
