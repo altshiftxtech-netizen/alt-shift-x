@@ -151,6 +151,14 @@ export default function SuiteLandingPage() {
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   const [specNode, setSpecNode] = useState(null);
 
+  // ESC collapses the Sovereign Browser full view (Chrome's native fullscreen exit also fires ESC)
+  useEffect(() => {
+    if (!isProvingGroundFullView) return;
+    const handler = (e) => { if (e.key === 'Escape') setIsProvingGroundFullView(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isProvingGroundFullView]);
+
   const handleResumeRotation = () => { dismiss(); if (motion.current.paused) togglePaused(); };
   const activeSpecNode = inspectionIndex !== null ? SUITE_NODES[inspectionIndex] : SUITE_NODES[selectedIndex];
   useEffect(() => {
