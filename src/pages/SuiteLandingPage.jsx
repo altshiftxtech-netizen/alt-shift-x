@@ -14,6 +14,7 @@ import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
 import PublicSuiteNodeGrid from '@/components/suite/PublicSuiteNodeGrid';
+import ProvingGroundInteractiveDemoShowcase from '@/components/suite/ProvingGroundInteractiveDemoShowcase';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
@@ -145,6 +146,7 @@ export default function SuiteLandingPage() {
   const { inspectionIndex, inspect, keepOpen, dismiss, leave } = useSuiteInspection(pause);
   const { search } = useLocation();
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
+  const [demoReelOpen, setDemoReelOpen] = useState(false);
   useEffect(() => {
     setActiveModal(new URLSearchParams(search).get('modal') === 'sovereignpass' ? 'sovereignpass' : null);
   }, [search]);
@@ -234,6 +236,16 @@ export default function SuiteLandingPage() {
 
       {!groundInspection && <div className="suite-consultation"><ConsultationButton /></div>}
 
+      {/* Low-profile glass trigger for the Proving Ground demo reel */}
+      {!groundInspection && (
+        <button
+          onClick={() => setDemoReelOpen(true)}
+          className="fixed bottom-16 right-4 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all"
+        >
+          🎬 Watch Proving Ground Demo Reel
+        </button>
+      )}
+
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
       <footer className="absolute bottom-0 left-0 right-0 h-12 bg-black/75 backdrop-blur-md border-t border-yellow-500/20 z-30 px-6 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
         <div className="flex items-center space-x-2 truncate">
@@ -265,6 +277,9 @@ export default function SuiteLandingPage() {
 
       {/* /helpmechoose Consuela Advisor and live local quality crucible. */}
       {activeModal === 'consuela' && <ConsuelaAdvisorModal isOpen onClose={() => setActiveModal(null)} nodes={SUITE_NODES} />}
+
+      {/* On-demand Proving Ground interactive demo reel overlay */}
+      {demoReelOpen && <ProvingGroundInteractiveDemoShowcase isOpen onClose={() => setDemoReelOpen(false)} />}
      </div>
 
       {/* 7. Public Suite Node Grid — scrollable below the fold */}
