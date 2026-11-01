@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles,
-  Crosshair, CheckCircle2, X, ArrowLeft
+  Crosshair, CheckCircle2, ArrowLeft
 } from 'lucide-react';
 
 // ============================================================================
@@ -146,13 +146,6 @@ export default function ProvingGroundInteractiveDemoShowcase({ isOpen, onClose }
           className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all pointer-events-auto backdrop-blur-md"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Proving Ground
-        </button>
-        <button
-          onClick={onClose}
-          aria-label="Close demo reel"
-          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all pointer-events-auto backdrop-blur-md"
-        >
-          <X className="w-5 h-5" />
         </button>
       </div>
 
