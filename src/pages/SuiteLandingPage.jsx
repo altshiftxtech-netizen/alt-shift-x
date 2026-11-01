@@ -13,7 +13,7 @@ import useProvingGroundUsage from '@/components/suite/useProvingGroundUsage';
 import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
-import PublicSuiteNodeGrid from '@/components/suite/PublicSuiteNodeGrid';
+import SuiteNodeSpecModal from '@/components/suite/SuiteNodeSpecModal';
 import ProvingGroundInteractiveDemoShowcase from '@/components/suite/ProvingGroundInteractiveDemoShowcase';
 import ProvingGroundSovereignSubHeader from '@/components/ProvingGroundSovereignSubHeader';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
@@ -149,6 +149,10 @@ export default function SuiteLandingPage() {
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [demoReelOpen, setDemoReelOpen] = useState(false);
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
+  const [specNode, setSpecNode] = useState(null);
+
+  const handleResumeRotation = () => { dismiss(); if (motion.current.paused) togglePaused(); };
+  const activeSpecNode = inspectionIndex !== null ? SUITE_NODES[inspectionIndex] : SUITE_NODES[selectedIndex];
   useEffect(() => {
     setActiveModal(new URLSearchParams(search).get('modal') === 'sovereignpass' ? 'sovereignpass' : null);
   }, [search]);
@@ -210,6 +214,23 @@ export default function SuiteLandingPage() {
           </button>
           <SuiteMusicPlayer onPlaybackChange={onMusicChange} />
 
+          {inspectionIndex !== null && (
+            <>
+              <button
+                onClick={handleResumeRotation}
+                className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
+              >
+                Resume rotation
+              </button>
+              <button
+                onClick={() => setSpecNode(activeSpecNode)}
+                className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
+              >
+                Explore Specs
+              </button>
+            </>
+          )}
+
           <button
             onClick={() => setActiveModal('consuela')}
             aria-label="Help me choose"
@@ -254,8 +275,9 @@ export default function SuiteLandingPage() {
 
         {inspectionIndex !== null && <SuiteNodeDossier node={SUITE_NODES[inspectionIndex]}
           onInteract={pause} onKeepOpen={keepOpen} onDismiss={leave}
-          onResume={() => { dismiss(); if (motion.current.paused) togglePaused(); }}
-          onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />}
+          onResume={handleResumeRotation}
+          onExploreSpecs={() => setSpecNode(SUITE_NODES[inspectionIndex])}
+          onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
 
       {/* Low-profile glass trigger for the Proving Ground demo reel */}
@@ -302,10 +324,10 @@ export default function SuiteLandingPage() {
 
       {/* On-demand Proving Ground interactive demo reel overlay */}
       {demoReelOpen && <ProvingGroundInteractiveDemoShowcase isOpen onClose={() => setDemoReelOpen(false)} />}
-     </div>
 
-      {/* 7. Public Suite Node Grid — scrollable below the fold */}
-      <PublicSuiteNodeGrid />
+      {/* Read-only spec sheet modal for the active node */}
+      <SuiteNodeSpecModal node={specNode} onClose={() => setSpecNode(null)} />
+     </div>
     </div>
   );
 }
