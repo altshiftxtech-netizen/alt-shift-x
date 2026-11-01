@@ -216,6 +216,8 @@ export default function SuiteLandingPage() {
             <ConsuelaLogo />
             <span className="suite-advisor-label">/helpmechoose</span>
           </button>
+
+          <ConsultationButton />
         </nav>
       </header>
 
@@ -233,8 +235,6 @@ export default function SuiteLandingPage() {
           onResume={() => { dismiss(); if (motion.current.paused) togglePaused(); }}
           onLaunch={handleLaunchNode} onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
-
-      {!groundInspection && <div className="suite-consultation"><ConsultationButton /></div>}
 
       {/* Low-profile glass trigger for the Proving Ground demo reel */}
       {!groundInspection && (
