@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles,
-  Crosshair, CheckCircle2, X
+  Crosshair, CheckCircle2, X, ArrowLeft
 } from 'lucide-react';
 
 // ============================================================================
@@ -140,14 +140,21 @@ export default function ProvingGroundInteractiveDemoShowcase({ isOpen, onClose }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        aria-label="Close demo reel"
-        className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all"
-      >
-        <X className="w-5 h-5" />
-      </button>
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all pointer-events-auto backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Proving Ground
+        </button>
+        <button
+          onClick={onClose}
+          aria-label="Close demo reel"
+          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all pointer-events-auto backdrop-blur-md"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
       <section className="w-full max-w-7xl mx-auto font-sans text-white max-h-[95vh] overflow-y-auto rounded-3xl bg-slate-900/90 border border-white/20 backdrop-blur-2xl shadow-2xl">
         {/* Section Header */}
