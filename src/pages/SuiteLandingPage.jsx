@@ -15,7 +15,7 @@ import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
 import PublicSuiteNodeGrid from '@/components/suite/PublicSuiteNodeGrid';
 import ProvingGroundInteractiveDemoShowcase from '@/components/suite/ProvingGroundInteractiveDemoShowcase';
-import SovereignBrowserFullViewToolbar from '@/components/SovereignBrowserFullViewToolbar';
+import ProvingGroundSovereignSubHeader from '@/components/ProvingGroundSovereignSubHeader';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
@@ -148,17 +148,7 @@ export default function SuiteLandingPage() {
   const { search } = useLocation();
   const [activeModal, setActiveModal] = useState(null); // 'sovereignpass' | 'about' | 'consuela'
   const [demoReelOpen, setDemoReelOpen] = useState(false);
-  const [isFullView, setIsFullView] = useState(false);
-  const [isNativeFullScreen, setIsNativeFullScreen] = useState(false);
-
-  const handleToggleMaximize = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-      setIsNativeFullScreen(false);
-    } else {
-      document.documentElement.requestFullscreen().then(() => setIsNativeFullScreen(true)).catch(() => {});
-    }
-  };
+  const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   useEffect(() => {
     setActiveModal(new URLSearchParams(search).get('modal') === 'sovereignpass' ? 'sovereignpass' : null);
   }, [search]);
@@ -190,15 +180,7 @@ export default function SuiteLandingPage() {
     <div
       className={`suite-cinematic relative w-full select-none font-sans ${groundInspection ? 'suite-inspecting' : ''}`}
     >
-     <div className={isFullView ? "fixed inset-0 z-50 flex flex-col bg-slate-950" : "relative w-full h-screen overflow-hidden"}>
-      {isFullView && (
-        <SovereignBrowserFullViewToolbar
-          isFullScreen={isNativeFullScreen}
-          onCollapseView={() => setIsFullView(false)}
-          onToggleMaximize={handleToggleMaximize}
-          onReturnNormal={() => setIsFullView(false)}
-        />
-      )}
+     <div className="relative w-full h-screen overflow-hidden">
       {/* 1. Fullscreen Background Simulation Canvas */}
       <DeferredProvingGround onInspectionChange={setGroundInspection} />
 
@@ -241,6 +223,26 @@ export default function SuiteLandingPage() {
         </nav>
       </header>
 
+      {/* Sovereign Browser sub-header — mated flush underneath the navigation header */}
+      <div className="absolute top-16 left-0 right-0 z-40">
+        <ProvingGroundSovereignSubHeader
+          isExpanded={isProvingGroundFullView}
+          onMinimize={() => setIsProvingGroundFullView(false)}
+          onMaximize={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen()
+                .then(() => setIsProvingGroundFullView(true))
+                .catch(() => {});
+            } else {
+              document.exitFullscreen()
+                .then(() => setIsProvingGroundFullView(false))
+                .catch(() => {});
+            }
+          }}
+          onClose={() => setIsProvingGroundFullView(false)}
+        />
+      </div>
+
       {/* 4. Center Stage: JARVIS 3D Holographic Circular Carousel */}
       <main className="absolute inset-0 flex flex-col items-center justify-end z-20 pointer-events-none pb-16 pt-20">
         <SuiteEmblemOrbit
@@ -263,16 +265,6 @@ export default function SuiteLandingPage() {
           className="fixed bottom-16 right-4 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-[13px] font-semibold bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all"
         >
           🎬 Watch Proving Ground Demo Reel
-        </button>
-      )}
-
-      {/* Sovereign Browser Full View toggle */}
-      {!groundInspection && (
-        <button
-          onClick={() => setIsFullView(true)}
-          className="fixed bottom-4 right-4 z-30 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-white/20 hover:border-cyan-400/50 text-xs font-mono text-cyan-300 backdrop-blur-md shadow-lg transition-all"
-        >
-          ⛶ Expand to Sovereign Browser Full View
         </button>
       )}
 
