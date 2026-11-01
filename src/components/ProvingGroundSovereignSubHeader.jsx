@@ -1,5 +1,5 @@
 import React from 'react';
-import { Minus, Square, X } from 'lucide-react';
+import { Minus, Square, X, ArrowRight } from 'lucide-react';
 
 export default function ProvingGroundSovereignSubHeader({
   isExpanded = false,
@@ -19,51 +19,58 @@ export default function ProvingGroundSovereignSubHeader({
         </span>
       </div>
 
-      {/* Right: Gated Micro Window Controls (Zero Tab Exit Risk) */}
-      <div className="flex items-center gap-1 shrink-0">
-        {/* Minimize Button (-) : Smoothly collapses view — gated to expanded state */}
-        <button
-          type="button"
-          disabled={!isExpanded}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isExpanded && onMinimize) onMinimize();
-          }}
-          className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'text-slate-700 cursor-not-allowed'}`}
-          title="Collapse View"
-        >
-          <Minus className="w-3 h-3" />
-        </button>
+      {/* Right: Sovereign Difference callout + Gated Micro Window Controls */}
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="hidden sm:flex items-center gap-1 font-mono text-[10px] tracking-wide text-amber-400/90 italic">
+          It's The Sovereign Difference — Try It
+          <ArrowRight className="w-3 h-3 text-cyan-300 animate-pulse" />
+        </span>
 
-        {/* Maximize Button (Square) : Toggles Fullscreen */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (onMaximize) onMaximize();
-          }}
-          className="h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-          title={isExpanded ? "Restore View" : "Maximize Screen"}
-        >
-          <Square className="w-2.5 h-2.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Minimize Button (-) : Smoothly collapses view — gated to expanded state */}
+          <button
+            type="button"
+            disabled={!isExpanded}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isExpanded && onMinimize) onMinimize();
+            }}
+            className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'text-slate-700 cursor-not-allowed'}`}
+            title="Collapse View"
+          >
+            <Minus className="w-3 h-3" />
+          </button>
 
-        {/* Close Button (X) : Resets View — gated to expanded state */}
-        <button
-          type="button"
-          disabled={!isExpanded}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isExpanded && onClose) onClose();
-          }}
-          className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-red-500/20 text-slate-400 hover:text-red-400' : 'text-slate-700 cursor-not-allowed'}`}
-          title="Exit Full View"
-        >
-          <X className="w-3 h-3" />
-        </button>
+          {/* Maximize Button (Square) : Toggles Fullscreen */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (onMaximize) onMaximize();
+            }}
+            className="h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            title={isExpanded ? "Restore View" : "Maximize Screen"}
+          >
+            <Square className="w-2.5 h-2.5" />
+          </button>
+
+          {/* Close Button (X) : Resets View — gated to expanded state */}
+          <button
+            type="button"
+            disabled={!isExpanded}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isExpanded && onClose) onClose();
+            }}
+            className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-red-500/20 text-slate-400 hover:text-red-400' : 'text-slate-700 cursor-not-allowed'}`}
+            title="Exit Full View"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
       </div>
     </div>
   );
