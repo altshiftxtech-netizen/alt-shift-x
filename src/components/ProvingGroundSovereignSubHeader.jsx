@@ -21,15 +21,16 @@ export default function ProvingGroundSovereignSubHeader({
 
       {/* Right: Gated Micro Window Controls (Zero Tab Exit Risk) */}
       <div className="flex items-center gap-1 shrink-0">
-        {/* Minimize Button (-) : Smoothly collapses view */}
+        {/* Minimize Button (-) : Smoothly collapses view — gated to expanded state */}
         <button
           type="button"
+          disabled={!isExpanded}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (onMinimize) onMinimize();
+            if (isExpanded && onMinimize) onMinimize();
           }}
-          className="h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'text-slate-700 cursor-not-allowed'}`}
           title="Collapse View"
         >
           <Minus className="w-3 h-3" />
@@ -49,15 +50,16 @@ export default function ProvingGroundSovereignSubHeader({
           <Square className="w-2.5 h-2.5" />
         </button>
 
-        {/* Close Button (X) : Resets View */}
+        {/* Close Button (X) : Resets View — gated to expanded state */}
         <button
           type="button"
+          disabled={!isExpanded}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (onClose) onClose();
+            if (isExpanded && onClose) onClose();
           }}
-          className="h-5 w-5 flex items-center justify-center rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+          className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-red-500/20 text-slate-400 hover:text-red-400' : 'text-slate-700 cursor-not-allowed'}`}
           title="Exit Full View"
         >
           <X className="w-3 h-3" />
