@@ -1,5 +1,5 @@
 import {refineEmblem} from '@/components/upkeeper/emblemConversation';
-export const promptIntent=(text,choice)=>/https?:\/\/[^\s]+/i.test(text)?'autopilot':choice||(/\b(logo|emblem|icon|vibe)\b/i.test(text)?'logo':/\b(reel|video|commercial)\b/i.test(text)?'reel':'article');
+export const promptIntent=(text,choice)=>/\b(reel|cinema|video)\b/i.test(text)?'reel':/https?:\/\/[^\s]+/i.test(text)?'autopilot':choice||(/\b(logo|emblem|icon|vibe)\b/i.test(text)?'logo':/\b(commercial)\b/i.test(text)?'reel':'article');
 export const promptUrl=text=>text.match(/https?:\/\/[^\s<>"']+/i)?.[0]?.replace(/[),.;]+$/,'')||'';
 export function refineLogo(previous,text) {
   const next={...previous}, p=text.toLowerCase();

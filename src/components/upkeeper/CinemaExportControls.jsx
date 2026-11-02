@@ -1,0 +1,19 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {downloadAsset,logoImage} from '@/components/upkeeper/creativeAssets';
+import {recordCampaignReel} from '@/components/upkeeper/recordCampaignReel';
+import {loadCinemaMedia,releaseCinemaMedia} from '@/components/upkeeper/cinemaReference';
+import {paintReel} from '@/components/upkeeper/reelPainter';
+import CinemaRenderedReel from '@/components/upkeeper/CinemaRenderedReel';
+export default function CinemaExportControls({assets,onReel,onBusy}){
+  const [width,setWidth]=useState(2160),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');const controller=useRef(null);
+  useEffect(()=>()=>controller.current?.abort(),[]);
+  const render=async kind=>{setBusy(true);onBusy?.(true);setProgress(0);setError('');setNotice('');controller.current=new AbortController();let media;
+    try{if(kind==='still'){const [logo,loaded]=await Promise.all([logoImage(assets.logo),loadCinemaMedia(assets.campaign,assets.cinemaRef)]);media=loaded;if(controller.current.signal.aborted)throw new Error('Render cancelled.');const canvas=document.createElement('canvas');canvas.width=2160;canvas.height=3840;paintReel(canvas,Number(assets.cinema?.durations?.[0]||3)/2,assets.campaign,logo,assets.campaign?.url,assets.cinema,media);const blob=await new Promise((resolve,reject)=>canvas.toBlob(v=>v?resolve(v):reject(new Error('Still export failed.')),'image/png'));if(controller.current.signal.aborted)throw new Error('Render cancelled.');downloadAsset(blob,'upkeeper-cinema-still-2160x3840.png');canvas.width=canvas.height=1;setNotice('4K cinema still ready · 2160×3840 PNG.');}
+      else{const reel=await recordCampaignReel({...assets,campaign:assets.campaign,url:assets.campaign?.url||'',width,onProgress:setProgress,signal:controller.current.signal});onReel(reel);downloadAsset(reel.blob,`upkeeper-cinema-${reel.width}x${reel.height}.${reel.extension}`);setNotice(`Dynamic reel ready · ${reel.seconds}s · ${reel.width}×${reel.height}.`);}
+    }catch(e){if(!controller.current.signal.aborted)setError(e.message);}finally{releaseCinemaMedia(media);setBusy(false);onBusy?.(false);}};
+  return <div className="space-y-3"><label className="block text-sm">Video resolution<select aria-label="Export resolution" className="creative-select" value={width} disabled={busy} onChange={e=>setWidth(Number(e.target.value))}><option value={1080}>1080p · 1080×1920</option><option value={2160}>4K · 2160×3840</option><option value={4320}>8K · 4320×7680</option></select></label><div className="flex flex-wrap gap-2"><Button disabled={busy||!assets.campaign} variant="outline" onClick={()=>render('still')}>Export 4K Cinema Still</Button><Button disabled={busy||!assets.campaign} onClick={()=>render('reel')}>Print Full Dynamic Reel</Button>{busy&&<Button variant="outline" onClick={()=>controller.current?.abort()}>Cancel render</Button>}</div>
+    <p className="text-xs text-muted-foreground">Still: full-resolution vertical PNG. Video: silent 9:16, WebM or MP4 depending on browser support. 4K/8K encoding depends on device capacity; keep this tab visible.</p>{busy&&<div role="status"><progress className="w-full" max={100} value={progress}/><p>Rendering locally… {progress}%</p></div>}{notice&&<p role="status" data-testid="cinema-export-status">{notice}</p>}{error&&<p role="alert" className="text-destructive">{error}</p>}
+    {assets.reel&&<div className="rounded-xl border p-3 space-y-2"><p>Saved reel · {assets.reel.seconds}s · {assets.reel.width}×{assets.reel.height} · {(assets.reel.blob.size/1048576).toFixed(1)} MB</p><CinemaRenderedReel blob={assets.reel.blob}/><Button variant="outline" disabled={busy} onClick={()=>downloadAsset(assets.reel.blob,'upkeeper-cinema.'+assets.reel.extension)}>Download reel again</Button></div>}
+  </div>;
+}

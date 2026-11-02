@@ -20,7 +20,7 @@ export default function UpkeeperCreativeDock({assets,setAssets}) {
     <div id={'creative-panel-'+assets.tab} className="creative-workspace-canvas" role="region" aria-label={tabs.find(([id])=>id===assets.tab)?.[1]}>
       <div hidden={assets.tab!=='autopilot'}><UpkeeperHeyCatchAutopilot compact campaign={assets.campaign} onCampaign={campaign=>patch({campaign,reel:null})} activeUrl={assets.url} onUrl={url=>patch({url})} onResearch={engine.run} researching={busy&&assets.tab==='autopilot'}/></div>
       {assets.tab==='logo' && <UpkeeperLogoSandbox settings={assets.logo} onChange={logo=>patch({logo,reel:null})}/>}
-      {assets.tab==='reel' && <UpkeeperReelEngine assets={assets} onTab={onTab} onReel={reel=>patch({reel})} onBusy={value=>{engine.setBusy(value);if(!value)patch({reelRequest:null});}}/>}
+      {assets.tab==='reel' && <UpkeeperReelEngine assets={assets} onPatch={patch} disabled={busy} onTab={onTab} onReel={reel=>patch({reel})} onBusy={value=>{engine.setBusy(value);if(!value)patch({reelRequest:null});}}/>}
       {assets.tab==='article' && <UpkeeperArticleDraft article={assets.article}/>}
       {assets.tab==='ship' && <FastShipHub assets={{...assets,campaign:assets.reelCampaign||assets.campaign}} onTab={onTab}/>}
     </div>

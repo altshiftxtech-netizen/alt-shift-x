@@ -1,0 +1,16 @@
+export async function inspectCinemaReference(url){
+  const video=document.createElement('video');video.crossOrigin='anonymous';video.muted=true;video.preload='auto';
+  const wait=event=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>{clean();reject(new Error('Reference timed out. Upload a playable MP4 or WebM clip instead.'));},12000);const clean=()=>{clearTimeout(timer);video.removeEventListener(event,ok);video.removeEventListener('error',fail);};const ok=()=>{clean();resolve();};const fail=()=>{clean();reject(new Error('This reference cannot be read. Use a direct CORS-enabled video link, or upload the clip.'));};video.addEventListener(event,ok,{once:true});video.addEventListener('error',fail,{once:true});});
+  try{const loaded=wait('loadedmetadata');video.src=url;await loaded;if(!Number.isFinite(video.duration)||video.duration<=0)throw new Error('Use a finite, playable reference clip.');
+    const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const ctx=canvas.getContext('2d',{willReadFrequently:true});let previous,cuts=0,red=0,green=0,blue=0;
+    for(let i=0;i<12;i++){const ready=wait('seeked');video.currentTime=Math.max(.01,Math.min(video.duration-.01,video.duration*(i+.5)/12));await ready;ctx.drawImage(video,0,0,32,32);const data=ctx.getImageData(0,0,32,32).data;let difference=0;for(let j=0;j<data.length;j+=4){red+=data[j];green+=data[j+1];blue+=data[j+2];if(previous)difference+=Math.abs(data[j]-previous[j])+Math.abs(data[j+1]-previous[j+1])+Math.abs(data[j+2]-previous[j+2]);}if(previous&&difference/(1024*3)>45)cuts++;previous=data;}
+    return {duration:Math.round(video.duration*10)/10,shotSeconds:Math.max(1,Math.round(video.duration/(cuts+1)*10)/10),caption:cuts>3?'pulse':'glass',grade:blue>red*1.1?'teal':red>blue*1.2?'kodachrome':'obsidian',sampledCuts:cuts,width:video.videoWidth,height:video.videoHeight};
+  }finally{video.removeAttribute('src');video.load();}
+}
+export async function loadCinemaMedia(campaign,reference){
+  const image=async url=>{if(!url)return null;const img=new Image();img.crossOrigin='anonymous';img.src=url;await img.decode();return img;};
+  const [hero,broll]=await Promise.all([image(campaign?.hero_url),image(campaign?.broll_url)]);
+  let clip=null;if(reference?.url){clip=document.createElement('video');clip.crossOrigin='anonymous';clip.muted=true;clip.loop=true;clip.playsInline=true;await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Reference playback timed out. Remove it or choose a different clip.')),12000);clip.onloadeddata=()=>{clearTimeout(timer);resolve();};clip.onerror=()=>{clearTimeout(timer);reject(new Error('The reference clip is no longer playable. Reattach it.'));};clip.src=reference.url;});}
+  return {hero,broll,clip};
+}
+export function releaseCinemaMedia(media){if(media?.clip){media.clip.pause();media.clip.removeAttribute('src');media.clip.load();}}

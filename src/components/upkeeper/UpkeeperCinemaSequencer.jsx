@@ -1,0 +1,9 @@
+import React from 'react';
+import {cinemaSettings,cinemaDuration,gradeNames} from '@/components/upkeeper/cinemaSpec';
+export default function UpkeeperCinemaSequencer({settings,onChange,campaign,disabled}){
+  const s=cinemaSettings(settings),names=['Hook','Kinetic breakdown','Feature / proof spotlight','Logo bumper & CTA'];let start=0;
+  return <section aria-label="Cinema scene sequencer" className="space-y-3"><div className="flex flex-wrap justify-between gap-2"><h3 className="font-semibold">Scene sequencer</h3><span className="text-sm" data-testid="cinema-duration">{cinemaDuration(s)}s · 9:16</span></div>
+    <div className="grid sm:grid-cols-2 gap-3">{names.map((name,i)=>{const from=start;start+=Number(s.durations[i]);return <article key={name} className="rounded-xl border p-3 space-y-2"><h4 className="text-sm font-semibold">{i+1}. {name}</h4><p className="text-xs text-muted-foreground">{from}–{start}s · {campaign?.scenes?.[i]?.title||name}</p><label className="block text-xs">Scene {i+1} duration: {s.durations[i]}s<input className="w-full accent-primary" aria-label={`Scene ${i+1} duration`} type="range" min="1" max="24" step="1" disabled={disabled} value={s.durations[i]} onChange={e=>onChange({...s,durations:s.durations.map((n,j)=>j===i?Number(e.target.value):n)})}/></label></article>;})}</div>
+    <div className="grid sm:grid-cols-3 gap-3">{[['transition','Transition',[['fade','Fade'],['whip','Quick Whip'],['match','Match Cut']]],['caption','Caption style',[['pulse','Word-by-word pulse'],['typewriter','Typewriter'],['glass','Floating glass badge']]],['grade','Color grading',Object.entries(gradeNames)]].map(([key,label,options])=><label key={key} className="text-xs">{label}<select aria-label={label} className="creative-select" disabled={disabled} value={s[key]} onChange={e=>onChange({...s,[key]:e.target.value})}>{options.map(([id,title])=><option key={id} value={id}>{title}</option>)}</select></label>)}</div>
+  </section>;
+}

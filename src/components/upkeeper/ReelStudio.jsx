@@ -1,29 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import ReelPreview from '@/components/upkeeper/ReelPreview';
-import { downloadAsset } from '@/components/upkeeper/creativeAssets';
-import { recordCampaignReel } from '@/components/upkeeper/recordCampaignReel';
-export default function ReelStudio({assets,onReel,onTab,autoRun,onBusy}) {
-  const [width,setWidth]=useState(2160),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0),[error,setError]=useState('');
-  const controller=useRef(null);
-  useEffect(()=>()=>controller.current?.abort(),[]);
-  const print=async()=>{
-    setBusy(true);onBusy?.(true);setError('');setProgress(0);controller.current=new AbortController();
-    try { const reel=await recordCampaignReel({...assets,url:assets.campaign.url,campaign:assets.campaign,width,onProgress:setProgress,signal:controller.current.signal});onReel(reel);downloadAsset(reel.blob,`campaign-reel-${reel.height}p.${reel.extension}`); }
-    catch(e){if(!controller.current.signal.aborted)setError(e.message);}finally{setBusy(false);onBusy?.(false);}
-  };
-  useEffect(()=>{if(autoRun)print();},[autoRun]);
+import UpkeeperReferenceDock from '@/components/upkeeper/UpkeeperReferenceDock';
+import UpkeeperCinemaSequencer from '@/components/upkeeper/UpkeeperCinemaSequencer';
+import CinemaExportControls from '@/components/upkeeper/CinemaExportControls';
+export default function ReelStudio({assets,onReel,onBusy,onPatch,disabled}) {
+  const update=cinema=>onPatch({cinema,reel:null});
   return <section className="creative-panel" aria-label="4K Reel Studio">
-    <div><p className="creative-eyebrow">ZERO-EDIT / 9:16</p><h2>4K Reel Studio</h2><p className="text-sm text-muted-foreground">Nine seconds of synchronized typography, a brand badge and split-screen product brief / source work. Silent, browser-rendered video.</p></div>
-    {!assets.campaign && <div className="rounded-xl border p-4"><p>Research a product link to compile a reel from your actual campaign.</p><Button variant="outline" onClick={()=>onTab('autopilot')}>Open Customer Finder Autopilot</Button></div>}
-    <div className="grid md:grid-cols-2 gap-6 items-start"><ReelPreview campaign={assets.campaign} logo={assets.logo} url={assets.campaign?.url||''}/><div className="space-y-4">
-      <p className="text-sm">Preview: 1080×1920. Export is redrawn at the selected resolution, not a stretched preview.</p>
-      <label className="block text-sm">Export resolution<select aria-label="Export resolution" disabled={busy} className="creative-select" value={width} onChange={e=>setWidth(Number(e.target.value))}><option value={1080}>1080p · 1080×1920</option><option value={2160}>4K · 2160×3840</option><option value={4320}>8K · 4320×7680</option></select></label>
-      <p className="text-xs text-muted-foreground">4K/8K depend on your browser encoder and device memory. Keep this tab visible during capture. WebM is preferred; MP4 is used only when supported.</p>
-      <Button disabled={busy||!assets.campaign} onClick={print}>{busy?`Printing reel… ${progress}%`:'Print Full Reel'}</Button>
-      {busy && <div role="status"><progress className="w-full" max={100} value={progress}/><p className="text-sm">Recording locally. No uploads or AI video credits.</p></div>}
-      {error && <p role="alert" className="text-destructive">{error}</p>}
-      {assets.reel && <div role="status" className="rounded-xl border p-4"><strong>Reel ready · {assets.reel.width}×{assets.reel.height}</strong><p className="text-sm">{assets.reel.extension.toUpperCase()} · {(assets.reel.blob.size/1048576).toFixed(1)} MB · 9 seconds</p><Button variant="outline" onClick={()=>downloadAsset(assets.reel.blob,`campaign-reel.${assets.reel.extension}`)}>Download reel again</Button></div>}
-    </div></div>
+    <div><p className="creative-eyebrow">CINEMA / 9:16</p><h2>Cinema Visual & Dynamic Reel Engine</h2><p className="text-sm text-muted-foreground">Four scenes, cinematic hero and b-roll imagery, kinetic captions and a branded finish. Generate from the master prompt, then refine pacing before printing.</p></div>
+    <UpkeeperReferenceDock settings={assets.cinema||{}} reference={assets.cinemaRef} onChange={update} onReference={cinemaRef=>onPatch({cinemaRef,reel:null})} disabled={disabled}/>
+    {!assets.campaign&&<p role="status" className="text-sm text-muted-foreground">Describe your product in the master prompt and run the engine to generate the script and two cinema images. Preview shows the layout until then.</p>}
+    {assets.campaign&&<p role="status" data-testid="cinema-ready" className="text-sm">{assets.campaign.product} · {assets.campaign.hero_url?'Cinema hero & b-roll ready':'Campaign-based scenes'}</p>}
+    <ReelPreview campaign={assets.campaign} logo={assets.logo} url={assets.campaign?.url||''} settings={assets.cinema} reference={assets.cinemaRef}/>
+    <UpkeeperCinemaSequencer settings={assets.cinema} onChange={update} campaign={assets.campaign} disabled={disabled}/>
+    <CinemaExportControls assets={assets} onReel={onReel} onBusy={onBusy}/>
   </section>;
 }
