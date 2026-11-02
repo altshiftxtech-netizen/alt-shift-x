@@ -142,18 +142,6 @@ export default function AiBuilder() {
           </div>
           <div className="flex flex-1 xl:flex-none min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
             <SuiteBentoSwitcher />
-            <Link to="/expertmind">
-              <Button
-                className="text-sm h-8 gap-1.5 font-semibold text-[#062b27] border transition-all"
-                style={{
-                  background: "#39E6B0",
-                  borderColor: "#5CF2C4",
-                  boxShadow: "0 0 12px rgba(57,230,176,0.65), 0 0 4px rgba(57,230,176,0.9) inset",
-                }}
-              >
-                <BrainCircuit className="w-3.5 h-3.5" /> ExpertMind
-              </Button>
-            </Link>
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard"><Button className="text-sm h-8 bg-violet-600 hover:bg-violet-700 text-white gap-1.5"><LogIn className="w-3.5 h-3.5" /> Dashboard</Button></Link>
