@@ -325,13 +325,13 @@ export default function SuiteLandingPage() {
           </span>
         </div>
         <div className="flex items-center space-x-4">
-          <button type="button" onClick={event => { if (event.nativeEvent.isTrusted) setLegalDocument('terms'); }} className="hover:text-yellow-400 transition-colors">
+          <button type="button" onClick={() => setLegalDocument('terms')} className="hover:text-yellow-400 transition-colors">
             Terms
           </button>
-          <button type="button" onClick={event => { if (event.nativeEvent.isTrusted) setLegalDocument('privacy'); }} className="hover:text-yellow-400 transition-colors">
+          <button type="button" onClick={() => setLegalDocument('privacy')} className="hover:text-yellow-400 transition-colors">
             Privacy
           </button>
-          <button type="button" onClick={event => { if (event.nativeEvent.isTrusted) openCookiePreferences(); }} className="hover:text-yellow-400 transition-colors">Cookie Settings</button>
+          <button type="button" onClick={openCookiePreferences} className="hover:text-yellow-400 transition-colors">Cookie Settings</button>
         </div>
       </footer>
 

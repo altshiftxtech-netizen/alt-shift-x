@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getConsent, applyConsent, subscribeConsent, rejectAll, acceptAll } from '@/lib/cookieConsent';
 import { onOpenCookiePreferences } from '@/components/cookies/cookiePrefStore';
 import CookiePreferenceCenter from '@/components/cookies/CookiePreferenceCenter';
 
 export default function LowProfileCookieBadge() {
+  const { pathname } = useLocation();
   const [visible, setVisible] = useState(false);
   const [preferences, setPreferences] = useState(false);
   useEffect(() => {
@@ -15,7 +17,7 @@ export default function LowProfileCookieBadge() {
     return () => { window.clearTimeout(timer); stopChanges(); stopOpening(); };
   }, []);
   return <>
-    {visible && !preferences && <div role="region" aria-label="Cookie notice" className="fixed bottom-3 inset-x-0 z-[9999] flex justify-center px-4 pointer-events-none">
+    {visible && !preferences && <div role="region" aria-label="Cookie notice" className={`fixed ${pathname === '/' ? 'bottom-16' : 'bottom-3'} inset-x-0 z-[9999] flex justify-center px-4 pointer-events-none`}>
       <div className="pointer-events-auto max-w-2xl w-full flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-card text-card-foreground border border-border shadow-xl">
         <p className="text-xs">Essential cookies keep this site working. Optional cookies stay off until accepted.</p>
         <div className="flex items-center gap-2 shrink-0">

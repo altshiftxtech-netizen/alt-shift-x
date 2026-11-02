@@ -65,7 +65,7 @@ export default function CookiePreferenceCenter({ open, onOpenChange }) {
         </div>
 
         <p className="text-[11px] text-slate-400 pt-1">
-          Read our full <button type="button" className="text-violet-600 hover:underline" onClick={event => { if (event.nativeEvent.isTrusted) setPolicyOpen(true); }}>Cookie Policy</button>.
+          Read our full <button type="button" className="text-violet-600 hover:underline" onClick={() => setPolicyOpen(true)}>Cookie Policy</button>.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
