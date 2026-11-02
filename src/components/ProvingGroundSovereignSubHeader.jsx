@@ -1,5 +1,5 @@
 import React from 'react';
-import { Minus, Square, X, ArrowRight } from 'lucide-react';
+import { Square, X, ArrowRight } from 'lucide-react';
 import suiteBrandNames from '@/components/suite/suiteBrandNames';
 
 export default function ProvingGroundSovereignSubHeader({
@@ -28,21 +28,6 @@ export default function ProvingGroundSovereignSubHeader({
         </span>
 
         <div className="flex items-center gap-1">
-          {/* Minimize Button (-) : Smoothly collapses view — gated to expanded state */}
-          <button
-            type="button"
-            disabled={!isExpanded}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (isExpanded && onMinimize) onMinimize();
-            }}
-            className={`h-5 w-5 flex items-center justify-center rounded transition-colors ${isExpanded ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'text-slate-700 cursor-not-allowed'}`}
-            title="Collapse View"
-          >
-            <Minus className="w-3 h-3" />
-          </button>
-
           {/* Maximize Button (Square) : Toggles Fullscreen */}
           <button
             type="button"
