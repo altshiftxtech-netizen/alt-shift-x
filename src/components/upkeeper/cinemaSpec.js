@@ -2,7 +2,7 @@ import {guardCinemaDirective} from '@/components/upkeeper/cinemaBrandGuard';
 import {canonicalPresets} from '@/components/upkeeper/canonicalPacing';
 export const pacingPresets=canonicalPresets;
 export const gradeNames={obsidian:'Obsidian chiaroscuro',teal:'Teal-orange',kodachrome:'Kodachrome',chrome:'Specular chrome'};
-export function cinemaSettings(value={}){return {preset:'speedrun',...canonicalPresets.speedrun,aspect:'9:16',textAccent:'cyan',...value};}
+export function cinemaSettings(value={}){const s={preset:'speedrun',...canonicalPresets.speedrun,aspect:'9:16',textAccent:'cyan',...value};s.caption=({pulse:'punch',glass:'lower-third',typewriter:'stinger'})[s.caption]||s.caption;return s;}
 export const cinemaDuration=value=>cinemaSettings(value).durations.reduce((sum,n)=>sum+Number(n),0);
 export function cinematicDirective(prompt,value={}){
   const s=cinemaSettings(value);if(s.directive&&s.directiveSource===prompt)return guardCinemaDirective(s.directive,prompt);
