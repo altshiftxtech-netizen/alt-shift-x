@@ -3,15 +3,16 @@ import { Button } from '@/components/ui/button';
 import ReelPreview from '@/components/upkeeper/ReelPreview';
 import { downloadAsset } from '@/components/upkeeper/creativeAssets';
 import { recordCampaignReel } from '@/components/upkeeper/recordCampaignReel';
-export default function ReelStudio({assets,onReel,onTab}) {
+export default function ReelStudio({assets,onReel,onTab,autoRun,onBusy}) {
   const [width,setWidth]=useState(2160),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0),[error,setError]=useState('');
   const controller=useRef(null);
   useEffect(()=>()=>controller.current?.abort(),[]);
   const print=async()=>{
-    setBusy(true);setError('');setProgress(0);controller.current=new AbortController();
+    setBusy(true);onBusy?.(true);setError('');setProgress(0);controller.current=new AbortController();
     try { const reel=await recordCampaignReel({...assets,url:assets.campaign.url,campaign:assets.campaign,width,onProgress:setProgress,signal:controller.current.signal});onReel(reel);downloadAsset(reel.blob,`campaign-reel-${reel.height}p.${reel.extension}`); }
-    catch(e){if(!controller.current.signal.aborted)setError(e.message);}finally{setBusy(false);}
+    catch(e){if(!controller.current.signal.aborted)setError(e.message);}finally{setBusy(false);onBusy?.(false);}
   };
+  useEffect(()=>{if(autoRun)print();},[autoRun]);
   return <section className="creative-panel" aria-label="4K Reel Studio">
     <div><p className="creative-eyebrow">ZERO-EDIT / 9:16</p><h2>4K Reel Studio</h2><p className="text-sm text-muted-foreground">Nine seconds of synchronized typography, a brand badge and split-screen product brief / source work. Silent, browser-rendered video.</p></div>
     {!assets.campaign && <div className="rounded-xl border p-4"><p>Research a HeyCatch link to compile a reel from your actual campaign.</p><Button variant="outline" onClick={()=>onTab('autopilot')}>Open HeyCatch</Button></div>}
