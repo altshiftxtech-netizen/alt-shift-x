@@ -15,6 +15,7 @@ import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
 import SuiteNodeSpecModal from '@/components/suite/SuiteNodeSpecModal';
+import SuiteLegalPopup from '@/components/suite/SuiteLegalPopup';
 import ProvingGroundInteractiveDemoShowcase from '@/components/suite/ProvingGroundInteractiveDemoShowcase';
 import ProvingGroundSovereignSubHeader from '@/components/ProvingGroundSovereignSubHeader';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
@@ -152,6 +153,7 @@ export default function SuiteLandingPage() {
   const [demoReelOpen, setDemoReelOpen] = useState(false);
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   const [specNode, setSpecNode] = useState(null);
+  const [legalDocument, setLegalDocument] = useState(null);
   const authorizedNodeIds = useAuthorizedNodeIds();
   const { isAuthenticated, authChecked, isLoadingAuth } = useAuth();
   const navigate = useNavigate();
@@ -323,12 +325,12 @@ export default function SuiteLandingPage() {
           </span>
         </div>
         <div className="flex items-center space-x-4">
-          <a href="/legal/terms" className="hover:text-yellow-400 transition-colors">
+          <button type="button" onClick={() => setLegalDocument('terms')} className="hover:text-yellow-400 transition-colors">
             Terms
-          </a>
-          <a href="/legal/privacy" className="hover:text-yellow-400 transition-colors">
+          </button>
+          <button type="button" onClick={() => setLegalDocument('privacy')} className="hover:text-yellow-400 transition-colors">
             Privacy
-          </a>
+          </button>
           <button type="button" onClick={openCookiePreferences} className="hover:text-yellow-400 transition-colors">Cookie Settings</button>
         </div>
       </footer>
@@ -351,6 +353,7 @@ export default function SuiteLandingPage() {
 
       {/* Read-only spec sheet modal for the active node */}
       <SuiteNodeSpecModal node={specNode} onClose={() => setSpecNode(null)} onLaunchNode={handleLaunchNode} />
+      {legalDocument && <SuiteLegalPopup document={legalDocument} onClose={() => setLegalDocument(null)} />}
      </div>
     </div>
   );
