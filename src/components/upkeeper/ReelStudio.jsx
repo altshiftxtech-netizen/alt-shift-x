@@ -12,7 +12,7 @@ export default function ReelStudio({assets,onReel,onBusy,onPatch,disabled}) {
   return <section className="creative-panel" aria-label="4K Reel Studio">
     <div><p className="creative-eyebrow">CINEMA / VECTOR TEXT / 4K</p><h2>Cinema Visual & Dynamic Reel Engine</h2><p className="text-sm text-muted-foreground">Canonical commercial pacing, exact vector titles and synchronized music. Generate visuals or attach a reference clip, then edit the wording and export vertically or widescreen.</p></div>
     <UpkeeperReferenceDock settings={assets.cinema||{}} reference={assets.cinemaRef} onChange={update} onReference={cinemaRef=>onPatch({cinemaRef,reel:null})} disabled={disabled}/>
-    {!assets.campaign&&<p role="status" className="text-sm text-muted-foreground">Describe your product in the master prompt and run the engine to generate the script and two cinema images. Preview shows the layout until then.</p>}
+    {!assets.campaign&&!assets.cinemaRef&&<p role="status" className="text-sm text-muted-foreground">Describe your product in the master prompt and run the engine to generate the script and two cinema images. Preview shows the layout until then.</p>}
     {assets.campaign&&<p role="status" data-testid="cinema-ready" className="text-sm">{assets.campaign.product} · {assets.campaign.hero_url?'Cinema hero & b-roll ready':'Campaign-based scenes'}</p>}
     <ReelPreview campaign={assets.campaign} logo={assets.logo} url={assets.campaign?.url||''} settings={cinema} reference={assets.cinemaRef}/>
     <UpkeeperWalkthroughControls settings={cinema} onChange={update} disabled={disabled}/>

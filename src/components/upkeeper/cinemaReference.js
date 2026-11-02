@@ -5,7 +5,7 @@ export async function inspectCinemaReference(url,onProgress=()=>{}){
   if(calibrationCache.has(url)){onProgress(100);return calibrationCache.get(url);}
   const video=document.createElement('video');if(!url.startsWith('blob:'))video.crossOrigin='anonymous';video.muted=true;video.playsInline=true;video.preload='auto';
   try{const ready=waitForVideo(video,'loadeddata');video.src=url;await ready;if(!Number.isFinite(video.duration)||video.duration<=0)throw new Error('Use a finite, playable reference clip.');
-    const canvas=document.createElement('canvas');canvas.width=96;canvas.height=Math.max(1,Math.round(96*video.videoHeight/video.videoWidth));const ctx=canvas.getContext('2d',{willReadFrequently:true}),count=Math.min(400,Math.max(2,Math.ceil(video.duration*4))),frames=[];
+    const canvas=document.createElement('canvas');canvas.width=96;canvas.height=Math.max(1,Math.round(96*video.videoHeight/video.videoWidth));const ctx=canvas.getContext('2d',{willReadFrequently:true}),count=Math.min(180,Math.max(2,Math.ceil(video.duration*2))),frames=[];
     for(let i=0;i<count;i++){const time=i*video.duration/count;await seekReferenceFrame(video,time);frames.push({...frameSignature(ctx,video),time});onProgress(Math.round((i+1)/count*100));}
     const metadata={...referenceCalibration(frames,video.duration,video.videoWidth,video.videoHeight),audioTrack:video.audioTracks?(video.audioTracks.length?'present':'none'):typeof video.mozHasAudio==='boolean'?(video.mozHasAudio?'present':'none'):'not reported by browser'};
     if(!url.startsWith('blob:')){if(calibrationCache.size>=8)calibrationCache.delete(calibrationCache.keys().next().value);calibrationCache.set(url,metadata);}return metadata;
