@@ -12,6 +12,7 @@
 .creative-prompt-panel { gap:1rem; }
 .creative-prompt-panel h2 { font-size:1.1rem; }
 .creative-workspace-canvas { min-width:0; }
+.creative-workspace-layout.customer-finder-workspace { grid-template-columns:minmax(0,1fr); }
 .creative-logo-layout { display:grid; gap:1rem; }
 .creative-disclosure { min-width:0; font-size:.875rem; }
 .creative-disclosure summary { cursor:pointer; font-weight:600; padding:.35rem 0; }

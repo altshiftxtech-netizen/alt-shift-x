@@ -14,8 +14,9 @@ export default function useUpkeeperEngines(assets,setAssets) {
     setBusy(true);setError('');setNotice('Preparing '+intent+' engine…');patch({tab:intent});
     try {
       if(intent==='autopilot'){
-        const url=manual?manual.url:promptUrl(prompt);if(!url&&!manual)throw new Error('Paste a public HTTPS product link or use the pasted-product fallback.');patch({url:url||''});
-        const {data}=await base44.functions.invoke('upkeeperHeyCatch',{url:url||'',productText:manual?.productText||''});if(data.error)throw new Error(data.error);patch({campaign:data,reelCampaign:null,reel:null});setNotice(manual?'Research ready from your supplied brief; website access was not verified.':'Customer research and social copy ready.');
+        const url=manual?'':promptUrl(prompt),productText=manual?manual.productText:!url?prompt:'';
+        if(!url&&productText.trim().length<40)throw new Error('Enter a public HTTPS product link or describe the product in at least 40 characters.');patch({url:url||''});
+        const {data}=await base44.functions.invoke('upkeeperHeyCatch',{url:url||'',productText});if(data.error)throw new Error(data.error);patch({campaign:data,reelCampaign:null,reel:null});setNotice(productText?'Customer Finder ready from your product description; website access was not verified.':'Customer Finder research and 21-day sprint ready.');
       }else if(intent==='logo'){
         const result=await base44.integrations.Core.InvokeLLM({prompt:`Design a logo as editable vector parameters. Request: ${prompt}. Current settings: ${JSON.stringify(assets.logo)}. Honor attached reference silhouette if present. Return up to 12 closed SVG path data strings only, each under 8000 chars, for the symbol inside coordinates x80..432 y80..330 on a 512 square. Monogram maximum 6 characters. Use paths, no images, scripts or markup. Use hex ink color.`,file_urls:assets.reference?[assets.reference.url]:[],response_json_schema:logoSchema});
         const paths=(result.paths||[]).slice(0,12).filter(path=>typeof path==='string'&&path.length<8000&&/^[MmLlHhVvCcSsQqTtAaZz\d\s.,+eE-]+$/.test(path));

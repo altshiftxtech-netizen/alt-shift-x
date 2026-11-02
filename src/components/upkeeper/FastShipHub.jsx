@@ -16,7 +16,7 @@ export default function FastShipHub({assets,onTab}) {
       if(selected.logo){const kit=await logoKit(assets.logo);for(const [name,blob] of Object.entries(kit))add('logo/'+name,blob);}
       if(selected.reel)add('video/campaign-reel.'+assets.reel.extension,assets.reel.blob);
       add('manifest.json',JSON.stringify({created_at:new Date().toISOString(),source:assets.campaign?.url||'',files:[...files],reel:selected.reel?{width:assets.reel.width,height:assets.reel.height,seconds:assets.reel.seconds}:null},null,2));
-      const bundle=await zip.generateAsync({type:'blob',compression:'STORE'});downloadAsset(bundle,'heycatch-campaign-assets.zip');setNotice(`Bundle ready: ${files.length} files · ${(bundle.size/1048576).toFixed(1)} MB`);
+      const bundle=await zip.generateAsync({type:'blob',compression:'STORE'});downloadAsset(bundle,'customer-finder-campaign-assets.zip');setNotice(`Bundle ready: ${files.length} files · ${(bundle.size/1048576).toFixed(1)} MB`);
     }catch(e){setError(e.message);}finally{setBusy(false);}
   };
   return <section className="creative-panel" aria-label="Fast-Ship Hub"><div><p className="creative-eyebrow">ONE CAMPAIGN / ONE DOWNLOAD</p><h2>Fast-Ship Hub</h2><p className="text-sm text-muted-foreground">Select assets for a single ZIP. Everything stays in this browser session; export before leaving.</p></div>
