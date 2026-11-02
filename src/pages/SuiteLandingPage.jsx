@@ -232,21 +232,21 @@ export default function SuiteLandingPage() {
           </button>
           <SuiteMusicPlayer onPlaybackChange={onMusicChange} />
 
+          {paused && (
+            <button
+              onClick={handleResumeRotation}
+              className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
+            >
+              Resume rotation
+            </button>
+          )}
           {inspectionIndex !== null && (
-            <>
-              <button
-                onClick={handleResumeRotation}
-                className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
-              >
-                Resume rotation
-              </button>
-              <button
-                onClick={() => setSpecNode(activeSpecNode)}
-                className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
-              >
-                Explore Specs
-              </button>
-            </>
+            <button
+              onClick={() => setSpecNode(activeSpecNode)}
+              className="text-zinc-300 hover:text-yellow-400 transition-colors py-1 px-2"
+            >
+              Explore Specs
+            </button>
           )}
 
           <button
