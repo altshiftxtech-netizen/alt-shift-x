@@ -9,7 +9,7 @@ export default function SuiteFooterLegalTabs() {
       {[['terms', 'Terms'], ['privacy', 'Privacy'], ['cookies', 'Cookie Settings']].map(([id, label]) => (
         <button key={id} type="button" aria-haspopup="dialog" aria-expanded={active === id}
           onClick={() => setActive(id)}
-          className="relative inline-flex items-center justify-center whitespace-nowrap px-1 py-0.5 text-hub-navigation underline underline-offset-4 cursor-pointer pointer-events-auto hover:bg-accent hover:text-accent-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
+          className="relative inline-flex min-h-11 items-center justify-center whitespace-nowrap px-2 py-2 text-hub-navigation underline underline-offset-4 cursor-pointer pointer-events-auto hover:bg-accent hover:text-accent-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
           {label}
         </button>
       ))}
