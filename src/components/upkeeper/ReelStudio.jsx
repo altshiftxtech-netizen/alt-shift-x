@@ -15,7 +15,7 @@ export default function ReelStudio({assets,onReel,onTab,autoRun,onBusy}) {
   useEffect(()=>{if(autoRun)print();},[autoRun]);
   return <section className="creative-panel" aria-label="4K Reel Studio">
     <div><p className="creative-eyebrow">ZERO-EDIT / 9:16</p><h2>4K Reel Studio</h2><p className="text-sm text-muted-foreground">Nine seconds of synchronized typography, a brand badge and split-screen product brief / source work. Silent, browser-rendered video.</p></div>
-    {!assets.campaign && <div className="rounded-xl border p-4"><p>Research a HeyCatch link to compile a reel from your actual campaign.</p><Button variant="outline" onClick={()=>onTab('autopilot')}>Open HeyCatch</Button></div>}
+    {!assets.campaign && <div className="rounded-xl border p-4"><p>Research a product link to compile a reel from your actual campaign.</p><Button variant="outline" onClick={()=>onTab('autopilot')}>Open Customer Finder Autopilot</Button></div>}
     <div className="grid md:grid-cols-2 gap-6 items-start"><ReelPreview campaign={assets.campaign} logo={assets.logo} url={assets.campaign?.url||''}/><div className="space-y-4">
       <p className="text-sm">Preview: 1080×1920. Export is redrawn at the selected resolution, not a stretched preview.</p>
       <label className="block text-sm">Export resolution<select aria-label="Export resolution" disabled={busy} className="creative-select" value={width} onChange={e=>setWidth(Number(e.target.value))}><option value={1080}>1080p · 1080×1920</option><option value={2160}>4K · 2160×3840</option><option value={4320}>8K · 4320×7680</option></select></label>

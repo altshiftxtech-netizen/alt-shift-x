@@ -11,7 +11,7 @@ export function paintReel(canvas, time, campaign, logo, source) {
   const ctx=canvas.getContext('2d'), scale=canvas.width/1080; ctx.save();ctx.scale(scale,scale);
   const bg=ctx.createLinearGradient(0,0,1080,1920);bg.addColorStop(0,'#111621');bg.addColorStop(1,'#302516');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
   const scene=Math.min(2,Math.floor(time/3)), local=time%3, enter=Math.min(1,local*3), offset=(1-enter)*60;
-  ctx.fillStyle='#e9bf68';ctx.font='600 24px system-ui';ctx.fillText('HEY CATCH / '+String(scene+1).padStart(2,'0'),70,100);
+  ctx.fillStyle='#e9bf68';ctx.font='600 24px system-ui';ctx.fillText('CUSTOMER FINDER / '+String(scene+1).padStart(2,'0'),70,100);
   if(logo)ctx.drawImage(logo,840,52,170,170);
   ctx.globalAlpha=enter;ctx.fillStyle='#ffffff';ctx.font='800 74px system-ui';
   const titles=[campaign?.product||'Your campaign',campaign?.audience?.[0] ? `Built for ${campaign.audience[0]}`:'Built for your audience','See what is possible'];
@@ -21,7 +21,7 @@ export function paintReel(canvas, time, campaign, logo, source) {
   wrap(ctx,copy[scene],70,730+offset,910,49,5);ctx.globalAlpha=1;
   ctx.fillStyle='#ffffff';ctx.fillRect(70,1080,456,535);ctx.fillStyle='#e9bf68';ctx.fillRect(544,1080,466,535);
   ctx.fillStyle='#171b24';ctx.font='700 25px system-ui';ctx.fillText('PRODUCT BRIEF',98,1130);ctx.fillText('SOURCE / WORK',572,1130);
-  ctx.font='500 33px system-ui';wrap(ctx,campaign?.value_proposition||'Run HeyCatch to compile your reel.',98,1210,398,46,7);
+  ctx.font='500 33px system-ui';wrap(ctx,campaign?.value_proposition||'Run Customer Finder to compile your reel.',98,1210,398,46,7);
   ctx.font='400 26px system-ui';wrap(ctx,source||'No source link selected',572,1210,406,38,4);
   ctx.font='500 28px system-ui';wrap(ctx,campaign?.weeks?.[0]?.actions?.[0]||'Campaign-derived plan, not a customer-results claim.',572,1400,406,38,5);
   ctx.fillStyle='#e9bf68';ctx.fillRect(70,1670,940,135);ctx.fillStyle='#171b24';ctx.font='700 30px system-ui';wrap(ctx,campaign?.product||'CAMPAIGN STUDIO',100,1724,850,38,2);

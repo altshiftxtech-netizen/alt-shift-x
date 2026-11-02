@@ -19,11 +19,11 @@ export default function HeyCatchCampaignResults({ result, onCopy }) {
       <p className="text-xs text-muted-foreground">Researched {new Date(result.researched_at).toLocaleString()} · Audience and objections may include inferences.</p>
       <div className="flex flex-wrap gap-3">{result.sources.map((s,i)=><a key={i} className="text-xs underline break-all" href={s} target="_blank" rel="noopener noreferrer">Source {i+1}</a>)}</div>
     </section>
-    <HeyCatchIntentRadar discussions={result.discussions} onCopy={onCopy}/>
-    <section className="space-y-3"><h3 className="text-lg font-semibold">4. Three-week milestone calendar</h3>
+    <details className="creative-disclosure"><summary>Buying signals & replies</summary><div className="pt-3"><HeyCatchIntentRadar discussions={result.discussions} onCopy={onCopy}/></div></details>
+    <details className="creative-disclosure"><summary>Three-week action plan</summary><section className="space-y-3 pt-3">
       <div className="grid md:grid-cols-3 gap-3">{result.weeks.map((week,i)=><article key={i} className="rounded-xl border p-4 space-y-3"><h4 className="font-semibold">{week.title}</h4><ul className="text-sm list-disc pl-4 space-y-2">{week.actions.map((a,j)=><li key={j}>{a}</li>)}</ul><p className="text-sm text-muted-foreground">Goal: {week.goal}</p></article>)}</div>
-    </section>
-    <section className="space-y-3"><h3 className="text-lg font-semibold">Social thread drafts</h3>{result.social_posts.map((p,i)=><article key={i} className="border rounded-xl p-4 space-y-2"><h4 className="font-semibold">{p.platform}</h4><p className="text-sm whitespace-pre-wrap">{p.text}</p><Button variant="outline" onClick={()=>onCopy(p.text)}>Copy post</Button></article>)}</section>
+    </section></details>
+    <details className="creative-disclosure"><summary>Social thread drafts</summary><section className="space-y-3 pt-3">{result.social_posts.map((p,i)=><article key={i} className="border rounded-xl p-4 space-y-2"><h4 className="font-semibold">{p.platform}</h4><p className="text-sm whitespace-pre-wrap">{p.text}</p><Button variant="outline" onClick={()=>onCopy(p.text)}>Copy post</Button></article>)}</section></details>
     <div className="flex flex-wrap gap-3"><Button onClick={()=>onCopy(JSON.stringify(result,null,2))}>Batch copy campaign</Button><Button variant="outline" onClick={download}>Fast-Ship campaign brief</Button></div>
     <p className="text-xs text-muted-foreground">This brief includes analysis, sourced opportunities, replies, social drafts and roadmap. Use Fast-Ship Hub to bundle your logo kit and rendered reel. Goals are not guaranteed customer outcomes.</p>
   </div>;
