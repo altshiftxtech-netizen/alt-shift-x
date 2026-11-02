@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { PASS_NODES } from '@/components/suite/passes/passFoundryData';
 
 const ACTIVE_STATUSES = ['active', 'trialing', 'past_due'];
@@ -10,16 +11,17 @@ const ACTIVE_STATUSES = ['active', 'trialing', 'past_due'];
  * Admins are authorized for every node.
  */
 export default function useAuthorizedNodeIds() {
-  const [authorized, setAuthorized] = useState(() => new Set());
+  const { user, isAuthenticated, authChecked, isLoadingAuth } = useAuth();
+  const [resolved, setResolved] = useState({ userId: null, ids: new Set() });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.auth.me();
-        if (!me?.id) return;
+        if (!authChecked || isLoadingAuth || !isAuthenticated || !user?.id) return;
+        const me = user;
         if (me.role === 'admin') {
-          if (!cancelled) setAuthorized(new Set(PASS_NODES.map((n) => n.id)));
+          if (!cancelled) setResolved({ userId: me.id, ids: new Set(PASS_NODES.map((n) => n.id)) });
           return;
         }
         const passes = await base44.entities.SovereignPass.filter({ user_id: me.id });
@@ -30,13 +32,14 @@ export default function useAuthorizedNodeIds() {
           if (pass.expires_at && new Date(pass.expires_at) < new Date()) return;
           (pass.node_ids || []).forEach((id) => ids.add(id));
         });
-        if (!cancelled) setAuthorized(ids);
+        if (!cancelled) setResolved({ userId: me.id, ids });
       } catch {
         // Not signed in (public app) — no authorized nodes.
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [user?.id, user?.role, isAuthenticated, authChecked, isLoadingAuth]);
 
-  return authorized;
+  return authChecked && !isLoadingAuth && isAuthenticated && resolved.userId === user?.id
+    ? resolved.ids : new Set();
 }

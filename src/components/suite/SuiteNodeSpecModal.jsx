@@ -6,7 +6,7 @@ import { X, CheckCircle2, ArrowRight, Shield } from 'lucide-react';
  * Ported from the retired PublicSuiteNodeGrid spec modal, adapted to the
  * orbit node shape (name, tagline, desc, specs, color, price, subpath, logo).
  */
-export default function SuiteNodeSpecModal({ node, onClose }) {
+export default function SuiteNodeSpecModal({ node, onClose, onLaunchNode }) {
   if (!node) return null;
   const publicUrl = `https://altshiftx.tech${node.subpath}`;
 
@@ -63,7 +63,12 @@ export default function SuiteNodeSpecModal({ node, onClose }) {
             Close Spec Sheet
           </button>
           <a
-            href={publicUrl}
+            href={node.subpath}
+            onClick={(event) => {
+              event.preventDefault();
+              onClose();
+              onLaunchNode(node.subpath);
+            }}
             className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-xs font-black shadow-lg hover:from-cyan-300 hover:to-blue-400 transition-all flex items-center justify-center gap-1.5"
           >
             Launch Workspace on {publicUrl.replace('https://', '')}

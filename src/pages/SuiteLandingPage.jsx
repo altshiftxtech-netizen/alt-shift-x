@@ -1,6 +1,7 @@
 // src/pages/SuiteLandingPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import ConsultationButton from '@/components/consultation/ConsultationButton';
 import HubBrand from '@/components/suite/HubBrand';
 
@@ -152,6 +153,8 @@ export default function SuiteLandingPage() {
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   const [specNode, setSpecNode] = useState(null);
   const authorizedNodeIds = useAuthorizedNodeIds();
+  const { isAuthenticated, authChecked, isLoadingAuth } = useAuth();
+  const navigate = useNavigate();
 
   // ESC collapses the Sovereign Browser full view (Chrome's native fullscreen exit also fires ESC)
   useEffect(() => {
@@ -185,7 +188,12 @@ export default function SuiteLandingPage() {
 
   // Navigate directly through Cloudflare pure subpath
   const handleLaunchNode = (subpath) => {
-    window.location.href = subpath;
+    if (!authChecked || isLoadingAuth || !isAuthenticated) {
+      navigate(`/login?returnTo=${encodeURIComponent(subpath)}`);
+      return;
+    }
+    if (subpath === '/aibuilder') navigate(subpath);
+    else window.location.href = subpath;
   };
 
 
@@ -280,7 +288,11 @@ export default function SuiteLandingPage() {
           nodes={SUITE_NODES} angle={rotationAngle} selected={selectedIndex}
           handlers={orbitHandlers} motion={motion} onInspect={inspect} onInspectLeave={leave}
           onSelect={(index) => { inspect(index); setSelectedIndex(index); selectOrbit(90 - index * 360 / SUITE_NODES.length); }}
-          onLaunch={handleLaunchNode}
+          onLaunch={(subpath) => {
+            const node = SUITE_NODES.find((item) => item.subpath === subpath);
+            if (node && authorizedNodeIds.has(node.id)) handleLaunchNode(subpath);
+            else if (node) setSpecNode(node);
+          }}
         />
 
         {inspectionIndex !== null && <SuiteNodeDossier node={SUITE_NODES[inspectionIndex]}
@@ -338,7 +350,7 @@ export default function SuiteLandingPage() {
       {demoReelOpen && <ProvingGroundInteractiveDemoShowcase isOpen onClose={() => setDemoReelOpen(false)} />}
 
       {/* Read-only spec sheet modal for the active node */}
-      <SuiteNodeSpecModal node={specNode} onClose={() => setSpecNode(null)} />
+      <SuiteNodeSpecModal node={specNode} onClose={() => setSpecNode(null)} onLaunchNode={handleLaunchNode} />
      </div>
     </div>
   );
