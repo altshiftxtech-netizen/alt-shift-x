@@ -23,7 +23,7 @@ export async function recordCampaignReel({campaign,logo,url,width,onProgress,sig
     if(withAudio){const error=await resumed;if(error)throw error;if(music)startAudio=await capture.prepareSynth(audioSynth,cinemaSettings(cinema).durations,referenceAudio?media.clip:null);else capture.attach(media.clip);}else capture.withoutAudio();
     const paint=async time=>{paintReel(canvas,time,campaign,image,url,cinema,media);await multiplexer.paint(time);};await paint(0);
     const {blob,mimeType}=await recordCinemaStream({capture,mime,width:Math.max(canvas.width,canvas.height),seconds,clip:media.clip,withAudio,startAudio,paint,onProgress,signal});
-    if(signal.aborted)throw new Error('Reel recording cancelled.');await validateCinemaRecording(blob,width,canvas.height);
+    if(signal.aborted)throw new Error('Reel recording cancelled.');await validateCinemaRecording(blob,canvas.width,canvas.height);
     return {blob,width:canvas.width,height:canvas.height,extension:format,seconds,audio:withAudio,mimeType};
   } finally {releaseCinemaMedia(media);capture?.close();multiplexer?.close();canvas.width=canvas.height=1;}
 }
