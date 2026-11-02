@@ -20,6 +20,7 @@ import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
 import useSuiteOrbit from '@/components/suite/useSuiteOrbit';
 import SuiteNodeDossier from '@/components/suite/SuiteNodeDossier';
 import useSuiteInspection from '@/components/suite/useSuiteInspection';
+import useAuthorizedNodeIds from '@/components/suite/useAuthorizedNodeIds';
 import suiteBrandNames from '@/components/suite/suiteBrandNames';
 import '@/components/suite/suiteScene.css';
 
@@ -150,6 +151,7 @@ export default function SuiteLandingPage() {
   const [demoReelOpen, setDemoReelOpen] = useState(false);
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   const [specNode, setSpecNode] = useState(null);
+  const authorizedNodeIds = useAuthorizedNodeIds();
 
   // ESC collapses the Sovereign Browser full view (Chrome's native fullscreen exit also fires ESC)
   useEffect(() => {
@@ -285,6 +287,8 @@ export default function SuiteLandingPage() {
           onInteract={pause} onKeepOpen={keepOpen} onDismiss={leave}
           onResume={handleResumeRotation}
           onExploreSpecs={() => setSpecNode(SUITE_NODES[inspectionIndex])}
+          authorized={authorizedNodeIds.has(SUITE_NODES[inspectionIndex].id)}
+          onLaunchNode={() => handleLaunchNode(SUITE_NODES[inspectionIndex].subpath)}
           onPasses={() => setActiveModal('sovereignpass')} />}
       </main>
 
