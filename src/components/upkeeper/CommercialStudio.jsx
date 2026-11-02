@@ -8,6 +8,7 @@ import ProductionCard from "@/components/commercial/ProductionCard";
 import ZeroDefectCertificate from "@/components/commercial/ZeroDefectCertificate";
 import DocumentIntake from "@/components/commercial/DocumentIntake";
 import SegmentProducer from "@/components/commercial/SegmentProducer";
+import CommercialAudioSynth from '@/components/upkeeper/CommercialAudioSynth';
 
 const FORMATS = [
   { key: "image", label: "Image", icon: ImageIcon },
@@ -205,6 +206,7 @@ export default function CommercialStudio({ user }) {
           <h3 className="text-sm font-bold text-amber-50 flex items-center gap-2"><Wand2 className="w-4 h-4 text-amber-400" /> New Production</h3>
 
           <DocumentIntake onExtracted={applyIntake} />
+          {format==='video'&&<CommercialAudioSynth mediaUrl={mediaUrl} scenePlan={plan?.scene_plan} disabled={planning||generating||certifying||saving}/>}
 
           {noKit && (
             <div className="flex items-start gap-2 text-[11px] text-amber-300 bg-amber-950/30 border border-amber-800/40 rounded-lg p-2.5">

@@ -1,0 +1,4 @@
+export default function resumeAudioContext(context,signal){return new Promise((resolve,reject)=>{
+  const finish=error=>{clearTimeout(timer);signal?.removeEventListener('abort',abort);error?reject(error):resolve();},abort=()=>finish(new Error('Audio playback cancelled.')),timer=setTimeout(()=>finish(new Error('Audio did not start. Allow audio playback and retry, or detach the synth and disable reference audio for a silent export.')),3000);
+  signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted){abort();return;}context.resume().then(()=>context.state==='running'?finish():finish(new Error('Audio playback is blocked. Allow playback and try again.')),finish);
+});}

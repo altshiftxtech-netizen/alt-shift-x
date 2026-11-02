@@ -1,0 +1,13 @@
+export function whiteNoise(context){const buffer=context.createBuffer(1,context.sampleRate*2,context.sampleRate),data=buffer.getChannelData(0);let seed=73471;for(let i=0;i<data.length;i++){seed=(Math.imul(1664525,seed)+1013904223)|0;data[i]=(seed>>>0)/2147483648-1;}return buffer;}
+export function tone(context,out,nodes,{time,duration,frequency,endFrequency=frequency,type='sine',level=.1,pan=0,filterSweep=false,sustain=false}){
+  const source=context.createOscillator(),gain=context.createGain(),panner=context.createStereoPanner();source.type=type;source.frequency.setValueAtTime(frequency,time);source.frequency.exponentialRampToValueAtTime(Math.max(1,endFrequency),time+Math.min(.2,duration));panner.pan.value=pan;
+  gain.gain.setValueAtTime(.00001,time);gain.gain.exponentialRampToValueAtTime(Math.max(.00002,level),time+Math.min(.015,duration/4));if(sustain)gain.gain.setValueAtTime(level,time+Math.max(.02,duration-.05));gain.gain.exponentialRampToValueAtTime(.00001,time+duration);
+  source.connect(gain);if(filterSweep){const filter=context.createBiquadFilter();filter.type='lowpass';filter.Q.value=5;filter.frequency.setValueAtTime(180,time);filter.frequency.exponentialRampToValueAtTime(2800,time+duration*.7);gain.connect(filter);filter.connect(panner);}else gain.connect(panner);
+  panner.connect(out);source.start(time);source.stop(time+duration);nodes.push(source);return source;
+}
+export function noise(context,out,nodes,buffer,{time,duration,level=.06,frequency=1800,endFrequency=frequency,pan=0,fadeIn=false}){
+  const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain(),panner=context.createStereoPanner();source.buffer=buffer;source.loop=true;filter.type='bandpass';filter.Q.value=.7;filter.frequency.setValueAtTime(frequency,time);filter.frequency.exponentialRampToValueAtTime(endFrequency,time+duration);panner.pan.value=pan;
+  gain.gain.setValueAtTime(fadeIn ? .00001 : level,time);if(fadeIn)gain.gain.exponentialRampToValueAtTime(level,time+duration*.9);gain.gain.exponentialRampToValueAtTime(.00001,time+duration);
+  source.connect(filter);filter.connect(gain);gain.connect(panner);panner.connect(out);source.start(time);source.stop(time+duration);nodes.push(source);
+}
+export function kick(context,out,nodes,time,root,level=.55,duration=.45){return tone(context,out,nodes,{time,duration,frequency:root*3,endFrequency:root,level});}

@@ -3,6 +3,8 @@ import ReelPreview from '@/components/upkeeper/ReelPreview';
 import UpkeeperReferenceDock from '@/components/upkeeper/UpkeeperReferenceDock';
 import UpkeeperCinemaSequencer from '@/components/upkeeper/UpkeeperCinemaSequencer';
 import CinemaExportControls from '@/components/upkeeper/CinemaExportControls';
+import UpkeeperAudioSynthesizer from '@/components/upkeeper/UpkeeperAudioSynthesizer';
+import {cinemaSettings} from '@/components/upkeeper/cinemaSpec';
 export default function ReelStudio({assets,onReel,onBusy,onPatch,disabled}) {
   const update=cinema=>onPatch({cinema,reel:null});
   return <section className="creative-panel" aria-label="4K Reel Studio">
@@ -12,6 +14,7 @@ export default function ReelStudio({assets,onReel,onBusy,onPatch,disabled}) {
     {assets.campaign&&<p role="status" data-testid="cinema-ready" className="text-sm">{assets.campaign.product} · {assets.campaign.hero_url?'Cinema hero & b-roll ready':'Campaign-based scenes'}</p>}
     <ReelPreview campaign={assets.campaign} logo={assets.logo} url={assets.campaign?.url||''} settings={assets.cinema} reference={assets.cinemaRef}/>
     <UpkeeperCinemaSequencer settings={assets.cinema} onChange={update} campaign={assets.campaign} disabled={disabled}/>
+    <UpkeeperAudioSynthesizer value={assets.audioSynth} onChange={audioSynth=>onPatch({audioSynth,reel:null})} durations={cinemaSettings(assets.cinema).durations} reference={assets.cinemaRef} referenceAudio={assets.cinema?.referenceAudio!==false} disabled={disabled}/>
     <CinemaExportControls assets={assets} onReel={onReel} onBusy={onBusy}/>
   </section>;
 }
