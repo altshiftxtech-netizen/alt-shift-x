@@ -11,6 +11,7 @@ export default function walkthroughMotion(time,settings){
   let cursor={x:u*u*u*from.x+3*u*u*travel*a.x+3*u*travel*travel*b.x+travel*travel*travel*target.x,y:u*u*u*from.y+3*u*u*travel*a.y+3*u*travel*travel*b.y+travel*travel*travel*target.y};
   if(step.action==='drag'&&phase>=.6)cursor=mix(target,end(step),smooth((phase-.6)/.35));
   let focus=mix(from,target,travel);if(step.action==='drag'&&phase>=.6)focus=mix(target,end(step),smooth((phase-.6)/.35));
-  const sourceW=1920,sourceH=sourceW/(settings.walkthrough?.sourceAspect||16/9),scale=Math.max(w/sourceW,h/sourceH)*clamp(Number(config.zoom)||1.15,1,2),left=clamp(w/2-focus.x*sourceW*scale,w-sourceW*scale,0),top=clamp(h/2-focus.y*sourceH*scale,h-sourceH*scale,0),project=p=>({x:left+p.x*sourceW*scale,y:top+p.y*sourceH*scale}),age=local-span*.65;
+  const maxZoom=clamp(Number(config.zoom)||1.4,1,2),zoom=index===0?1+(maxZoom-1)*travel:maxZoom-(maxZoom-1)*.4*Math.sin(Math.PI*travel)**2;
+  const sourceW=1920,sourceH=sourceW/(settings.walkthrough?.sourceAspect||16/9),scale=Math.max(w/sourceW,h/sourceH)*zoom,left=clamp(w/2-focus.x*sourceW*scale,w-sourceW*scale,0),top=clamp(h/2-focus.y*sourceH*scale,h-sourceH*scale,0),project=p=>({x:left+p.x*sourceW*scale,y:top+p.y*sourceH*scale}),age=local-span*.65;
   return {config,w,h,total,index,step,cursor:project(cursor),anchor:project(target),dragEnd:project(end(step)),sourceW,sourceH,scale,left,top,pulse:step.action==='click'&&age>=0&&age<.3?age/.3:null,dragging:step.action==='drag'&&phase>=.6&&phase<=.95,float:-4*Math.sin(t*1.6),opacity:clamp((total-t)/1.2,0,1)};
 }
