@@ -7,10 +7,11 @@ export function cinemaCodec(format='webm') {
 export function createCinemaCapture(canvas) {
   const AudioContext=window.AudioContext||window.webkitAudioContext;
   if(!AudioContext)throw new Error('Synchronized audio capture is unavailable in this browser.');
-  const context=new AudioContext({sampleRate:48000}),destination=context.createMediaStreamDestination(),videoStream=canvas.captureStream(30);
+  const manual=typeof window.CanvasCaptureMediaStreamTrack?.prototype.requestFrame==='function';
+  const context=new AudioContext({sampleRate:48000}),destination=context.createMediaStreamDestination(),videoStream=canvas.captureStream(manual?0:30);
   const stream=new MediaStream([...videoStream.getVideoTracks(),...destination.stream.getAudioTracks()]);
   let source,synth;
-  return {stream,context,
+  return {stream,context,requestFrame:()=>{if(manual)videoStream.getVideoTracks()[0]?.requestFrame();},
     resume:signal=>resumeAudioContext(context,signal),
     prepareSynth:async(settings,durations,clip)=>{synth=await synthMix(context,destination,settings,clip);return time=>synth.start(time,durations);},
     withoutAudio:()=>stream.getAudioTracks().forEach(track=>{stream.removeTrack(track);track.stop();}),
