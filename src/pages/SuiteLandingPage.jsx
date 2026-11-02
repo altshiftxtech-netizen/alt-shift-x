@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import ConsultationButton from '@/components/consultation/ConsultationButton';
 import HubBrand from '@/components/suite/HubBrand';
 
-import { openCookiePreferences } from '@/components/cookies/cookiePrefStore';
+import SuiteFooterLegalTabs from '@/components/suite/SuiteFooterLegalTabs';
 import AboutSuiteModal from '@/components/suite/about/AboutSuiteModal';
 import ConsuelaAdvisorModal from '@/components/ConsuelaAdvisorModal';
 import ConsuelaLogo from '@/components/suite/consuela/ConsuelaLogo';
@@ -15,7 +15,7 @@ import SovereignPassModal from '@/components/suite/passes/SovereignPassModal';
 import DeferredProvingGround from '@/components/suite/DeferredProvingGround';
 
 import SuiteNodeSpecModal from '@/components/suite/SuiteNodeSpecModal';
-import SuiteLegalPopup from '@/components/suite/SuiteLegalPopup';
+
 import ProvingGroundInteractiveDemoShowcase from '@/components/suite/ProvingGroundInteractiveDemoShowcase';
 import ProvingGroundSovereignSubHeader from '@/components/ProvingGroundSovereignSubHeader';
 import SuiteEmblemOrbit from '@/components/suite/SuiteEmblemOrbit';
@@ -153,7 +153,7 @@ export default function SuiteLandingPage() {
   const [demoReelOpen, setDemoReelOpen] = useState(false);
   const [isProvingGroundFullView, setIsProvingGroundFullView] = useState(false);
   const [specNode, setSpecNode] = useState(null);
-  const [legalDocument, setLegalDocument] = useState(null);
+
   const authorizedNodeIds = useAuthorizedNodeIds();
   const { isAuthenticated, authChecked, isLoadingAuth } = useAuth();
   const navigate = useNavigate();
@@ -317,22 +317,14 @@ export default function SuiteLandingPage() {
       )}
 
       {/* 6. Ultra-Slim Low-Profile Footer (~48px) */}
-      <footer className="absolute bottom-0 left-0 right-0 h-12 bg-black/75 backdrop-blur-md border-t border-yellow-500/20 z-30 px-6 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
-        <div className="flex items-center space-x-2 truncate">
+      <footer className="absolute bottom-0 left-0 right-0 h-12 bg-black/75 backdrop-blur-md border-t border-yellow-500/20 z-40 pointer-events-auto px-6 flex items-center justify-between gap-2 text-[11px] text-zinc-400 font-mono">
+        <div className="flex min-w-0 items-center space-x-2 truncate">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="truncate">
             SOLE TITLE: Magna Lorem // MGMT: Magna Lorem LLC // Secured Asset Repository: Trust AR LLC
           </span>
         </div>
-        <div className="flex items-center space-x-4">
-          <button type="button" onClick={() => setLegalDocument('terms')} className="hover:text-yellow-400 transition-colors">
-            Terms
-          </button>
-          <button type="button" onClick={() => setLegalDocument('privacy')} className="hover:text-yellow-400 transition-colors">
-            Privacy
-          </button>
-          <button type="button" onClick={openCookiePreferences} className="hover:text-yellow-400 transition-colors">Cookie Settings</button>
-        </div>
+        <SuiteFooterLegalTabs />
       </footer>
 
       {/* ------------------------------------------------------------- */}
@@ -353,7 +345,7 @@ export default function SuiteLandingPage() {
 
       {/* Read-only spec sheet modal for the active node */}
       <SuiteNodeSpecModal node={specNode} onClose={() => setSpecNode(null)} onLaunchNode={handleLaunchNode} />
-      {legalDocument && <SuiteLegalPopup document={legalDocument} onClose={() => setLegalDocument(null)} />}
+
      </div>
     </div>
   );
