@@ -6,11 +6,11 @@ export function frameShape(frame,attrs='') {
   return `<rect x="24" y="24" width="464" height="464" rx="115.2" ${attrs}/>`;
 }
 export function characterMarkup(s,ink,accent) {
-  const visor=s.visor?`<path d="M158 180L256 198L354 180L340 242L256 260L172 242Z" fill="${ink}" stroke="${accent}" stroke-width="8"/><path d="M184 214L242 226M272 226L328 214" stroke="${accent}" stroke-width="8"/>`:'';
+  const visor=s.visor&&!s.featureLayers?.visor&&!s.featureLayers?.sunglasses?`<path d="M158 180L256 198L354 180L340 242L256 260L172 242Z" fill="${ink}" stroke="${accent}" stroke-width="8"/><path d="M184 214L242 226M272 226L328 214" stroke="${accent}" stroke-width="8"/>`:'';
   const paths=safePaths(s.paths);if(paths.length)return `<g fill="${ink}" transform="translate(256 0) scale(${Math.max(.6,Math.min(1.25,Number(s.symbolWidth)||1))} 1) translate(-256 0)">${paths.map(d=>`<path d="${d}"/>`).join('')}</g>${visor}`;
   if(!s.character||s.character==='none')return '';
   const head=s.character==='mascot'?'M146 168L112 88L204 118Q256 88 308 118L400 88L366 168L372 276L310 340H202L140 276Z':'M168 128L224 98H288L344 128L370 254L326 326H186L142 254Z';
-  return `<path d="${head}" fill="url(#emblem-metal)" stroke="${ink}" stroke-width="10" stroke-linejoin="round"/><path d="M256 108L340 142L358 248L316 308H256Z" fill="${ink}" opacity=".28"/><path d="M170 212L228 228M284 228L342 212" stroke="${accent}" stroke-width="14" stroke-linecap="square"/><path d="M206 276L256 294L306 276L290 316H222Z" fill="${ink}"/>${s.visor?`<path d="M158 180L256 198L354 180L340 242L256 260L172 242Z" fill="${ink}" stroke="${accent}" stroke-width="8"/><path d="M184 214L242 226M272 226L328 214" stroke="${accent}" stroke-width="8"/>`:''}`;
+  return `<path d="${head}" fill="url(#emblem-metal)" stroke="${ink}" stroke-width="10" stroke-linejoin="round"/><path d="M256 108L340 142L358 248L316 308H256Z" fill="${ink}" opacity=".28"/>${!s.featureLayers?.eyes&&!s.featureLayers?.visor&&!s.featureLayers?.sunglasses?`<path d="M170 212L228 228M284 228L342 212" stroke="${accent}" stroke-width="14" stroke-linecap="square"/>`:''}${!s.featureLayers?.teeth&&!s.featureLayers?.mouth?`<path d="M206 276L256 294L306 276L290 316H222Z" fill="${ink}"/>`:''}${visor}`;
 }
 export function propMarkup(s,ink,accent) {
   const props=s.props||[],barbell=s.symbol==='barbell'||props.includes('barbell');

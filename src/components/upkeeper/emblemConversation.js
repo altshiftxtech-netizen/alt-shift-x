@@ -1,7 +1,7 @@
 export const emblemPresets=[['crest','Athletic Crest'],['mascot','Mascot Character'],['medal','Circular Medal'],['tech','Modern Tech Monogram']];
 export function emblemPreset(previous,preset) {
   const shapes={crest:{frame:'crest',character:'none',symbol:'barbell',props:['barbell'],banner:true,circuits:false},mascot:{frame:'crest',character:'mascot',symbol:'',props:[],banner:true,circuits:false},medal:{frame:'medal',character:'none',symbol:'',props:[],banner:false,circuits:false},tech:{frame:'squircle',character:'none',symbol:'',props:['delta'],banner:false,circuits:true}};
-  return {...previous,...shapes[preset],paths:[],visor:false,frameWidth:1,circle:preset==='medal'};
+  return {...previous,...shapes[preset],paths:[],featureLayers:{},modifierAssist:null,visor:false,frameWidth:1,circle:preset==='medal'};
 }
 export function refineEmblem(previous,text) {
   const next={...previous},p=text.toLowerCase(),props=new Set(previous.props||[]);
