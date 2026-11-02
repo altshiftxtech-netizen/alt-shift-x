@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import UpkeeperCustomerFinder from '@/components/upkeeper/UpkeeperCustomerFinder';
 import UpkeeperLogoSandbox from '@/components/upkeeper/UpkeeperLogoSandbox';
 import UpkeeperReelEngine from '@/components/upkeeper/UpkeeperReelEngine';
@@ -12,6 +12,8 @@ import '@/components/upkeeper/creativeDock.css';
 const tabs=[['autopilot','Customer Finder'],['logo','Vibe Logo Sandbox'],['reel','4K Reel Studio'],['article','Article'],['ship','Fast-Ship Hub']];
 export default function UpkeeperCreativeDock({assets,setAssets}) {
   const engine=useUpkeeperEngines(assets,setAssets),{patch,busy}=engine;
+  const referenceUrl=assets.cinemaRef?.url;
+  useEffect(()=>()=>{if(referenceUrl?.startsWith('blob:'))URL.revokeObjectURL(referenceUrl);},[referenceUrl]);
   const onTab=tab=>patch({tab,...(tab!=='ship'?{intent:tab}:{})});
   return <div className="creative-dock w-full mb-6">
     <div className="creative-workspace-header"><h2>Creative workspace</h2><label className="creative-workspace-picker">Workspace<select aria-label="Creative workspace" className="creative-select" value={assets.tab} disabled={busy} onChange={e=>onTab(e.target.value)}>{tabs.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label></div>

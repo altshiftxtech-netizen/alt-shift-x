@@ -1,13 +1,13 @@
 import synthMix from '@/components/upkeeper/audio/synthMix';
 import resumeAudioContext from '@/components/upkeeper/audio/resumeAudioContext';
 export function cinemaCodec(format='webm') {
-  const candidates=format==='mp4'?['video/mp4;codecs=avc1.640033,mp4a.40.2','video/mp4;codecs=avc1.42001f,mp4a.40.2','video/mp4']:['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  const candidates=format==='mp4'?['video/mp4;codecs=avc1.640033,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1.42001f,mp4a.40.2','video/mp4']:['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
   return candidates.find(type=>window.MediaRecorder?.isTypeSupported(type))||'';
 }
 export function createCinemaCapture(canvas) {
   const AudioContext=window.AudioContext||window.webkitAudioContext;
   if(!AudioContext)throw new Error('Synchronized audio capture is unavailable in this browser.');
-  const context=new AudioContext(),destination=context.createMediaStreamDestination(),videoStream=canvas.captureStream(24);
+  const context=new AudioContext({sampleRate:48000}),destination=context.createMediaStreamDestination(),videoStream=canvas.captureStream(30);
   const stream=new MediaStream([...videoStream.getVideoTracks(),...destination.stream.getAudioTracks()]);
   let source,synth;
   return {stream,context,
