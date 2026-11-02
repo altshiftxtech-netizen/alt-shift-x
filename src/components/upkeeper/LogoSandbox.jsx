@@ -21,6 +21,6 @@ export default function LogoSandbox({ settings, onChange }) {
         <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={settings.circuits} onChange={e=>update({circuits:e.target.checked})}/>Procedural Gold PCB Circuit Traces</label>
       </div></details>
     </div>
-    <EmblemExportMenu settings={settings}/>
+    <p className="text-xs text-muted-foreground">32×32 favicons omit small wordmarks when a symbol is present; monogram-only logos keep their initials. The 8K master uses 4× canvas scaling with high-quality anti-aliasing.</p><EmblemExportMenu settings={settings}/>
   </section>;
 }

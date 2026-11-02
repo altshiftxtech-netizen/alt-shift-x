@@ -8,13 +8,14 @@ export default function useUpkeeperEngines(assets,setAssets) {
   const changePrompt=prompt=>setAssets(previous=>({...previous,prompt,...(previous.tab==='logo'?{logo:refineLogo(previous.logo,prompt),reel:null}:{})}));
   const run=async override=>{
     if(busy)return;
-    const prompt=typeof override==='string'?override:assets.prompt||'',intent=promptIntent(prompt,typeof override==='string'?'autopilot':assets.intent);
+    const manual=override&&typeof override==='object'&&typeof override.productText==='string'?override:null;
+    const prompt=manual?manual.productText:typeof override==='string'?override:assets.prompt||'',intent=manual?'autopilot':promptIntent(prompt,typeof override==='string'?'autopilot':assets.intent);
     if(!prompt.trim())return;
     setBusy(true);setError('');setNotice('Preparing '+intent+' engine…');patch({tab:intent});
     try {
       if(intent==='autopilot'){
-        const url=promptUrl(prompt);if(!url)throw new Error('Paste a public HTTPS product link in the master prompt.');patch({url});
-        const {data}=await base44.functions.invoke('upkeeperHeyCatch',{url});if(data.error)throw new Error(data.error);patch({campaign:data,reelCampaign:null,reel:null});setNotice('Customer research and social copy ready.');
+        const url=manual?manual.url:promptUrl(prompt);if(!url&&!manual)throw new Error('Paste a public HTTPS product link or use the pasted-product fallback.');patch({url:url||''});
+        const {data}=await base44.functions.invoke('upkeeperHeyCatch',{url:url||'',productText:manual?.productText||''});if(data.error)throw new Error(data.error);patch({campaign:data,reelCampaign:null,reel:null});setNotice(manual?'Research ready from your supplied brief; website access was not verified.':'Customer research and social copy ready.');
       }else if(intent==='logo'){
         const result=await base44.integrations.Core.InvokeLLM({prompt:`Design a logo as editable vector parameters. Request: ${prompt}. Current settings: ${JSON.stringify(assets.logo)}. Honor attached reference silhouette if present. Return up to 12 closed SVG path data strings only, each under 8000 chars, for the symbol inside coordinates x80..432 y80..330 on a 512 square. Monogram maximum 6 characters. Use paths, no images, scripts or markup. Use hex ink color.`,file_urls:assets.reference?[assets.reference.url]:[],response_json_schema:logoSchema});
         const paths=(result.paths||[]).slice(0,12).filter(path=>typeof path==='string'&&path.length<8000&&/^[MmLlHhVvCcSsQqTtAaZz\d\s.,+eE-]+$/.test(path));

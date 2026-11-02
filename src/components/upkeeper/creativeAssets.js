@@ -1,4 +1,5 @@
 import {buildEmblemSvg} from '@/components/upkeeper/emblemSvg';
+import {rasterizeEmblem} from '@/components/upkeeper/emblemRaster';
 export const initialCreativeAssets = { tab: 'autopilot', url: '', campaign: null, logo: { text: 'AX', bevel: 4, finish: 'gold', circle: false, circuits: true }, reel: null };
 export function downloadAsset(blob, name) {
   const url = URL.createObjectURL(blob), a = document.createElement('a');
@@ -10,9 +11,7 @@ export async function logoImage(settings) {
   await image.decode(); return image;
 }
 export async function logoPng(settings, size) {
-  const image = await logoImage(settings), canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
-  canvas.getContext('2d').drawImage(image,0,0,size,size);
-  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Icon export failed.')),'image/png'));
+  return rasterizeEmblem(settings,{width:size,mode:size<=32?'favicon':settings.exportMode||'vector'});
 }
 export async function logoKit(settings) {
   const [icon, favicon] = await Promise.all([logoPng({...settings,exportMode:'icon'},512),logoPng({...settings,exportMode:'favicon'},32)]);
