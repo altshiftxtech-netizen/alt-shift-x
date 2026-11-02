@@ -1,5 +1,6 @@
 import React from 'react';
 import { Minus, Square, X, ArrowRight } from 'lucide-react';
+import suiteBrandNames from '@/components/suite/suiteBrandNames';
 
 export default function ProvingGroundSovereignSubHeader({
   isExpanded = false,
@@ -13,9 +14,9 @@ export default function ProvingGroundSovereignSubHeader({
       <div className="flex items-center gap-2 overflow-hidden">
         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
         <span className="font-mono text-[10px] tracking-wide text-slate-300 truncate">
-          <strong className="text-amber-400 font-bold">⚜️ Sovereign Browser Full View</strong>
+          <strong className="text-amber-400 font-bold">⚜️ Sovereign Web Browser Full View</strong>
           <span className="text-slate-600 mx-1.5">—</span>
-          <span className="text-cyan-300">Found in SourceBridge &amp; MAGNA</span>
+          <span className="text-cyan-300">Browser Found in SourceBridge &amp; {suiteBrandNames.magna}</span>
         </span>
       </div>
 

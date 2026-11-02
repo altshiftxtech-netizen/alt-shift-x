@@ -30,7 +30,8 @@ export default function ConsultationButton({ className = "", skipBilling = false
     })();
   }, []);
 
-  if (!visible || location.pathname !== '/homepage') return null;
+  // The homepage is served at '/' (with '/homepage' redirecting into it) — show on both.
+  if (!visible || !['/', '/homepage'].includes(location.pathname)) return null;
 
   const target = skipBilling
     ? `/consultation?no_billing=true&return_to=${returnTo}`
