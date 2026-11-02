@@ -1,3 +1,4 @@
+// @refresh reset
 import React from 'react';
 import {Button} from '@/components/ui/button';
 import {synthPresets,synthSettings} from '@/components/upkeeper/audio/synthSettings';
