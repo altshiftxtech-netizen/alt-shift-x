@@ -1,11 +1,10 @@
 import {cinemaSettings,cinemaDuration} from '@/components/upkeeper/cinemaSpec';
 import {drawCinemaScene,cinemaPalettes} from '@/components/upkeeper/cinemaScenePainter';
+import {sceneAt,outroOpacity} from '@/components/upkeeper/canonicalPacing';
 export const REEL_SECONDS=15;
 export function paintReel(canvas,time,campaign,logo,source,settings,media){
-  const ctx=canvas.getContext('2d'),s=cinemaSettings(settings),total=cinemaDuration(s),t=Math.min(Math.max(0,time),total-.001);let index=0,start=0;
-  while(index<3&&t>=start+Number(s.durations[index])){start+=Number(s.durations[index]);index++;}
-  const local=t-start,enter=Math.min(1,local/.35),scale=canvas.width/1080;canvas.dataset.scene=String(index+1);
-  ctx.save();ctx.scale(scale,scale);ctx.fillStyle=(cinemaPalettes[s.grade]||cinemaPalettes.obsidian)[0];ctx.fillRect(0,0,1080,1920);ctx.save();
-  if(index>0&&enter<1){if(s.transition==='whip')ctx.translate((1-enter)*1080,0);else if(s.transition==='match'){ctx.translate(540,960);ctx.scale(1+(1-enter)*.15,1+(1-enter)*.15);ctx.translate(-540,-960);}else{drawCinemaScene(ctx,index-1,Number(s.durations[index-1])-.01,Number(s.durations[index-1]),campaign,logo,media,s,source);ctx.globalAlpha=enter;}}
-  drawCinemaScene(ctx,index,local,Number(s.durations[index]),campaign,logo,media,s,source);ctx.restore();ctx.fillStyle=(cinemaPalettes[s.grade]||cinemaPalettes.obsidian)[1];ctx.fillRect(0,1910,1080*Math.min(1,t/total),10);ctx.restore();
+  const ctx=canvas.getContext('2d'),s=cinemaSettings(settings),{index,phase,local,duration,total}=sceneAt(time,s),w=s.aspect==='16:9'?1920:1080,h=s.aspect==='16:9'?1080:1920,enter=Math.min(1,local/.25);canvas.dataset.scene=String(index+1);
+  ctx.save();ctx.scale(canvas.width/w,canvas.height/h);ctx.fillStyle=(cinemaPalettes[s.grade]||cinemaPalettes.obsidian)[0];ctx.fillRect(0,0,w,h);ctx.save();
+  if(index>0&&enter<1){if(s.transition==='whip')ctx.translate((1-enter)*w,0);else if(s.transition==='match'){ctx.translate(w/2,h/2);ctx.scale(1+(1-enter)*.12,1+(1-enter)*.12);ctx.translate(-w/2,-h/2);}else ctx.globalAlpha=enter;}
+  drawCinemaScene(ctx,phase,local,duration,campaign,logo,media,s,source);ctx.restore();ctx.fillStyle=(cinemaPalettes[s.grade]||cinemaPalettes.obsidian)[1];ctx.fillRect(0,h-10,w*Math.min(1,time/total),10);ctx.fillStyle=`rgba(0,0,0,${1-outroOpacity(time,total)})`;ctx.fillRect(0,0,w,h);ctx.restore();
 }

@@ -97,7 +97,7 @@ export default function CommercialStudio({ user }) {
     setGenerating(true);
     try {
       if (format === "video") {
-        const res = await base44.integrations.Core.GenerateVideo({ prompt: plan.generation_prompt, aspect_ratio: aspect });
+        const res = await base44.integrations.Core.GenerateVideo({ prompt: `${plan.generation_prompt}\nVISUALS ONLY: no text, captions, lettering, watermarks or typography. Titles are rendered as exact vector overlays in post-production.`, aspect_ratio: aspect, generate_audio:false });
         setMediaUrl(res?.url || res?.video_url || "");
       } else {
         const refs = kit?.reference_image_urls?.length ? kit.reference_image_urls : undefined;
@@ -206,7 +206,7 @@ export default function CommercialStudio({ user }) {
           <h3 className="text-sm font-bold text-amber-50 flex items-center gap-2"><Wand2 className="w-4 h-4 text-amber-400" /> New Production</h3>
 
           <DocumentIntake onExtracted={applyIntake} />
-          {format==='video'&&<CommercialAudioSynth mediaUrl={mediaUrl} scenePlan={plan?.scene_plan} disabled={planning||generating||certifying||saving}/>}
+          {format==='video'&&<CommercialAudioSynth mediaUrl={mediaUrl} scenePlan={plan?.scene_plan} title={title||kit?.brand_name||''} disabled={planning||generating||certifying||saving}/>}
 
           {noKit && (
             <div className="flex items-start gap-2 text-[11px] text-amber-300 bg-amber-950/30 border border-amber-800/40 rounded-lg p-2.5">
