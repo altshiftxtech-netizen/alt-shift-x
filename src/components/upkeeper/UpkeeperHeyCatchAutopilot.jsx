@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Link2, Rocket } from 'lucide-react';
 import HeyCatchCampaignResults from '@/components/upkeeper/HeyCatchCampaignResults';
 
-export default function UpkeeperHeyCatchAutopilot() {
-  const [url,setUrl]=useState(''), [busy,setBusy]=useState(false), [result,setResult]=useState(null);
+export default function UpkeeperHeyCatchAutopilot({ campaign, onCampaign, activeUrl, onUrl }) {
+  const [localUrl,setLocalUrl]=useState(''), [busy,setBusy]=useState(false), [localResult,setLocalResult]=useState(null);
+  const url=activeUrl ?? localUrl, setUrl=onUrl || setLocalUrl, result=campaign ?? localResult, setResult=onCampaign || setLocalResult;
   const [error,setError]=useState(''), [notice,setNotice]=useState(''), [manualCopy,setManualCopy]=useState('');
   const launch = async event => {
     event.preventDefault(); setBusy(true); setError(''); setNotice(''); setManualCopy(''); setResult(null);

@@ -25,6 +25,6 @@ export default function HeyCatchCampaignResults({ result, onCopy }) {
     </section>
     <section className="space-y-3"><h3 className="text-lg font-semibold">Social thread drafts</h3>{result.social_posts.map((p,i)=><article key={i} className="border rounded-xl p-4 space-y-2"><h4 className="font-semibold">{p.platform}</h4><p className="text-sm whitespace-pre-wrap">{p.text}</p><Button variant="outline" onClick={()=>onCopy(p.text)}>Copy post</Button></article>)}</section>
     <div className="flex flex-wrap gap-3"><Button onClick={()=>onCopy(JSON.stringify(result,null,2))}>Batch copy campaign</Button><Button variant="outline" onClick={download}>Fast-Ship campaign brief</Button></div>
-    <p className="text-xs text-muted-foreground">Export includes analysis, sourced opportunities, replies, social drafts and roadmap. No logo or reel is included in this first release. Goals are not guaranteed customer outcomes.</p>
+    <p className="text-xs text-muted-foreground">This brief includes analysis, sourced opportunities, replies, social drafts and roadmap. Use Fast-Ship Hub to bundle your logo kit and rendered reel. Goals are not guaranteed customer outcomes.</p>
   </div>;
 }

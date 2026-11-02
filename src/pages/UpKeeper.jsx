@@ -19,7 +19,8 @@ import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
 import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
 import UpKeeperProfileMenu from "@/components/upkeeper/UpKeeperProfileMenu";
-import UpkeeperHeyCatchAutopilot from '@/components/upkeeper/UpkeeperHeyCatchAutopilot';
+import UpkeeperCreativeDock from '@/components/upkeeper/UpkeeperCreativeDock';
+import { initialCreativeAssets } from '@/components/upkeeper/creativeAssets';
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -39,6 +40,7 @@ const QUICK_PROMPTS = [
 ];
 
 export default function UpKeeper() {
+  const [creativeAssets, setCreativeAssets] = useState(initialCreativeAssets);
   const [checking, setChecking] = useState(true);
   const [user, setUser] = useState(null);
   const isAdmin = user?.role === "admin";
@@ -223,7 +225,7 @@ export default function UpKeeper() {
           </div>
         </div>
 
-        <div className="w-full max-w-4xl mb-6"><UpkeeperHeyCatchAutopilot /></div>
+        <div className="w-full max-w-5xl"><UpkeeperCreativeDock assets={creativeAssets} setAssets={setCreativeAssets}/></div>
         <div className="w-full max-w-2xl space-y-2">
           {uploadedFiles.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-1">
@@ -339,7 +341,7 @@ export default function UpKeeper() {
 
   // ── WORKSPACE ───────────────────────────────────────────────────────────────
   const TABS = [
-    { id: "autopilot", label: "HeyCatch Autopilot", icon: Sparkles },
+
     { id: "chat", label: "UpKeeper Chat", icon: Bot },
     { id: "social", label: "Social Studio", icon: Share2 },
     ...(isAdmin ? [{ id: "commercial", label: "Commercial Studio", icon: Clapperboard }] : []),
@@ -369,7 +371,8 @@ export default function UpKeeper() {
           </div>
         </div>
 
-        {/* Tabs */}
+        <UpkeeperCreativeDock assets={creativeAssets} setAssets={setCreativeAssets}/>
+        {/* Existing operations remain available below the creative dock. */}
         <div className="flex flex-wrap items-center gap-1 bg-[#241812] border border-orange-900/40 rounded-xl p-1 mb-6">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveTab(id)}
@@ -379,7 +382,7 @@ export default function UpKeeper() {
           ))}
         </div>
 
-        <div hidden={activeTab !== 'autopilot'}><UpkeeperHeyCatchAutopilot /></div>
+
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
