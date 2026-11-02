@@ -19,6 +19,7 @@ import UpKeeperHistoryPanel from "@/components/upkeeper/UpKeeperHistoryPanel";
 import ApproveComponentsButton from "@/components/upkeeper/ApproveComponentsButton";
 import InviteAdminButton from "@/components/upkeeper/InviteAdminButton";
 import UpKeeperProfileMenu from "@/components/upkeeper/UpKeeperProfileMenu";
+import UpkeeperHeyCatchAutopilot from '@/components/upkeeper/UpkeeperHeyCatchAutopilot';
 
 const AVATAR = "https://media.base44.com/images/public/6a19363c90f06323c4cfff73/3f9a15d43_generated_image.png";
 
@@ -222,6 +223,7 @@ export default function UpKeeper() {
           </div>
         </div>
 
+        <div className="w-full max-w-4xl mb-6"><UpkeeperHeyCatchAutopilot /></div>
         <div className="w-full max-w-2xl space-y-2">
           {uploadedFiles.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-1">
@@ -337,6 +339,7 @@ export default function UpKeeper() {
 
   // ── WORKSPACE ───────────────────────────────────────────────────────────────
   const TABS = [
+    { id: "autopilot", label: "HeyCatch Autopilot", icon: Sparkles },
     { id: "chat", label: "UpKeeper Chat", icon: Bot },
     { id: "social", label: "Social Studio", icon: Share2 },
     ...(isAdmin ? [{ id: "commercial", label: "Commercial Studio", icon: Clapperboard }] : []),
@@ -367,7 +370,7 @@ export default function UpKeeper() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 bg-[#241812] border border-orange-900/40 rounded-xl p-1 mb-6">
+        <div className="flex flex-wrap items-center gap-1 bg-[#241812] border border-orange-900/40 rounded-xl p-1 mb-6">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveTab(id)}
               className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === id ? "bg-orange-600 text-white shadow" : "text-orange-200/60 hover:text-white hover:bg-[#3a2a24]"}`}>
@@ -376,6 +379,7 @@ export default function UpKeeper() {
           ))}
         </div>
 
+        <div hidden={activeTab !== 'autopilot'}><UpkeeperHeyCatchAutopilot /></div>
         {activeTab === "chat" && (
           <div className="grid md:grid-cols-4 gap-4">
             <div className="space-y-3">
