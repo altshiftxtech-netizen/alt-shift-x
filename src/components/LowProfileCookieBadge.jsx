@@ -25,6 +25,6 @@ export default function LowProfileCookieBadge() {
         </div>
       </div>
     </div>}
-    <CookiePreferenceCenter open={preferences} onOpenChange={setPreferences} />
+    {preferences && <CookiePreferenceCenter open onOpenChange={setPreferences} />}
   </>;
 }
