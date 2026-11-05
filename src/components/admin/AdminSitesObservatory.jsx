@@ -27,7 +27,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 1,
     name: 'Code Vault Repository',
     subpath: '/codevault',
-    productionUrl: 'https://altshiftx.tech/codevault',
+    productionUrl: 'https://codevault.altshiftx.tech',
     containerUrl: 'https://code-vault-repository.base44.app',
     role: 'AST Bytecode & Git Enclave',
     mrr: '$19,500',
@@ -38,7 +38,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 2,
     name: 'dbLive Sovereign Database',
     subpath: '/dblive',
-    productionUrl: 'https://altshiftx.tech/dblive',
+    productionUrl: 'https://dblive.altshiftx.tech',
     containerUrl: 'https://dblive-sovereign-database.base44.app',
     role: 'WORM Merkle Block Audit Ledger',
     mrr: '$34,000',
@@ -49,7 +49,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 3,
     name: 'OmniBridge Sovereign CRM',
     subpath: '/omnibridge',
-    productionUrl: 'https://altshiftx.tech/omnibridge',
+    productionUrl: 'https://omnibridge.altshiftx.tech',
     containerUrl: 'https://smart-agent-flow-chubby.base44.app',
     role: 'Lead Pipeline & Sovereign Contacts',
     mrr: '$22,800',
@@ -60,7 +60,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 4,
     name: 'Bitfolio Sovereign Showcase',
     subpath: '/bitfolio',
-    productionUrl: 'https://altshiftx.tech/bitfolio',
+    productionUrl: 'https://bitfolio.altshiftx.tech',
     containerUrl: 'https://bitfolio.base44.app',
     role: '3D Project Cards & Verification',
     mrr: '$16,200',
@@ -71,7 +71,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 5,
     name: 'SourceBridge Substrate Network',
     subpath: '/sourcebridge',
-    productionUrl: 'https://altshiftx.tech/sourcebridge',
+    productionUrl: 'https://sourcebridge.altshiftx.tech',
     containerUrl: 'https://sourcebridge-software-and-data-substrate-network.base44.app',
     role: 'Data Pipelines & Substrate Bus',
     mrr: '$56,400',
@@ -82,7 +82,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 6,
     name: 'Turi MC x APPerdeen Compute',
     subpath: '/turimc',
-    productionUrl: 'https://altshiftx.tech/turimc',
+    productionUrl: 'https://turimc.altshiftx.tech',
     containerUrl: 'https://turi-mc.base44.app',
     role: 'AI Orchestration & Multi-Cloud Engine',
     mrr: '$28,100',
@@ -93,7 +93,7 @@ export const LIVE_FLEET_NODES = [
     nodeNumber: 7,
     name: 'MAGNA Site Foundry & Coder',
     subpath: '/magna',
-    productionUrl: 'https://altshiftx.tech/magna',
+    productionUrl: 'https://magna.altshiftx.tech',
     containerUrl: 'https://magna-webapp-and-coder.base44.app',
     role: 'Visual Studio & WebGPU Engine',
     mrr: '$78,200',
@@ -363,9 +363,9 @@ Zero PWA autoloader model interference.
                 ? 'bg-purple-600/30 border-purple-400/50 text-purple-200'
                 : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'
             }`}
-            title="Toggle iframe route between altshiftx.tech and direct .base44.app containers"
+            title="Toggle iframe route between verified custom subdomains and direct .base44.app containers"
           >
-            Route: {useDirectContainer ? 'Direct Container (.base44)' : 'Apex Cloudflare (altshiftx.tech)'}
+            Route: {useDirectContainer ? 'Direct Container (.base44)' : 'Sovereign Subdomains (altshiftx.tech)'}
           </button>
 
           {/* Device Emulation */}

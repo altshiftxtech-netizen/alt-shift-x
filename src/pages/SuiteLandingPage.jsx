@@ -47,6 +47,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.turimc,
     tagline: 'Extreme Compute & Hardware Proving Ground',
     subpath: '/turimc',
+    url: 'https://turimc.altshiftx.tech',
     color: '#10B981',
     icon: '⚙️',
     category: 'Physics & Hardware',
@@ -61,6 +62,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.codevault,
     tagline: 'Sovereign Git & WASM Repositories',
     subpath: '/codevault',
+    url: 'https://codevault.altshiftx.tech',
     color: '#06B6D4',
     icon: '📦',
     category: 'Version Control & Repos',
@@ -75,6 +77,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.dblive,
     tagline: 'Sovereign WORM Append-Only Database',
     subpath: '/dblive',
+    url: 'https://dblive.altshiftx.tech',
     color: '#F59E0B',
     icon: '🗄️',
     category: 'Immutable Ledger',
@@ -89,6 +92,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.omnibridge,
     tagline: 'Executive Pipeline & Telephony',
     subpath: '/omnibridge',
+    url: 'https://omnibridge.altshiftx.tech',
     color: '#F43F5E',
     icon: '📞',
     category: 'Executive CRM',
@@ -103,6 +107,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.bitfolio,
     tagline: '3D Portfolio & Digital Cards',
     subpath: '/bitfolio',
+    url: 'https://bitfolio.altshiftx.tech',
     color: '#6366F1',
     icon: '💳',
     category: 'Identity & NFC',
@@ -117,6 +122,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.sourcebridge,
     tagline: 'Universal API Substrate & Network',
     subpath: '/sourcebridge',
+    url: 'https://sourcebridge.altshiftx.tech',
     color: '#14B8A6',
     icon: '🌐',
     category: 'API Gateway & Event Broker',
@@ -131,6 +137,7 @@ const SUITE_NODES = [
     name: suiteBrandNames.magna,
     tagline: 'Visual Canvas Site Foundry',
     subpath: '/magna',
+    url: 'https://magna.altshiftx.tech',
     color: '#D946EF',
     icon: '🎨',
     category: 'Site Foundry & RSMK',
@@ -188,14 +195,17 @@ export default function SuiteLandingPage() {
 
 
 
-  // Navigate directly through Cloudflare pure subpath
+  // Launch verified custom subdomains in a new tab; root hub stays in-app
   const handleLaunchNode = (subpath) => {
     if (!authChecked || isLoadingAuth || !isAuthenticated) {
       navigate(`/login?returnTo=${encodeURIComponent(subpath)}`);
       return;
     }
     if (subpath === '/aibuilder') navigate(subpath);
-    else window.location.href = subpath;
+    else {
+      const node = SUITE_NODES.find((item) => item.subpath === subpath);
+      window.open(node?.url || subpath, '_blank', 'noopener');
+    }
   };
 
 

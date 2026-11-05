@@ -8,7 +8,7 @@ import { X, CheckCircle2, ArrowRight, Shield } from 'lucide-react';
  */
 export default function SuiteNodeSpecModal({ node, onClose, onLaunchNode }) {
   if (!node) return null;
-  const publicUrl = `https://altshiftx.tech${node.subpath}`;
+  const publicUrl = node.url || `https://altshiftx.tech${node.subpath}`;
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
