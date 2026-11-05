@@ -5,6 +5,7 @@ import {
   AlertTriangle, Radio, Sparkles
 } from 'lucide-react';
 import JSZip from 'jszip';
+import SiteSandboxIframeWrapper from '@/components/admin/SiteSandboxIframeWrapper';
 
 // ============================================================================
 // 1. AUTHORITATIVE LIVE FLEET NETLIST (Root 0 to Node 7 + Satellite TGF)
@@ -517,15 +518,16 @@ Zero PWA autoloader model interference.
                 </div>
               </div>
 
-              {/* Live Iframe Window */}
-              <div className="relative w-full h-[360px] bg-slate-950 p-2 flex items-center justify-center overflow-hidden">
-                <div className={`h-full transition-all duration-300 rounded-2xl overflow-hidden border border-white/10 ${viewportWidthClass}`}>
-                  <iframe
-                    src={activeIframeUrl}
+              {/* Guarded live preview; retain device-width controls. */}
+              <div className="relative w-full bg-slate-950 p-2 flex items-center justify-center overflow-hidden">
+                <div className={`w-full transition-all duration-300 ${viewportWidthClass}`}>
+                  <SiteSandboxIframeWrapper
+                    key={activeIframeUrl}
                     title={node.name}
-                    className="w-full h-full border-none bg-slate-900"
-                    loading="lazy"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    subpath={node.subpath}
+                    publicUrl={activeIframeUrl}
+                    latency={`${telemetry.latencyMs}ms`}
+                    status={`PROBE: ${telemetry.status.toUpperCase()}`}
                   />
                 </div>
               </div>
