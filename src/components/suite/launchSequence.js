@@ -16,7 +16,7 @@ export default function launchSequence(vehicle, pad, notify) {
     if (state !== previous) { previous = state; notify(state); }
     const altitude = t < 2 ? 0 : t < 8 ? 350 * ((t - 2) / 6) ** 2 : t < 54 ? 350 : t < 60 ? 350 * (1 - smooth((t - 54) / 6)) : 0;
     vehicle.rocket.visible = state !== 'Away';
-    vehicle.rocket.position.set(0, 1.2 + altitude, 0);
+    vehicle.rocket.position.set(0, vehicle.restHeight + altitude, 0);
     vehicle.rocket.rotation.z = state === 'Landing burn' ? -.06 * Math.sin((t - 54) / 6 * Math.PI * 2) : 0;
     const burn = ['Ignition', 'Ascent', 'Landing burn'].includes(state);
     vehicle.flame.visible = burn; vehicle.core.visible = burn;
@@ -25,7 +25,7 @@ export default function launchSequence(vehicle, pad, notify) {
     vehicle.flame.position.y = -.4 - 1.9 * vehicle.flame.scale.y;
     vehicle.core.scale.y = throttle; vehicle.core.position.y = -.4 - 1.3 * throttle;
     const deployed = state === 'Ascent' ? 1 - smooth((t - 2) / 2) : state === 'Away' ? 0 : state === 'Landing burn' ? smooth((t - 57) / 2) : 1;
-    vehicle.legs.forEach(leg => { leg.rotation.x = -.8 * deployed; });
+    vehicle.legs.forEach(leg => { leg.rotation.x = -.8 * deployed; leg.userData.foot.rotation.x = .8 * deployed; });
     pad.arms.forEach(({ shoulder, elbow, side }) => {
       const service = state === 'Robotic servicing' ? Math.sin((t - 62) / 7 * Math.PI) ** 2 : 0;
       shoulder.rotation.z = -side * (.18 + service * .8); elbow.rotation.z = side * (.7 - service * 1.2);

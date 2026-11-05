@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { heightAt } from '@/components/suite/desertTerrain';
 import { box, part, instances, matrix, steel, teal } from '@/components/suite/expansion/sectorPrimitives';
 import forestryPlanter from '@/components/suite/expansion/forestryPlanter';
+import { forestRoute } from '@/components/suite/expansion/forestryRoutes';
 
 export default function forestryMachines(parent, compact) {
   const dark = steel(), light = teal(), planters = Array.from({ length: compact ? 2 : 3 }, (_, i) => forestryPlanter(parent, dark, light, i));
@@ -28,8 +29,8 @@ export default function forestryMachines(parent, compact) {
   const update = (time, state) => {
     planters.forEach(update => update(time, state.phase === 1)); seeds.visible = state.phase !== 3; seeds.material.color.set(state.phase === 1 ? '#7edfcc' : '#dfa85c');
     drones.forEach(({ g, rotors }, i) => { const x = 310 + i * 120 + Math.sin(time * .06) * 25, z = -340 + Math.cos(time * .04 + i) * 110; g.visible = state.phase === 1; g.position.set(x, heightAt(x, z) + 20 + Math.sin(time) * 2, z); rotors.forEach(r => r.rotation.y = time * 22); for (let j = 0; j < 32; j++) { const f = (time * .25 + j / 32) % 1; matrix(seeds, i * 32 + j, [x + Math.sin(j) * 2, g.position.y * (1 - f) + heightAt(x, z) * f, z + Math.cos(j) * 2]); } }); seeds.instanceMatrix.needsUpdate = true;
-    tracked.forEach(({ g, cutter, logs }, i) => { const x = 320 + i * 100, z = -260 - (time * 1.1 + i * 60) % 180; g.visible = state.phase !== 1; g.position.set(x, heightAt(x, z), z); cutter.visible = state.phase === 2; cutter.rotation.y = time * 3; logs.visible = state.phase === 3; beams[i].visible = state.phase === 3 && Math.sin(time * .5) > 0; });
-    dogs.forEach(({ g, legs, scan }, i) => { const x = 350 + i * 80, z = -310 + Math.sin(time * .06 + i) * 25; g.visible = state.phase === 2; g.position.set(x, heightAt(x, z), z); legs.forEach((leg, j) => leg.rotation.x = Math.sin(time * 3 + j % 2 * Math.PI) * .2); scan.rotation.z = Math.sin(time * .4) * .2; if (state.phase === 2) for (let j = 0; j < 32; j++) { const f = (time * .2 + j / 32) % 1, a = j * 2.4; matrix(seeds, i * 32 + j, [x + Math.sin(a) * f * 4, g.position.y + 2 + Math.cos(a) * f * 2, z + 3 + f * 12]); } }); seeds.instanceMatrix.needsUpdate = true;
+    tracked.forEach(({ g, cutter, logs }, i) => { const { x, z, heading } = forestRoute(time, i, 1.1); g.visible = state.phase !== 1; g.position.set(x, heightAt(x, z), z); g.rotation.y = heading; cutter.visible = state.phase === 2; cutter.rotation.y = time * 3; logs.visible = state.phase === 3; beams[i].visible = state.phase === 3 && Math.sin(time * .5) > 0; });
+    dogs.forEach(({ g, legs, scan }, i) => { const { x, z, heading } = forestRoute(time + i * 150, 2, 1.4); g.visible = state.phase === 2; g.position.set(x, heightAt(x, z), z); g.rotation.y = heading; legs.forEach((leg, j) => leg.rotation.x = Math.sin(time * 3 + j % 2 * Math.PI) * .2); scan.rotation.z = Math.sin(time * .4) * .2; if (state.phase === 2) for (let j = 0; j < 32; j++) { const f = (time * .2 + j / 32) % 1, a = j * 2.4; matrix(seeds, i * 32 + j, [x + Math.sin(a) * f * 4, g.position.y + 2 + Math.cos(a) * f * 2, z + 3 + f * 12]); } }); seeds.instanceMatrix.needsUpdate = true;
   };
   update.targets = targets; return update;
 }

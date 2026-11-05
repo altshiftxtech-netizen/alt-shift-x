@@ -15,7 +15,8 @@ export default function launchVehicle(scene, materials) {
     const pivot = new THREE.Group(); pivot.rotation.y = i * Math.PI / 2; pivot.position.y = .9; rocket.add(pivot);
     const leg = new THREE.Group(); leg.position.z = .65; pivot.add(leg);
     rounded(leg, [.15, 2.7, .17], [0, -1.25, 0], materials.dark);
-    rounded(leg, [.55, .12, .5], [0, -2.6, 0], materials.shell); legs.push(leg);
+    const foot = rounded(leg, [.55, .12, .5], [0, -2.6, 0], materials.shell); leg.userData.foot = foot;
+    leg.rotation.x = -.8; foot.rotation.x = .8; legs.push(leg);
     const fin = rounded(pivot, [.08, .75, .7], [0, 4.3, .85], materials.dark); fin.rotation.x = -.12;
   }
   const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(.35, .57, .7, 32, 1, true), materials.dark); nozzle.position.y = -.22; rocket.add(nozzle);
@@ -23,5 +24,6 @@ export default function launchVehicle(scene, materials) {
   flame.rotation.z = Math.PI; flame.position.y = -2.2; rocket.add(flame); flame.visible = false;
   const core = new THREE.Mesh(new THREE.ConeGeometry(.22, 2.6, 24), new THREE.MeshBasicMaterial({ color: '#fff3d6' })); core.rotation.z = Math.PI; core.position.y = -1.6; rocket.add(core); core.visible = false;
   rocketHullDetail(rocket);
-  rocket.position.y = 1.2; scene.add(rocket); return { rocket, legs, flame, core };
+  const restHeight = .275 - .9 + 2.6 * Math.cos(.8) + .06;
+  rocket.position.y = restHeight; scene.add(rocket); return { rocket, legs, flame, core, restHeight };
 }

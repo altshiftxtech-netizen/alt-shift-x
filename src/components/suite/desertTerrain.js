@@ -4,6 +4,7 @@ import desertGroundDetail from '@/components/suite/desertGroundDetail';
 import { laneX } from '@/components/suite/desertTraffic';
 import expandedTerrain from '@/components/suite/expansion/expandedTerrain';
 import forestryTerrainMaterial from '@/components/suite/expansion/forestryTerrainMaterial';
+import { forestLaneGrade } from '@/components/suite/expansion/forestryRoutes';
 
 export function heightAt(x, z) {
   const canyon = Math.exp(-Math.pow((x - 13 * Math.sin(z * .024)) / 22, 2));
@@ -13,7 +14,8 @@ export function heightAt(x, z) {
   // Grade only the new remote concrete aprons, never the original device lanes.
   const south = (1 - THREE.MathUtils.smoothstep(Math.abs(x), 145, 200)) * (1 - THREE.MathUtils.smoothstep(Math.abs(z - 475), 110, 140));
   const northwest = (1 - THREE.MathUtils.smoothstep(Math.abs(x + 429), 48, 70)) * (1 - THREE.MathUtils.smoothstep(Math.abs(z + 490), 205, 225));
-  return original * (1 - Math.max(south, northwest));
+  const graded = original * (1 - Math.max(south, northwest));
+  return THREE.MathUtils.lerp(graded, 3, forestLaneGrade(x, z));
 }
 
 export default function desertTerrain(scene, compact, anisotropy) {

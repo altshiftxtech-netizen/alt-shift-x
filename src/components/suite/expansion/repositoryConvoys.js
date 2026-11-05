@@ -32,10 +32,11 @@ export default function repositoryConvoys(scene, floor, reduced, road) {
       const position = road.sample(t, inbound ? -9 : 9), tangent = road.tangent(t);
       const heading = Math.atan2(tangent.x, tangent.z) + (inbound ? Math.PI : 0);
       const rare = !inbound && position.z >= -380 && rarity(cycle, i);
-      vehicle.truck.position.copy(position); vehicle.truck.rotation.y = heading;
+      const pitch = -Math.atan2(tangent.y * (inbound ? -1 : 1), Math.hypot(tangent.x, tangent.z));
+      vehicle.truck.position.copy(position); vehicle.truck.rotation.order = 'YXZ'; vehicle.truck.rotation.set(pitch, heading, 0);
       vehicle.truck.visible = !rare; vehicle.update(inbound ? -distance : distance);
       nearDoor ||= Math.abs(position.z + 404) < 32 && Math.abs(position.x + 429) < 30;
-      if (rare) { sentinel.visible = true; sentinel.position.copy(position); sentinel.rotation.y = heading; sentinelVehicle.update(distance); emergence = `${cycle}:${i}`; }
+      if (rare) { sentinel.visible = true; sentinel.position.copy(position); sentinel.rotation.order = 'YXZ'; sentinel.rotation.set(pitch, heading, 0); sentinelVehicle.update(distance); emergence = `${cycle}:${i}`; }
     }
     // A low-contrast 4Hz heartbeat, never an on/off strobe.
     red.emissiveIntensity = reduced ? 2.8 : 2.8 + .08 * Math.sin(timestamp / 1000 * Math.PI * 8);

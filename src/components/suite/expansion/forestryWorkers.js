@@ -23,7 +23,7 @@ export default function forestryWorkers(parent, compact) {
     root.visible = state.humans;
     if (!root.visible) return;
     workers.forEach(({ g, limbs }, i) => {
-      const x = 300 + i * 58, z = -285 + Math.sin(time * .1 + i) * 8;
+      const x = i % 2 ? 550 : 240, z = -285 - Math.floor(i / 2) * 90 + Math.sin(time * .1 + i) * 8;
       g.position.set(x, heightAt(x, z) + .2, z); g.rotation.y = Math.cos(time * .1 + i) > 0 ? 0 : Math.PI;
       limbs.forEach(({ arm, leg, side }) => { leg.rotation.x = Math.sin(time * 2) * .22 * side; arm.rotation.x = -leg.rotation.x; });
     });

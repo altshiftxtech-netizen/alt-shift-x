@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { heightAt } from '@/components/suite/desertTerrain';
 import { instances, matrix, random } from '@/components/suite/expansion/sectorPrimitives';
+import { clearForestLane } from '@/components/suite/expansion/forestryRoutes';
 
 export default function forestryTrees(parent, compact) {
   const count = compact ? 120 : 240, rand = random(81293), positions = [];
@@ -25,7 +26,7 @@ export default function forestryTrees(parent, compact) {
         const planted = state.phase !== 1 || index / count < state.progress;
         // Selective cuts leave protected stands and clear the rest progressively.
         const harvested = state.phase === 3 && index % 3 !== 0 && index / count < state.progress;
-        const scale = planted && !harvested ? 1 : 0;
+        const scale = planted && !harvested && !clearForestLane(x) ? 1 : 0;
         matrix(stage.trunks, index, [x, y + stage.height / 2, z], [stage.radius * scale, stage.height * scale, stage.radius * scale]);
         matrix(stage.tops, index, [x, y + stage.height, z], [stage.crown * scale, stage.height * .9 * scale, stage.crown * scale]);
       });
