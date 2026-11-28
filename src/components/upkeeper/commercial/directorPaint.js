@@ -4,6 +4,7 @@
 
 import { beatAt, totalSeconds } from '@/components/upkeeper/commercial/directorPlan';
 import { paintHardware, paintTerminal, paintLightingWash, LIGHT_TINT } from '@/components/upkeeper/commercial/directorBroll';
+import { drawBadge } from '@/components/upkeeper/commercial/crystalBadge';
 import { paintCaptions } from '@/components/upkeeper/commercial/directorCaptions';
 
 export const stageSize = (aspect, shortEdge = 1080) =>
@@ -175,13 +176,7 @@ function crest(ctx, w, h, p, plan, emblem, accent) {
   ctx.textAlign = 'left';
 }
 
-function corner(ctx, w, h, plan) {
-  ctx.save();
-  ctx.fillStyle = 'rgba(214,226,234,0.42)';
-  ctx.font = `700 ${Math.round(w * 0.014)}px "Inter", Arial, sans-serif`;
-  ctx.fillText(`${(plan.wordmark || 'COMMERCIAL').toUpperCase()} · UPKEEPER STUDIO`, w * 0.045, h * 0.955);
-  ctx.restore();
-}
+
 
 /**
  * Paint one frame. Returns the caption hit boxes in canvas pixels.
@@ -249,7 +244,7 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
   ctx.fillStyle = accent;
   ctx.fillRect(0, h - 8, w * Math.min(1, time / total), 8);
 
-  corner(ctx, w, h, plan);
+
 
   // Landscape captions sit lower so they clear the terminal plate.
   const captionBox = w > h
@@ -261,6 +256,7 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
     scale,
   });
 
+  drawBadge(ctx, w, h, assets.badge);
   return hits;
 }
 

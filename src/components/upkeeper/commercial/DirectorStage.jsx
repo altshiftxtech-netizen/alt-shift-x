@@ -5,6 +5,8 @@ import { totalSeconds, beatAt } from '@/components/upkeeper/commercial/directorP
 import { buildDirectorAudio, decodeVoices } from '@/components/upkeeper/commercial/directorAudio';
 import resumeAudioContext from '@/components/upkeeper/audio/resumeAudioContext';
 
+import AltShiftXWatermark from '@/components/upkeeper/commercial/AltShiftXWatermark';
+
 const clock = (s) => {
   const safe = Math.max(0, s);
   return `${Math.floor(safe / 60)}:${String(Math.floor(safe % 60)).padStart(2, '0')}.${String(
@@ -16,7 +18,7 @@ const clock = (s) => {
  * Live preview: paints the same frames the recorder will encode and plays the
  * same three-bus mix, so the operator judges the mix before a render.
  */
-export default function DirectorStage({ plan, assets, levels, voiceUrls, onSelectWord, onBeat }) {
+export default function DirectorStage({ plan, assets, watermark, levels, voiceUrls, onSelectWord, onBeat }) {
   const canvasRef = useRef(null);
   const hitsRef = useRef([]);
   const rafRef = useRef(0);
@@ -144,7 +146,10 @@ export default function DirectorStage({ plan, assets, levels, voiceUrls, onSelec
   return (
     <div>
       <div className="dm-frame">
-        <canvas ref={canvasRef} onClick={click} aria-label="Commercial preview" />
+        <div className="relative w-full" style={{maxWidth:plan.aspect==='16:9'?'110.2222vh':'34.875vh',aspectRatio:plan.aspect.replace(':',' / ')}}>
+          <canvas ref={canvasRef} onClick={click} aria-label="Commercial preview" />
+          {watermark?.enabled && <AltShiftXWatermark {...watermark} aspect={plan.aspect} />}
+        </div>
       </div>
       <div className="dm-transport">
         <button

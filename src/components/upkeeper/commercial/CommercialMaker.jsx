@@ -11,7 +11,9 @@ import { localPlan, refinePlan, rerollBeat, updateWord } from '@/components/upke
 import { generateVoice, DEFAULT_LEVELS } from '@/components/upkeeper/commercial/directorAudio';
 import { renderCommercial, renderGif, supportedFormats } from '@/components/upkeeper/commercial/renderDirector';
 import { downloadSocialPackage, downloadVerticalPackage, downloadGif, mb } from '@/components/upkeeper/commercial/exportDirector';
-import { downloadAsset, logoImage, initialCreativeAssets } from '@/components/upkeeper/creativeAssets';
+import WatermarkSettings from '@/components/upkeeper/commercial/WatermarkSettings';
+import { defaultWatermark, prepareBadge } from '@/components/upkeeper/commercial/crystalBadge';
+import { downloadAsset } from '@/components/upkeeper/creativeAssets';
 
 // The Commercial Maker: one prompt in, a finished spot out. The four-beat sheet
 // is generated instantly, refined by the director model, then a single pass
@@ -23,7 +25,7 @@ export default function CommercialMaker() {
   const [voice, setVoice] = useState('storm');
 
   const [plan, setPlan] = useState(null);
-  const [assets, setAssets] = useState({ emblem: null });
+  const [watermark, setWatermark] = useState(defaultWatermark);
   const [levels, setLevels] = useState(DEFAULT_LEVELS);
   const [voiceUrls, setVoiceUrls] = useState([]);
 
@@ -41,11 +43,12 @@ export default function CommercialMaker() {
   const abortRef = useRef(null);
   const formats = useRef(supportedFormats());
 
-  useEffect(() => {
-    logoImage(initialCreativeAssets.logo)
-      .then((emblem) => setAssets({ emblem }))
-      .catch(() => setAssets({ emblem: null }));
-  }, []);
+  const changeWatermark = next => {
+    setWatermark(next);
+    setCache({});
+    setGif(null);
+    if (reel) setStale(true);
+  };
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -58,7 +61,7 @@ export default function CommercialMaker() {
     try {
       const result = await renderCommercial({
         plan: target,
-        assets,
+        assets: await prepareBadge(watermark),
         shortEdge: 1080,
         format: formats.current.mp4 ? 'mp4' : 'webm',
         voiceUrls,
@@ -171,7 +174,7 @@ export default function CommercialMaker() {
       try {
         const result = await renderGif({
           plan,
-          assets,
+          assets: await prepareBadge(watermark),
           shortEdge: 540,
           fps: 12,
           seconds: 15,
@@ -246,6 +249,8 @@ export default function CommercialMaker() {
       )}
       {notice && <p className="dm-ok">{notice}</p>}
 
+      <WatermarkSettings value={watermark} onChange={changeWatermark} disabled={Boolean(busy)} />
+
       {plan && (
         <>
           <BeatSheet plan={plan} activeIndex={activeBeat} onReroll={reroll} disabled={Boolean(busy)} />
@@ -253,7 +258,7 @@ export default function CommercialMaker() {
           <div className="dm-stage">
             <DirectorStage
               plan={plan}
-              assets={assets}
+              watermark={watermark}
               levels={levels}
               voiceUrls={voiceUrls}
               onBeat={setActiveBeat}
