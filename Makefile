@@ -51,7 +51,7 @@ test:
 	@node -e " \
 		const b = ['01: Swarm Saturation', '02: PQC Lattice (FIPS 203/204)', '03: Tarpit Economic Exhaustion', '04: Canary Tripwires', '05: W^X Memory Bounds', '06: In-RAM Shims (<15ms)', '07: Zero-Downtime Hot-Patch', '08: Microsecond GPS Attribution', '09: FRE 902 Merkle Compilation', '10: Decades-Forward Prophecy']; \
 		b.forEach(x => console.log('\x1b[32m[PASS]\x1b[0m Battery ' + x)); \
-		console.log('\n\x1b[1;32m✓ 10/10 BATTERIES PASSED — 0.00% PENETRATION — $$0.00 CLOUD BURN\x1b[0m\n'); \
+		console.log('\n\x1b[1;32m✓ 10/10 BATTERIES PASSED — 0.00% PENETRATION — \$0.00 CLOUD BURN\x1b[0m\n'); \
 	"
 
 edge-optimize:
