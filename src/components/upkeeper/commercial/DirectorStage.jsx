@@ -7,6 +7,7 @@ import resumeAudioContext from '@/components/upkeeper/audio/resumeAudioContext';
 
 import AltShiftXWatermark from '@/components/upkeeper/commercial/AltShiftXWatermark';
 import { releaseCinemaGrade } from '@/components/upkeeper/commercial/cinemaGrade';
+import remixPlayback from '@/components/upkeeper/commercial/remixPlayback';
 
 const clock = (s) => {
   const safe = Math.max(0, s);
@@ -30,6 +31,14 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
   const timeRef = useRef(0);
   const playRequest = useRef(0);
   const levelsRef = useRef(levels);
+  const footageRef = useRef(null);
+  const [footageError, setFootageError] = useState('');
+  useEffect(() => {
+    const footage = remixPlayback(plan.remix);
+    footageRef.current = footage;
+    setFootageError('');
+    return () => { footage?.dispose(); footageRef.current = null; };
+  }, [plan.remix]);
 
   const [playing, setPlaying] = useState(false);
   const [arming, setArming] = useState(false);
@@ -38,10 +47,16 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
   const duration = totalSeconds(plan);
 
   const paint = useCallback(
-    (at) => {
+    (at, running = false) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      hitsRef.current = paintDirectorFrame(canvas, at, plan, assets) || [];
+      const footage = footageRef.current;
+      const draw = referenceFrame => {
+        hitsRef.current = paintDirectorFrame(canvas, at, plan, { ...assets, referenceFrame }) || [];
+      };
+      if (!footage) draw();
+      else if (running) { const frame = footage.frame(at); if (frame) draw(frame); }
+      else void footage.seek(at).then(frame => { if (frame && footageRef.current === footage && timeRef.current === at) draw(frame); }).catch(e => { if (footageRef.current === footage) setFootageError(e.message); });
       const index = beatAt(plan, at).index;
       if (index !== beatRef.current) {
         beatRef.current = index;
@@ -71,13 +86,14 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
       canvas.width = width;
       canvas.height = height;
     }
-    paint(Math.min(timeRef.current, duration - 0.01));
+    paint(timeRef.current);
   }, [plan, assets, duration, paint]);
 
   const stop = useCallback(() => {
     playRequest.current += 1;
     setArming(false);
     cancelAnimationFrame(rafRef.current);
+    footageRef.current?.pause();
     const audio = audioRef.current;
     audioRef.current = null;
     if (audio) {
@@ -87,7 +103,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
     setPlaying(false);
   }, []);
 
-  useEffect(() => () => stop(), [stop, score, voiceUrls]);
+  useEffect(() => () => stop(), [stop, score, voiceUrls, plan.remix]);
 
   const tick = useCallback(() => {
     const audio = audioRef.current;
@@ -96,7 +112,8 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
       : performance.now() / 1000 - clockRef.current;
     const at = Math.max(0, Math.min(duration, now));
     timeRef.current = at;
-    paintRef.current(at);
+    try { paintRef.current(at, true); }
+    catch (e) { stop(); setFootageError(e.message); return; }
     const tenth = Math.floor(at * 10);
     if (tenth !== lastTenth.current) {
       lastTenth.current = tenth;
@@ -106,6 +123,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
       stop();
       timeRef.current = 0;
       setTime(0);
+      if (footageRef.current) paintRef.current(0);
       return;
     }
     rafRef.current = requestAnimationFrame(tick);
@@ -125,7 +143,9 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       context = new AudioContext({ sampleRate: 48000 });
       await resumeAudioContext(context);
-      const buffers = await decodeVoices(context, voiceUrls);
+      const footage = footageRef.current;
+      const warm = footage?.warm(from).catch(e => { if (footageRef.current === footage) setFootageError(e.message); });
+      const [buffers] = await Promise.all([decodeVoices(context, voiceUrls), warm]);
       if (request !== playRequest.current) { await context.close(); return; }
       mix = buildDirectorAudio(context, context.destination, { plan, voiceBuffers: buffers, levels: levelsRef.current, score });
       const at = context.currentTime + 0.08;
@@ -149,7 +169,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
     stop();
     timeRef.current = at;
     setTime(at);
-    paint(Math.min(at, duration - 0.01));
+    paint(at);
   };
 
   const click = (event) => {
@@ -170,6 +190,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, score, 
           {watermark?.enabled && <AltShiftXWatermark {...watermark} aspect={plan.aspect} />}
         </div>
       </div>
+      {footageError && <p className="dm-error" role="alert">{footageError}</p>}
       <div className="dm-transport">
         <button
           type="button"

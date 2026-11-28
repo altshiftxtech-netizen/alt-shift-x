@@ -10,6 +10,13 @@ export function scheduleScore({ context, plan, score, play, nodes, buffer, sub, 
   const hz = (index, octave = 0) => noteHz(root + scale[index % scale.length] + octave * 12);
   const hit = (bus, at, seconds, options) => play(at, seconds, (time, duration) => tone(context, bus, nodes, { time, duration, ...options }));
   const sweep = (bus, at, seconds, options) => play(at, seconds, (time, duration) => noise(context, bus, nodes, buffer, { time, duration, ...options }));
+  if (plan.remix) {
+    for (const shot of plan.remix.shots.slice(1)) {
+      const lead = Math.min(unit, .65);
+      sweep(ambience, shot.at - lead, lead, { level: mood.texture * .75, frequency: 230, endFrequency: 5800, fadeIn: true });
+      play(shot.at, Math.min(.36, shot.length), (at, left) => kick(context, sub, nodes, at, hz(0), mood.drive * .52, left));
+    }
+  }
   let cut = 0;
   plan.durations.forEach((seconds, beat) => {
     const tail = beat === 3 ? Math.min(1.3, seconds * .35) : .09;
@@ -34,7 +41,8 @@ export function scheduleScore({ context, plan, score, play, nodes, buffer, sub, 
       sweep(ambience, cut + seconds - lead, lead, { level: mood.texture, frequency: 240, endFrequency: 6500, fadeIn: true });
       sweep(sfx, cut + seconds, .19, { level: .085, frequency: 4300, endFrequency: 350 });
     }
-    if (beat === 1) terminalClicks(plan, seconds).forEach((t, i) => sweep(sfx, cut + t, .026, { frequency: 4100, endFrequency: 2000, level: .13, pan: i % 2 ? .3 : -.3 }));
+    if (beat === 3 && plan.remix?.heavyDrop) hit(sub, cut, .84, { frequency: hz(0) * 1.5, endFrequency: hz(0) * .65, level: .48 });
+    if (beat === 1 && !plan.remix) terminalClicks(plan, seconds).forEach((t, i) => sweep(sfx, cut + t, .026, { frequency: 4100, endFrequency: 2000, level: .13, pan: i % 2 ? .3 : -.3 }));
     if (beat === 2) hit(sub, cut + seconds * PROOF_STAMP, .72, { frequency: 95, endFrequency: 40, level: .43 });
     if (beat === 3) chord.forEach((n, i) => {
       const start = i * .045;

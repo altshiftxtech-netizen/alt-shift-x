@@ -199,21 +199,22 @@ const PLAN_SCHEMA = {
 // Rewrite the four beats from the concept. Word budgets keep narration inside
 // each beat's runtime at roughly 150 words per minute.
 export async function refinePlan(plan) {
-  const budgets = plan.durations.map((d) => Math.max(5, Math.round(d * 2.5)));
+  const budgets = plan.durations.map((d) => plan.remix ? Math.max(2, Math.floor((d - .32) * 2)) : Math.max(5, Math.round(d * 2.5)));
   const result = await base44.integrations.Core.InvokeLLM({
     prompt: `You are a commercial director cutting a ${plan.seconds}-second ${plan.aspect} spot for a technical product.
 
 CONCEPT: "${plan.prompt}"
 
 Cut exactly FOUR beats, in this order, each fitting its own runtime:
-1. The Hook — ${plan.durations[0]}s, ~${budgets[0]} words of voiceover. Name the problem the audience already feels.
-2. The Action — ${plan.durations[1]}s, ~${budgets[1]} words. The product does its work. Give one real shell command (default "${plan.command}").
-3. The Proof — ${plan.durations[2]}s, ~${budgets[2]} words. Bench evidence, stated honestly.
-4. The Climax — ${plan.durations[3]}s, ~${budgets[3]} words. Wordmark and call to action.
+1. The Hook — ${plan.durations[0].toFixed(1)}s, at most ${budgets[0]} words of voiceover. Open with the audience or problem if given.
+2. The Action — ${plan.durations[1].toFixed(1)}s, at most ${budgets[1]} words. ${plan.remix ? 'Use only facts from the intent; never describe unseen footage.' : `The product does its work. Give one real shell command (default "${plan.command}").`}
+3. The Proof — ${plan.durations[2].toFixed(1)}s, at most ${budgets[2]} words. ${plan.remix ? 'Use only evidence explicitly given. If none, use a neutral line or silence.' : 'Bench evidence, stated honestly.'}
+4. The Climax — ${plan.durations[3].toFixed(1)}s, at most ${budgets[3]} words. Wordmark and call to action.
+${plan.remix ? 'Reference remix: the intent is the only source of product facts. Do not invent a name, demo result, or shell command. Empty text is fine when the intent does not support a line. Do not narrate production instructions.' : ''}
 
 Rules:
 - Voiceover is spoken narration only: no stage directions, no brackets, no emoji, no markdown.
-- Never invent statistics, temperatures, percentages, prices, testimonials or awards that the concept does not state. If the concept gives a number, use it exactly; if not, describe the measurement instead of quoting one.
+- Never invent statistics, temperatures, percentages, prices, testimonials or awards that the concept does not state. ${plan.remix ? 'Do not imply a test was run or a measurement exists unless explicitly stated.' : 'If the concept gives a number, use it exactly; if not, describe the measurement instead of quoting one.'}
 - Headline is at most 6 words and is the burned-in caption headline; subhead is at most 10 words.
 - Camera is one of: ${CAMERAS.join(', ')}.
 - Lighting is one of: ${LIGHTING.join(', ')}.
@@ -223,7 +224,7 @@ Rules:
     response_json_schema: PLAN_SCHEMA,
   });
 
-  if (!result?.beats?.length) return plan;
+  if (result?.beats?.length !== 4) return plan;
 
   const beats = result.beats.map((beat, i) => {
     const accent = ACCENTS[i % ACCENTS.length];
@@ -247,7 +248,7 @@ Rules:
     ...plan,
     wordmark: String(result.wordmark || plan.wordmark).trim().toUpperCase().slice(0, 24),
     grade: result.grade || plan.grade,
-    command: beats[1]?.command || plan.command,
+    command: plan.remix ? '' : beats[1]?.command || plan.command,
     beats,
     social: {
       title: String(result.social?.title || plan.social.title).trim(),

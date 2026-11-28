@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles, Loader2, Square } from 'lucide-react';
 import { ASPECTS, DURATIONS } from '@/components/upkeeper/commercial/directorPlan';
 import { VOICES } from '@/components/upkeeper/commercial/directorAudio';
+import { PACING, TONES } from '@/components/upkeeper/commercial/remixCuts';
 
 export default function ConceptBar({
   prompt,
@@ -16,8 +17,12 @@ export default function ConceptBar({
   onCancel,
   busy,
   progress,
+  pace,
+  setPace,
+  hasFootage,
+  scanning,
 }) {
-  const working = Boolean(busy);
+  const working = Boolean(busy || scanning);
   const label =
     busy === 'plan'
       ? 'Cutting the beat sheet'
@@ -25,21 +30,21 @@ export default function ConceptBar({
         ? 'Recording narration'
         : busy === 'render'
           ? `Rendering master ${progress ? `${progress}%` : ''}`
-          : 'Generate Master Commercial';
+          : 'Generate Commercial';
 
   return (
     <div className="dm-panel">
       <label className="dm-label" htmlFor="dm-concept">
-        Director&rsquo;s concept
+        Director&rsquo;s Intent
       </label>
-      <textarea
+      <input
+        type="text"
         id="dm-concept"
-        className="dm-concept"
+        className="dm-input"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="A 30-second gritty cinematic ad for our Edge Device Optimizer — an ageing Raspberry Pi running cool at 42°C, high-viz terminal B-roll and a hard-hitting voiceover."
+        placeholder="Remix this into a 30s high-velocity YouTube Short for our Edge Optimizer. Keep the typing clip from 0:12, add a gritty synthwave beat in D-minor, and hit a heavy bass drop on the logo."
         disabled={working}
-        rows={4}
       />
 
       <div className="dm-row-between" style={{ marginTop: 14 }}>
@@ -74,6 +79,9 @@ export default function ConceptBar({
         </div>
       </div>
 
+      {hasFootage && <div className="dm-row mt-3" aria-label="Quick pacing">
+        {Object.entries(PACING).map(([id, [label]]) => <button key={id} type="button" className="dm-chip" aria-pressed={pace === id} data-on={pace === id} onClick={() => setPace(id)} disabled={working}>{label}</button>)}
+      </div>}
       <div className="dm-row-between" style={{ marginTop: 16, gap: 14 }}>
         <label className="dm-row" style={{ gap: 8, fontSize: 12, color: 'var(--dm-dim)' }}>
           <span className="dm-label" style={{ margin: 0 }}>
@@ -87,7 +95,7 @@ export default function ConceptBar({
             disabled={working}
             aria-label="Narration voice"
           >
-            {VOICES.map((v) => (
+            {(hasFootage ? TONES.map(([key, label]) => ({ key, label })) : VOICES).map((v) => (
               <option key={v.key} value={v.key}>
                 {v.label}
               </option>
@@ -114,8 +122,7 @@ export default function ConceptBar({
         </div>
       )}
       <p className="dm-note" style={{ marginTop: 10 }}>
-        One pass renders the picture, burned-in captions, narration, score and SFX together. The render runs in real time,
-        so a 30-second cut takes roughly 30 seconds on a current desktop browser. Keep this tab in front while it records.
+        {hasFootage ? 'Generate a playable remix, then export it when ready. Video exports record in real time; keep this tab in front.' : 'The render runs in real time. Keep this tab in front while it records.'}
       </p>
     </div>
   );

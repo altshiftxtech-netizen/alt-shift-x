@@ -17,6 +17,10 @@ import { DEFAULT_SCORE } from '@/components/upkeeper/commercial/scoreSettings';
 import WatermarkSettings from '@/components/upkeeper/commercial/WatermarkSettings';
 import { defaultWatermark, prepareBadge } from '@/components/upkeeper/commercial/crystalBadge';
 import { downloadAsset } from '@/components/upkeeper/creativeAssets';
+import RemixFootageDock from '@/components/upkeeper/commercial/RemixFootageDock';
+import RemixAdjustments from '@/components/upkeeper/commercial/RemixAdjustments';
+import useRemixFootage from '@/components/upkeeper/commercial/useRemixFootage';
+import { remixPlan, remixScore, rerollRemixScore, TONES } from '@/components/upkeeper/commercial/remixCuts';
 
 // The Commercial Maker: one prompt in, a finished spot out. The four-beat sheet
 // is generated instantly, refined by the director model, then a single pass
@@ -26,6 +30,8 @@ export default function CommercialMaker() {
   const [aspect, setAspect] = useState('9:16');
   const [duration, setDuration] = useState(30);
   const [voice, setVoice] = useState('storm');
+  const [remixVoice, setRemixVoice] = useState('storm');
+  const [pace, setPace] = useState('hyper');
 
   const [plan, setPlan] = useState(null);
   const [watermark, setWatermark] = useState(defaultWatermark);
@@ -41,6 +47,7 @@ export default function CommercialMaker() {
   const [cache, setCache] = useState({});
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const { sources, scanning, add, remove } = useRemixFootage(setError);
 
   const [selected, setSelected] = useState({ beat: 0, word: null });
   const [activeBeat, setActiveBeat] = useState(0);
@@ -101,7 +108,17 @@ export default function CommercialMaker() {
 
   const generate = async () => {
     const text = prompt.trim();
-    if (!text) return;
+    if (!text || scanning || busy) return;
+    let base = localPlan(text, duration, aspect);
+    const remix = sources.length > 0;
+    const nextScore = remix ? remixScore(text, pace) : score;
+    const nextVoice = remix ? (TONES.some(([key]) => key === voice) ? voice : 'storm') : voice === 'spark' ? 'storm' : voice;
+    if (remix) {
+      try { base = remixPlan(base, sources, pace, nextScore); }
+      catch (e) { setError(e.message); return; }
+      setScore(nextScore);
+      setRemixVoice(nextVoice);
+    }
     setError('');
     setNotice('');
     setReel(null);
@@ -113,7 +130,6 @@ export default function CommercialMaker() {
     setActiveBeat(0);
     setVoiceUrls([]);
 
-    const base = localPlan(text, duration, aspect);
     setPlan(base);
     setBusy('plan');
 
@@ -128,19 +144,36 @@ export default function CommercialMaker() {
     setBusy('voice');
     let urls = [];
     try {
-      urls = await generateVoice(refined, voice);
+      urls = await generateVoice(refined, nextVoice);
     } catch {
       urls = [];
     }
     setVoiceUrls(urls);
-    const missing = urls.filter((u) => !u).length;
+    const missing = refined.beats.filter((beat, i) => beat.voiceover && !urls[i]).length;
     if (missing) {
       setNotice((prev) =>
         `${prev ? `${prev} ` : ''}${missing} narration line${missing > 1 ? 's' : ''} could not be voiced; this cut carries score and SFX only.`.trim()
       );
     }
     setBusy(null);
-    await runRender(refined, { narration: urls });
+    if (!remix) await runRender(refined, { narration: urls });
+    else if (!missing && refined.source === 'director') setNotice('Remix ready to preview and export.');
+    else if (!missing) setNotice('Footage and score are ready. The director did not return a narration script.');
+  };
+
+  const swapFootage = (index, choice) => {
+    setPlan(previous => ({ ...previous, remix: { ...previous.remix, shots: previous.remix.shots.map((shot, i) => i === index ? { ...shot, choice } : shot) } }));
+    setCache({}); setGif(null); setStale(true);
+  };
+
+  const changeRemixVoice = async tone => {
+    setBusy('voice'); setError('');
+    try {
+      const urls = await generateVoice(plan, tone);
+      if (plan.beats.some((beat, i) => beat.voiceover && !urls[i])) throw new Error('Could not change the voice tone. The previous narration was kept.');
+      setVoiceUrls(urls); setRemixVoice(tone); setVoice(tone); setCache({}); setStale(true);
+    } catch (e) { setError(e.message); }
+    finally { setBusy(null); }
   };
 
   const cancel = () => abortRef.current?.abort();
@@ -210,7 +243,7 @@ export default function CommercialMaker() {
         const result = await renderGif({
           plan,
           assets: await prepareBadge(watermark),
-          shortEdge: 1080,
+          shortEdge: plan.remix ? 540 : 1080,
           fps: 10,
           seconds: 15,
           onProgress: setProgress,
@@ -256,19 +289,23 @@ export default function CommercialMaker() {
         <span className="dm-eyebrow">Commercial Maker</span>
         <h2>One prompt. Four beats. One master.</h2>
         <p>
-          Describe the spot. The director cuts a four-beat sheet — hook, action, proof, climax — and a single pass renders
-          picture, burned-in captions, narration, score and SFX together.
+          Bring reference footage or start with a line of intent. Cut, score, and caption your commercial in one place.
         </p>
       </div>
 
+      <RemixFootageDock sources={sources} onAdd={add} onRemove={remove} scanning={scanning} disabled={Boolean(busy)} />
       <ConceptBar
+        hasFootage={Boolean(sources.length)}
+        scanning={scanning}
+        pace={pace}
+        setPace={setPace}
         prompt={prompt}
         setPrompt={setPrompt}
         aspect={aspect}
         setAspect={setAspect}
         duration={duration}
         setDuration={setDuration}
-        voice={voice}
+        voice={sources.length && voice === 'honey' || !sources.length && voice === 'spark' ? 'storm' : voice}
         setVoice={setVoice}
         onGenerate={generate}
         onCancel={cancel}
@@ -289,7 +326,7 @@ export default function CommercialMaker() {
 
       {plan && (
         <>
-          <BeatSheet plan={plan} activeIndex={activeBeat} onReroll={reroll} disabled={Boolean(busy)} />
+          {!plan.remix && <BeatSheet plan={plan} activeIndex={activeBeat} onReroll={reroll} disabled={Boolean(busy)} />}
 
           <div className="dm-stage">
             <DirectorStage
@@ -315,6 +352,7 @@ export default function CommercialMaker() {
             </div>
           </div>
 
+          {plan.remix && <RemixAdjustments plan={plan} voice={remixVoice} onVoice={changeRemixVoice} onScore={() => changeScore(rerollRemixScore(score))} onSwap={swapFootage} disabled={Boolean(busy)} />}
           <ExportPresets
             plan={plan}
             reel={reel}

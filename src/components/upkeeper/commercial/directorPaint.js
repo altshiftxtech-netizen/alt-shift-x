@@ -206,6 +206,15 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
   ctx.fillStyle = tint.bg;
   ctx.fillRect(0, 0, w, h);
 
+  if (plan.remix) {
+    const video = assets.referenceFrame;
+    if (video?.readyState >= 2) {
+      const factor = Math.max(w / video.videoWidth, h / video.videoHeight);
+      const dw = video.videoWidth * factor, dh = video.videoHeight * factor;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(video, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    }
+  } else {
   ctx.save();
   ctx.translate(Math.sin(time * 1.9) * .85, Math.sin(time * 2.3 + .8) * .95);
   camera(ctx, w, h, current.camera, p);
@@ -238,7 +247,18 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
   ctx.restore();
 
   paintLightingWash(ctx, w, h, current.lighting, 0.8);
+  }
   cinemaGrade(ctx);
+  if (plan.remix) {
+    const shade = ctx.createLinearGradient(0, h * .48, 0, h);
+    shade.addColorStop(0, 'transparent'); shade.addColorStop(1, 'rgba(0,0,0,.76)');
+    ctx.fillStyle = shade; ctx.fillRect(0, h * .48, w, h * .52);
+    if (beat.index === 3 && plan.wordmark) {
+      ctx.save(); ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff';
+      ctx.font = `900 ${Math.round(w * .073)}px Inter, sans-serif`;
+      ctx.fillText(plan.wordmark, w / 2, h * .56, w * .84); ctx.restore();
+    }
+  }
   const scope = plan.cinemaScope && w > h ? (h - w / 2.39) / 2 : 0;
   if (scope) {
     ctx.fillStyle = '#06080d';

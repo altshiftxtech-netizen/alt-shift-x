@@ -97,9 +97,9 @@ export default function ExportPresets({ plan, reel, gif, stale, busy, progress, 
                 ) : (
                   <Icon className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 6 }} />
                 )}
-                {preset.title}
+                {plan.remix ? ({ cinema: 'Export 16:9 Landscape 4K', shorts: 'Export 9:16 Vertical Reel', gif: 'Export Fast-Looping GIF' }[preset.key] || preset.title) : preset.title}
               </strong>
-              <span>{preset.detail}</span>
+              <span>{plan.remix && preset.key === 'gif' ? 'Silent 15-second loop at 10 fps, with post copy in a ZIP.' : preset.detail}</span>
               {needsRender && (
                 <span style={{ color: 'var(--dm-amber)' }}>
                   {preset.aspect && plan.aspect !== preset.aspect ? `Renders a ${preset.aspect} cut first.` : 'Re-renders with your edits.'}

@@ -10,6 +10,7 @@ import { buildDirectorAudio, decodeVoices } from '@/components/upkeeper/commerci
 import { totalSeconds } from '@/components/upkeeper/commercial/directorPlan';
 import { quantise, createGifEncoder } from '@/components/upkeeper/commercial/gifEncoder';
 import { releaseCinemaGrade } from '@/components/upkeeper/commercial/cinemaGrade';
+import remixPlayback from '@/components/upkeeper/commercial/remixPlayback';
 
 function makeCanvas(plan, shortEdge) {
   const { width, height } = stageSize(plan.aspect, shortEdge);
@@ -55,6 +56,7 @@ export async function renderCommercial({
   ]);
 
   let audio = null;
+  const footage = remixPlayback(plan.remix);
   try {
     const voiceBuffers = await decodeVoices(context, voiceUrls);
     audio = buildDirectorAudio(context, destination, { plan, voiceBuffers, levels, score });
@@ -62,10 +64,13 @@ export async function renderCommercial({
     if (signal?.aborted) throw new Error('Render cancelled.');
 
     const seconds = totalSeconds(plan);
+    await footage?.warm();
+    const firstFrame = await footage?.seek(0);
+    paintDirectorFrame(canvas, 0, plan, { ...assets, referenceFrame: firstFrame });
     const paint = async (time) => {
-      paintDirectorFrame(canvas, time, plan, assets);
+      const referenceFrame = footage?.frame(time);
+      if (!footage || referenceFrame) paintDirectorFrame(canvas, time, plan, { ...assets, referenceFrame });
     };
-    paint(0);
 
     const result = await recordCinemaStream({
       capture: { stream, context },
@@ -92,6 +97,7 @@ export async function renderCommercial({
       hasAudio: Boolean(voiceBuffers.filter(Boolean).length),
     };
   } finally {
+    footage?.dispose();
     audio?.stop();
     stream.getTracks().forEach((track) => track.stop());
     videoStream.getTracks().forEach((track) => track.stop());
@@ -119,10 +125,13 @@ export async function renderGif({
   const clip = Math.min(seconds, totalSeconds(plan));
   const frames = Math.max(2, Math.round(clip * fps));
   const encoder = createGifEncoder(canvas.width, canvas.height, fps);
+  const footage = remixPlayback(plan.remix);
   try {
     for (let i = 0; i < frames; i += 1) {
       if (signal?.aborted) throw new Error('GIF cancelled.');
-      paintDirectorFrame(canvas, (i / frames) * clip, plan, assets);
+      const time = (i / frames) * clip;
+      const referenceFrame = await footage?.seek(time);
+      paintDirectorFrame(canvas, time, plan, { ...assets, referenceFrame });
       encoder.add(quantise(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height));
       onProgress(Math.round(((i + 1) / frames) * 99));
       if (i % 2 === 0) await new Promise((resolve) => setTimeout(resolve, 0));
@@ -131,6 +140,7 @@ export async function renderGif({
     onProgress(100);
     return { blob, width: canvas.width, height: canvas.height, seconds: clip, fps, frames };
   } finally {
+    footage?.dispose();
     releaseCinemaGrade(canvas);
     canvas.width = canvas.height = 1;
   }
