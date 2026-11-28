@@ -6,6 +6,7 @@ import { buildDirectorAudio, decodeVoices } from '@/components/upkeeper/commerci
 import resumeAudioContext from '@/components/upkeeper/audio/resumeAudioContext';
 
 import AltShiftXWatermark from '@/components/upkeeper/commercial/AltShiftXWatermark';
+import { releaseCinemaGrade } from '@/components/upkeeper/commercial/cinemaGrade';
 
 const clock = (s) => {
   const safe = Math.max(0, s);
@@ -16,9 +17,9 @@ const clock = (s) => {
 
 /**
  * Live preview: paints the same frames the recorder will encode and plays the
- * same three-bus mix, so the operator judges the mix before a render.
+ * same score and mix, so the operator judges the sound before a render.
  */
-export default function DirectorStage({ plan, assets, watermark, levels, voiceUrls, onSelectWord, onBeat }) {
+export default function DirectorStage({ plan, assets, watermark, levels, score, voiceUrls, onSelectWord, onBeat }) {
   const canvasRef = useRef(null);
   const hitsRef = useRef([]);
   const rafRef = useRef(0);
@@ -27,6 +28,8 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
   const lastTenth = useRef(-1);
   const beatRef = useRef(-1);
   const timeRef = useRef(0);
+  const playRequest = useRef(0);
+  const levelsRef = useRef(levels);
 
   const [playing, setPlaying] = useState(false);
   const [arming, setArming] = useState(false);
@@ -48,6 +51,17 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
     [plan, assets, onBeat]
   );
 
+  const paintRef = useRef(paint);
+  useEffect(() => { paintRef.current = paint; }, [paint]);
+  useEffect(() => {
+    levelsRef.current = levels;
+    audioRef.current?.mix.setLevels(levels);
+  }, [levels]);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    return () => { if (canvas) releaseCinemaGrade(canvas); };
+  }, []);
+
   // Size the canvas for the current aspect and repaint on every plan edit.
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,6 +75,8 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
   }, [plan, assets, duration, paint]);
 
   const stop = useCallback(() => {
+    playRequest.current += 1;
+    setArming(false);
     cancelAnimationFrame(rafRef.current);
     const audio = audioRef.current;
     audioRef.current = null;
@@ -71,7 +87,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
     setPlaying(false);
   }, []);
 
-  useEffect(() => () => stop(), [stop]);
+  useEffect(() => () => stop(), [stop, score, voiceUrls]);
 
   const tick = useCallback(() => {
     const audio = audioRef.current;
@@ -80,7 +96,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
       : performance.now() / 1000 - clockRef.current;
     const at = Math.max(0, Math.min(duration, now));
     timeRef.current = at;
-    paint(at);
+    paintRef.current(at);
     const tenth = Math.floor(at * 10);
     if (tenth !== lastTenth.current) {
       lastTenth.current = tenth;
@@ -93,7 +109,7 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
       return;
     }
     rafRef.current = requestAnimationFrame(tick);
-  }, [duration, paint, stop]);
+  }, [duration, stop]);
 
   const play = async () => {
     if (playing) {
@@ -103,22 +119,25 @@ export default function DirectorStage({ plan, assets, watermark, levels, voiceUr
     const from = timeRef.current >= duration - 0.05 ? 0 : timeRef.current;
     timeRef.current = from;
     setArming(true);
-    let audio = null;
+    const request = ++playRequest.current;
+    let context, mix;
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const context = new AudioContext({ sampleRate: 48000 });
-      const buffers = await decodeVoices(context, voiceUrls);
-      const mix = buildDirectorAudio(context, context.destination, { plan, voiceBuffers: buffers, levels });
+      context = new AudioContext({ sampleRate: 48000 });
       await resumeAudioContext(context);
+      const buffers = await decodeVoices(context, voiceUrls);
+      if (request !== playRequest.current) { await context.close(); return; }
+      mix = buildDirectorAudio(context, context.destination, { plan, voiceBuffers: buffers, levels: levelsRef.current, score });
       const at = context.currentTime + 0.08;
       mix.start(at, from);
-      audio = { context, mix };
+      audioRef.current = { context, mix };
       clockRef.current = at - from;
     } catch {
-      audio = null;
+      mix?.stop();
+      if (context && context.state !== 'closed') void context.close();
+      if (request !== playRequest.current) return;
       clockRef.current = performance.now() / 1000 - from;
     }
-    audioRef.current = audio;
     setArming(false);
     setPlaying(true);
     lastTenth.current = -1;

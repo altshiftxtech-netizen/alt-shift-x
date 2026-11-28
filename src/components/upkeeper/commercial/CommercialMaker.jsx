@@ -10,7 +10,10 @@ import ExportPresets from '@/components/upkeeper/commercial/ExportPresets';
 import { localPlan, refinePlan, rerollBeat, updateWord } from '@/components/upkeeper/commercial/directorPlan';
 import { generateVoice, DEFAULT_LEVELS } from '@/components/upkeeper/commercial/directorAudio';
 import { renderCommercial, renderGif, supportedFormats } from '@/components/upkeeper/commercial/renderDirector';
-import { downloadSocialPackage, downloadVerticalPackage, downloadGif, mb } from '@/components/upkeeper/commercial/exportDirector';
+import { downloadSocialPackage, downloadVerticalPackage, downloadGifPackage, downloadCinemaPackage, mb } from '@/components/upkeeper/commercial/exportDirector';
+import bounceDirectorStems from '@/components/upkeeper/commercial/bounceDirectorStems';
+import ScoreDock from '@/components/upkeeper/commercial/ScoreDock';
+import { DEFAULT_SCORE } from '@/components/upkeeper/commercial/scoreSettings';
 import WatermarkSettings from '@/components/upkeeper/commercial/WatermarkSettings';
 import { defaultWatermark, prepareBadge } from '@/components/upkeeper/commercial/crystalBadge';
 import { downloadAsset } from '@/components/upkeeper/creativeAssets';
@@ -27,6 +30,7 @@ export default function CommercialMaker() {
   const [plan, setPlan] = useState(null);
   const [watermark, setWatermark] = useState(defaultWatermark);
   const [levels, setLevels] = useState(DEFAULT_LEVELS);
+  const [score, setScore] = useState(DEFAULT_SCORE);
   const [voiceUrls, setVoiceUrls] = useState([]);
 
   const [busy, setBusy] = useState(null);
@@ -52,7 +56,7 @@ export default function CommercialMaker() {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const runRender = async (target, { stash = true } = {}) => {
+  const runRender = async (target, { stash = true, narration = voiceUrls, cinema = false } = {}) => {
     const controller = new AbortController();
     abortRef.current = controller;
     setBusy('render');
@@ -62,14 +66,18 @@ export default function CommercialMaker() {
       const result = await renderCommercial({
         plan: target,
         assets: await prepareBadge(watermark),
-        shortEdge: 1080,
-        format: formats.current.mp4 ? 'mp4' : 'webm',
-        voiceUrls,
+        shortEdge: cinema ? 2160 : 1080,
+        fps: cinema ? 60 : 30,
+        videoBitsPerSecond: cinema ? 48000000 : undefined,
+        format: cinema || formats.current.mp4 ? 'mp4' : 'webm',
+        strictFormat: cinema,
+        voiceUrls: narration,
+        score,
         levels,
         onProgress: setProgress,
         signal: controller.signal,
       });
-      setCache((prev) => ({ ...prev, [target.aspect]: result }));
+      if (!cinema) setCache((prev) => ({ ...prev, [target.aspect]: result }));
       if (stash) {
         setReel(result);
         setStale(false);
@@ -132,7 +140,7 @@ export default function CommercialMaker() {
       );
     }
     setBusy(null);
-    await runRender(refined);
+    await runRender(refined, { narration: urls });
   };
 
   const cancel = () => abortRef.current?.abort();
@@ -158,6 +166,19 @@ export default function CommercialMaker() {
     setCache({});
   };
 
+  const changeScore = (next) => {
+    setScore(next);
+    setStale(Boolean(reel));
+    setCache({});
+  };
+
+  const changeScope = (cinemaScope) => {
+    setPlan((previous) => previous ? { ...previous, cinemaScope } : previous);
+    setStale(Boolean(reel));
+    setCache({});
+    setGif(null);
+  };
+
   const ensureAspect = async (target) => {
     if (!stale && cache[target]) return cache[target];
     return runRender({ ...plan, aspect: target }, { stash: false });
@@ -165,6 +186,20 @@ export default function CommercialMaker() {
 
   const exportPreset = async (kind) => {
     if (!plan) return;
+    if (kind === 'cinema') {
+      if (!formats.current.mp4) { setError('Cinema 4K requires a browser with MP4 recording support.'); return; }
+      const target = { ...plan, aspect: '16:9' };
+      const rendered = await runRender(target, { stash: false, cinema: true });
+      if (!rendered) return;
+      setBusy('cinema');
+      try {
+        const stems = await bounceDirectorStems({ plan: target, voiceUrls, levels, score });
+        await downloadCinemaPackage(rendered, stems);
+        setNotice('Cinema 4K package downloaded: MP4, WAV mix and four WAV stems.');
+      } catch (e) { setError(e.message); }
+      finally { setBusy(null); }
+      return;
+    }
     if (kind === 'gif') {
       const controller = new AbortController();
       abortRef.current = controller;
@@ -175,15 +210,15 @@ export default function CommercialMaker() {
         const result = await renderGif({
           plan,
           assets: await prepareBadge(watermark),
-          shortEdge: 540,
-          fps: 12,
+          shortEdge: 1080,
+          fps: 10,
           seconds: 15,
           onProgress: setProgress,
           signal: controller.signal,
         });
         setGif(result);
-        downloadGif(result);
-        setNotice(`Loop ready · 15s · ${result.width}×${result.height} · ${mb(result.blob.size)}.`);
+        await downloadGifPackage(plan, result);
+        setNotice(`GIF and Reddit copy downloaded · Loop ready · 15s · ${result.width}×${result.height} · ${mb(result.blob.size)}.`);
       } catch (e) {
         if (!controller.signal.aborted) setError(e.message);
       } finally {
@@ -249,7 +284,8 @@ export default function CommercialMaker() {
       )}
       {notice && <p className="dm-ok">{notice}</p>}
 
-      <WatermarkSettings value={watermark} onChange={changeWatermark} disabled={Boolean(busy)} />
+      <ScoreDock value={score} onChange={changeScore} disabled={Boolean(busy)} />
+      <WatermarkSettings value={watermark} onChange={changeWatermark} disabled={Boolean(busy)} cinemaScope={Boolean(plan?.cinemaScope)} onScope={plan ? changeScope : null} />
 
       {plan && (
         <>
@@ -260,19 +296,22 @@ export default function CommercialMaker() {
               plan={plan}
               watermark={watermark}
               levels={levels}
+              score={score}
               voiceUrls={voiceUrls}
               onBeat={setActiveBeat}
               onSelectWord={(word) => setSelected({ beat: activeBeat, word })}
             />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <CaptionWordEditor
-                plan={plan}
-                beatIndex={selected.beat}
-                selected={selected.word}
-                onSelect={(word) => setSelected((prev) => ({ ...prev, word }))}
-                onPatch={patchWord}
-              />
-              <AudioBalance levels={levels} onChange={changeLevels} disabled={busy === 'render'} />
+              <fieldset disabled={Boolean(busy)}>
+                <CaptionWordEditor
+                  plan={plan}
+                  beatIndex={selected.beat}
+                  selected={selected.word}
+                  onSelect={(word) => setSelected((prev) => ({ ...prev, word }))}
+                  onPatch={patchWord}
+                />
+              </fieldset>
+              <AudioBalance levels={levels} onChange={changeLevels} disabled={Boolean(busy)} />
             </div>
           </div>
 

@@ -169,6 +169,12 @@ export function encodeGif(frames, width, height, fps = 12) {
  * @param {Uint8Array[]} frames palette indices, all width×height.
  */
 export function encodeIndexedGif(frames, width, height, fps = 12) {
+  const encoder = createGifEncoder(width, height, fps);
+  frames.forEach(encoder.add);
+  return encoder.finish();
+}
+
+export function createGifEncoder(width, height, fps) {
   const parts = [];
   const head = new Bytes(1024);
   'GIF89a'.split('').forEach((c) => head.push(c.charCodeAt(0)));
@@ -191,7 +197,7 @@ export function encodeIndexedGif(frames, width, height, fps = 12) {
 
   const delay = Math.max(2, Math.round(100 / fps));
 
-  frames.forEach((indexed) => {
+  const add = (indexed) => {
     const frame = new Bytes(indexed.length >> 1);
     frame.push(0x21); // graphic control extension
     frame.push(0xf9);
@@ -211,11 +217,6 @@ export function encodeIndexedGif(frames, width, height, fps = 12) {
     lzwEncode(indexed, data);
     subBlocks(frame, data.bytes());
     parts.push(frame.bytes());
-  });
-
-  const tail = new Bytes(2);
-  tail.push(0x3b);
-  parts.push(tail.bytes());
-
-  return new Blob(parts, { type: 'image/gif' });
+  };
+  return { add, finish: () => new Blob([...parts, Uint8Array.of(0x3b)], { type: 'image/gif' }) };
 }

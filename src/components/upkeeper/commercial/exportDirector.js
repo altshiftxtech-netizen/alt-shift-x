@@ -88,8 +88,19 @@ export async function downloadVerticalPackage({ plan, reel }) {
   return blob;
 }
 
-export function downloadGif(gif) {
-  downloadAsset(gif.blob, `upkeeper-loop-${gif.width}x${gif.height}-${stamp()}.gif`);
+export async function downloadGifPackage(plan, gif) {
+  const zip = new JSZip();
+  zip.file(`commercial-${gif.width}x${gif.height}.gif`, gif.blob);
+  zip.file('post.md', buildPost(plan).replace(`${totalSeconds(plan)}s`, `${gif.seconds}s looping GIF`));
+  downloadAsset(await zip.generateAsync({ type: 'blob' }), `upkeeper-community-${stamp()}.zip`);
+}
+
+export async function downloadCinemaPackage(reel, stems) {
+  const zip = new JSZip();
+  zip.file(`master-${reel.width}x${reel.height}.${reel.extension}`, reel.blob);
+  for (const [name, blob] of Object.entries(stems)) zip.file(`audio/${name}`, blob);
+  zip.file('README.txt', 'The MP4 contains the stereo mix. Audio includes a 24-bit / 48 kHz mix and four separate timeline-aligned WAV stems. The 60 fps capture target depends on browser and hardware performance.');
+  downloadAsset(await zip.generateAsync({ type: 'blob' }), `upkeeper-cinema-4k-${stamp()}.zip`);
 }
 
 export const mb = (bytes) => `${(bytes / 1048576).toFixed(1)} MB`;

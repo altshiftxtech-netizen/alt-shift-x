@@ -2,6 +2,8 @@
 // the canvas — no stock footage, no uploads, no network round-trips — so a
 // commercial can be built from a single sentence.
 
+import { TERMINAL_BUDGET } from '@/components/upkeeper/commercial/directorCueTiming';
+
 export const LIGHT_TINT = {
   'Obsidian dark mode': { rim: '#5fd8ff', key: '#ffffff', warm: '#2a3a4a', bg: '#05080b' },
   'Neon cyan': { rim: '#00e5ff', key: '#d8feff', warm: '#062b33', bg: '#04121a' },
@@ -630,7 +632,7 @@ export function paintTerminal(ctx, box, lines, reveal, accent = '#00e5ff') {
   ctx.textBaseline = 'alphabetic';
 
   const totalChars = lines.reduce((sum, l) => sum + l.length, 0) || 1;
-  let budget = Math.floor(reveal * totalChars * 1.15);
+  let budget = Math.floor(reveal * totalChars * TERMINAL_BUDGET + 1e-8);
   let cursor = null;
 
   lines.forEach((line, li) => {

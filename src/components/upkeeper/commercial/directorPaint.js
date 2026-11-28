@@ -6,6 +6,8 @@ import { beatAt, totalSeconds } from '@/components/upkeeper/commercial/directorP
 import { paintHardware, paintTerminal, paintLightingWash, LIGHT_TINT } from '@/components/upkeeper/commercial/directorBroll';
 import { drawBadge } from '@/components/upkeeper/commercial/crystalBadge';
 import { paintCaptions } from '@/components/upkeeper/commercial/directorCaptions';
+import cinemaGrade from '@/components/upkeeper/commercial/cinemaGrade';
+import { PROOF_STAMP, terminalLines, TERMINAL_REVEAL_RATE } from '@/components/upkeeper/commercial/directorCueTiming';
 
 export const stageSize = (aspect, shortEdge = 1080) =>
   aspect === '16:9'
@@ -108,6 +110,8 @@ function proofOverlay(ctx, w, h, p, plan, accent) {
   ctx.stroke();
 
   if (metric) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, Math.max(0, (p - PROOF_STAMP) * 28));
     ctx.fillStyle = accent;
     ctx.font = `900 ${Math.round(panelW * 0.26)}px "Inter", Arial, sans-serif`;
     ctx.fillText(value, panelX + panelW * 0.08, panelY + panelW * 0.24);
@@ -115,10 +119,14 @@ function proofOverlay(ctx, w, h, p, plan, accent) {
     ctx.font = `700 ${Math.round(panelW * 0.075)}px "Inter", Arial, sans-serif`;
     ctx.fillStyle = 'rgba(220,240,250,0.8)';
     ctx.fillText(label, panelX + panelW * 0.08 + vw + panelW * 0.03, panelY + panelW * 0.22);
+    ctx.restore();
   } else {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, Math.max(0, (p - PROOF_STAMP) * 28));
     ctx.fillStyle = 'rgba(220,240,250,0.85)';
     ctx.font = `800 ${Math.round(panelW * 0.075)}px "Inter", Arial, sans-serif`;
     ctx.fillText('BENCH READOUT', panelX + panelW * 0.08, panelY + panelW * 0.13);
+    ctx.restore();
   }
 
   const baseY = panelY + (wide ? h * 0.24 : h * 0.13);
@@ -199,6 +207,7 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
   ctx.fillRect(0, 0, w, h);
 
   ctx.save();
+  ctx.translate(Math.sin(time * 1.9) * .85, Math.sin(time * 2.3 + .8) * .95);
   camera(ctx, w, h, current.camera, p);
 
   if (beat.index === 1) {
@@ -209,14 +218,7 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
     const box = wide
       ? { x: w * 0.09, y: h * 0.2, w: w * 0.82, h: h * 0.55 }
       : { x: w * 0.06, y: h * 0.2, w: w * 0.88, h: h * 0.36 };
-    const command = current.command || plan.command || 'make edge-optimize';
-    paintTerminal(
-      ctx,
-      box,
-      [command, '✓ thermal envelope nominal', '✓ clock held at target', '→ run the bench, not the slide'],
-      Math.min(1, p * 1.25),
-      accent
-    );
+    paintTerminal(ctx, box, terminalLines(plan), Math.min(1, p * TERMINAL_REVEAL_RATE), accent);
   } else if (beat.index === 2) {
     paintHardware(ctx, current.broll, w, h, p, current.lighting);
     proofOverlay(ctx, w, h, p, plan, accent);
@@ -236,6 +238,13 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
   ctx.restore();
 
   paintLightingWash(ctx, w, h, current.lighting, 0.8);
+  cinemaGrade(ctx);
+  const scope = plan.cinemaScope && w > h ? (h - w / 2.39) / 2 : 0;
+  if (scope) {
+    ctx.fillStyle = '#06080d';
+    ctx.fillRect(0, 0, w, scope);
+    ctx.fillRect(0, h - scope, w, scope);
+  }
 
   // Timeline rule.
   const total = totalSeconds(plan) || 1;
@@ -248,7 +257,7 @@ export function paintDirectorFrame(canvas, time, plan, assets = {}) {
 
   // Landscape captions sit lower so they clear the terminal plate.
   const captionBox = w > h
-    ? { x: w * 0.06, y: h * 0.66, w: w * 0.88, h: h * 0.27 }
+    ? { x: w * 0.06, y: h * 0.66 - scope * .55, w: w * 0.88, h: h * 0.27 - scope * .45 }
     : { x: w * 0.06, y: h * 0.63, w: w * 0.88, h: h * 0.29 };
   const hits = paintCaptions(ctx, captionBox, current.words, p, {
     accent,

@@ -29,6 +29,7 @@ const WEIGHTS = [0.22, 0.32, 0.3, 0.16];
 const round1 = (n) => Math.round(n * 10) / 10;
 
 export function beatDurations(seconds) {
+  if (Number(seconds) === 60) return [8, 12, 20, 20];
   const parts = WEIGHTS.map((w) => round1(seconds * w));
   const drift = round1(seconds - parts.reduce((sum, n) => sum + n, 0));
   parts[parts.length - 1] = round1(parts[parts.length - 1] + drift);

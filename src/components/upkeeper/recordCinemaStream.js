@@ -1,9 +1,9 @@
 import {seekReferenceFrame} from '@/components/upkeeper/referencePlayback';
-export default async function recordCinemaStream({capture,mime,width,seconds,clip,withAudio,startAudio,paint,onProgress=()=>{},signal}){
+export default async function recordCinemaStream({capture,mime,width,seconds,clip,withAudio,startAudio,paint,onProgress=()=>{},videoBitsPerSecond,signal}){
   // Warm the decoder before opening the recording timeline, not after it.
   if(clip){await clip.play();clip.pause();await seekReferenceFrame(clip,0);await paint(0);}
   if(signal.aborted)throw new Error('Reel recording cancelled.');
-  const recorder=new MediaRecorder(capture.stream,{mimeType:mime,audioBitsPerSecond:192000,videoBitsPerSecond:width>=4320?48000000:width>=2160?24000000:8000000}),chunks=[];let frame,timer;
+  const recorder=new MediaRecorder(capture.stream,{mimeType:mime,audioBitsPerSecond:192000,videoBitsPerSecond:videoBitsPerSecond??(width>=4320?48000000:width>=2160?24000000:8000000)}),chunks=[];let frame,timer;
   return new Promise((resolve,reject)=>{
     const clean=()=>{clearTimeout(timer);cancelAnimationFrame(frame);signal.removeEventListener('abort',abort);clip?.pause();};
     const fail=message=>{clean();if(recorder.state!=='inactive')recorder.stop();reject(new Error(message));};

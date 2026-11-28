@@ -8,7 +8,8 @@ import validateCinemaRecording from '@/components/upkeeper/validateCinemaRecordi
 import { paintDirectorFrame, stageSize } from '@/components/upkeeper/commercial/directorPaint';
 import { buildDirectorAudio, decodeVoices } from '@/components/upkeeper/commercial/directorAudio';
 import { totalSeconds } from '@/components/upkeeper/commercial/directorPlan';
-import { quantise, encodeIndexedGif } from '@/components/upkeeper/commercial/gifEncoder';
+import { quantise, createGifEncoder } from '@/components/upkeeper/commercial/gifEncoder';
+import { releaseCinemaGrade } from '@/components/upkeeper/commercial/cinemaGrade';
 
 function makeCanvas(plan, shortEdge) {
   const { width, height } = stageSize(plan.aspect, shortEdge);
@@ -32,18 +33,22 @@ export async function renderCommercial({
   format = 'mp4',
   voiceUrls = [],
   levels,
+  score,
+  fps = 30,
+  videoBitsPerSecond,
+  strictFormat = false,
   onProgress = () => {},
   signal,
 }) {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) throw new Error('This browser cannot capture synchronized audio.');
-  const mime = cinemaCodec(format) || cinemaCodec('webm');
+  const mime = cinemaCodec(format) || (!strictFormat && cinemaCodec('webm'));
   if (!mime) throw new Error('This browser cannot encode video. Use a current desktop Chrome or Edge.');
 
   const canvas = makeCanvas(plan, shortEdge);
   const context = new AudioContext({ sampleRate: 48000 });
   const destination = context.createMediaStreamDestination();
-  const videoStream = canvas.captureStream(30);
+  const videoStream = canvas.captureStream(fps);
   const stream = new MediaStream([
     ...videoStream.getVideoTracks(),
     ...destination.stream.getAudioTracks(),
@@ -52,7 +57,7 @@ export async function renderCommercial({
   let audio = null;
   try {
     const voiceBuffers = await decodeVoices(context, voiceUrls);
-    audio = buildDirectorAudio(context, destination, { plan, voiceBuffers, levels });
+    audio = buildDirectorAudio(context, destination, { plan, voiceBuffers, levels, score });
     await resumeAudioContext(context, signal);
     if (signal?.aborted) throw new Error('Render cancelled.');
 
@@ -72,6 +77,7 @@ export async function renderCommercial({
       startAudio: (time) => audio.start(time),
       paint,
       onProgress,
+      videoBitsPerSecond,
       signal,
     });
 
@@ -89,6 +95,7 @@ export async function renderCommercial({
     audio?.stop();
     stream.getTracks().forEach((track) => track.stop());
     videoStream.getTracks().forEach((track) => track.stop());
+    releaseCinemaGrade(canvas);
     canvas.width = canvas.height = 1;
     if (context.state !== 'closed') void context.close();
   }
@@ -111,19 +118,20 @@ export async function renderGif({
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const clip = Math.min(seconds, totalSeconds(plan));
   const frames = Math.max(2, Math.round(clip * fps));
-  const indexed = [];
+  const encoder = createGifEncoder(canvas.width, canvas.height, fps);
   try {
     for (let i = 0; i < frames; i += 1) {
       if (signal?.aborted) throw new Error('GIF cancelled.');
       paintDirectorFrame(canvas, (i / frames) * clip, plan, assets);
-      indexed.push(quantise(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height));
-      onProgress(Math.round(((i + 1) / frames) * 92));
-      if (i % 6 === 0) await new Promise((resolve) => setTimeout(resolve, 0));
+      encoder.add(quantise(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height));
+      onProgress(Math.round(((i + 1) / frames) * 99));
+      if (i % 2 === 0) await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    const blob = encodeIndexedGif(indexed, canvas.width, canvas.height, fps);
+    const blob = encoder.finish();
     onProgress(100);
     return { blob, width: canvas.width, height: canvas.height, seconds: clip, fps, frames };
   } finally {
+    releaseCinemaGrade(canvas);
     canvas.width = canvas.height = 1;
   }
 }

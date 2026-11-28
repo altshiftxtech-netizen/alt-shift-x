@@ -1,24 +1,16 @@
-// Sound design for the director pipeline.
-//
-// Three independently mixed buses — voiceover, ambient SFX, score — feeding one
-// compressor. The score is a pentatonic drone bed with industrial sub-bass drops
-// and risers on every beat cut; the SFX bus carries terminal keystrokes,
-// transitions and a closing chime. Nothing is sampled: it is all synthesised, so
-// a commercial needs no audio uploads.
-
 import { base44 } from '@/api/base44Client';
-import { whiteNoise, tone, noise, kick } from '@/components/upkeeper/audio/synthVoices';
+import { whiteNoise } from '@/components/upkeeper/audio/synthVoices';
+import { scheduleScore } from '@/components/upkeeper/commercial/scoreCues';
+import voicePocket, { scheduleVoicePocket } from '@/components/upkeeper/commercial/voicePocket';
 
-export const DEFAULT_LEVELS = { voice: 0.95, sfx: 0.55, score: 0.6 };
+export const DEFAULT_LEVELS = { voice: .95, sfx: .55, score: .6, sub: .85, melody: .85, ambience: .75 };
+export const STEM_FILES = { voice: 'voiceover', sub: 'sub-bass-kick', melody: 'melody-chords', ambience: 'ambience-foley' };
 
 export const VOICES = [
   { key: 'storm', label: 'Grounded · authoritative' },
   { key: 'river', label: 'Calm · neutral' },
   { key: 'honey', label: 'Warm · conversational' },
 ];
-
-// A minor pentatonic ratios.
-const PENTA = [1, 1.2, 4 / 3, 3 / 2, 9 / 5];
 
 export async function generateVoice(plan, voice = 'storm') {
   const urls = await Promise.all(
@@ -56,225 +48,83 @@ export async function decodeVoices(context, urls) {
   );
 }
 
-/**
- * Build the mix graph.
- * `start(time, offset)` schedules everything from timeline position `offset`
- * at context time `time`, so preview playback can resume mid-commercial.
- */
-export function buildDirectorAudio(context, destination, { plan, voiceBuffers, levels } = {}) {
+// Preview, video recording, and WAV stem bounces all use the same cut clock.
+export function buildDirectorAudio(context, destination, { plan, voiceBuffers, levels, score, solo } = {}) {
   const master = context.createGain();
-  master.gain.value = 0.92;
-  const compressor = context.createDynamicsCompressor();
-  compressor.threshold.value = -12;
-  compressor.knee.value = 14;
-  compressor.ratio.value = 5;
-  compressor.attack.value = 0.004;
-  compressor.release.value = 0.24;
-  master.connect(compressor);
-  compressor.connect(destination);
+  master.gain.value = .8;
+  const limiter = context.createDynamicsCompressor();
+  limiter.threshold.value = -8;
+  limiter.knee.value = 5;
+  limiter.ratio.value = 16;
+  limiter.attack.value = .003;
+  limiter.release.value = .17;
+  const ceiling = context.createWaveShaper();
+  ceiling.curve = Float32Array.from({ length: 513 }, (_, i) => Math.max(-.97, Math.min(.97, i / 256 - 1)));
+  master.connect(limiter).connect(ceiling).connect(destination);
 
-  const bus = (level) => {
-    const gain = context.createGain();
-    gain.gain.value = level;
-    gain.connect(master);
-    return gain;
+  const pocket = voicePocket(context);
+  const music = context.createGain();
+  music.connect(pocket.filter).connect(master);
+  const routes = { voice: master, sfx: master, sub: music, melody: music, ambience: music };
+  const gains = { score: music };
+  for (const [key, target] of Object.entries(routes)) {
+    gains[key] = context.createGain();
+    gains[key].connect(target);
+  }
+  const allowed = (key) => !solo || key === 'score' || key === solo || (solo === 'ambience' && key === 'sfx');
+  const setLevels = (next, initial = false) => {
+    const time = context.currentTime;
+    for (const [key, value] of Object.entries(next)) if (gains[key]) {
+      const level = allowed(key) ? Math.max(0, Math.min(1, value)) : 0;
+      if (initial) gains[key].gain.value = level;
+      else gains[key].gain.setTargetAtTime(level, time, .025);
+    }
+    if (next.voice != null) {
+      const amount = next.voice > .001 ? 1 : 0;
+      if (initial) pocket.amount.gain.value = amount;
+      else pocket.amount.gain.setTargetAtTime(amount, time, .025);
+    }
   };
-
-  const mix = { ...DEFAULT_LEVELS, ...(levels || {}) };
-  const voiceBus = bus(mix.voice);
-  const sfxBus = bus(mix.sfx);
-  const scoreBus = bus(mix.score);
-
-  const nodes = [];
+  setLevels({ ...DEFAULT_LEVELS, ...levels }, true);
+  const nodes = [pocket.envelope];
   const buffer = whiteNoise(context);
-  const durations = (plan?.durations || []).map(Number);
-  const total = durations.reduce((sum, n) => sum + n, 0);
-  let voiceSources = [];
+  const durations = plan.durations.map(Number);
+  const snap = (s) => Math.round(s * context.sampleRate) / context.sampleRate;
 
-  const setLevels = (next) => {
-    const now = context.currentTime;
-    if (next.voice != null) voiceBus.gain.setTargetAtTime(next.voice, now, 0.03);
-    if (next.sfx != null) sfxBus.gain.setTargetAtTime(next.sfx, now, 0.03);
-    if (next.score != null) scoreBus.gain.setTargetAtTime(next.score, now, 0.03);
-  };
-
-  const start = (time, offset = 0) => {
+  function start(time, offset = 0) {
     const origin = time - offset;
-    const root = 55;
-
-    // Schedule a timeline event, trimming whatever already played.
     const play = (at, duration, fn) => {
-      const startAt = Math.max(origin + at, time);
-      const left = duration - (startAt - (origin + at));
-      if (left > 0.02) fn(startAt, left);
+      const when = snap(Math.max(origin + at, time));
+      const left = duration - Math.max(0, offset - at);
+      if (left > .012) fn(when, left);
     };
-
-    // Pentatonic drone bed.
-    PENTA.slice(0, 3).forEach((ratio, i) => {
-      play(0, total, (at, duration) => {
-        tone(context, scoreBus, nodes, {
-          time: at,
-          duration,
-          frequency: root * ratio,
-          type: i === 0 ? 'triangle' : 'sine',
-          level: i === 0 ? 0.14 : 0.075,
-          pan: (i - 1) * 0.5,
-          sustain: true,
-        });
-      });
-    });
-
-    let beatStart = 0;
+    scheduleScore({ context, plan, score, play, nodes, buffer, sub: gains.sub, melody: gains.melody, ambience: gains.ambience, sfx: gains.sfx });
+    pocket.envelope.start(time);
+    let cut = 0;
     durations.forEach((duration, i) => {
-      const accent = i === 3;
-
-      play(beatStart, duration, (at, left) => {
-        tone(context, scoreBus, nodes, {
-          time: at,
-          duration: left,
-          frequency: root * PENTA[(i + 2) % PENTA.length] * 2,
-          type: 'sine',
-          level: 0.05,
-          sustain: true,
-          pan: 0.35,
-        });
-      });
-
-      // Industrial sub-bass drop on every cut.
-      play(beatStart, accent ? 1.5 : 0.95, (at, left) => {
-        tone(context, scoreBus, nodes, {
-          time: at,
-          duration: left,
-          frequency: accent ? 88 : 70,
-          endFrequency: accent ? 32 : 38,
-          type: 'sine',
-          level: accent ? 0.55 : 0.42,
-        });
-      });
-      play(beatStart, 0.5, (at, left) => {
-        kick(context, scoreBus, nodes, at, root, accent ? 0.6 : 0.34, left);
-      });
-
-      if (i < durations.length - 1) {
-        const lead = Math.min(1.1, duration * 0.4);
-        play(beatStart + duration - lead, lead, (at, left) => {
-          noise(context, sfxBus, nodes, buffer, {
-            time: at,
-            duration: left,
-            level: 0.2,
-            frequency: 220,
-            endFrequency: 6800,
-            fadeIn: true,
-          });
-          tone(context, sfxBus, nodes, {
-            time: at,
-            duration: left,
-            frequency: 60,
-            endFrequency: 1400,
-            type: 'sawtooth',
-            level: 0.07,
-          });
-        });
-        play(beatStart + duration, 0.4, (at, left) => {
-          noise(context, sfxBus, nodes, buffer, {
-            time: at,
-            duration: left,
-            level: 0.16,
-            frequency: 2400,
-            endFrequency: 260,
-          });
-        });
-      }
-
-      // Terminal keystrokes across the Action beat.
-      if (i === 1) {
-        const clicks = Math.min(26, Math.floor(duration / 0.11));
-        for (let c = 0; c < clicks; c += 1) {
-          play(beatStart + 0.2 + c * 0.11, 0.032, (at, left) => {
-            noise(context, sfxBus, nodes, buffer, {
-              time: at,
-              duration: left,
-              level: 0.13,
-              frequency: 3400,
-              pan: c % 2 ? 0.35 : -0.35,
-            });
-          });
-        }
-      }
-
-      // Proof readout blips.
-      if (i === 2) {
-        [0, 1, 2].forEach((b) => {
-          play(beatStart + 0.35 + b * duration * 0.22, 0.12, (at, left) => {
-            tone(context, sfxBus, nodes, {
-              time: at,
-              duration: left,
-              frequency: 1180 + b * 240,
-              type: 'square',
-              level: 0.05,
-              pan: b % 2 ? 0.3 : -0.3,
-            });
-          });
-        });
-      }
-
-      // Closing chime.
-      if (i === 3) {
-        [880, 1320, 1760].forEach((frequency, n) => {
-          play(beatStart + 0.1 + n * 0.09, 1.4, (at, left) => {
-            tone(context, sfxBus, nodes, {
-              time: at,
-              duration: left,
-              frequency,
-              type: 'sine',
-              level: 0.09 - n * 0.02,
-              pan: (n - 1) * 0.4,
-            });
-          });
-        });
-      }
-
-      beatStart += duration;
-    });
-
-    // Voiceover: one buffer per beat, entered on its own cut.
-    (voiceBuffers || []).forEach((voiceBuffer, i) => {
-      if (!voiceBuffer) return;
-      const at = origin + durations.slice(0, i).reduce((sum, n) => sum + n, 0) + 0.14;
-      if (at + voiceBuffer.duration <= time) return;
-      const skip = Math.max(0, time - at);
+      const audio = voiceBuffers?.[i];
+      const entry = cut + .14;
+      cut += duration;
+      if (!audio) return;
+      const skip = Math.max(0, offset - entry);
+      const length = Math.min(audio.duration, duration - .18) - skip;
+      if (length <= .02) return;
+      const at = snap(Math.max(time, origin + entry));
       const source = context.createBufferSource();
-      source.buffer = voiceBuffer;
-      source.connect(voiceBus);
-      source.start(Math.max(at, time), skip);
-      voiceSources.push(source);
+      const fade = context.createGain();
+      fade.gain.setValueAtTime(1, at + Math.max(0, length - .04));
+      fade.gain.linearRampToValueAtTime(0, at + length);
+      source.buffer = audio;
+      source.connect(fade).connect(gains.voice);
+      source.start(at, skip, length);
+      nodes.push(source);
+      scheduleVoicePocket(pocket.envelope.offset, audio, at, skip, length);
     });
-  };
+  }
 
-  const stop = () => {
-    nodes.forEach((node) => {
-      try {
-        node.stop();
-      } catch {
-        /* already stopped */
-      }
-    });
-    voiceSources.forEach((source) => {
-      try {
-        source.stop();
-      } catch {
-        /* already stopped */
-      }
-    });
-    voiceSources = [];
-    [voiceBus, sfxBus, scoreBus, master, compressor].forEach((node) => {
-      try {
-        node.disconnect();
-      } catch {
-        /* already disconnected */
-      }
-    });
-  };
-
-  return { start, setLevels, stop, total };
+  function stop() {
+    for (const node of nodes) { try { node.stop(); } catch { /* Source already stopped. */ } }
+    for (const node of [...Object.values(gains), pocket.filter, pocket.amount, master, limiter, ceiling]) node.disconnect();
+  }
+  return { start, setLevels, stop };
 }

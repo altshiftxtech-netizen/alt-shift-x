@@ -3,7 +3,10 @@ import React from 'react';
 const ROWS = [
   { key: 'voice', label: 'Voiceover' },
   { key: 'sfx', label: 'Ambient SFX' },
-  { key: 'score', label: 'Score' },
+  { key: 'score', label: 'Master music' },
+  { key: 'sub', label: 'Sub-bass & kick' },
+  { key: 'melody', label: 'Melodic stems' },
+  { key: 'ambience', label: 'Ambience' },
 ];
 
 export default function AudioBalance({ levels, onChange, disabled }) {

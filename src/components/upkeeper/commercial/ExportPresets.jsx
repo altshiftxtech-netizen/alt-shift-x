@@ -37,6 +37,7 @@ function MasterPlayer({ reel }) {
 }
 
 const PRESETS = [
+  { key: 'cinema', icon: Film, title: 'Master Cinema 4K', aspect: '16:9', detail: '3840×2160 high-bitrate MP4, 60 fps target, stereo mix and four 24-bit / 48 kHz WAV stems in a ZIP.' },
   {
     key: 'reddit',
     icon: Clapperboard,
@@ -47,16 +48,16 @@ const PRESETS = [
   {
     key: 'shorts',
     icon: Film,
-    title: 'Shorts / Reels',
+    title: 'Social Vertical Reel',
     aspect: '9:16',
     detail: '9:16 vertical with burned-in high-viz captions, plus captions.srt.',
   },
   {
     key: 'gif',
     icon: ImageIcon,
-    title: 'Looping GIF',
+    title: 'Community GIF Package',
     aspect: null,
-    detail: '15-second loop, 540×960, 12 fps — sized for forum embeds.',
+    detail: '15-second 1080p loop at 10 fps with Reddit Markdown copy in a ZIP.',
   },
 ];
 
